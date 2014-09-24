@@ -140,6 +140,11 @@ function echo_tmp_sandbox_config () {
 }
 
 
+function echo_tmp_customize_sandbox_dir () {
+	mktemp -du '/tmp/halcyon-customize-sandbox.XXXXXXXXXX'
+}
+
+
 
 
 function validate_sandbox_tag () {
@@ -607,4 +612,38 @@ function install_sandbox () {
 	strip_sandbox || die
 	cache_sandbox || die
 	activate_sandbox "${build_dir}" || die
+}
+
+
+
+
+# NOTE: To install just the executables of executable-only packages in
+# the sandbox prior to building the sandbox, without polluting the sandbox
+# with extraneous dependencies, you can use a separate sub-sandbox:
+#
+# function customize_sandbox () {
+# 	customize_sandbox_with_cabal_package_executables alex happy
+# }
+
+function customize_sandbox_with_cabal_package_executables () {
+	expect_vars HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/cabal/tag"
+	expect_no_existing "${HALCYON_DIR}/sandbox/customized-sub-sandbox"
+
+	local tmp_dir
+	tmp_dir=$( echo_tmp_customize_sandbox_dir ) || die
+
+	mkdir -p "${HALCYON_DIR}/sandbox/bin" "${tmp_dir}" || die
+
+	cabal_create_sandbox "${HALCYON_DIR}/sandbox/customized-sub-sandbox" || die
+
+	silently sandboxed_cabal_do "${HALCYON_DIR}/sandbox/customized-sub-sandbox" "${tmp_dir}" install "$@" || die
+
+	local bin_file bin_name
+	for bin_file in "${HALCYON_DIR}/sandbox/customized-sub-sandbox/bin"/*; do
+		bin_name=$( basename "${bin_file}" ) || die
+		ln -s "${bin_file}" "${HALCYON_DIR}/sandbox/bin/${bin_name}" || die
+	done
+
+	rm -rf "${tmp_dir}" || die
 }
