@@ -468,7 +468,7 @@ function activate_sandbox () {
 	log_begin "Activating ${sandbox_description}..."
 
 	if [ -e "${build_dir}/cabal.sandbox.config" ] && ! [ -h "${build_dir}/cabal.sandbox.config" ]; then
-		die "Expected no custom ${build_dir}/cabal.sandbox.config"
+		die "Expected no actual ${build_dir}/cabal.sandbox.config"
 	fi
 
 	rm -f "${build_dir}/cabal.sandbox.config" || die
@@ -493,7 +493,7 @@ function deactivate_sandbox () {
 	log_begin "Deactivating ${sandbox_description}..."
 
 	if [ -e "${build_dir}/cabal.sandbox.config" ] && ! [ -h "${build_dir}/cabal.sandbox.config" ]; then
-		die "Expected no custom ${build_dir}/cabal.sandbox.config"
+		die "Expected no actual ${build_dir}/cabal.sandbox.config"
 	fi
 
 	rm -f "${build_dir}/cabal.sandbox.config" || die

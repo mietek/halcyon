@@ -644,7 +644,7 @@ function activate_cabal () {
 	log_begin "Activating ${cabal_description}..."
 
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-		die "Expected no custom ${HOME}/.cabal/config"
+		die "Expected no actual ${HOME}/.cabal/config"
 	fi
 
 	mkdir -p "${HOME}/.cabal" || die
@@ -666,7 +666,7 @@ function deactivate_cabal () {
 	log_begin "Deactivating ${cabal_description}..."
 
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-		die "Expected no custom ${HOME}/.cabal/config"
+		die "Expected no actual ${HOME}/.cabal/config"
 	fi
 
 	rm -f "${HOME}/.cabal/config" || die
