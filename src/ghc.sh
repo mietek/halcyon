@@ -6,6 +6,8 @@ function echo_ghc_libgmp10_x64_original_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
+	'7.8.3')
+		echo 'http://www.haskell.org/ghc/dist/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.2')
 		echo 'http://www.haskell.org/ghc/dist/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.1')
@@ -21,6 +23,8 @@ function echo_ghc_libgmp3_x64_original_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
+	'7.8.3')
+		echo 'http://www.haskell.org/ghc/dist/7.8.3/ghc-7.8.3-x86_64-unknown-linux-centos65.tar.xz';;
 	'7.8.2')
 		echo 'http://www.haskell.org/ghc/dist/7.8.2/ghc-7.8.2-x86_64-unknown-linux-centos65.tar.xz';;
 	'7.8.1')
@@ -72,6 +76,8 @@ function echo_ghc_version_from_base_version () {
 	expect_args base_version -- "$@"
 
 	case "${base_version}" in
+	'4.7.0.1')
+		echo '7.8.3';;
 	'4.7.0.0')
 		echo '7.8.2';;
 	'4.6.0.1')
@@ -85,7 +91,7 @@ function echo_ghc_version_from_base_version () {
 
 
 function echo_ghc_default_version () {
-	echo '7.8.2'
+	echo '7.8.3'
 }
 
 
