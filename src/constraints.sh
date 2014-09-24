@@ -13,10 +13,18 @@ function echo_constraints_digest () {
 }
 
 
+function echo_customize_sandbox_script_digest () {
+	openssl sha1 | sed 's/^.* //'
+}
+
+
+
+
 function echo_constraints () {
 	awk 'BEGIN { printf "constraints:"; separator = " " }
-		!/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
-		END { printf "\n" }'
+		/^--customize-sandbox-script-digest: / { script_digest = $2 }
+		!/^--/ && !/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
+		END { printf "\n"; if (script_digest != "") printf "--customize-sandbox-script-digest: %s\n", script_digest }'
 }
 
 
@@ -91,23 +99,47 @@ function score_constraints () {
 		constraints_A["${package}"]="${version}"
 	done <<<"${constraints}"
 
+	local script_digest candidate_digest
+	script_digest="${constraints_A[--customize-sandbox-script-digest:]:-}"
+	candidate_digest=""
+
 	local score candidate_package candidate_version
 	score=0
 	while read -r candidate_package candidate_version; do
-		local version
-		version="${constraints_A[${candidate_package}]:-}"
-		if [ -z "${version}" ]; then
-			log_indent "Ignoring ${sandbox_description} as ${candidate_package} is not needed"
-			echo 0
-			return 0
-		fi
-		if [ "${candidate_version}" != "${version}" ]; then
-			log_indent "Ignoring ${sandbox_description} as ${candidate_package}-${version} is needed and not ${candidate_version}"
-			echo 0
-			return 0
+		if [ "${candidate_package}" = "--customize-sandbox-script-digest:" ]; then
+			candidate_digest="${candidate_version}"
+			if [ -z "${script_digest}" ]; then
+				log_indent "Ignoring ${sandbox_description} as customize sandbox script is not needed"
+				echo 0
+				return 0
+			fi
+			if [ "${candidate_digest}" != "${script_digest}" ]; then
+				log_indent "Ignoring ${sandbox_description} as customize sandbox script ${script_digest:0:7} is needed and not ${candidate_digest:0:7}"
+				echo 0
+				return 0
+			fi
+		else
+			local version
+			version="${constraints_A[${candidate_package}]:-}"
+			if [ -z "${version}" ]; then
+				log_indent "Ignoring ${sandbox_description} as ${candidate_package} is not needed"
+				echo 0
+				return 0
+			fi
+			if [ "${candidate_version}" != "${version}" ]; then
+				log_indent "Ignoring ${sandbox_description} as ${candidate_package}-${version} is needed and not ${candidate_version}"
+				echo 0
+				return 0
+			fi
 		fi
 		score=$(( ${score} + 1 ))
 	done
+
+	if [ -z "${candidate_digest}" ]; then
+		log_indent "Ignoring ${sandbox_description} as customize sandbox script ${script_digest:0:7} is needed"
+		echo 0
+		return 0
+	fi
 
 	log_indent "${score}"$'\t'"${sandbox_description}"
 	echo "${score}"
@@ -158,6 +190,31 @@ function detect_constraints () {
 
 
 
+function detect_customize_sandbox_script_constraint () {
+	filter_matching "^--customize-sandbox-script-digest: " |
+		match_exactly_one
+}
+
+
+function insert_customize_sandbox_script_constraint () {
+	local build_dir
+	expect_args build_dir -- "$@"
+
+	if has_vars HALCYON_CUSTOMIZE_SANDBOX_SCRIPT; then
+		expect_existing "${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+
+		local script_digest
+		script_digest=$( echo_customize_sandbox_script_digest <"${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
+
+		awk 'BEGIN { print "--customize-sandbox-script-digest: '"${script_digest}"'" } { print }'
+	else
+		awk '{ print }'
+	fi
+}
+
+
+
+
 function freeze_implicit_constraints () {
 	local build_dir
 	expect_args build_dir -- "$@"
@@ -165,6 +222,7 @@ function freeze_implicit_constraints () {
 
 	cabal_do "${build_dir}" --no-require-sandbox freeze --dry-run |
 		read_constraints_dry_run |
+		insert_customize_sandbox_script_constraint "${build_dir}" |
 		filter_correct_constraints "${build_dir}" || die
 }
 
@@ -176,5 +234,6 @@ function freeze_actual_constraints () {
 
 	sandboxed_cabal_do "${build_dir}" freeze --dry-run |
 		read_constraints_dry_run |
+		insert_customize_sandbox_script_constraint "${build_dir}" |
 		filter_correct_constraints "${build_dir}" || die
 }

@@ -196,6 +196,38 @@ function build_sandbox () {
 
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
+
+		# NOTE: Listing executable-only packages in build-tools causes Cabal to
+		# expect the executables to be installed, but not to install the packages.
+		# https://github.com/haskell/cabal/issues/220
+
+		# NOTE: Listing executable-only packages in build-depends causes Cabal to
+		# install the packages, and to fail to recognise the packages have been
+		# installed.
+		# https://github.com/haskell/cabal/issues/779
+
+		local script_constraint
+		if script_constraint=$( detect_customize_sandbox_script_constraint <<<"${sandbox_constraints}" ); then
+			expect_vars HALCYON_CUSTOMIZE_SANDBOX_SCRIPT
+			expect_existing "${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+
+			log "Customizing ${sandbox_description}"
+
+			local script_digest candidate_digest
+			script_digest="${script_constraint##* }"
+			candidate_digest=$( echo_customize_sandbox_script_digest <"${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
+
+			if [ "${candidate_digest}" != "${script_digest}" ]; then
+				die "Expected customize sandbox script ${script_digest:0:7} and not ${candidate_digest:0:7}"
+			fi
+
+			source "${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+			customize_sandbox "${build_dir}"
+
+			local customized_size
+			customized_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
+			log "Customized ${sandbox_description}, ${customized_size}"
+		fi
 	fi
 	cabal_install_deps "${build_dir}" || die
 

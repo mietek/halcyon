@@ -42,6 +42,8 @@ function set_default_vars () {
 	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
 	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
 
+	export HALCYON_CUSTOMIZE_SANDBOX_SCRIPT="${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT:-}"
+
 	export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
 	export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
@@ -133,6 +135,10 @@ function halcyon_install () {
 			export HALCYON_FORCE_CABAL_VERSION="${1#*=}";;
 		'--force-cabal-update')
 			export HALCYON_FORCE_CABAL_UPDATE=1;;
+
+		'--customize-sandbox-script='*);&
+		'--custom-sandbox-script='*)
+			export HALCYON_CUSTOMIZE_SANDBOX_SCRIPT="${1#*=}";;
 
 		'--aws-access-key-id='*)
 			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;

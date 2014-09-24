@@ -88,6 +88,16 @@ function fake_build_dir () {
 	mkdir -p "${build_dir}" || die
 	echo_fake_package "${app_label}" >"${build_dir}/${app_label}.cabal" || die
 
+	if has_vars HALCYON_CUSTOMIZE_SANDBOX_SCRIPT; then
+		expect_existing "${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+
+		local script_name
+		script_name=$( basename "${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
+
+		cp "${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" "${build_dir}/${script_name}" || die
+		export HALCYON_CUSTOMIZE_SANDBOX_SCRIPT="${script_name}"
+	fi
+
 	echo "${build_dir}"
 }
 
