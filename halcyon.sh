@@ -47,8 +47,6 @@ function set_default_vars () {
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 
-	export HALCYON_ONE_SHOT="${HALCYON_ONE_SHOT:-0}"
-	export HALCYON_DRY_RUN="${HALCYON_DRY_RUN:-0}"
 	export HALCYON_SILENT="${HALCYON_SILENT:-0}"
 
 	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
@@ -145,10 +143,6 @@ function halcyon_install () {
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
 
-		'--one-shot')
-			export HALCYON_ONE_SHOT=1;;
-		'--dry-run')
-			export HALCYON_DRY_RUN=1;;
 		'--silent')
 			export HALCYON_SILENT=1;;
 
