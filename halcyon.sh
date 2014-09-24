@@ -36,7 +36,7 @@ function set_default_vars () {
 	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 	export HALCYON_FORCE_FAIL_INSTALL="${HALCYON_FORCE_FAIL_INSTALL:-0}"
 	export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
-	export HALCYON_PREPARED_ONLY="${HALCYON_PREPARED_ONLY:-0}"
+	export HALCYON_PREBUILT_ONLY="${HALCYON_PREBUILT_ONLY:-0}"
 	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
 	export HALCYON_CUT_GHC="${HALCYON_CUT_GHC:-0}"
 	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
@@ -122,11 +122,11 @@ function halcyon_install () {
 		'--only-dependencies');&
 		'--only-dep')
 			export HALCYON_DEPENDENCIES_ONLY=1;;
-		'--prepared-only');&
-		'--prep-only');&
-		'--only-prepared');&
-		'--only-prep')
-			export HALCYON_PREPARED_ONLY=1;;
+		'--prebuilt-only');&
+		'--pre-only');&
+		'--only-prebuilt');&
+		'--only-pre')
+			export HALCYON_PREBUILT_ONLY=1;;
 		'--force-ghc-version='*)
 			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
 		'--cut-ghc')

@@ -443,7 +443,7 @@ function cache_ghc () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
-	upload_prepared "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}" || die
+	upload_prebuilt "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}" || die
 }
 
 
@@ -476,8 +476,8 @@ function restore_ghc () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
-		if ! download_prepared "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning "${ghc_description} is not prepared"
+		if ! download_prebuilt "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
+			log_warning "${ghc_description} is not prebuilt"
 			return 1
 		fi
 
@@ -564,7 +564,7 @@ function deactivate_ghc () {
 
 
 function install_ghc () {
-	expect_vars HALCYON_PREPARED_ONLY HALCYON_CUT_GHC
+	expect_vars HALCYON_PREBUILT_ONLY HALCYON_CUT_GHC
 
 	local build_dir
 	expect_args build_dir -- "$@"
@@ -585,7 +585,7 @@ function install_ghc () {
 		return 0
 	fi
 
-	! (( ${HALCYON_PREPARED_ONLY} )) || return 1
+	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	build_ghc "${ghc_version}" || die
 	if (( ${HALCYON_CUT_GHC} )); then

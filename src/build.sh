@@ -149,7 +149,7 @@ function cache_build () {
 		--exclude '.cabal'                      \
 		--exclude '.cabal-sandbox'              \
 		--exclude 'cabal.sandbox.config' || die
-	upload_prepared "${HALCYON_CACHE_DIR}/${build_archive}" "${os}" || die
+	upload_prebuilt "${HALCYON_CACHE_DIR}/${build_archive}" "${os}" || die
 }
 
 
@@ -176,8 +176,8 @@ function restore_build () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${build_archive}" "${tmp_old_dir}" || die
 
-		if ! download_prepared "${os}" "${build_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning 'Build is not prepared'
+		if ! download_prebuilt "${os}" "${build_archive}" "${HALCYON_CACHE_DIR}"; then
+			log_warning 'Build is not prebuilt'
 			return 1
 		fi
 

@@ -489,7 +489,7 @@ function cache_cabal () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
-	upload_prepared "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}" || die
+	upload_prebuilt "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}" || die
 }
 
 
@@ -520,8 +520,8 @@ function restore_cabal () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
-		if ! download_prepared "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning "Cabal ${cabal_version} is not prepared"
+		if ! download_prebuilt "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
+			log_warning "Cabal ${cabal_version} is not prebuilt"
 			return 1
 		fi
 
@@ -589,16 +589,16 @@ function restore_updated_cabal () {
 
 	local cabal_archive
 	if ! cabal_archive=$(
-		list_prepared "${os}/${archive_prefix}" |
+		list_prebuilt "${os}/${archive_prefix}" |
 		sed "s:${os}/::" |
 		match_updated_cabal_archive "${cabal_version}"
 	); then
-		log_warning "No updated Cabal ${cabal_version} is prepared"
+		log_warning "No updated Cabal ${cabal_version} is prebuilt"
 		return 1
 	fi
 
 	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
-	download_prepared "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}" || die
+	download_prebuilt "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}" || die
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/tag" ] ||
@@ -678,7 +678,7 @@ function deactivate_cabal () {
 
 
 function install_cabal () {
-	expect_vars HALCYON_PREPARED_ONLY HALCYON_FORCE_CABAL_UPDATE
+	expect_vars HALCYON_PREBUILT_ONLY HALCYON_FORCE_CABAL_UPDATE
 
 	local cabal_version
 	cabal_version=$( infer_cabal_version ) || die
@@ -697,7 +697,7 @@ function install_cabal () {
 		return 0
 	fi
 
-	! (( ${HALCYON_PREPARED_ONLY} )) || return 1
+	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	build_cabal "${cabal_version}" || die
 	cache_cabal || die

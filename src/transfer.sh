@@ -47,7 +47,7 @@ function download_original () {
 
 
 
-function download_prepared () {
+function download_prebuilt () {
 	local src_prefix src_item dst_dir
 	expect_args src_prefix src_item dst_dir -- "$@"
 
@@ -70,7 +70,7 @@ function download_prepared () {
 }
 
 
-function list_prepared () {
+function list_prebuilt () {
 	local src_prefix
 	expect_args src_prefix -- "$@"
 
@@ -99,7 +99,7 @@ function list_prepared () {
 }
 
 
-function upload_prepared () {
+function upload_prebuilt () {
 	local src_file dst_prefix
 	expect_args src_file dst_prefix -- "$@"
 
@@ -115,14 +115,14 @@ function upload_prepared () {
 
 
 
-function download_any_prepared () {
+function download_any_precompiled () {
 	local src_prefix src_items dst_dir
 	expect_args src_prefix src_items dst_dir -- "$@"
 
 	local status src_item
 	status=1
 	while read -r src_item; do
-		if download_prepared "${src_prefix}" "${src_item}" "${dst_dir}"; then
+		if download_precompiled "${src_prefix}" "${src_item}" "${dst_dir}"; then
 			status=0
 		fi
 	done <<<"${src_items}"

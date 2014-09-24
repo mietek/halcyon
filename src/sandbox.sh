@@ -290,8 +290,8 @@ function cache_sandbox () {
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
 	cp "${HALCYON_DIR}/sandbox/cabal.config" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
-	upload_prepared "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}" || die
-	upload_prepared "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}" || die
+	upload_prebuilt "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}" || die
+	upload_prebuilt "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}" || die
 }
 
 
@@ -324,8 +324,8 @@ function restore_sandbox () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
-		if ! download_prepared "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning "${sandbox_description} is not prepared"
+		if ! download_prebuilt "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
+			log_warning "${sandbox_description} is not prebuilt"
 			return 1
 		fi
 
@@ -402,17 +402,17 @@ function locate_matched_sandbox_tag () {
 
 	local matched_configs
 	if ! matched_configs=$(
-		list_prepared "${os}/${config_prefix}" |
+		list_prebuilt "${os}/${config_prefix}" |
 		sed "s:${os}/::" |
 		filter_matching "^${config_pattern}$" |
 		sort_naturally |
 		match_at_least_one
 	); then
-		log_warning 'No matched sandbox is prepared'
+		log_warning 'No matched sandbox is prebuilt'
 		return 1
 	fi
 
-	download_any_prepared "${os}" "${matched_configs}" "${HALCYON_CACHE_DIR}" || die
+	download_any_precompiled "${os}" "${matched_configs}" "${HALCYON_CACHE_DIR}" || die
 
 	log "Scoring matched sandboxes"
 
@@ -543,7 +543,7 @@ function install_extended_sandbox () {
 
 
 function install_sandbox () {
-	expect_vars HALCYON_DIR HALCYON_PREPARED_ONLY
+	expect_vars HALCYON_DIR HALCYON_PREBUILT_ONLY
 	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local build_dir
@@ -566,7 +566,7 @@ function install_sandbox () {
 		return 0
 	fi
 
-	! (( ${HALCYON_PREPARED_ONLY} )) || return 1
+	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	local matched_tag
 	if matched_tag=$( locate_matched_sandbox_tag "${sandbox_constraints}" ) &&
