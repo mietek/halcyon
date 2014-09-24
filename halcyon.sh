@@ -6,20 +6,20 @@ set -o pipefail
 
 declare self_dir
 self_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
-source "${self_dir}/lib/curl.sh"
-source "${self_dir}/lib/expect.sh"
-source "${self_dir}/lib/log.sh"
-source "${self_dir}/lib/s3.sh"
-source "${self_dir}/lib/tar.sh"
-source "${self_dir}/lib/tools.sh"
-source "${self_dir}/build.sh"
-source "${self_dir}/cabal.sh"
-source "${self_dir}/cache.sh"
-source "${self_dir}/constraints.sh"
-source "${self_dir}/ghc.sh"
-source "${self_dir}/package.sh"
-source "${self_dir}/sandbox.sh"
-source "${self_dir}/transfer.sh"
+source "${self_dir}/src/lib/curl.sh"
+source "${self_dir}/src/lib/expect.sh"
+source "${self_dir}/src/lib/log.sh"
+source "${self_dir}/src/lib/s3.sh"
+source "${self_dir}/src/lib/tar.sh"
+source "${self_dir}/src/lib/tools.sh"
+source "${self_dir}/src/build.sh"
+source "${self_dir}/src/cabal.sh"
+source "${self_dir}/src/cache.sh"
+source "${self_dir}/src/constraints.sh"
+source "${self_dir}/src/ghc.sh"
+source "${self_dir}/src/package.sh"
+source "${self_dir}/src/sandbox.sh"
+source "${self_dir}/src/transfer.sh"
 
 
 
