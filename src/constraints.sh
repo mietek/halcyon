@@ -218,7 +218,6 @@ function insert_customize_sandbox_script_constraint () {
 function freeze_implicit_constraints () {
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}"
 
 	cabal_do "${build_dir}" --no-require-sandbox freeze --dry-run |
 		read_constraints_dry_run |
