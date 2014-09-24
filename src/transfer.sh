@@ -111,21 +111,3 @@ function upload_prebuilt () {
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
 	fi
 }
-
-
-
-
-function download_any_precompiled () {
-	local src_prefix src_items dst_dir
-	expect_args src_prefix src_items dst_dir -- "$@"
-
-	local status src_item
-	status=1
-	while read -r src_item; do
-		if download_precompiled "${src_prefix}" "${src_item}" "${dst_dir}"; then
-			status=0
-		fi
-	done <<<"${src_items}"
-
-	return "${status}"
-}

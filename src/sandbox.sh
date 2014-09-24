@@ -155,27 +155,16 @@ function validate_sandbox_tag () {
 }
 
 
-function validate_sandbox () {
-	local build_dir sandbox_tag sandbox_constraints
-	expect_args build_dir sandbox_tag sandbox_constraints -- "$@"
-
+function validate_sandbox_config () {
 	local sandbox_digest
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	expect_args sandbox_digest -- "$@"
 
-	# NOTE: Frozen constraints should never differ before and after installation.
-	# https://github.com/haskell/cabal/issues/1896
+	local candidate_digest
+	candidate_digest=$( read_constraints | echo_constraints_digest ) || die
 
-	local actual_constraints actual_digest
-	actual_constraints=$( freeze_actual_constraints "${build_dir}" ) || die
-	actual_digest=$( echo_constraints_digest <<<"${actual_constraints}" ) || die
-
-	if [ "${actual_digest}" = "${sandbox_digest}" ]; then
-		return 0
+	if [ "${candidate_digest}" != "${sandbox_digest}" ]; then
+		return 1
 	fi
-
-	log_warning "Actual sandbox digest is ${actual_digest:0:7}"
-	log_warning 'Unexpected constraints difference:'
-	echo_constraints_difference "${sandbox_constraints}" "${actual_constraints}" | log_file_indent
 }
 
 
@@ -189,7 +178,8 @@ function build_sandbox () {
 	expect_args build_dir sandbox_constraints sandbox_tag -- "$@"
 	expect_existing "${build_dir}"
 
-	local sandbox_description
+	local sandbox_digest sandbox_description
+	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log "Building ${sandbox_description}"
@@ -240,7 +230,18 @@ function build_sandbox () {
 
 	log "Validating ${sandbox_description}"
 
-	validate_sandbox "${build_dir}" "${sandbox_tag}" "${sandbox_constraints}" || die
+	# NOTE: Frozen constraints should never differ before and after installation.
+	# https://github.com/haskell/cabal/issues/1896
+
+	local actual_constraints actual_digest
+	actual_constraints=$( freeze_actual_constraints "${build_dir}" ) || die
+	actual_digest=$( echo_constraints_digest <<<"${actual_constraints}" ) || die
+
+	if [ "${actual_digest}" != "${sandbox_digest}" ]; then
+		log_warning "Actual sandbox digest is ${actual_digest:0:7}"
+		log_warning 'Unexpected constraints difference:'
+		echo_constraints_difference "${sandbox_constraints}" "${actual_constraints}" | log_file_indent
+	fi
 }
 
 
@@ -301,13 +302,15 @@ function restore_sandbox () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_description
+	local sandbox_digest sandbox_description
+	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log "Restoring ${sandbox_description}"
 
 	if [ -f "${HALCYON_DIR}/sandbox/tag" ] &&
-		validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/tag"
+		validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/tag" &&
+		validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/cabal.config"
 	then
 		return 0
 	fi
@@ -320,7 +323,8 @@ function restore_sandbox () {
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
 		! [ -f "${HALCYON_DIR}/sandbox/tag" ] ||
-		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/tag"
+		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/tag" ||
+		! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/cabal.config"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
@@ -331,7 +335,8 @@ function restore_sandbox () {
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
 			! [ -f "${HALCYON_DIR}/sandbox/tag" ] ||
-			! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/tag"
+			! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/tag" ||
+			! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/cabal.config"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 			log_warning "Restoring ${sandbox_archive} failed"
@@ -412,14 +417,37 @@ function locate_matched_sandbox_tag () {
 		return 1
 	fi
 
-	download_any_precompiled "${os}" "${matched_configs}" "${HALCYON_CACHE_DIR}" || die
+	local config
+	while read -r config; do
+		local digest
+		digest=$( echo_sandbox_config_digest "${config}" ) || die
 
-	log "Scoring matched sandboxes"
+		if ! [ -f "${HALCYON_CACHE_DIR}/${config}" ] ||
+			! validate_sandbox_config "${digest}" <"${HALCYON_CACHE_DIR}/${config}"
+		then
+			rm -f "${HALCYON_CACHE_DIR}/${config}" || die
+
+			if ! download_prebuilt "${os}" "${config}" "${HALCYON_CACHE_DIR}"; then
+				log_warning "Downloading ${config} failed"
+			fi
+
+			if ! validate_sandbox_config "${digest}" <"${HALCYON_CACHE_DIR}/${config}"; then
+				rm -f "${HALCYON_CACHE_DIR}/${config}" || die
+				log_warning "Restoring ${config} failed"
+			fi
+		fi
+	done <<<"${matched_configs}"
+
+	log 'Scoring matched sandboxes'
 
 	local matched_scores
 	if ! matched_scores=$(
 		local config
 		while read -r config; do
+			if ! [ -f "${HALCYON_CACHE_DIR}/${config}" ]; then
+				continue
+			fi
+
 			local app_label digest tag
 			app_label=$( echo_sandbox_config_app_label "${config}" ) || die
 			digest=$( echo_sandbox_config_digest "${config}" ) || die

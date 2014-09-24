@@ -598,7 +598,10 @@ function restore_updated_cabal () {
 	fi
 
 	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
-	download_prebuilt "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}" || die
+	if ! download_prebuilt "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
+		log_warning "Downloading ${cabal_archive} failed"
+		return 1
+	fi
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/tag" ] ||
