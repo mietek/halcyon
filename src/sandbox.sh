@@ -179,9 +179,9 @@ function build_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/cabal/tag"
 
-	local build_dir sandbox_constraints sandbox_tag
-	expect_args build_dir sandbox_constraints sandbox_tag -- "$@"
-	expect_existing "${build_dir}"
+	local app_dir sandbox_constraints sandbox_tag
+	expect_args app_dir sandbox_constraints sandbox_tag -- "$@"
+	expect_existing "${app_dir}"
 
 	local sandbox_digest sandbox_description
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
@@ -204,27 +204,27 @@ function build_sandbox () {
 		local script_constraint
 		if script_constraint=$( detect_customize_sandbox_script_constraint <<<"${sandbox_constraints}" ); then
 			expect_vars HALCYON_CUSTOMIZE_SANDBOX_SCRIPT
-			expect_existing "${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+			expect_existing "${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
 
 			log "Customizing ${sandbox_description}"
 
 			local script_digest candidate_digest
 			script_digest="${script_constraint##* }"
-			candidate_digest=$( echo_customize_sandbox_script_digest <"${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
+			candidate_digest=$( echo_customize_sandbox_script_digest <"${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
 
 			if [ "${candidate_digest}" != "${script_digest}" ]; then
 				die "Expected customize sandbox script ${script_digest:0:7} and not ${candidate_digest:0:7}"
 			fi
 
-			source "${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
-			customize_sandbox "${build_dir}"
+			source "${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+			customize_sandbox "${app_dir}"
 
 			local customized_size
 			customized_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
 			log "Customized ${sandbox_description}, ${customized_size}"
 		fi
 	fi
-	cabal_install_deps "${HALCYON_DIR}/sandbox" "${build_dir}" || die
+	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
 	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/cabal.config" || die
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/tag" || die
@@ -239,7 +239,7 @@ function build_sandbox () {
 	# https://github.com/haskell/cabal/issues/1896
 
 	local actual_constraints actual_digest
-	actual_constraints=$( freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${build_dir}" ) || die
+	actual_constraints=$( freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${app_dir}" ) || die
 	actual_digest=$( echo_constraints_digest <<<"${actual_constraints}" ) || die
 
 	if [ "${actual_digest}" != "${sandbox_digest}" ]; then
@@ -354,18 +354,18 @@ function restore_sandbox () {
 
 
 function infer_sandbox_constraints () {
-	local build_dir
-	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}"
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}"
 
 	log 'Inferring sandbox constraints'
 
 	local sandbox_constraints
-	if [ -f "${build_dir}/cabal.config" ]; then
-		sandbox_constraints=$( detect_constraints "${build_dir}" ) || die
+	if [ -f "${app_dir}/cabal.config" ]; then
+		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
 	else
-		sandbox_constraints=$( freeze_implicit_constraints "${build_dir}" ) || die
-		if ! (( ${HALCYON_FAKE_BUILD:-0} )); then
+		sandbox_constraints=$( freeze_implicit_constraints "${app_dir}" ) || die
+		if ! (( ${HALCYON_FAKE_APP:-0} )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 			log
 			log_add_config_help "${sandbox_constraints}"
@@ -490,9 +490,9 @@ function activate_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/tag"
 
-	local build_dir
-	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}"
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}"
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
@@ -500,12 +500,12 @@ function activate_sandbox () {
 
 	log_begin "Activating ${sandbox_description}..."
 
-	if [ -e "${build_dir}/cabal.sandbox.config" ] && ! [ -h "${build_dir}/cabal.sandbox.config" ]; then
-		die "Expected no actual ${build_dir}/cabal.sandbox.config"
+	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
+		die "Expected no actual ${app_dir}/cabal.sandbox.config"
 	fi
 
-	rm -f "${build_dir}/cabal.sandbox.config" || die
-	ln -s "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${build_dir}/cabal.sandbox.config" || die
+	rm -f "${app_dir}/cabal.sandbox.config" || die
+	ln -s "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${app_dir}/cabal.sandbox.config" || die
 
 	log_end 'done'
 }
@@ -515,9 +515,9 @@ function deactivate_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/tag"
 
-	local build_dir
-	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}"
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}"
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
@@ -525,11 +525,11 @@ function deactivate_sandbox () {
 
 	log_begin "Deactivating ${sandbox_description}..."
 
-	if [ -e "${build_dir}/cabal.sandbox.config" ] && ! [ -h "${build_dir}/cabal.sandbox.config" ]; then
-		die "Expected no actual ${build_dir}/cabal.sandbox.config"
+	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
+		die "Expected no actual ${app_dir}/cabal.sandbox.config"
 	fi
 
-	rm -f "${build_dir}/cabal.sandbox.config" || die
+	rm -f "${app_dir}/cabal.sandbox.config" || die
 
 	log_end 'done'
 }
@@ -540,8 +540,8 @@ function deactivate_sandbox () {
 function install_extended_sandbox () {
 	expect_vars HALCYON_DIR
 
-	local build_dir sandbox_constraints sandbox_tag matched_tag
-	expect_args build_dir sandbox_constraints sandbox_tag matched_tag -- "$@"
+	local app_dir sandbox_constraints sandbox_tag matched_tag
+	expect_args app_dir sandbox_constraints sandbox_tag matched_tag -- "$@"
 
 	if ! restore_sandbox "${matched_tag}"; then
 		return 1
@@ -560,7 +560,7 @@ function install_extended_sandbox () {
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/tag" || die
 		cache_sandbox || die
-		activate_sandbox "${build_dir}" || die
+		activate_sandbox "${app_dir}" || die
 		return 0
 	fi
 
@@ -568,10 +568,10 @@ function install_extended_sandbox () {
 
 	rm -f "${HALCYON_DIR}/sandbox/tag" "${HALCYON_DIR}/sandbox/cabal.config" || die
 
-	build_sandbox "${build_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
+	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
 	cache_sandbox || die
-	activate_sandbox "${build_dir}" || die
+	activate_sandbox "${app_dir}" || die
 }
 
 
@@ -579,23 +579,23 @@ function install_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_PREBUILT_ONLY
 	expect_existing "${HALCYON_DIR}/ghc/tag"
 
-	local build_dir
-	expect_args build_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	local ghc_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 
 	local sandbox_constraints sandbox_digest
-	sandbox_constraints=$( infer_sandbox_constraints "${build_dir}" ) || die
+	sandbox_constraints=$( infer_sandbox_constraints "${app_dir}" ) || die
 	sandbox_digest=$( infer_sandbox_digest "${sandbox_constraints}" ) || die
 
 	local app_label sandbox_tag
-	app_label=$( detect_app_label "${build_dir}" ) || die
+	app_label=$( detect_app_label "${app_dir}" ) || die
 	sandbox_tag=$( echo_sandbox_tag "${ghc_version}" "${app_label}" "${sandbox_digest}" ) || die
 
 	if restore_sandbox "${sandbox_tag}"; then
-		activate_sandbox "${build_dir}" || die
+		activate_sandbox "${app_dir}" || die
 		return 0
 	fi
 
@@ -603,15 +603,15 @@ function install_sandbox () {
 
 	local matched_tag
 	if matched_tag=$( locate_matched_sandbox_tag "${sandbox_constraints}" ) &&
-		install_extended_sandbox "${build_dir}" "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}"
+		install_extended_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}"
 	then
 		return 0
 	fi
 
-	build_sandbox "${build_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
+	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
 	cache_sandbox || die
-	activate_sandbox "${build_dir}" || die
+	activate_sandbox "${app_dir}" || die
 }
 
 

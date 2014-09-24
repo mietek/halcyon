@@ -12,12 +12,11 @@ source "${self_dir}/src/lib/log.sh"
 source "${self_dir}/src/lib/s3.sh"
 source "${self_dir}/src/lib/tar.sh"
 source "${self_dir}/src/lib/tools.sh"
-source "${self_dir}/src/build.sh"
+source "${self_dir}/src/app.sh"
 source "${self_dir}/src/cabal.sh"
 source "${self_dir}/src/cache.sh"
 source "${self_dir}/src/constraints.sh"
 source "${self_dir}/src/ghc.sh"
-source "${self_dir}/src/package.sh"
 source "${self_dir}/src/sandbox.sh"
 source "${self_dir}/src/transfer.sh"
 
@@ -160,17 +159,17 @@ function halcyon_install () {
 		shift
 	done
 
-	local build_dir app_label
+	local app_dir app_label
 	if ! (( $# )); then
-		build_dir='.'
-		app_label=$( detect_app_label "${build_dir}" ) || die
+		app_dir='.'
+		app_label=$( detect_app_label "${app_dir}" ) || die
 	elif [ -d "$1" ]; then
-		build_dir="$1"
-		app_label=$( detect_app_label "${build_dir}" ) || die
+		app_dir="$1"
+		app_label=$( detect_app_label "${app_dir}" ) || die
 	else
-		export HALCYON_FAKE_BUILD=1
+		export HALCYON_FAKE_APP=1
 		app_label="$1"
-		build_dir=''
+		app_dir=''
 	fi
 
 	log "Installing ${app_label}"
@@ -188,33 +187,33 @@ function halcyon_install () {
 	prepare_cache || die
 	log
 
-	install_ghc "${build_dir}" || return 1
+	install_ghc "${app_dir}" || return 1
 	log
-
-	if (( ${HALCYON_FAKE_BUILD:-0} )); then
-		build_dir=$( fake_build_dir "${app_label}" ) || die
-	fi
 
 	install_cabal || return 1
 	log
 
-	install_sandbox "${build_dir}" || return 1
+	if (( ${HALCYON_FAKE_APP:-0} )); then
+		app_dir=$( fake_app_dir "${app_label}" ) || die
+	fi
+
+	install_sandbox "${app_dir}" || return 1
 	log
 
-	if (( ${HALCYON_FAKE_BUILD:-0} )); then
-		rm -rf "${build_dir}" || die
+	if (( ${HALCYON_FAKE_APP:-0} )); then
+		rm -rf "${app_dir}" || die
 	elif ! (( ${HALCYON_DEPENDENCIES_ONLY} )); then
-		local build_tag
-		build_tag=$( infer_build_tag "${build_dir}" ) || die
-		if ! restore_build "${build_dir}" "${build_tag}"; then
-			configure_build "${build_dir}" || die
+		local app_tag
+		app_tag=$( infer_app_tag "${app_dir}" ) || die
+		if ! restore_app "${app_dir}" "${app_tag}"; then
+			configure_app "${app_dir}" || die
 		fi
-		build "${build_dir}" "${build_tag}" || die
-		cache_build "${build_dir}" "${build_tag}" || die
+		build_app "${app_dir}" "${app_tag}" || die
+		cache_app "${app_dir}" "${app_tag}" || die
 		log
 	fi
 
-	clean_cache "${build_dir}" || die
+	clean_cache "${app_dir}" || die
 	log
 
 	log "Installed ${app_label}"

@@ -323,6 +323,19 @@ function cabal_update () {
 }
 
 
+function cabal_list_latest_package_version () {
+	local package_name
+	expect_args package_name -- "$@"
+
+	cabal_do '.' --no-require-sandbox list --simple-output "${package_name}" |
+		filter_matching "^${package_name} " |
+		sort_naturally |
+		filter_last |
+		match_exactly_one |
+		sed 's/^.* //'
+}
+
+
 function cabal_create_sandbox () {
 	local sandbox_dir
 	expect_args sandbox_dir -- "$@"
@@ -334,37 +347,37 @@ function cabal_create_sandbox () {
 
 
 function cabal_install () {
-	local sandbox_dir build_dir
-	expect_args sandbox_dir build_dir -- "$@"
+	local sandbox_dir app_dir
+	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" install "$@" || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
 }
 
 
 function cabal_install_deps () {
-	local sandbox_dir build_dir
-	expect_args sandbox_dir build_dir -- "$@"
+	local sandbox_dir app_dir
+	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" install --dependencies-only || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only || die
 }
 
 
 function cabal_configure_app () {
 	expect_vars HALCYON_INSTALL_DIR
 
-	local sandbox_dir build_dir
-	expect_args sandbox_dir build_dir -- "$@"
+	local sandbox_dir app_dir
+	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
 }
 
 
 function cabal_build_app () {
-	local sandbox_dir build_dir
-	expect_args sandbox_dir build_dir -- "$@"
+	local sandbox_dir app_dir
+	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" build || die
-	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" copy || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
 }
 
 

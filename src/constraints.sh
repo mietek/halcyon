@@ -149,26 +149,26 @@ function score_constraints () {
 
 
 function detect_app_constraint () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	local app_name app_version
-	app_name=$( detect_app_name "${build_dir}" ) || die
-	app_version=$( detect_app_version "${build_dir}" ) || die
+	app_name=$( detect_app_name "${app_dir}" ) || die
+	app_version=$( detect_app_version "${app_dir}" ) || die
 
 	echo "${app_name} ${app_version}"
 }
 
 
 function filter_correct_constraints () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	# NOTE: An application should not be its own dependency.
 	# https://github.com/haskell/cabal/issues/1908
 
 	local app_constraint
-	app_constraint=$( detect_app_constraint "${build_dir}" ) || die
+	app_constraint=$( detect_app_constraint "${app_dir}" ) || die
 
 	filter_valid_constraints |
 		filter_not_matching "^${app_constraint}$" |
@@ -179,12 +179,12 @@ function filter_correct_constraints () {
 
 
 function detect_constraints () {
-	local build_dir
-	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}/cabal.config"
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}/cabal.config"
 
-	read_constraints <"${build_dir}/cabal.config" |
-		filter_correct_constraints "${build_dir}" || die
+	read_constraints <"${app_dir}/cabal.config" |
+		filter_correct_constraints "${app_dir}" || die
 }
 
 
@@ -197,14 +197,14 @@ function detect_customize_sandbox_script_constraint () {
 
 
 function insert_customize_sandbox_script_constraint () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	if has_vars HALCYON_CUSTOMIZE_SANDBOX_SCRIPT; then
-		expect_existing "${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+		expect_existing "${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
 
 		local script_digest
-		script_digest=$( echo_customize_sandbox_script_digest <"${build_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
+		script_digest=$( echo_customize_sandbox_script_digest <"${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
 
 		awk 'BEGIN { print "--customize-sandbox-script-digest: '"${script_digest}"'" } { print }'
 	else
@@ -216,22 +216,22 @@ function insert_customize_sandbox_script_constraint () {
 
 
 function freeze_implicit_constraints () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
-	cabal_do "${build_dir}" --no-require-sandbox freeze --dry-run |
+	cabal_do "${app_dir}" --no-require-sandbox freeze --dry-run |
 		read_constraints_dry_run |
-		insert_customize_sandbox_script_constraint "${build_dir}" |
-		filter_correct_constraints "${build_dir}" || die
+		insert_customize_sandbox_script_constraint "${app_dir}" |
+		filter_correct_constraints "${app_dir}" || die
 }
 
 
 function freeze_actual_constraints () {
-	local sandbox_dir build_dir
-	expect_args sandbox_dir build_dir -- "$@"
+	local sandbox_dir app_dir
+	expect_args sandbox_dir app_dir -- "$@"
 
-	sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" freeze --dry-run |
+	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" freeze --dry-run |
 		read_constraints_dry_run |
-		insert_customize_sandbox_script_constraint "${build_dir}" |
-		filter_correct_constraints "${build_dir}" || die
+		insert_customize_sandbox_script_constraint "${app_dir}" |
+		filter_correct_constraints "${app_dir}" || die
 }

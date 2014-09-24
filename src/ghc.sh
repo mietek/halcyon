@@ -496,8 +496,8 @@ function restore_ghc () {
 
 
 function infer_ghc_version () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	log_begin 'Inferring GHC version...'
 
@@ -506,10 +506,10 @@ function infer_ghc_version () {
 		ghc_version="${HALCYON_FORCE_GHC_VERSION}"
 
 		log_end "${ghc_version}, forced"
-	elif [ -f "${build_dir}/cabal.config" ]; then
+	elif [ -f "${app_dir}/cabal.config" ]; then
 		local base_version
 		base_version=$(
-			detect_constraints "${build_dir}" |
+			detect_constraints "${app_dir}" |
 			filter_matching "^base " |
 			match_exactly_one |
 			sed 's/^.* //'
@@ -522,7 +522,7 @@ function infer_ghc_version () {
 		ghc_version=$( echo_ghc_default_version ) || die
 
 		log_end "${ghc_version}, default"
-		if ! (( "${HALCYON_FAKE_BUILD:-0}" )); then
+		if ! (( "${HALCYON_FAKE_APP:-0}" )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 		fi
 	fi
@@ -566,8 +566,8 @@ function deactivate_ghc () {
 function install_ghc () {
 	expect_vars HALCYON_PREBUILT_ONLY HALCYON_CUT_GHC
 
-	local build_dir
-	expect_args build_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	local ghc_variant
 	if (( ${HALCYON_CUT_GHC} )); then
@@ -577,7 +577,7 @@ function install_ghc () {
 	fi
 
 	local ghc_version ghc_tag
-	ghc_version=$( infer_ghc_version "${build_dir}" ) || die
+	ghc_version=$( infer_ghc_version "${app_dir}" ) || die
 	ghc_tag=$( echo_ghc_tag "${ghc_version}" "${ghc_variant}" ) || die
 
 	if restore_ghc "${ghc_tag}"; then

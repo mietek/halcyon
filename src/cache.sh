@@ -50,7 +50,7 @@ function prepare_cache () {
 function clean_cache () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_OLD_CACHE_TMP_DIR
 
-	expect_args build_dir -- "$@"
+	expect_args app_dir -- "$@"
 
 	log_begin 'Cleaning cache...'
 
@@ -89,13 +89,13 @@ function clean_cache () {
 		fi
 	fi
 
-	if [ -f "${build_dir}/tag" ]; then
-		local build_tag build_archive
-		build_tag=$( <"${build_dir}/tag" ) || die
-		build_archive=$( echo_build_archive "${build_tag}" ) || die
+	if [ -f "${app_dir}/tag" ]; then
+		local app_tag app_archive
+		app_tag=$( <"${app_dir}/tag" ) || die
+		app_archive=$( echo_app_archive "${app_tag}" ) || die
 
-		if [ -f "${HALCYON_CACHE_DIR}/${build_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${build_archive}" "${tmp_dir}" || die
+		if [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ]; then
+			mv "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_dir}" || die
 		fi
 	fi
 
