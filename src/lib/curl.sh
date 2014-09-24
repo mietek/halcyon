@@ -39,7 +39,7 @@ function curl_do () {
 function curl_download () {
 	local src_file_url dst_file
 	expect_args src_file_url dst_file -- "$@"
-	expect_no "${dst_file}"
+	expect_no_existing "${dst_file}"
 
 	log_indent_begin "Downloading ${src_file_url}..."
 
@@ -67,7 +67,7 @@ function curl_check () {
 function curl_upload () {
 	local src_file dst_file_url
 	expect_args src_file dst_file_url -- "$@"
-	expect "${src_file}"
+	expect_existing "${src_file}"
 
 	log_indent_begin "Uploading ${dst_file_url}..."
 

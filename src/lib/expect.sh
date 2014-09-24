@@ -43,7 +43,7 @@ function expect_vars () {
 }
 
 
-function expect () {
+function expect_existing () {
 	while (( $# )); do
 		if ! [ -e "$1" ]; then
 			die "${FUNCNAME[1]:--}: Expected existing $1"
@@ -53,7 +53,7 @@ function expect () {
 }
 
 
-function expect_no () {
+function expect_no_existing () {
 	while (( $# )); do
 		if [ -e "$1" ]; then
 			die "${FUNCNAME[1]:--}: Unexpected existing $1"

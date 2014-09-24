@@ -38,7 +38,7 @@ EOF
 function detect_package () {
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect "${build_dir}"
+	expect_existing "${build_dir}"
 
 	local package_file
 	if ! package_file=$(

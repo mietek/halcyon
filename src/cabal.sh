@@ -261,12 +261,12 @@ function match_updated_cabal_archive () {
 
 function cabal_do () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/cabal/tag"
+	expect_existing "${HALCYON_DIR}/cabal/tag"
 
 	local work_dir
 	expect_args work_dir -- "$@"
 	shift
-	expect "${work_dir}"
+	expect_existing "${work_dir}"
 
 	if ! (
 		cd "${work_dir}" &&
@@ -326,7 +326,7 @@ function cabal_update () {
 function cabal_create_sandbox () {
 	local sandbox_dir
 	expect_args sandbox_dir -- "$@"
-	expect_no "${sandbox_dir}"
+	expect_no_existing "${sandbox_dir}"
 
 	mkdir -p "${sandbox_dir}" || die
 	silently cabal_do "${sandbox_dir}" sandbox init --sandbox '.' || die
@@ -386,8 +386,8 @@ function cabal_build_app () {
 
 function build_cabal () {
 	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR
-	expect "${HOME}" "${HALCYON_DIR}/ghc/tag"
-	expect_no "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
+	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/tag"
+	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
 
 	local cabal_version
 	expect_args cabal_version -- "$@"
@@ -465,7 +465,7 @@ EOF
 
 function update_cabal () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/cabal/tag"
+	expect_existing "${HALCYON_DIR}/cabal/tag"
 
 	local cabal_tag cabal_version
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
@@ -489,7 +489,7 @@ function update_cabal () {
 
 function cache_cabal () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
-	expect "${HALCYON_DIR}/cabal/tag"
+	expect_existing "${HALCYON_DIR}/cabal/tag"
 
 	local cabal_tag
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
@@ -611,7 +611,7 @@ function restore_updated_cabal () {
 		return 1
 	fi
 
-	expect_no "${HALCYON_CACHE_DIR}/${cabal_archive}"
+	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
 	download_prepared "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}" || die
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
@@ -649,7 +649,7 @@ function infer_cabal_version () {
 
 function activate_cabal () {
 	expect_vars HOME HALCYON_DIR
-	expect "${HOME}" "${HALCYON_DIR}/cabal/tag"
+	expect_existing "${HOME}" "${HALCYON_DIR}/cabal/tag"
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
@@ -671,7 +671,7 @@ function activate_cabal () {
 
 function deactivate_cabal () {
 	expect_vars HOME HALCYON_DIR
-	expect "${HOME}" "${HALCYON_DIR}/cabal/tag"
+	expect_existing "${HOME}" "${HALCYON_DIR}/cabal/tag"
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die

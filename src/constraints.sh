@@ -149,7 +149,7 @@ function filter_correct_constraints () {
 function detect_constraints () {
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect "${build_dir}/cabal.config"
+	expect_existing "${build_dir}/cabal.config"
 
 	read_constraints <"${build_dir}/cabal.config" |
 		filter_correct_constraints "${build_dir}" || die
@@ -161,7 +161,7 @@ function detect_constraints () {
 function freeze_implicit_constraints () {
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect "${build_dir}"
+	expect_existing "${build_dir}"
 
 	cabal_do "${build_dir}" --no-require-sandbox freeze --dry-run |
 		read_constraints_dry_run |
@@ -172,7 +172,7 @@ function freeze_implicit_constraints () {
 function freeze_actual_constraints () {
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect "${build_dir}"
+	expect_existing "${build_dir}"
 
 	sandboxed_cabal_do "${build_dir}" freeze --dry-run |
 		read_constraints_dry_run |

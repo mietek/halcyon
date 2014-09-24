@@ -172,7 +172,7 @@ function validate_ghc_tag () {
 
 function detect_base_version () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/ghc"
+	expect_existing "${HALCYON_DIR}/ghc"
 
 	ghc-pkg list --simple-output |
 		grep -oE '\bbase-[0-9\.]+\b' |
@@ -184,7 +184,7 @@ function detect_base_version () {
 
 function prepare_ghc_libs () {
 	expect_vars HALCYON_DIR
-	expect_no "${HALCYON_DIR}/ghc/lib"
+	expect_no_existing "${HALCYON_DIR}/ghc/lib"
 
 	local ghc_version
 	expect_args ghc_version -- "$@"
@@ -196,7 +196,7 @@ function prepare_ghc_libs () {
 	'linux-ubuntu-14-04-x64-ghc-7.8.'*)
 		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		expect "${libtinfo5_file}" "${libgmp10_file}"
+		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
 
 		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
@@ -206,7 +206,7 @@ function prepare_ghc_libs () {
 	'linux-ubuntu-12-04-x64-ghc-7.8.'*)
 		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		expect "${libtinfo5_file}" "${libgmp10_file}"
+		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
 
 		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
@@ -216,7 +216,7 @@ function prepare_ghc_libs () {
 	'linux-ubuntu-12-04-x64-ghc-7.6.'*)
 		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp3_file='/usr/lib/libgmp.so.3'
-		expect "${libtinfo5_file}" "${libgmp3_file}"
+		expect_existing "${libtinfo5_file}" "${libgmp3_file}"
 
 		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 		ln -s "${libgmp3_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
@@ -226,7 +226,7 @@ function prepare_ghc_libs () {
 	'linux-ubuntu-10-04-x64-ghc-7.'[68]'.'*)
 		libncurses5_file='/lib/libncurses.so.5'
 		libgmp3_file='/usr/lib/libgmp.so.3'
-		expect "${libncurses5_file}" "${libgmp3_file}"
+		expect_existing "${libncurses5_file}" "${libgmp3_file}"
 
 		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 		ln -s "${libncurses5_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
@@ -246,7 +246,7 @@ function prepare_ghc_libs () {
 
 function build_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
-	expect_no "${HALCYON_DIR}/ghc"
+	expect_no_existing "${HALCYON_DIR}/ghc"
 
 	local ghc_version
 	expect_args ghc_version -- "$@"
@@ -298,7 +298,7 @@ function build_ghc () {
 
 function cut_ghc () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local ghc_tag ghc_version
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
@@ -362,7 +362,7 @@ function cut_ghc () {
 
 function strip_ghc () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local ghc_tag ghc_version
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
@@ -421,7 +421,7 @@ function strip_ghc () {
 
 function cache_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local ghc_tag ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
@@ -527,7 +527,7 @@ function infer_ghc_version () {
 
 function activate_ghc () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local ghc_tag ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
@@ -541,7 +541,7 @@ function activate_ghc () {
 
 function deactivate_ghc () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local ghc_tag ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die

@@ -27,8 +27,8 @@ function tar_archive () {
 	local src_dir archive_file
 	expect_args src_dir archive_file -- "$@"
 	shift 2
-	expect "${src_dir}"
-	expect_no "${archive_file}"
+	expect_existing "${src_dir}"
+	expect_no_existing "${archive_file}"
 
 	local archive_name format_flag dst_dir
 	archive_name=$( basename "${archive_file}" ) || die
@@ -53,8 +53,8 @@ function tar_extract () {
 	local archive_file dst_dir
 	expect_args archive_file dst_dir -- "$@"
 	shift 2
-	expect "${archive_file}"
-	expect_no "${dst_dir}"
+	expect_existing "${archive_file}"
+	expect_no_existing "${dst_dir}"
 
 	local archive_name format_flag
 	archive_name=$( basename "${archive_file}" ) || die

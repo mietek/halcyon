@@ -123,7 +123,7 @@ function cache_build () {
 
 	local build_dir build_tag
 	expect_args build_dir build_tag -- "$@"
-	expect "${build_dir}/dist"
+	expect_existing "${build_dir}/dist"
 
 	log 'Caching build'
 
@@ -148,8 +148,8 @@ function restore_build () {
 
 	local build_dir build_tag
 	expect_args build_dir build_tag -- "$@"
-	expect "${build_dir}"
-	expect_no "${build_dir}/dist"
+	expect_existing "${build_dir}"
+	expect_no_existing "${build_dir}/dist"
 
 	log 'Restoring build'
 
@@ -206,7 +206,7 @@ function restore_build () {
 
 function infer_build_tag () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local build_dir
 	expect_args build_dir -- "$@"

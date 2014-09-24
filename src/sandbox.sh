@@ -183,11 +183,11 @@ function validate_sandbox () {
 
 function build_sandbox () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/cabal/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/cabal/tag"
 
 	local build_dir sandbox_constraints unhappy_workaround sandbox_tag
 	expect_args build_dir sandbox_constraints unhappy_workaround sandbox_tag -- "$@"
-	expect "${build_dir}"
+	expect_existing "${build_dir}"
 
 	local sandbox_description
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
@@ -216,7 +216,7 @@ function build_sandbox () {
 
 function strip_sandbox () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/sandbox/tag"
+	expect_existing "${HALCYON_DIR}/sandbox/tag"
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
@@ -244,7 +244,7 @@ function strip_sandbox () {
 
 function cache_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
-	expect "${HALCYON_DIR}/sandbox/tag"
+	expect_existing "${HALCYON_DIR}/sandbox/tag"
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
@@ -316,7 +316,7 @@ function restore_sandbox () {
 function infer_sandbox_constraints () {
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect "${build_dir}"
+	expect_existing "${build_dir}"
 
 	log 'Inferring sandbox constraints'
 
@@ -356,7 +356,7 @@ function infer_sandbox_digest () {
 
 function locate_matched_sandbox_tag () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local sandbox_constraints
 	expect_args sandbox_constraints -- "$@"
@@ -425,11 +425,11 @@ function locate_matched_sandbox_tag () {
 
 function activate_sandbox () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/sandbox/tag"
+	expect_existing "${HALCYON_DIR}/sandbox/tag"
 
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect "${build_dir}"
+	expect_existing "${build_dir}"
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
@@ -450,11 +450,11 @@ function activate_sandbox () {
 
 function deactivate_sandbox () {
 	expect_vars HALCYON_DIR
-	expect "${HALCYON_DIR}/sandbox/tag"
+	expect_existing "${HALCYON_DIR}/sandbox/tag"
 
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect "${build_dir}"
+	expect_existing "${build_dir}"
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
@@ -514,7 +514,7 @@ function install_extended_sandbox () {
 
 function install_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_PREPARED_ONLY
-	expect "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local build_dir
 	expect_args build_dir -- "$@"

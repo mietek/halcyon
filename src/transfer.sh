@@ -25,7 +25,7 @@ function download_original () {
 	local src_object dst_file
 	src_object="original/${src_item}"
 	dst_file="${dst_dir}/${src_item}"
-	expect_no "${dst_file}"
+	expect_no_existing "${dst_file}"
 
 	if has_s3; then
 		if s3_download "${HALCYON_S3_BUCKET}" "${src_object}" "${dst_file}"; then
@@ -54,7 +54,7 @@ function download_prepared () {
 	local src_object dst_file
 	src_object="${src_prefix:+${src_prefix}/}${src_item}"
 	dst_file="${dst_dir}/${src_item}"
-	expect_no "${dst_file}"
+	expect_no_existing "${dst_file}"
 
 	if has_s3; then
 		if s3_download "${HALCYON_S3_BUCKET}" "${src_object}" "${dst_file}"; then
