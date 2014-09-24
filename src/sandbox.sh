@@ -185,8 +185,8 @@ function build_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/cabal/tag"
 
-	local build_dir sandbox_constraints unhappy_workaround sandbox_tag
-	expect_args build_dir sandbox_constraints unhappy_workaround sandbox_tag -- "$@"
+	local build_dir sandbox_constraints sandbox_tag
+	expect_args build_dir sandbox_constraints sandbox_tag -- "$@"
 	expect_existing "${build_dir}"
 
 	local sandbox_description
@@ -197,7 +197,7 @@ function build_sandbox () {
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
 	fi
-	cabal_install_deps "${build_dir}" "${unhappy_workaround}" || die
+	cabal_install_deps "${build_dir}" || die
 
 	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/cabal.config" || die
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/tag" || die
@@ -475,8 +475,8 @@ function deactivate_sandbox () {
 function install_extended_sandbox () {
 	expect_vars HALCYON_DIR
 
-	local build_dir sandbox_constraints unhappy_workaround sandbox_tag matched_tag
-	expect_args build_dir sandbox_constraints unhappy_workaround sandbox_tag matched_tag -- "$@"
+	local build_dir sandbox_constraints sandbox_tag matched_tag
+	expect_args build_dir sandbox_constraints sandbox_tag matched_tag -- "$@"
 
 	if ! restore_sandbox "${matched_tag}"; then
 		return 1
@@ -503,7 +503,7 @@ function install_extended_sandbox () {
 
 	rm -f "${HALCYON_DIR}/sandbox/tag" "${HALCYON_DIR}/sandbox/cabal.config" || die
 
-	build_sandbox "${build_dir}" "${sandbox_constraints}" "${unhappy_workaround}" "${sandbox_tag}" || die
+	build_sandbox "${build_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
 	cache_sandbox || die
 	activate_sandbox "${build_dir}" || die
@@ -525,14 +525,6 @@ function install_sandbox () {
 	sandbox_constraints=$( infer_sandbox_constraints "${build_dir}" ) || die
 	sandbox_digest=$( infer_sandbox_digest "${sandbox_constraints}" ) || die
 
-	local unhappy_workaround
-	unhappy_workaround=0
-	if filter_matching '^(language-javascript|haskell-src-exts|pandoc|bytestring-lexing) ' <<<"${sandbox_constraints}" |
-		match_at_least_one >'/dev/null'
-	then
-		unhappy_workaround=1
-	fi
-
 	local app_label sandbox_tag
 	app_label=$( detect_app_label "${build_dir}" ) || die
 	sandbox_tag=$( echo_sandbox_tag "${ghc_version}" "${app_label}" "${sandbox_digest}" ) || die
@@ -546,12 +538,12 @@ function install_sandbox () {
 
 	local matched_tag
 	if matched_tag=$( locate_matched_sandbox_tag "${sandbox_constraints}" ) &&
-		install_extended_sandbox "${build_dir}" "${sandbox_constraints}" "${unhappy_workaround}" "${sandbox_tag}" "${matched_tag}"
+		install_extended_sandbox "${build_dir}" "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}"
 	then
 		return 0
 	fi
 
-	build_sandbox "${build_dir}" "${sandbox_constraints}" "${unhappy_workaround}" "${sandbox_tag}" || die
+	build_sandbox "${build_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
 	cache_sandbox || die
 	activate_sandbox "${build_dir}" || die

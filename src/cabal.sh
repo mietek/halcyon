@@ -343,22 +343,8 @@ function cabal_install () {
 
 
 function cabal_install_deps () {
-	local build_dir unhappy_workaround
-	expect_args build_dir unhappy_workaround -- "$@"
-
-	# NOTE: Listing executable-only packages in build-tools causes Cabal to
-	# expect the executables to be installed, but not to install the packages.
-	# https://github.com/haskell/cabal/issues/220
-
-	# NOTE: Listing executable-only packages in build-depends causes Cabal to
-	# install the packages, and to fail to recognise the packages have been
-	# installed.
-	# https://github.com/haskell/cabal/issues/779
-
-	if (( ${unhappy_workaround} )); then
-		log_warning "Installing implicit versions of alex and happy"
-		silently sandboxed_cabal_do "${build_dir}" install alex happy || die
-	fi
+	local build_dir
+	expect_args build_dir -- "$@"
 
 	silently sandboxed_cabal_do "${build_dir}" install --dependencies-only || die
 }
