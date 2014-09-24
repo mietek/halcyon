@@ -279,11 +279,10 @@ function cabal_do () {
 
 
 function sandboxed_cabal_do () {
-	expect_vars HALCYON_DIR
-
-	local work_dir
-	expect_args work_dir -- "$@"
-	shift
+	local sandbox_dir work_dir
+	expect_args sandbox_dir work_dir -- "$@"
+	shift 2
+	expect_existing "${sandbox_dir}"
 
 	# NOTE: Specifying a sandbox config file should not change where Cabal looks
 	# for a config file.
@@ -291,26 +290,26 @@ function sandboxed_cabal_do () {
 
 	local saved_config
 	saved_config=''
-	if [ -f "${HALCYON_DIR}/sandbox/cabal.config" ]; then
+	if [ -f "${sandbox_dir}/cabal.config" ]; then
 		saved_config=$( echo_tmp_sandbox_config ) || die
-		mv "${HALCYON_DIR}/sandbox/cabal.config" "${saved_config}" || die
+		mv "${sandbox_dir}/cabal.config" "${saved_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
-		cp "${work_dir}/cabal.config" "${HALCYON_DIR}/sandbox/cabal.config" || die
+		cp "${work_dir}/cabal.config" "${sandbox_dir}/cabal.config" || die
 	fi
 
 	local status
 	status=0
-	if ! cabal_do "${work_dir}"                                                 \
-		--sandbox-config-file="${HALCYON_DIR}/sandbox/cabal.sandbox.config" \
+	if ! cabal_do "${work_dir}"                                         \
+		--sandbox-config-file="${sandbox_dir}/cabal.sandbox.config" \
 		"$@"
 	then
 		status=1
 	fi
 
-	rm -f "${HALCYON_DIR}/sandbox/cabal.config" || die
+	rm -f "${sandbox_dir}/cabal.config" || die
 	if [ -n "${saved_config}" ]; then
-		mv "${saved_config}" "${HALCYON_DIR}/sandbox/cabal.config" || die
+		mv "${saved_config}" "${sandbox_dir}/cabal.config" || die
 	fi
 
 	return "${status}"
@@ -335,37 +334,37 @@ function cabal_create_sandbox () {
 
 
 function cabal_install () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local sandbox_dir build_dir
+	expect_args sandbox_dir build_dir -- "$@"
 
-	silently sandboxed_cabal_do "${build_dir}" install "$@" || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" install "$@" || die
 }
 
 
 function cabal_install_deps () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local sandbox_dir build_dir
+	expect_args sandbox_dir build_dir -- "$@"
 
-	silently sandboxed_cabal_do "${build_dir}" install --dependencies-only || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" install --dependencies-only || die
 }
 
 
 function cabal_configure_app () {
 	expect_vars HALCYON_INSTALL_DIR
 
-	local build_dir
-	expect_args build_dir -- "$@"
+	local sandbox_dir build_dir
+	expect_args sandbox_dir build_dir -- "$@"
 
-	silently sandboxed_cabal_do "${build_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
 }
 
 
 function cabal_build_app () {
-	local build_dir
-	expect_args build_dir -- "$@"
+	local sandbox_dir build_dir
+	expect_args sandbox_dir build_dir -- "$@"
 
-	silently sandboxed_cabal_do "${build_dir}" build || die
-	silently sandboxed_cabal_do "${build_dir}" copy || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" build || die
+	silently sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" copy || die
 }
 
 

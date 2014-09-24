@@ -219,7 +219,7 @@ function build_sandbox () {
 			log "Customized ${sandbox_description}, ${customized_size}"
 		fi
 	fi
-	cabal_install_deps "${build_dir}" || die
+	cabal_install_deps "${HALCYON_DIR}/sandbox" "${build_dir}" || die
 
 	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/cabal.config" || die
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/tag" || die
@@ -234,7 +234,7 @@ function build_sandbox () {
 	# https://github.com/haskell/cabal/issues/1896
 
 	local actual_constraints actual_digest
-	actual_constraints=$( freeze_actual_constraints "${build_dir}" ) || die
+	actual_constraints=$( freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${build_dir}" ) || die
 	actual_digest=$( echo_constraints_digest <<<"${actual_constraints}" ) || die
 
 	if [ "${actual_digest}" != "${sandbox_digest}" ]; then

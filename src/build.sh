@@ -105,22 +105,26 @@ function fake_build_dir () {
 
 
 function configure_build () {
+	expect_vars HALCYON_DIR
+
 	local build_dir
 	expect_args build_dir -- "$@"
 
 	log 'Configuring build'
 
-	cabal_configure_app "${build_dir}" || die
+	cabal_configure_app "${HALCYON_DIR}/sandbox" "${build_dir}" || die
 }
 
 
 function build () {
+	expect_vars HALCYON_DIR
+
 	local build_dir build_tag
 	expect_args build_dir build_tag -- "$@"
 
 	log 'Building'
 
-	cabal_build_app "${build_dir}" || die
+	cabal_build_app "${HALCYON_DIR}/sandbox" "${build_dir}" || die
 
 	echo "${build_tag}" >"${build_dir}/tag" || die
 }

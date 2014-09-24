@@ -228,11 +228,10 @@ function freeze_implicit_constraints () {
 
 
 function freeze_actual_constraints () {
-	local build_dir
-	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}"
+	local sandbox_dir build_dir
+	expect_args sandbox_dir build_dir -- "$@"
 
-	sandboxed_cabal_do "${build_dir}" freeze --dry-run |
+	sandboxed_cabal_do "${sandbox_dir}" "${build_dir}" freeze --dry-run |
 		read_constraints_dry_run |
 		insert_customize_sandbox_script_constraint "${build_dir}" |
 		filter_correct_constraints "${build_dir}" || die
