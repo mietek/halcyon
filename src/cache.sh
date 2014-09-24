@@ -2,12 +2,12 @@
 
 
 function echo_tmp_cache_dir () {
-	mktemp -du "/tmp/halcyon-cache.XXXXXXXXXX"
+	mktemp -du '/tmp/halcyon-cache.XXXXXXXXXX'
 }
 
 
 function echo_tmp_old_cache_dir () {
-	mktemp -du "/tmp/halcyon-cache.old.XXXXXXXXXX"
+	mktemp -du '/tmp/halcyon-cache.old.XXXXXXXXXX'
 }
 
 

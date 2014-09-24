@@ -154,7 +154,7 @@ function echo_cabal_description () {
 
 
 function echo_tmp_cabal_dir () {
-	mktemp -du "/tmp/halcyon-cabal.XXXXXXXXXX"
+	mktemp -du '/tmp/halcyon-cabal.XXXXXXXXXX'
 }
 
 

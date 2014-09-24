@@ -7,11 +7,11 @@ function echo_os_description () {
 
 	case "${os}" in
 	'linux-ubuntu-14-04-x64')
-		echo "Ubuntu 14.04 LTS (x86_64)";;
+		echo 'Ubuntu 14.04 LTS (x86_64)';;
 	'linux-ubuntu-12-04-x64')
-		echo "Ubuntu 12.04 LTS (x86_64)";;
+		echo 'Ubuntu 12.04 LTS (x86_64)';;
 	'linux-ubuntu-10-04-x64')
-		echo "Ubuntu 10.04 LTS (x86_64)";;
+		echo 'Ubuntu 10.04 LTS (x86_64)';;
 	*)
 		die "Unexpected OS: ${os}"
 	esac

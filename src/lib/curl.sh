@@ -14,7 +14,7 @@ function curl_do () {
 			--location                 \
 			--silent                   \
 			--show-error               \
-			--write-out "%{http_code}" \
+			--write-out '%{http_code}' \
 			"$@"                       \
 			2>'/dev/null'
 	); then

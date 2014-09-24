@@ -64,7 +64,7 @@ function log_error () {
 
 
 function log_file_indent () {
-	unbuffered_sed "s/^/       /" >&2
+	unbuffered_sed 's/^/       /' >&2
 }
 
 

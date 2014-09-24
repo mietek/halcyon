@@ -2,7 +2,7 @@
 
 
 function echo_tmp_constraints_config () {
-	mktemp -u "/tmp/halcyon-constraints.cabal.config.XXXXXXXXXX"
+	mktemp -u '/tmp/halcyon-constraints.cabal.config.XXXXXXXXXX'
 }
 
 

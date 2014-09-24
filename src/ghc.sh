@@ -155,7 +155,7 @@ function echo_ghc_description () {
 
 
 function echo_tmp_ghc_dir () {
-	mktemp -du "/tmp/halcyon-ghc.XXXXXXXXXX"
+	mktemp -du '/tmp/halcyon-ghc.XXXXXXXXXX'
 }
 
 

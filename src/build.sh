@@ -47,17 +47,17 @@ function echo_build_archive () {
 
 
 function echo_tmp_build_dir () {
-	mktemp -du "/tmp/halcyon-build.XXXXXXXXXX"
+	mktemp -du '/tmp/halcyon-build.XXXXXXXXXX'
 }
 
 
 function echo_tmp_old_build_dir () {
-	mktemp -du "/tmp/halcyon-build.old.XXXXXXXXXX"
+	mktemp -du '/tmp/halcyon-build.old.XXXXXXXXXX'
 }
 
 
 function echo_tmp_build_dist_dir () {
-	mktemp -du "/tmp/halcyon-build.dist.XXXXXXXXXX"
+	mktemp -du '/tmp/halcyon-build.dist.XXXXXXXXXX'
 }
 
 
