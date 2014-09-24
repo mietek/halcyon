@@ -286,9 +286,9 @@ function build_ghc () {
 		die "Installing GHC ${ghc_version} failed"
 	fi
 
-	rm -rf "${HALCYON_DIR}/ghc/share" "${tmp_dir}" || die
+	rm -rf "${tmp_dir}" || die
 
-	echo_ghc_tag "${ghc_version}" 'uncut' >"${HALCYON_DIR}/ghc/tag" || die
+	echo_ghc_tag "${ghc_version}" '' >"${HALCYON_DIR}/ghc/tag" || die
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
@@ -315,7 +315,8 @@ function cut_ghc () {
 			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/haddock" \
 			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/hpc"     \
 			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/html"        \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/latex" || die
+			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/latex"       \
+			"${HALCYON_DIR}/ghc/share" || die
 		find "${HALCYON_DIR}/ghc"              \
 				-type f           -and \
 				\(                     \
@@ -334,7 +335,8 @@ function cut_ghc () {
 			"${HALCYON_DIR}/ghc/bin/hpc"                        \
 			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/haddock" \
 			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/html"    \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/latex" || die
+			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/latex"   \
+			"${HALCYON_DIR}/ghc/share" || die
 		find "${HALCYON_DIR}/ghc"              \
 				-type f           -and \
 				\(                     \
@@ -352,7 +354,7 @@ function cut_ghc () {
 		die "Cutting GHC ${ghc_version} is not implemented yet"
 	esac
 
-	echo_ghc_tag "${ghc_version}" '' >"${HALCYON_DIR}/ghc/tag" || die
+	echo_ghc_tag "${ghc_version}" 'cut' >"${HALCYON_DIR}/ghc/tag" || die
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
@@ -556,14 +558,14 @@ function deactivate_ghc () {
 
 
 function install_ghc () {
-	expect_vars HALCYON_PREPARED_ONLY HALCYON_NO_CUT_GHC
+	expect_vars HALCYON_PREPARED_ONLY HALCYON_CUT_GHC
 
 	local build_dir
 	expect_args build_dir -- "$@"
 
 	local ghc_variant
-	if (( ${HALCYON_NO_CUT_GHC} )); then
-		ghc_variant='uncut'
+	if (( ${HALCYON_CUT_GHC} )); then
+		ghc_variant='cut'
 	else
 		ghc_variant=''
 	fi
@@ -580,7 +582,7 @@ function install_ghc () {
 	! (( ${HALCYON_PREPARED_ONLY} )) || return 1
 
 	build_ghc "${ghc_version}" || die
-	if ! (( ${HALCYON_NO_CUT_GHC} )); then
+	if (( ${HALCYON_CUT_GHC} )); then
 		cut_ghc || die
 	fi
 	strip_ghc || die

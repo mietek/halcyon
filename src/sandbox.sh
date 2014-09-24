@@ -199,8 +199,6 @@ function build_sandbox () {
 	fi
 	cabal_install_deps "${build_dir}" "${unhappy_workaround}" || die
 
-	rm -rf "${HALCYON_DIR}/sandbox/logs" "${HALCYON_DIR}/sandbox/share" || die
-
 	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/cabal.config" || die
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/tag" || die
 
