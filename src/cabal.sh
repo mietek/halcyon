@@ -41,7 +41,6 @@ function echo_cabal_config () {
 		reorder-goals:                  True
 		require-sandbox:                True
 		jobs:                           \$ncpus
-		optimization:                   2
 EOF
 }
 
