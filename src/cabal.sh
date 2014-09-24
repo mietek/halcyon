@@ -429,7 +429,7 @@ function build_cabal () {
 				@@ -217,3 +217,3 @@ install_pkg () {
 
 				-  \${GHC} --make Setup -o Setup ||
-				+  \${GHC} -j -L"${HALCYON_DIR}/ghc/lib" -O2 --make Setup -o Setup ||
+				+  \${GHC} -L"${HALCYON_DIR}/ghc/lib" --make Setup -o Setup ||
 				      die "Compiling the Setup script failed."
 EOF
 		) || die
@@ -440,8 +440,7 @@ EOF
 	esac
 
 	if ! (
-		export EXTRA_BUILD_OPTS="-j" &&
-		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib -O2" &&
+		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
 		cd "${tmp_dir}/cabal-install-${cabal_version}" &&
 		silently ./bootstrap.sh --no-doc
 	); then
