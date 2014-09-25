@@ -538,7 +538,7 @@ function restore_cabal () {
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
 		if ! download_prebuilt "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning "Cabal ${cabal_version} is not prebuilt"
+			log "Cabal ${cabal_version} is not prebuilt"
 			return 1
 		fi
 
@@ -610,7 +610,7 @@ function restore_updated_cabal () {
 		sed "s:${os}/::" |
 		match_updated_cabal_archive "${cabal_version}"
 	); then
-		log_warning "No updated Cabal ${cabal_version} is prebuilt"
+		log "No updated Cabal ${cabal_version} is prebuilt"
 		return 1
 	fi
 

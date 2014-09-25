@@ -482,7 +482,7 @@ function restore_ghc () {
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
 		if ! download_prebuilt "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning "${ghc_description} is not prebuilt"
+			log "${ghc_description} is not prebuilt"
 			return 1
 		fi
 

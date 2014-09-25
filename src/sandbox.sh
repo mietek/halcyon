@@ -353,7 +353,7 @@ function restore_sandbox () {
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
 		if ! download_prebuilt "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning "${sandbox_description} is not prebuilt"
+			log "${sandbox_description} is not prebuilt"
 			return 1
 		fi
 
@@ -439,7 +439,7 @@ function locate_matched_sandbox_tag () {
 		sort_naturally |
 		match_at_least_one
 	); then
-		log_warning 'No matched sandbox is prebuilt'
+		log 'No matched sandbox is prebuilt'
 		return 1
 	fi
 
@@ -495,7 +495,7 @@ function locate_matched_sandbox_tag () {
 			sort_naturally |
 			match_at_least_one
 	); then
-		log_warning 'No sandbox is matched closely enough'
+		log 'No sandbox is matched closely enough'
 		return 1
 	fi
 

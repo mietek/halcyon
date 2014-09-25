@@ -301,7 +301,7 @@ function restore_app () {
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
 		if ! download_prebuilt "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
-			log_warning 'App is not prebuilt'
+			log 'App is not prebuilt'
 			return 1
 		fi
 
