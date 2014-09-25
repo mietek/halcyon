@@ -215,18 +215,3 @@ function halcyon_install () {
 
 	log "Installed ${app_label}"
 }
-
-
-
-
-function log_add_config_help () {
-	local sandbox_constraints
-	expect_args sandbox_constraints -- "$@"
-
-	log_file_indent <<-EOF
-		To use explicit constraints, add cabal.config:
-		$ cat >cabal.config <<EOF
-EOF
-	echo_constraints <<<"${sandbox_constraints}" >&2 || die
-	echo 'EOF' >&2
-}
