@@ -205,13 +205,7 @@ function halcyon_install () {
 	if (( ${HALCYON_FAKE_APP} )); then
 		rm -rf "${app_dir}" || die
 	elif ! (( ${HALCYON_DEPENDENCIES_ONLY} )); then
-		local app_tag
-		app_tag=$( infer_app_tag "${app_dir}" ) || die
-		if ! restore_app "${app_dir}" "${app_tag}"; then
-			configure_app "${app_dir}" || die
-		fi
-		build_app "${app_dir}" "${app_tag}" || die
-		cache_app "${app_dir}" "${app_tag}" || die
+		install_app "${app_dir}" || die
 		log
 	fi
 
