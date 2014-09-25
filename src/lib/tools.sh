@@ -295,13 +295,13 @@ function compare_recursively () {
 
 
 
-function silently () {
-	expect_vars HALCYON_SILENT
+function quietly () {
+	expect_vars HALCYON_QUIET
 
 	expect_args cmd -- "$@"
 	shift
 
-	if (( ${HALCYON_SILENT} )); then
+	if (( ${HALCYON_QUIET} )); then
 		local tmp_log
 		tmp_log=$( mktemp -u "/tmp/${cmd}.log.XXXXXXXXXX" ) || die
 

@@ -286,8 +286,8 @@ function build_ghc () {
 
 	if ! (
 		cd "${tmp_dir}/ghc-${ghc_version}" &&
-		silently ./configure --prefix="${HALCYON_DIR}/ghc" &&
-		silently make install
+		quietly ./configure --prefix="${HALCYON_DIR}/ghc" &&
+		quietly make install
 	); then
 		rm -rf "${tmp_dir}" || die
 		die "Installing GHC ${ghc_version} failed"

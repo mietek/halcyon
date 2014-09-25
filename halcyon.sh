@@ -59,7 +59,7 @@ function set_default_vars () {
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 
-	export HALCYON_SILENT="${HALCYON_SILENT:-0}"
+	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
 
 	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
@@ -181,8 +181,8 @@ function halcyon_install () {
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
 
-		'--silent')
-			export HALCYON_SILENT=1;;
+		'--quiet')
+			export HALCYON_QUIET=1;;
 
 		'-'*)
 			die "Unexpected option: $1";;

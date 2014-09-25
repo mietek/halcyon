@@ -663,7 +663,7 @@ function customize_sandbox_with_cabal_package_executables () {
 
 	cabal_create_sandbox "${HALCYON_DIR}/sandbox/customized-sub-sandbox" || die
 
-	silently sandboxed_cabal_do "${HALCYON_DIR}/sandbox/customized-sub-sandbox" "${tmp_dir}" install "$@" || die
+	quietly sandboxed_cabal_do "${HALCYON_DIR}/sandbox/customized-sub-sandbox" "${tmp_dir}" install "$@" || die
 
 	local bin_file bin_name
 	for bin_file in "${HALCYON_DIR}/sandbox/customized-sub-sandbox/bin"/*; do

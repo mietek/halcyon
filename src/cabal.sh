@@ -319,7 +319,7 @@ function sandboxed_cabal_do () {
 
 
 function cabal_update () {
-	silently cabal_do '.' update || die
+	quietly cabal_do '.' update || die
 }
 
 
@@ -342,7 +342,7 @@ function cabal_create_sandbox () {
 	expect_no_existing "${sandbox_dir}"
 
 	mkdir -p "${sandbox_dir}" || die
-	silently cabal_do "${sandbox_dir}" sandbox init --sandbox '.' || die
+	quietly cabal_do "${sandbox_dir}" sandbox init --sandbox '.' || die
 }
 
 
@@ -350,7 +350,7 @@ function cabal_install () {
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
+	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
 }
 
 
@@ -358,7 +358,7 @@ function cabal_install_deps () {
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only || die
+	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only || die
 }
 
 
@@ -368,7 +368,7 @@ function cabal_configure_app () {
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
+	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
 }
 
 
@@ -376,8 +376,8 @@ function cabal_build_app () {
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
-	silently sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
+	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
+	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
 }
 
 
@@ -443,7 +443,7 @@ EOF
 	if ! (
 		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
 		cd "${tmp_dir}/cabal-install-${cabal_version}" &&
-		silently ./bootstrap.sh --no-doc
+		quietly ./bootstrap.sh --no-doc
 	); then
 		rm -rf "${tmp_dir}" || die
 		die "Bootstrapping Cabal ${cabal_version} failed"
