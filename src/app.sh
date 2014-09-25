@@ -264,10 +264,10 @@ function cache_app () {
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	tar_archive "${app_dir}"                      \
 		"${HALCYON_CACHE_DIR}/${app_archive}" \
-		--exclude '.halcyon'                    \
-		--exclude '.ghc'                        \
-		--exclude '.cabal'                      \
-		--exclude '.cabal-sandbox'              \
+		--exclude '.halcyon'                  \
+		--exclude '.ghc'                      \
+		--exclude '.cabal'                    \
+		--exclude '.cabal-sandbox'            \
 		--exclude 'cabal.sandbox.config' || die
 	upload_prebuilt "${HALCYON_CACHE_DIR}/${app_archive}" "${os}" || die
 }
