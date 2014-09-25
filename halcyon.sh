@@ -36,7 +36,6 @@ function set_default_vars () {
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 
-	export HALCYON_FORCE_FAIL_INSTALL="${HALCYON_FORCE_FAIL_INSTALL:-0}"
 	export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
 	export HALCYON_PREBUILT_ONLY="${HALCYON_PREBUILT_ONLY:-0}"
 	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
@@ -102,7 +101,7 @@ function set_config_vars () {
 
 
 function halcyon_install () {
-	expect_vars HALCYON_CONFIG_DIR HALCYON_FORCE_FAIL_INSTALL HALCYON_DEPENDENCIES_ONLY
+	expect_vars HALCYON_CONFIG_DIR HALCYON_DEPENDENCIES_ONLY
 
 	while (( $# )); do
 		case "$1" in
@@ -122,8 +121,6 @@ function halcyon_install () {
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
 
-		'--force-fail-install')
-			export HALCYON_FORCE_FAIL_INSTALL=1;;
 		'--dependencies-only');&
 		'--dep-only');&
 		'--only-dependencies');&
@@ -188,10 +185,6 @@ function halcyon_install () {
 	if [ -d "${HALCYON_CONFIG_DIR}" ]; then
 		set_config_vars || die
 		log
-	fi
-
-	if (( ${HALCYON_FORCE_FAIL_INSTALL} )); then
-		return 1
 	fi
 
 	prepare_cache || die
