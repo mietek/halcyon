@@ -36,11 +36,20 @@ function download_original () {
 	if ! curl_download "${original_url}" "${dst_file}"; then
 		return 1
 	fi
+}
+
+
+function upload_original () {
+	local src_dir src_item
+	expect_args src_dir src_item -- "$@"
+
+	local src_file dst_object
+	src_file="${src_dir}/${src_item}"
+	expect_existing "${src_file}"
+	dst_object="original/${src_item}"
 
 	if has_s3; then
-		if ! s3_upload "${dst_file}" "${HALCYON_S3_BUCKET}" "${src_object}" "${HALCYON_S3_ACL}"; then
-			return 1
-		fi
+		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
 	fi
 }
 
