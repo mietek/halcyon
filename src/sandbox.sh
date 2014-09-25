@@ -354,6 +354,8 @@ function restore_sandbox () {
 
 
 function infer_sandbox_constraints () {
+	expect_vars HALCYON_FAKE_APP
+
 	local app_dir
 	expect_args app_dir -- "$@"
 	expect_existing "${app_dir}"
@@ -365,7 +367,7 @@ function infer_sandbox_constraints () {
 		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
 	else
 		sandbox_constraints=$( freeze_implicit_constraints "${app_dir}" ) || die
-		if ! (( ${HALCYON_FAKE_APP:-0} )); then
+		if ! (( ${HALCYON_FAKE_APP} )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 			log
 			log_add_config_help "${sandbox_constraints}"

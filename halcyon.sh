@@ -161,9 +161,11 @@ function halcyon_install () {
 
 	local app_dir app_label
 	if ! (( $# )); then
+		export HALCYON_FAKE_APP=0
 		app_dir='.'
 		app_label=$( detect_app_label "${app_dir}" ) || die
 	elif [ -d "$1" ]; then
+		export HALCYON_FAKE_APP=0
 		app_dir="$1"
 		app_label=$( detect_app_label "${app_dir}" ) || die
 	else
@@ -193,14 +195,14 @@ function halcyon_install () {
 	install_cabal || return 1
 	log
 
-	if (( ${HALCYON_FAKE_APP:-0} )); then
+	if (( ${HALCYON_FAKE_APP} )); then
 		app_dir=$( fake_app_dir "${app_label}" ) || die
 	fi
 
 	install_sandbox "${app_dir}" || return 1
 	log
 
-	if (( ${HALCYON_FAKE_APP:-0} )); then
+	if (( ${HALCYON_FAKE_APP} )); then
 		rm -rf "${app_dir}" || die
 	elif ! (( ${HALCYON_DEPENDENCIES_ONLY} )); then
 		local app_tag
