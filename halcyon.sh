@@ -33,6 +33,8 @@ function set_default_vars () {
 	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
 
 	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
+	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
+
 	export HALCYON_FORCE_FAIL_INSTALL="${HALCYON_FORCE_FAIL_INSTALL:-0}"
 	export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
 	export HALCYON_PREBUILT_ONLY="${HALCYON_PREBUILT_ONLY:-0}"
@@ -114,6 +116,9 @@ function halcyon_install () {
 
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
+		'--no-upload')
+			export HALCYON_NO_UPLOAD=1;;
+
 		'--force-fail-install')
 			export HALCYON_FORCE_FAIL_INSTALL=1;;
 		'--dependencies-only');&

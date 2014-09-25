@@ -40,6 +40,8 @@ function download_original () {
 
 
 function upload_original () {
+	expect_vars HALCYON_NO_UPLOAD
+
 	local src_dir src_item
 	expect_args src_dir src_item -- "$@"
 
@@ -48,7 +50,7 @@ function upload_original () {
 	expect_existing "${src_file}"
 	dst_object="original/${src_item}"
 
-	if has_s3; then
+	if has_s3 && ! (( ${HALCYON_NO_UPLOAD} )); then
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
 	fi
 }
@@ -109,6 +111,8 @@ function list_prebuilt () {
 
 
 function upload_prebuilt () {
+	expect_vars HALCYON_NO_UPLOAD
+
 	local src_file dst_prefix
 	expect_args src_file dst_prefix -- "$@"
 
@@ -116,7 +120,7 @@ function upload_prebuilt () {
 	src_item=$( basename "${src_file}" ) || die
 	dst_object="${dst_prefix:+${dst_prefix}/}${src_item}"
 
-	if has_s3; then
+	if has_s3 && ! (( ${HALCYON_NO_UPLOAD} )); then
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
 	fi
 }
