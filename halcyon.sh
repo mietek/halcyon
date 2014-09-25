@@ -43,7 +43,7 @@ function set_default_vars () {
 
 	export HALCYON_NO_PREBUILT_GHC="${HALCYON_NO_PREBUILT_GHC:-0}"
 	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
-	export HALCYON_CUT_GHC="${HALCYON_CUT_GHC:-0}"
+	export HALCYON_TRIM_GHC="${HALCYON_TRIM_GHC:-0}"
 
 	export HALCYON_NO_PREBUILT_CABAL="${HALCYON_NO_PREBUILT_CABAL:-0}"
 	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
@@ -150,8 +150,8 @@ function halcyon_install () {
 			export HALCYON_NO_PREBUILT_GHC=1;;
 		'--force-ghc-version='*)
 			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
-		'--cut-ghc')
-			export HALCYON_CUT_GHC=1;;
+		'--trim-ghc')
+			export HALCYON_TRIM_GHC=1;;
 
 		'--no-prebuilt-cabal');&
 		'--no-pre-cabal')

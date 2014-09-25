@@ -303,7 +303,7 @@ function build_ghc () {
 }
 
 
-function cut_ghc () {
+function trim_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag"
 
@@ -311,7 +311,7 @@ function cut_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 
-	log_begin "Cutting GHC ${ghc_version}..."
+	log_begin "Trimming GHC ${ghc_version}..."
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -358,10 +358,10 @@ function cut_ghc () {
 		ghc-pkg recache || die
 		;;
 	*)
-		die "Cutting GHC ${ghc_version} is not implemented yet"
+		die "Trimming GHC ${ghc_version} is not implemented yet"
 	esac
 
-	echo_ghc_tag "${ghc_version}" 'cut' >"${HALCYON_DIR}/ghc/tag" || die
+	echo_ghc_tag "${ghc_version}" 'trimmed' >"${HALCYON_DIR}/ghc/tag" || die
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
@@ -571,14 +571,14 @@ function deactivate_ghc () {
 
 
 function install_ghc () {
-	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_GHC HALCYON_PREBUILT_ONLY HALCYON_CUT_GHC
+	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_GHC HALCYON_PREBUILT_ONLY HALCYON_TRIM_GHC
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
 	local ghc_variant
-	if (( ${HALCYON_CUT_GHC} )); then
-		ghc_variant='cut'
+	if (( ${HALCYON_TRIM_GHC} )); then
+		ghc_variant='trimmed'
 	else
 		ghc_variant=''
 	fi
@@ -598,8 +598,8 @@ function install_ghc () {
 	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	build_ghc "${ghc_version}" || die
-	if (( ${HALCYON_CUT_GHC} )); then
-		cut_ghc || die
+	if (( ${HALCYON_TRIM_GHC} )); then
+		trim_ghc || die
 	fi
 	strip_ghc || die
 	archive_ghc || die
