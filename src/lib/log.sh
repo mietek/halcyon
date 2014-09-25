@@ -19,8 +19,6 @@ function prefix_log_begin () {
 }
 
 
-
-
 function log () {
 	prefix_log '-----> ' "$@"
 }
@@ -59,15 +57,6 @@ function log_warning () {
 function log_error () {
 	prefix_log '   *** ERROR: ' "$@"
 }
-
-
-
-
-function log_file_indent () {
-	unbuffered_sed 's/^/       /' >&2
-}
-
-
 
 
 function die () {

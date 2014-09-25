@@ -21,8 +21,6 @@ function echo_tar_format_flag () {
 }
 
 
-
-
 function tar_archive () {
 	local src_dir archive_file
 	expect_args src_dir archive_file -- "$@"

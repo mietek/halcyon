@@ -179,7 +179,7 @@ function validate_updated_cabal_timestamp () {
 	expect_args candidate_timestamp -- "$@"
 
 	local yesterday_timestamp
-	yesterday_timestamp=$( check_timestamp -d yesterday ) || die
+	yesterday_timestamp=$( echo_timestamp -d yesterday ) || die
 
 	if [[ "${candidate_timestamp}" < "${yesterday_timestamp}" ]]; then
 		return 1
@@ -319,7 +319,9 @@ function sandboxed_cabal_do () {
 
 
 function cabal_update () {
-	quietly cabal_do '.' update || die
+	expect_vars HALCYON_QUIET
+
+	quote_quietly "${HALCYON_QUIET}" cabal_do '.' update || die
 }
 
 
@@ -337,54 +339,62 @@ function cabal_list_latest_package_version () {
 
 
 function cabal_create_sandbox () {
+	expect_vars HALCYON_QUIET
+
 	local sandbox_dir
 	expect_args sandbox_dir -- "$@"
 	expect_no_existing "${sandbox_dir}"
 
 	mkdir -p "${sandbox_dir}" || die
-	quietly cabal_do "${sandbox_dir}" sandbox init --sandbox '.' || die
+	quote_quietly "${HALCYON_QUIET}" cabal_do "${sandbox_dir}" sandbox init --sandbox '.' || die
 }
 
 
 function cabal_install () {
+	expect_vars HALCYON_QUIET
+
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
 }
 
 
 function cabal_install_deps () {
+	expect_vars HALCYON_QUIET
+
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only || die
 }
 
 
 function cabal_configure_app () {
-	expect_vars HALCYON_INSTALL_DIR
+	expect_vars HALCYON_INSTALL_DIR HALCYON_QUIET
 
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
 }
 
 
 function cabal_build_app () {
+	expect_vars HALCYON_QUIET
+
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
-	quietly sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
 }
 
 
 
 
 function build_cabal () {
-	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR
+	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR HALCYON_QUIET
 	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/tag"
 	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
 
@@ -443,7 +453,7 @@ EOF
 	if ! (
 		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
 		cd "${tmp_dir}/cabal-install-${cabal_version}" &&
-		quietly ./bootstrap.sh --no-doc
+		quote_quietly "${HALCYON_QUIET}" ./bootstrap.sh --no-doc
 	); then
 		rm -rf "${tmp_dir}" || die
 		die "Bootstrapping Cabal ${cabal_version} failed"
@@ -475,7 +485,7 @@ function update_cabal () {
 	cabal_update || die
 
 	local cabal_timestamp
-	cabal_timestamp=$( check_timestamp ) || die
+	cabal_timestamp=$( echo_timestamp ) || die
 	echo_cabal_tag "${cabal_version}" "${cabal_timestamp}" >"${HALCYON_DIR}/cabal/tag" || die
 
 	local cabal_size

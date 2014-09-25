@@ -329,7 +329,7 @@ function restore_app () {
 		while read -r path; do
 			cp -p "${tmp_old_dir}/${path}" "${app_dir}/${path}" || die
 		done
-	filter_not_matching '^= ' <<<"${app_changes}" | log_file_indent || die
+	filter_not_matching '^= ' <<<"${app_changes}" | quote || die
 
 	mv "${tmp_dist_dir}" "${app_dir}/dist" || die
 	rm -rf "${tmp_old_dir}" || die

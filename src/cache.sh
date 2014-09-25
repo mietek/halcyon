@@ -42,7 +42,7 @@ function prepare_cache () {
 			sed "s:^${HALCYON_CACHE_DIR}/::" |
 			sort_naturally |
 			sed 's/^/+ /' |
-			log_file_indent || die
+			quote || die
 	fi
 }
 
@@ -109,7 +109,7 @@ function clean_cache () {
 
 		compare_recursively "${HALCYON_OLD_CACHE_TMP_DIR}" "${HALCYON_CACHE_DIR}" |
 			filter_not_matching '^= ' |
-			log_file_indent || die
+			quote || die
 		rm -rf "${HALCYON_OLD_CACHE_TMP_DIR}" || die
 	fi
 }

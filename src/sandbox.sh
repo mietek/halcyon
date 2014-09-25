@@ -5,7 +5,7 @@ function log_add_config_help () {
 	local sandbox_constraints
 	expect_args sandbox_constraints -- "$@"
 
-	log_file_indent <<-EOF
+	quote <<-EOF
 		To use explicit constraints, add cabal.config:
 		$ cat >cabal.config <<EOF
 EOF
@@ -260,7 +260,7 @@ function build_sandbox () {
 	if [ "${actual_digest}" != "${sandbox_digest}" ]; then
 		log_warning "Actual sandbox digest is ${actual_digest:0:7}"
 		log_warning 'Unexpected constraints difference:'
-		echo_constraints_difference "${sandbox_constraints}" "${actual_constraints}" | log_file_indent
+		echo_constraints_difference "${sandbox_constraints}" "${actual_constraints}" | quote
 	fi
 }
 
@@ -654,7 +654,7 @@ function install_sandbox () {
 # }
 
 function customize_sandbox_with_cabal_package_executables () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_QUIET
 	expect_existing "${HALCYON_DIR}/cabal/tag"
 	expect_no_existing "${HALCYON_DIR}/sandbox/customized-sub-sandbox"
 
@@ -665,7 +665,7 @@ function customize_sandbox_with_cabal_package_executables () {
 
 	cabal_create_sandbox "${HALCYON_DIR}/sandbox/customized-sub-sandbox" || die
 
-	quietly sandboxed_cabal_do "${HALCYON_DIR}/sandbox/customized-sub-sandbox" "${tmp_dir}" install "$@" || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${HALCYON_DIR}/sandbox/customized-sub-sandbox" "${tmp_dir}" install "$@" || die
 
 	local bin_file bin_name
 	for bin_file in "${HALCYON_DIR}/sandbox/customized-sub-sandbox/bin"/*; do

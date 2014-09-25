@@ -34,8 +34,6 @@ function curl_do () {
 }
 
 
-
-
 function curl_download () {
 	local src_file_url dst_file
 	expect_args src_file_url dst_file -- "$@"

@@ -17,8 +17,6 @@ function echo_s3_url () {
 }
 
 
-
-
 function read_s3_listing_xml () {
 	IFS='>'
 
@@ -31,8 +29,6 @@ function read_s3_listing_xml () {
 }
 
 
-
-
 function s3_do () {
 	expect_vars HALCYON_AWS_ACCESS_KEY_ID HALCYON_AWS_SECRET_ACCESS_KEY
 
@@ -42,12 +38,12 @@ function s3_do () {
 
 	local host date
 	host=$( echo_s3_host ) || die
-	date=$( check_http_date ) || die
+	date=$( echo_http_date ) || die
 
 	local signature
 	signature=$(
 		sed "s/S3_DATE/${date}/" |
-		perl -pe 'chomp if eof' |
+		awk 'NR > 1 { printf "\n" } { printf "%s", $0 }' |
 		openssl sha1 -hmac "${HALCYON_AWS_SECRET_ACCESS_KEY}" -binary |
 		base64
 	) || die
@@ -61,8 +57,6 @@ function s3_do () {
 		--header "Authorization: ${auth}" \
 		"$@"
 }
-
-
 
 
 function s3_download () {
