@@ -429,8 +429,12 @@ function strip_ghc () {
 
 
 function archive_ghc () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/tag"
+
+	if (( ${HALCYON_NO_ARCHIVE} )); then
+		return 0
+	fi
 
 	local ghc_tag ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die

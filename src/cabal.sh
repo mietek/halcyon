@@ -487,8 +487,12 @@ function update_cabal () {
 
 
 function archive_cabal () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/cabal/tag"
+
+	if (( ${HALCYON_NO_ARCHIVE} )); then
+		return 0
+	fi
 
 	local cabal_tag
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die

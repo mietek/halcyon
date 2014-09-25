@@ -279,8 +279,12 @@ function strip_sandbox () {
 
 
 function archive_sandbox () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/sandbox/tag"
+
+	if (( ${HALCYON_NO_ARCHIVE} )); then
+		return 0
+	fi
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die

@@ -249,11 +249,15 @@ function build_app () {
 
 
 function archive_app () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 	expect_existing "${app_dir}/dist"
+
+	if (( ${HALCYON_NO_ARCHIVE} )); then
+		return 0
+	fi
 
 	log 'Archiving app'
 
