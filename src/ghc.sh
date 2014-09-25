@@ -571,7 +571,7 @@ function deactivate_ghc () {
 
 
 function install_ghc () {
-	expect_vars HALCYON_PREBUILT_ONLY HALCYON_CUT_GHC
+	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_GHC HALCYON_PREBUILT_ONLY HALCYON_CUT_GHC
 
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -587,7 +587,10 @@ function install_ghc () {
 	ghc_version=$( infer_ghc_version "${app_dir}" ) || die
 	ghc_tag=$( echo_ghc_tag "${ghc_version}" "${ghc_variant}" ) || die
 
-	if restore_ghc "${ghc_tag}"; then
+	if ! (( ${HALCYON_NO_PREBUILT} )) &&
+		! (( ${HALCYON_NO_PREBUILT_GHC} )) &&
+		restore_ghc "${ghc_tag}"
+	then
 		activate_ghc || die
 		return 0
 	fi

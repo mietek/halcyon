@@ -698,19 +698,24 @@ function deactivate_cabal () {
 
 
 function install_cabal () {
-	expect_vars HALCYON_PREBUILT_ONLY HALCYON_FORCE_CABAL_UPDATE
+	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_CABAL HALCYON_FORCE_CABAL_UPDATE HALCYON_PREBUILT_ONLY
 
 	local cabal_version
 	cabal_version=$( infer_cabal_version ) || die
 
-	if ! (( ${HALCYON_FORCE_CABAL_UPDATE} )) &&
+	if ! (( ${HALCYON_NO_PREBUILT} )) &&
+		! (( ${HALCYON_NO_PREBUILT_CABAL} )) &&
+		! (( ${HALCYON_FORCE_CABAL_UPDATE} )) &&
 		restore_updated_cabal "${cabal_version}"
 	then
 		activate_cabal || die
 		return 0
 	fi
 
-	if restore_cabal "${cabal_version}"; then
+	if ! (( ${HALCYON_NO_PREBUILT} )) &&
+		! (( ${HALCYON_NO_PREBUILT_CABAL} )) &&
+		restore_cabal "${cabal_version}"
+	then
 		update_cabal || die
 		archive_cabal || die
 		activate_cabal || die

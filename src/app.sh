@@ -357,13 +357,18 @@ function infer_app_tag () {
 
 
 function install_app () {
+	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_APP
+
 	local app_dir
 	expect_args app_dir -- "$@"
 
 	local app_tag
 	app_tag=$( infer_app_tag "${app_dir}" ) || die
 
-	if ! restore_app "${app_dir}" "${app_tag}"; then
+	if (( ${HALCYON_NO_PREBUILT} )) ||
+		(( ${HALCYON_NO_PREBUILT_APP} )) ||
+		! restore_app "${app_dir}" "${app_tag}"
+	then
 		configure_app "${app_dir}" || die
 	fi
 
