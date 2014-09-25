@@ -559,7 +559,7 @@ function deactivate_sandbox () {
 
 
 function install_extended_sandbox () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_PREBUILT_ONLY
 
 	local app_dir sandbox_constraints sandbox_tag matched_tag
 	expect_args app_dir sandbox_constraints sandbox_tag matched_tag -- "$@"
@@ -584,6 +584,8 @@ function install_extended_sandbox () {
 		activate_sandbox "${app_dir}" || die
 		return 0
 	fi
+
+	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	log "Extending matched ${matched_description} to ${sandbox_description}"
 
@@ -623,8 +625,6 @@ function install_sandbox () {
 		return 0
 	fi
 
-	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
-
 	local matched_tag
 	if ! (( ${HALCYON_NO_PREBUILT} )) &&
 		! (( ${HALCYON_NO_PREBUILT_SANDBOX} )) &&
@@ -633,6 +633,8 @@ function install_sandbox () {
 	then
 		return 0
 	fi
+
+	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
