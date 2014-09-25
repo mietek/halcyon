@@ -486,7 +486,7 @@ function update_cabal () {
 
 
 
-function cache_cabal () {
+function archive_cabal () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 	expect_existing "${HALCYON_DIR}/cabal/tag"
 
@@ -494,7 +494,7 @@ function cache_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Caching ${cabal_description}"
+	log "Archiving ${cabal_description}"
 
 	local cabal_archive os
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
@@ -550,7 +550,7 @@ function restore_cabal () {
 }
 
 
-function restore_cached_updated_cabal () {
+function restore_archived_updated_cabal () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
 	local cabal_version
@@ -590,7 +590,7 @@ function restore_updated_cabal () {
 
 	log "Restoring updated Cabal ${cabal_version}"
 
-	if restore_cached_updated_cabal "${cabal_version}"; then
+	if restore_archived_updated_cabal "${cabal_version}"; then
 		return 0
 	fi
 
@@ -708,7 +708,7 @@ function install_cabal () {
 
 	if restore_cabal "${cabal_version}"; then
 		update_cabal || die
-		cache_cabal || die
+		archive_cabal || die
 		activate_cabal || die
 		return 0
 	fi
@@ -716,8 +716,8 @@ function install_cabal () {
 	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	build_cabal "${cabal_version}" || die
-	cache_cabal || die
+	archive_cabal || die
 	update_cabal || die
-	cache_cabal || die
+	archive_cabal || die
 	activate_cabal || die
 }

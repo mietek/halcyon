@@ -278,7 +278,7 @@ function strip_sandbox () {
 
 
 
-function cache_sandbox () {
+function archive_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/tag"
 
@@ -286,7 +286,7 @@ function cache_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Caching ${sandbox_description}"
+	log "Archiving ${sandbox_description}"
 
 	local sandbox_archive sandbox_config os
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
@@ -561,7 +561,7 @@ function install_extended_sandbox () {
 		log "Using matched ${matched_description} as ${sandbox_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/tag" || die
-		cache_sandbox || die
+		archive_sandbox || die
 		activate_sandbox "${app_dir}" || die
 		return 0
 	fi
@@ -572,7 +572,7 @@ function install_extended_sandbox () {
 
 	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
-	cache_sandbox || die
+	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
 }
 
@@ -612,7 +612,7 @@ function install_sandbox () {
 
 	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
-	cache_sandbox || die
+	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
 }
 

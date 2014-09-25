@@ -248,14 +248,14 @@ function build_app () {
 
 
 
-function cache_app () {
+function archive_app () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 	expect_existing "${app_dir}/dist"
 
-	log 'Caching app'
+	log 'Archiving app'
 
 	local app_archive os
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
@@ -364,5 +364,5 @@ function install_app () {
 	fi
 
 	build_app "${app_dir}" "${app_tag}" || die
-	cache_app "${app_dir}" "${app_tag}" || die
+	archive_app "${app_dir}" "${app_tag}" || die
 }

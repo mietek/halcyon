@@ -428,7 +428,7 @@ function strip_ghc () {
 
 
 
-function cache_ghc () {
+function archive_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag"
 
@@ -436,7 +436,7 @@ function cache_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
-	log "Caching ${ghc_description}"
+	log "Archiving ${ghc_description}"
 
 	local ghc_archive os
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
@@ -595,6 +595,6 @@ function install_ghc () {
 		cut_ghc || die
 	fi
 	strip_ghc || die
-	cache_ghc || die
+	archive_ghc || die
 	activate_ghc || die
 }
