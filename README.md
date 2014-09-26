@@ -3,9 +3,9 @@ halcyon
 
 The fastest way to Haskell.
 
-Install GHC, Cabal, and any Haskell package — in seconds, not minutes.
+Install [GHC](http://www.haskell.org/ghc/), [Cabal](http://www.haskell.org/cabal/), and [any Haskell package](https://hackage.haskell.org/packages/) — in seconds, not minutes.
 
-Part of Haskell on Heroku.
+Used by [Haskell on Heroku](https://github.com/mietek/haskell-on-heroku/).
 
 
 Usage
