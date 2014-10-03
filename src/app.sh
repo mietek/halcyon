@@ -143,13 +143,13 @@ function detect_app_package () {
 
 	local package_file
 	if ! package_file=$(
-		find_spaceless "${app_dir}" -maxdepth 1 -name '*.cabal' |
+		find_spaceless_recursively "${app_dir}" -maxdepth 1 -name '*.cabal' |
 		match_exactly_one
 	); then
 		die "Expected exactly one ${app_dir}/*.cabal"
 	fi
 
-	cat "${package_file}"
+	cat "${app_dir}/${package_file}"
 }
 
 

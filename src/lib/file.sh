@@ -88,12 +88,12 @@ function compare_recursively () {
 }
 
 
-function find_spaceless () {
+function find_spaceless_recursively () {
 	local dir
 	expect_args dir -- "$@"
 	shift
 
-	find "${dir}" "$@" -type f -and \( -path '* *' -prune -or -print \)
+	find "${dir}" "$@" -type f -and \( -path '* *' -prune -or -print \) | sed "s:^${dir}/::"
 }
 
 

@@ -38,8 +38,7 @@ function prepare_cache () {
 		log 'Examining cache'
 
 		cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_OLD_CACHE_TMP_DIR}" || die
-		find_spaceless "${HALCYON_CACHE_DIR}" |
-			sed "s:^${HALCYON_CACHE_DIR}/::" |
+		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
 			sort_naturally |
 			sed 's/^/+ /' |
 			quote || die

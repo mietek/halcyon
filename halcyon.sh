@@ -93,8 +93,7 @@ function set_config_vars () {
 
 	local var
 	for var in $(
-		find_spaceless "${HALCYON_CONFIG_DIR}" -maxdepth 1 |
-		sed "s:^${HALCYON_CONFIG_DIR}/::" |
+		find_spaceless_recursively "${HALCYON_CONFIG_DIR}" -maxdepth 1 |
 		sort_naturally |
 		filter_not_matching "^(${ignored_pattern})$"
 	); do

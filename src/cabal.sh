@@ -579,8 +579,7 @@ function restore_archived_updated_cabal () {
 
 	local cabal_archive
 	if ! cabal_archive=$(
-		find_spaceless "${HALCYON_CACHE_DIR}" |
-		sed "s:^${HALCYON_CACHE_DIR}/::" |
+		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
 		match_updated_cabal_archive "${cabal_version}"
 	); then
 		return 1
