@@ -43,7 +43,7 @@ function s3_do () {
 	local signature
 	signature=$(
 		sed "s/S3_DATE/${date}/" |
-		awk 'NR > 1 { printf "\n" } { printf "%s", $0 }' |
+		strip_trailing_newline |
 		openssl sha1 -hmac "${HALCYON_AWS_SECRET_ACCESS_KEY}" -binary |
 		base64
 	) || die

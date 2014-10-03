@@ -42,6 +42,11 @@ function match_exactly_one () {
 }
 
 
+function strip_trailing_newline () {
+	awk 'NR > 1 { printf "\n" } { printf "%s", $0 }'
+}
+
+
 case "$( detect_os )" in
 'linux-'*)
 	function sort_naturally () {
