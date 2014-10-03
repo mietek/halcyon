@@ -28,12 +28,12 @@ function filter_not_matching () {
 
 
 function match_at_most_one () {
-	awk '{ print } NR == 2 { exit 2 }'
+	awk 'NR == 1 { line = $0 "\n" } NR == 2 { line = ""; exit 1 } END { printf line }'
 }
 
 
 function match_at_least_one () {
-	grep .
+	grep ^
 }
 
 
