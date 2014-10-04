@@ -19,12 +19,12 @@ function echo_default_s3_url () {
 
 
 function download_original () {
-	local src_item original_url dst_dir
-	expect_args src_item original_url dst_dir -- "$@"
+	local src_file_name original_url dst_dir
+	expect_args src_file_name original_url dst_dir -- "$@"
 
 	local src_object dst_file
-	src_object="original/${src_item}"
-	dst_file="${dst_dir}/${src_item}"
+	src_object="original/${src_file_name}"
+	dst_file="${dst_dir}/${src_file_name}"
 	expect_no_existing "${dst_file}"
 
 	if has_s3; then
@@ -42,13 +42,13 @@ function download_original () {
 function upload_original () {
 	expect_vars HALCYON_NO_UPLOAD
 
-	local src_dir src_item
-	expect_args src_dir src_item -- "$@"
+	local src_dir src_file_name
+	expect_args src_dir src_file_name -- "$@"
 
 	local src_file dst_object
-	src_file="${src_dir}/${src_item}"
+	src_file="${src_dir}/${src_file_name}"
 	expect_existing "${src_file}"
-	dst_object="original/${src_item}"
+	dst_object="original/${src_file_name}"
 
 	if has_s3 && ! (( ${HALCYON_NO_UPLOAD} )); then
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
@@ -59,12 +59,12 @@ function upload_original () {
 
 
 function download_prebuilt () {
-	local src_prefix src_item dst_dir
-	expect_args src_prefix src_item dst_dir -- "$@"
+	local src_prefix src_file_name dst_dir
+	expect_args src_prefix src_file_name dst_dir -- "$@"
 
 	local src_object dst_file
-	src_object="${src_prefix:+${src_prefix}/}${src_item}"
-	dst_file="${dst_dir}/${src_item}"
+	src_object="${src_prefix:+${src_prefix}/}${src_file_name}"
+	dst_file="${dst_dir}/${src_file_name}"
 	expect_no_existing "${dst_file}"
 
 	if has_s3; then
@@ -116,9 +116,9 @@ function upload_prebuilt () {
 	local src_file dst_prefix
 	expect_args src_file dst_prefix -- "$@"
 
-	local src_item dst_object
-	src_item=$( basename "${src_file}" ) || die
-	dst_object="${dst_prefix:+${dst_prefix}/}${src_item}"
+	local src_file_name dst_object
+	src_file_name=$( basename "${src_file}" ) || die
+	dst_object="${dst_prefix:+${dst_prefix}/}${src_file_name}"
 
 	if has_s3 && ! (( ${HALCYON_NO_UPLOAD} )); then
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
