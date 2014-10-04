@@ -1,0 +1,11 @@
+{
+  "name": "halcyon",
+  "description": "TODO",
+  "authors": [
+    "Miëtek Bak <hello@mietek.io>"
+  ],
+  "license": "MIT X11",
+  "dependencies": {
+    "bashmenot": "*"
+  }
+}

@@ -4,26 +4,22 @@
 set -o nounset
 set -o pipefail
 
-declare self_dir
-self_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
+declare halcyon_src_dir
+halcyon_src_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
-source "${self_dir}/src/lib/log.sh"
-source "${self_dir}/src/lib/expect.sh"
-source "${self_dir}/src/lib/os.sh"
-source "${self_dir}/src/lib/line.sh"
-source "${self_dir}/src/lib/file.sh"
-source "${self_dir}/src/lib/tar.sh"
-source "${self_dir}/src/lib/date.sh"
-source "${self_dir}/src/lib/curl.sh"
-source "${self_dir}/src/lib/s3.sh"
+if [ -f "${halcyon_src_dir}/bashmenot/bashmenot.sh" ]; then
+	source "${halcyon_src_dir}/bashmenot/bashmenot.sh"
+elif [ -f "${halcyon_src_dir}/bower_components/bashmenot/bashmenot.sh" ]; then
+	source "${halcyon_src_dir}/bower_components/bashmenot/bashmenot.sh"
+fi
 
-source "${self_dir}/src/cache.sh"
-source "${self_dir}/src/transfer.sh"
-source "${self_dir}/src/ghc.sh"
-source "${self_dir}/src/cabal.sh"
-source "${self_dir}/src/app.sh"
-source "${self_dir}/src/sandbox.sh"
-source "${self_dir}/src/constraints.sh"
+source "${halcyon_src_dir}/src/cache.sh"
+source "${halcyon_src_dir}/src/transfer.sh"
+source "${halcyon_src_dir}/src/ghc.sh"
+source "${halcyon_src_dir}/src/cabal.sh"
+source "${halcyon_src_dir}/src/app.sh"
+source "${halcyon_src_dir}/src/sandbox.sh"
+source "${halcyon_src_dir}/src/constraints.sh"
 
 
 
