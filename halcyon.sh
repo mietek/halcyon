@@ -59,8 +59,8 @@ function set_default_vars () {
 
 	export HALCYON_NO_PREBUILT_APP="${HALCYON_NO_PREBUILT_APP:-0}"
 
-	export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
-	export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
+	export BASHMENOT_AWS_ACCESS_KEY_ID="${BASHMENOT_AWS_ACCESS_KEY_ID:-}"
+	export BASHMENOT_AWS_SECRET_ACCESS_KEY="${BASHMENOT_AWS_SECRET_ACCESS_KEY:-}"
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 
@@ -89,7 +89,7 @@ function set_config_vars () {
 
 	local ignored_pattern secret_pattern
 	ignored_pattern='GIT_DIR|PATH|LIBRARY_PATH|LD_LIBRARY_PATH|LD_PRELOAD'
-	secret_pattern='HALCYON_AWS_SECRET_ACCESS_KEY|DATABASE_URL|.*_POSTGRESQL_.*_URL'
+	secret_pattern='BASHMENOT_AWS_SECRET_ACCESS_KEY|DATABASE_URL|.*_POSTGRESQL_.*_URL'
 
 	local var
 	for var in $(
@@ -177,9 +177,9 @@ function halcyon_install () {
 			export HALCYON_NO_PREBUILT_APP=1;;
 
 		'--aws-access-key-id='*)
-			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
+			export BASHMENOT_AWS_ACCESS_KEY_ID="${1#*=}";;
 		'--aws-secret-access-key='*)
-			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
+			export BASHMENOT_AWS_SECRET_ACCESS_KEY="${1#*=}";;
 		'--s3-bucket='*)
 			export HALCYON_S3_BUCKET="${1#*=}";;
 		'--s3-acl='*)
