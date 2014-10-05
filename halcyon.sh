@@ -49,7 +49,7 @@ function set_default_vars () {
 	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
 
 	export HALCYON_NO_PREBUILT_SANDBOX="${HALCYON_NO_PREBUILT_SANDBOX:-0}"
-	export HALCYON_CUSTOMIZE_SANDBOX_SCRIPT="${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT:-}"
+	export HALCYON_CUSTOM_SCRIPT="${HALCYON_CUSTOM_SCRIPT:-}"
 
 	export HALCYON_NO_PREBUILT_APP="${HALCYON_NO_PREBUILT_APP:-0}"
 
@@ -158,9 +158,8 @@ function halcyon_install () {
 		'--no-prebuilt-sandbox');&
 		'--no-pre-sandbox')
 			export HALCYON_NO_PREBUILT_SANDBOX=1;;
-		'--customize-sandbox-script='*);&
-		'--custom-sandbox-script='*)
-			export HALCYON_CUSTOMIZE_SANDBOX_SCRIPT="${1#*=}";;
+		'--custom-script='*)
+			export HALCYON_CUSTOM_SCRIPT="${1#*=}";;
 
 		'--no-prebuilt-app');&
 		'--no-pre-app')

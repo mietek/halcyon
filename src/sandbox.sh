@@ -143,8 +143,8 @@ function echo_tmp_sandbox_config () {
 }
 
 
-function echo_tmp_customize_sandbox_dir () {
-	mktemp -du '/tmp/halcyon-customize-sandbox.XXXXXXXXXX'
+function echo_tmp_custom_sandbox_dir () {
+	mktemp -du '/tmp/halcyon-custom-sandbox.XXXXXXXXXX'
 }
 
 
@@ -202,23 +202,23 @@ function build_sandbox () {
 
 		local script_constraint
 		if script_constraint=$(
-			filter_matching "^--customize-sandbox-script-digest: " <<<"${sandbox_constraints}" |
+			filter_matching "^--custom-script-digest: " <<<"${sandbox_constraints}" |
 			match_exactly_one
 		); then
-			expect_vars HALCYON_CUSTOMIZE_SANDBOX_SCRIPT
-			expect_existing "${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+			expect_vars HALCYON_CUSTOM_SCRIPT
+			expect_existing "${app_dir}/${HALCYON_CUSTOM_SCRIPT}"
 
 			log "Customizing ${sandbox_description}"
 
 			local script_digest candidate_digest
 			script_digest="${script_constraint##* }"
-			candidate_digest=$( echo_customize_sandbox_script_digest <"${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}" ) || die
+			candidate_digest=$( echo_custom_script_digest <"${app_dir}/${HALCYON_CUSTOM_SCRIPT}" ) || die
 
 			if [ "${candidate_digest}" != "${script_digest}" ]; then
-				die "Expected customize sandbox script ${script_digest:0:7} and not ${candidate_digest:0:7}"
+				die "Expected custom script ${script_digest:0:7} and not ${candidate_digest:0:7}"
 			fi
 
-			source "${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
+			source "${app_dir}/${HALCYON_CUSTOM_SCRIPT}"
 			customize_sandbox "${app_dir}"
 
 			local customized_size
@@ -627,10 +627,10 @@ function install_sandbox () {
 # with extraneous dependencies, you can use a separate sub-sandbox:
 #
 # function customize_sandbox () {
-# 	customize_sandbox_with_cabal_package_executables alex happy
+# 	customize_sandbox_with_execs alex happy
 # }
 
-function customize_sandbox_with_cabal_package_executables () {
+function customize_sandbox_with_execs () {
 	expect_vars HALCYON_DIR HALCYON_QUIET
 	expect_existing "${HALCYON_DIR}/cabal/tag"
 	expect_no_existing "${HALCYON_DIR}/sandbox/customized-sub-sandbox"
