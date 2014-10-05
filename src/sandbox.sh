@@ -201,7 +201,10 @@ function build_sandbox () {
 		# https://github.com/haskell/cabal/issues/779
 
 		local script_constraint
-		if script_constraint=$( detect_customize_sandbox_script_constraint <<<"${sandbox_constraints}" ); then
+		if script_constraint=$(
+			filter_matching "^--customize-sandbox-script-digest: " <<<"${sandbox_constraints}" |
+			match_exactly_one
+		); then
 			expect_vars HALCYON_CUSTOMIZE_SANDBOX_SCRIPT
 			expect_existing "${app_dir}/${HALCYON_CUSTOMIZE_SANDBOX_SCRIPT}"
 

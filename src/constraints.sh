@@ -176,12 +176,6 @@ function detect_constraints () {
 }
 
 
-function detect_customize_sandbox_script_constraint () {
-	filter_matching "^--customize-sandbox-script-digest: " |
-		match_exactly_one
-}
-
-
 function insert_customize_sandbox_script_constraint () {
 	local app_dir
 	expect_args app_dir -- "$@"
