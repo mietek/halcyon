@@ -95,8 +95,6 @@ function echo_ghc_default_version () {
 }
 
 
-
-
 function echo_ghc_tag () {
 	expect_vars HALCYON_DIR
 
@@ -126,8 +124,6 @@ function echo_ghc_tag_variant () {
 }
 
 
-
-
 function echo_ghc_archive () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
@@ -152,13 +148,9 @@ function echo_ghc_description () {
 }
 
 
-
-
 function echo_tmp_ghc_dir () {
 	mktemp -du '/tmp/halcyon-ghc.XXXXXXXXXX'
 }
-
-
 
 
 function validate_ghc_tag () {
@@ -174,8 +166,6 @@ function validate_ghc_tag () {
 }
 
 
-
-
 function detect_base_version () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc"
@@ -184,8 +174,6 @@ function detect_base_version () {
 		grep -oE '\bbase-[0-9\.]+\b' |
 		sed 's/^base-//' || die
 }
-
-
 
 
 function prepare_ghc_libs () {
@@ -246,8 +234,6 @@ function prepare_ghc_libs () {
 		die "Installing GHC ${ghc_version} on ${os_description} is not implemented yet"
 	esac
 }
-
-
 
 
 function build_ghc () {
@@ -426,8 +412,6 @@ function strip_ghc () {
 }
 
 
-
-
 function archive_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/tag"
@@ -498,8 +482,6 @@ function restore_ghc () {
 }
 
 
-
-
 function infer_ghc_version () {
 	expect_vars HALCYON_FAKE_APP
 
@@ -538,8 +520,6 @@ function infer_ghc_version () {
 }
 
 
-
-
 function activate_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag"
@@ -566,8 +546,6 @@ function deactivate_ghc () {
 
 	log_end 'done'
 }
-
-
 
 
 function install_ghc () {

@@ -6,8 +6,6 @@ function echo_tmp_constraints_config () {
 }
 
 
-
-
 function echo_constraints_digest () {
 	openssl sha1 | sed 's/^.* //'
 }
@@ -16,8 +14,6 @@ function echo_constraints_digest () {
 function echo_customize_sandbox_script_digest () {
 	openssl sha1 | sed 's/^.* //'
 }
-
-
 
 
 function echo_constraints () {
@@ -50,8 +46,6 @@ function echo_constraints_difference () {
 }
 
 
-
-
 function read_constraints () {
 	awk '/^ *[Cc]onstraints:/, !/[:,]/ { print }' |
 		sed 's/[Cc]onstraints://;s/[, ]//g;s/==/ /;/^$/d'
@@ -62,8 +56,6 @@ function read_constraints_dry_run () {
 	tail -n +3 |
 		sed 's/ == / /'
 }
-
-
 
 
 function filter_valid_constraints () {
@@ -146,8 +138,6 @@ function score_constraints () {
 }
 
 
-
-
 function detect_app_constraint () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -176,8 +166,6 @@ function filter_correct_constraints () {
 }
 
 
-
-
 function detect_constraints () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -186,8 +174,6 @@ function detect_constraints () {
 	read_constraints <"${app_dir}/cabal.config" |
 		filter_correct_constraints "${app_dir}" || die
 }
-
-
 
 
 function detect_customize_sandbox_script_constraint () {
@@ -211,8 +197,6 @@ function insert_customize_sandbox_script_constraint () {
 		awk '{ print }'
 	fi
 }
-
-
 
 
 function freeze_implicit_constraints () {

@@ -6,16 +6,12 @@ function has_s3 () {
 }
 
 
-
-
 function echo_default_s3_url () {
 	local object
 	expect_args object -- "$@"
 
 	echo "http://s3.halcyon.sh/${object}"
 }
-
-
 
 
 function download_original () {
@@ -54,8 +50,6 @@ function upload_original () {
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
 	fi
 }
-
-
 
 
 function download_prebuilt () {

@@ -31,8 +31,6 @@ function echo_cabal_default_version () {
 }
 
 
-
-
 function echo_cabal_config () {
 	expect_vars HALCYON_DIR
 
@@ -45,8 +43,6 @@ function echo_cabal_config () {
 		jobs:                           \$ncpus
 EOF
 }
-
-
 
 
 function echo_cabal_tag () {
@@ -78,8 +74,6 @@ function echo_cabal_tag_timestamp () {
 }
 
 
-
-
 function echo_cabal_archive () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
@@ -90,8 +84,6 @@ function echo_cabal_archive () {
 
 	echo "halcyon-cabal-${cabal_version}${cabal_timestamp:+-${cabal_timestamp}}.tar.xz"
 }
-
-
 
 
 function echo_updated_cabal_tag_pattern () {
@@ -129,8 +121,6 @@ function echo_updated_cabal_archive_timestamp () {
 }
 
 
-
-
 function echo_cabal_description () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
@@ -151,13 +141,9 @@ function echo_cabal_description () {
 }
 
 
-
-
 function echo_tmp_cabal_dir () {
 	mktemp -du '/tmp/halcyon-cabal.XXXXXXXXXX'
 }
-
-
 
 
 function validate_cabal_tag () {
@@ -231,8 +217,6 @@ function validate_updated_cabal_archive () {
 }
 
 
-
-
 function match_updated_cabal_archive () {
 	local cabal_version
 	expect_args cabal_version -- "$@"
@@ -256,8 +240,6 @@ function match_updated_cabal_archive () {
 
 	echo "${updated_archive}"
 }
-
-
 
 
 function cabal_do () {
@@ -314,8 +296,6 @@ function sandboxed_cabal_do () {
 
 	return "${status}"
 }
-
-
 
 
 function cabal_update () {
@@ -389,8 +369,6 @@ function cabal_build_app () {
 	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
 	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
 }
-
-
 
 
 function build_cabal () {
@@ -492,8 +470,6 @@ function update_cabal () {
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
 	log "Updated Cabal ${cabal_version}, ${cabal_size}"
 }
-
-
 
 
 function archive_cabal () {
@@ -640,8 +616,6 @@ function restore_updated_cabal () {
 }
 
 
-
-
 function infer_cabal_version () {
 	log_begin 'Inferring Cabal version...'
 
@@ -658,8 +632,6 @@ function infer_cabal_version () {
 
 	echo "${cabal_version}"
 }
-
-
 
 
 function activate_cabal () {
@@ -702,8 +674,6 @@ function deactivate_cabal () {
 
 	log_end 'done'
 }
-
-
 
 
 function install_cabal () {

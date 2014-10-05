@@ -14,8 +14,6 @@ EOF
 }
 
 
-
-
 function echo_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
@@ -53,8 +51,6 @@ function echo_sandbox_tag_digest () {
 }
 
 
-
-
 function echo_sandbox_archive () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
@@ -79,8 +75,6 @@ function echo_sandbox_config () {
 
 	echo "halcyon-sandbox-ghc-${ghc_version}-${app_label}-${sandbox_digest}.cabal.config"
 }
-
-
 
 
 function echo_sandbox_config_ghc_version () {
@@ -116,8 +110,6 @@ function echo_sandbox_config_digest () {
 }
 
 
-
-
 function echo_sandbox_config_prefix () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
@@ -134,8 +126,6 @@ function echo_sandbox_config_pattern () {
 }
 
 
-
-
 function echo_sandbox_description () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
@@ -148,8 +138,6 @@ function echo_sandbox_description () {
 }
 
 
-
-
 function echo_tmp_sandbox_config () {
 	mktemp -u '/tmp/halcyon-sandbox.cabal.config.XXXXXXXXXX'
 }
@@ -158,8 +146,6 @@ function echo_tmp_sandbox_config () {
 function echo_tmp_customize_sandbox_dir () {
 	mktemp -du '/tmp/halcyon-customize-sandbox.XXXXXXXXXX'
 }
-
-
 
 
 function validate_sandbox_tag () {
@@ -186,8 +172,6 @@ function validate_sandbox_config () {
 		return 1
 	fi
 }
-
-
 
 
 function build_sandbox () {
@@ -291,8 +275,6 @@ function strip_sandbox () {
 }
 
 
-
-
 function archive_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/sandbox/tag"
@@ -368,8 +350,6 @@ function restore_sandbox () {
 		fi
 	fi
 }
-
-
 
 
 function infer_sandbox_constraints () {
@@ -505,8 +485,6 @@ function locate_matched_sandbox_tag () {
 }
 
 
-
-
 function activate_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/tag"
@@ -554,8 +532,6 @@ function deactivate_sandbox () {
 
 	log_end 'done'
 }
-
-
 
 
 function install_extended_sandbox () {
@@ -641,8 +617,6 @@ function install_sandbox () {
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
 }
-
-
 
 
 # NOTE: To install just the executables of executable-only packages in

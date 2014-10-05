@@ -13,15 +13,13 @@ elif [ -f "${halcyon_src_dir}/bower_components/bashmenot/bashmenot.sh" ]; then
 	source "${halcyon_src_dir}/bower_components/bashmenot/bashmenot.sh"
 fi
 
-source "${halcyon_src_dir}/src/cache.sh"
-source "${halcyon_src_dir}/src/transfer.sh"
-source "${halcyon_src_dir}/src/ghc.sh"
-source "${halcyon_src_dir}/src/cabal.sh"
 source "${halcyon_src_dir}/src/app.sh"
-source "${halcyon_src_dir}/src/sandbox.sh"
+source "${halcyon_src_dir}/src/cabal.sh"
+source "${halcyon_src_dir}/src/cache.sh"
 source "${halcyon_src_dir}/src/constraints.sh"
-
-
+source "${halcyon_src_dir}/src/ghc.sh"
+source "${halcyon_src_dir}/src/sandbox.sh"
+source "${halcyon_src_dir}/src/transfer.sh"
 
 
 function set_default_vars () {
@@ -76,8 +74,6 @@ function set_default_vars () {
 set_default_vars
 
 
-
-
 function set_config_vars () {
 	expect_vars HALCYON_CONFIG_DIR
 
@@ -105,8 +101,6 @@ function set_config_vars () {
 		export "${var}=${value}" || die
 	done
 }
-
-
 
 
 function halcyon_install () {

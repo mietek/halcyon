@@ -11,8 +11,6 @@ function echo_tmp_old_cache_dir () {
 }
 
 
-
-
 function prepare_cache () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE
 

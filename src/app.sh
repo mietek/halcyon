@@ -30,8 +30,6 @@ function echo_app_tag_app_label () {
 }
 
 
-
-
 function echo_app_archive () {
 	local app_tag
 	expect_args app_tag -- "$@"
@@ -42,8 +40,6 @@ function echo_app_archive () {
 
 	echo "halcyon-app-ghc-${ghc_version}-${app_label}.tar.gz"
 }
-
-
 
 
 function echo_tmp_app_dir () {
@@ -61,8 +57,6 @@ function echo_tmp_app_dist_dir () {
 }
 
 
-
-
 function validate_app_tag () {
 	local app_tag
 	expect_args app_tag -- "$@"
@@ -74,8 +68,6 @@ function validate_app_tag () {
 		return 1
 	fi
 }
-
-
 
 
 function echo_fake_package () {
@@ -108,8 +100,6 @@ EOF
 }
 
 
-
-
 function fake_app_dir () {
 	local app_label
 	expect_args app_label -- "$@"
@@ -132,8 +122,6 @@ function fake_app_dir () {
 
 	echo "${app_dir}"
 }
-
-
 
 
 function detect_app_package () {
@@ -204,8 +192,6 @@ function detect_app_executable () {
 }
 
 
-
-
 function detect_app_label () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -216,8 +202,6 @@ function detect_app_label () {
 
 	echo "${app_name}-${app_version}"
 }
-
-
 
 
 function configure_app () {
@@ -244,8 +228,6 @@ function build_app () {
 
 	echo "${app_tag}" >"${app_dir}/tag" || die
 }
-
-
 
 
 function archive_app () {
@@ -336,8 +318,6 @@ function restore_app () {
 }
 
 
-
-
 function infer_app_tag () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag"
@@ -352,8 +332,6 @@ function infer_app_tag () {
 
 	echo_app_tag "${ghc_version}" "${app_label}" || die
 }
-
-
 
 
 function install_app () {
