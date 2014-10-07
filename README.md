@@ -1,12 +1,11 @@
-halcyon
+Halcyon
 =======
 
-TODO
+System for rapid Haskell deployment.
 
+Written in GNU _bash_, using [_bashmenot_](https://github.com/mietek/bashmenot/), a library of functions for safer shell scripting.
 
 Used in [Haskell on Heroku](https://github.com/mietek/haskell-on-heroku/).
-
-Written in [GNU bash](http://gnu.org/software/bash/) 4 with [bashmenot](https://github.com/mietek/bashmenot/).
 
 
 Usage
@@ -17,10 +16,17 @@ TODO
 
 ### Installation
 
-Available as a [Bower](http://bower.io/) package.
+Cloning this repository and the _bashmenot_ repository is sufficient.
 
-```sh
-bower install halcyon
+```
+$ git clone https://github.com/mietek/halcyon.git halcyon
+$ git clone https://github.com/mietek/bashmenot.git halcyon/bashmenot
+```
+
+Also available as a [Bower](http://bower.io/) package.
+
+```
+$ bower install halcyon
 ```
 
 
