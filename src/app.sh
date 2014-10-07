@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-
 function echo_app_tag () {
 	expect_vars HALCYON_DIR
 

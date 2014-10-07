@@ -1,63 +1,52 @@
-#!/usr/bin/env bash
+declare HALCYON_TOP_DIR
+HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
-
-set -o nounset
-set -o pipefail
-
-declare halcyon_src_dir
-halcyon_src_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
-
-if [ -f "${halcyon_src_dir}/bashmenot/bashmenot.sh" ]; then
-	source "${halcyon_src_dir}/bashmenot/bashmenot.sh"
-elif [ -f "${halcyon_src_dir}/bower_components/bashmenot/bashmenot.sh" ]; then
-	source "${halcyon_src_dir}/bower_components/bashmenot/bashmenot.sh"
+if [ -d "${HALCYON_TOP_DIR}/bashmenot" ]; then
+	source "${HALCYON_TOP_DIR}/bashmenot/bashmenot.sh"
+elif [ -d "${HALCYON_TOP_DIR}/../bashmenot" ]; then
+	source "${HALCYON_TOP_DIR}/../bashmenot/bashmenot.sh"
+elif [ -d "${HALCYON_TOP_DIR}/bower_components/bashmenot" ]; then
+	source "${HALCYON_TOP_DIR}/bower_components/bashmenot/bashmenot.sh"
+elif [ -d "${HALCYON_TOP_DIR}/../bower_components/bashmenot" ]; then
+	source "${HALCYON_TOP_DIR}/../bower_components/bashmenot/bashmenot.sh"
+else
+	echo '   *** ERROR: Expected bashmenot' >&2
+	exit 1
 fi
 
-source "${halcyon_src_dir}/src/app.sh"
-source "${halcyon_src_dir}/src/cabal.sh"
-source "${halcyon_src_dir}/src/cache.sh"
-source "${halcyon_src_dir}/src/constraints.sh"
-source "${halcyon_src_dir}/src/ghc.sh"
-source "${halcyon_src_dir}/src/sandbox.sh"
-source "${halcyon_src_dir}/src/transfer.sh"
+source "${HALCYON_TOP_DIR}/src/cache.sh"
+source "${HALCYON_TOP_DIR}/src/transfer.sh"
+source "${HALCYON_TOP_DIR}/src/constraints.sh"
+source "${HALCYON_TOP_DIR}/src/ghc.sh"
+source "${HALCYON_TOP_DIR}/src/cabal.sh"
+source "${HALCYON_TOP_DIR}/src/sandbox.sh"
+source "${HALCYON_TOP_DIR}/src/app.sh"
 
 
 function set_default_vars () {
-	! (( ${HALCYON_DEFAULTS_SET:-0} )) || return 0
-	export HALCYON_DEFAULTS_SET=1
-
-	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
-	export HALCYON_CONFIG_DIR="${HALCYON_CONFIG_DIR:-${HALCYON_DIR}/config}"
-	export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-${HALCYON_DIR}/install}"
-	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
-
-	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
-	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
-	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
-
-	export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
-
-	export HALCYON_NO_PREBUILT="${HALCYON_NO_PREBUILT:-0}"
-	export HALCYON_PREBUILT_ONLY="${HALCYON_PREBUILT_ONLY:-0}"
-
-	export HALCYON_NO_PREBUILT_GHC="${HALCYON_NO_PREBUILT_GHC:-0}"
-	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
-	export HALCYON_TRIM_GHC="${HALCYON_TRIM_GHC:-0}"
-
-	export HALCYON_NO_PREBUILT_CABAL="${HALCYON_NO_PREBUILT_CABAL:-0}"
-	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
-	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
-
-	export HALCYON_NO_PREBUILT_SANDBOX="${HALCYON_NO_PREBUILT_SANDBOX:-0}"
-	export HALCYON_CUSTOM_SCRIPT="${HALCYON_CUSTOM_SCRIPT:-}"
-
-	export HALCYON_NO_PREBUILT_APP="${HALCYON_NO_PREBUILT_APP:-0}"
-
 	export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
 	export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
-
+	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
+	export HALCYON_CONFIG_DIR="${HALCYON_CONFIG_DIR:-${HALCYON_DIR}/config}"
+	export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-${HALCYON_DIR}/install}"
+	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
+	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
+	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
+	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
+	export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
+	export HALCYON_PREBUILT_ONLY="${HALCYON_PREBUILT_ONLY:-0}"
+	export HALCYON_NO_PREBUILT="${HALCYON_NO_PREBUILT:-0}"
+	export HALCYON_NO_PREBUILT_GHC="${HALCYON_NO_PREBUILT_GHC:-0}"
+	export HALCYON_NO_PREBUILT_CABAL="${HALCYON_NO_PREBUILT_CABAL:-0}"
+	export HALCYON_NO_PREBUILT_SANDBOX="${HALCYON_NO_PREBUILT_SANDBOX:-0}"
+	export HALCYON_NO_PREBUILT_APP="${HALCYON_NO_PREBUILT_APP:-0}"
+	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
+	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
+	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
+	export HALCYON_TRIM_GHC="${HALCYON_TRIM_GHC:-0}"
+	export HALCYON_CUSTOM_SCRIPT="${HALCYON_CUSTOM_SCRIPT:-}"
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
 
 	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
@@ -66,12 +55,8 @@ function set_default_vars () {
 	export PATH="${HALCYON_INSTALL_DIR}/bin:${PATH}"
 	export LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LIBRARY_PATH:-}"
 	export LD_LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LD_LIBRARY_PATH:-}"
-
 	export LANG="${LANG:-en_US.UTF-8}"
 }
-
-
-set_default_vars
 
 
 function set_config_vars () {
@@ -108,6 +93,15 @@ function halcyon_install () {
 
 	while (( $# )); do
 		case "$1" in
+		'--aws-access-key-id='*)
+			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
+		'--aws-secret-access-key='*)
+			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
+		'--s3-bucket='*)
+			export HALCYON_S3_BUCKET="${1#*=}";;
+		'--s3-acl='*)
+			export HALCYON_S3_ACL="${1#*=}";;
+
 		'--halcyon-dir='*)
 			export HALCYON_DIR="${1#*=}";;
 		'--config-dir='*)
@@ -129,50 +123,39 @@ function halcyon_install () {
 		'--only-dependencies');&
 		'--only-dep')
 			export HALCYON_DEPENDENCIES_ONLY=1;;
-
-		'--no-prebuilt');&
-		'--no-pre')
-			export HALCYON_NO_PREBUILT=1;;
 		'--prebuilt-only');&
 		'--pre-only');&
 		'--only-prebuilt');&
 		'--only-pre')
 			export HALCYON_PREBUILT_ONLY=1;;
 
+		'--no-prebuilt');&
+		'--no-pre')
+			export HALCYON_NO_PREBUILT=1;;
 		'--no-prebuilt-ghc');&
 		'--no-pre-ghc')
 			export HALCYON_NO_PREBUILT_GHC=1;;
-		'--force-ghc-version='*)
-			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
-		'--trim-ghc')
-			export HALCYON_TRIM_GHC=1;;
-
 		'--no-prebuilt-cabal');&
 		'--no-pre-cabal')
 			export HALCYON_NO_PREBUILT_CABAL=1;;
+		'--no-prebuilt-sandbox');&
+		'--no-pre-sandbox')
+			export HALCYON_NO_PREBUILT_SANDBOX=1;;
+		'--no-prebuilt-app');&
+		'--no-pre-app')
+			export HALCYON_NO_PREBUILT_APP=1;;
+
+		'--force-ghc-version='*)
+			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
 		'--force-cabal-version='*)
 			export HALCYON_FORCE_CABAL_VERSION="${1#*=}";;
 		'--force-cabal-update')
 			export HALCYON_FORCE_CABAL_UPDATE=1;;
 
-		'--no-prebuilt-sandbox');&
-		'--no-pre-sandbox')
-			export HALCYON_NO_PREBUILT_SANDBOX=1;;
+		'--trim-ghc')
+			export HALCYON_TRIM_GHC=1;;
 		'--custom-script='*)
 			export HALCYON_CUSTOM_SCRIPT="${1#*=}";;
-
-		'--no-prebuilt-app');&
-		'--no-pre-app')
-			export HALCYON_NO_PREBUILT_APP=1;;
-
-		'--aws-access-key-id='*)
-			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
-		'--aws-secret-access-key='*)
-			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
-		'--s3-bucket='*)
-			export HALCYON_S3_BUCKET="${1#*=}";;
-		'--s3-acl='*)
-			export HALCYON_S3_ACL="${1#*=}";;
 
 		'--quiet')
 			export HALCYON_QUIET=1;;

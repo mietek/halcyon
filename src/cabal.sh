@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-
 function echo_cabal_original_url () {
 	local cabal_version
 	expect_args cabal_version -- "$@"

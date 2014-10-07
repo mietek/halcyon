@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-
 function echo_tmp_constraints_config () {
 	mktemp -u '/tmp/halcyon-constraints.cabal.config.XXXXXXXXXX'
 }

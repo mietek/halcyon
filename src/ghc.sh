@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-
 function echo_ghc_libgmp10_x64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"

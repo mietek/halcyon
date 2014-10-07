@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-
 function has_s3 () {
 	has_vars HALCYON_AWS_ACCESS_KEY_ID HALCYON_AWS_SECRET_ACCESS_KEY HALCYON_S3_BUCKET HALCYON_S3_ACL
 }

@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-
 function echo_tmp_cache_dir () {
 	mktemp -du '/tmp/halcyon-cache.XXXXXXXXXX'
 }

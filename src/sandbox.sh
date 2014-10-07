@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-
 function log_add_config_help () {
 	local sandbox_constraints
 	expect_args sandbox_constraints -- "$@"
