@@ -29,7 +29,6 @@ function set_default_vars () {
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
-	export HALCYON_CONFIG_DIR="${HALCYON_CONFIG_DIR:-${HALCYON_DIR}/config}"
 	export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-${HALCYON_DIR}/install}"
 	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
 	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
@@ -59,37 +58,8 @@ function set_default_vars () {
 }
 
 
-function set_config_vars () {
-	expect_vars HALCYON_CONFIG_DIR
-
-	log 'Setting config vars'
-
-	local ignored_pattern secret_pattern
-	ignored_pattern='GIT_DIR|PATH|LIBRARY_PATH|LD_LIBRARY_PATH|LD_PRELOAD'
-	secret_pattern='HALCYON_AWS_SECRET_ACCESS_KEY|DATABASE_URL|.*_POSTGRESQL_.*_URL'
-
-	local var
-	for var in $(
-		find_spaceless_recursively "${HALCYON_CONFIG_DIR}" -maxdepth 1 |
-		sort_naturally |
-		filter_not_matching "^(${ignored_pattern})$"
-	); do
-		local value
-		value=$( match_exactly_one <"${HALCYON_CONFIG_DIR}/${var}" ) || die
-		if filter_matching "^(${secret_pattern})$" <<<"${var}" |
-			match_exactly_one >'/dev/null'
-		then
-			log_indent "${var} (secret)"
-		else
-			log_indent "${var}=${value}"
-		fi
-		export "${var}=${value}" || die
-	done
-}
-
-
 function halcyon_install () {
-	expect_vars HALCYON_CONFIG_DIR HALCYON_DEPENDENCIES_ONLY
+	expect_vars HALCYON_DEPENDENCIES_ONLY
 
 	while (( $# )); do
 		case "$1" in
@@ -104,8 +74,6 @@ function halcyon_install () {
 
 		'--halcyon-dir='*)
 			export HALCYON_DIR="${1#*=}";;
-		'--config-dir='*)
-			export HALCYON_CONFIG_DIR="${1#*=}";;
 		'--install-dir='*)
 			export HALCYON_INSTALL_DIR="${1#*=}";;
 		'--cache-dir='*)
@@ -185,11 +153,6 @@ function halcyon_install () {
 
 	log "Installing ${app_label}"
 	log
-
-	if [ -d "${HALCYON_CONFIG_DIR}" ]; then
-		set_config_vars || die
-		log
-	fi
 
 	prepare_cache || die
 	log
