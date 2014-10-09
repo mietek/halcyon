@@ -29,7 +29,6 @@ function set_default_vars () {
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
-	export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-${HALCYON_DIR}/install}"
 	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
 	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
@@ -51,7 +50,7 @@ function set_default_vars () {
 	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/sandbox/bin:${PATH}"
-	export PATH="${HALCYON_INSTALL_DIR}/bin:${PATH}"
+	export PATH="${HALCYON_DIR}/app/bin:${PATH}"
 	export LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LIBRARY_PATH:-}"
 	export LD_LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LD_LIBRARY_PATH:-}"
 	export LANG="${LANG:-en_US.UTF-8}"
@@ -74,8 +73,6 @@ function halcyon_install () {
 
 		'--halcyon-dir='*)
 			export HALCYON_DIR="${1#*=}";;
-		'--install-dir='*)
-			export HALCYON_INSTALL_DIR="${1#*=}";;
 		'--cache-dir='*)
 			export HALCYON_CACHE_DIR="${1#*=}";;
 

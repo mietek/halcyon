@@ -348,12 +348,12 @@ function cabal_install_deps () {
 
 
 function cabal_configure_app () {
-	expect_vars HALCYON_INSTALL_DIR HALCYON_QUIET
+	expect_vars HALCYON_DIR HALCYON_QUIET
 
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure --prefix="${HALCYON_INSTALL_DIR}" || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure --prefix="${HALCYON_DIR}/app" || die
 }
 
 
