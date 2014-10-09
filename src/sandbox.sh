@@ -57,7 +57,7 @@ function echo_sandbox_archive () {
 	app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_version}-${app_label}-${sandbox_digest}.tar.gz"
+	echo "halcyon-sandbox-ghc-${ghc_version}-${app_label}-${sandbox_digest}.tar.xz"
 }
 
 
