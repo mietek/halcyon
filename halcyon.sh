@@ -10,7 +10,7 @@ elif [ -d "${HALCYON_TOP_DIR}/bower_components/bashmenot" ]; then
 elif [ -d "${HALCYON_TOP_DIR}/../bower_components/bashmenot" ]; then
 	source "${HALCYON_TOP_DIR}/../bower_components/bashmenot/bashmenot.sh"
 else
-	echo '   *** ERROR: Expected bashmenot' >&2
+	echo '   *** ERROR: Failed to locate the bashmenot directory' >&2
 	exit 1
 fi
 
