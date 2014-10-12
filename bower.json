@@ -1,6 +1,6 @@
 {
   "name": "halcyon",
-  "description": "System for rapid Haskell deployment",
+  "description": "Haskell application deployment",
   "authors": [
     "Miëtek Bak <hello@mietek.io>"
   ],
