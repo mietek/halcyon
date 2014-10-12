@@ -15,7 +15,7 @@ else
 fi
 
 source "${HALCYON_TOP_DIR}/src/cache.sh"
-source "${HALCYON_TOP_DIR}/src/transfer.sh"
+source "${HALCYON_TOP_DIR}/src/storage.sh"
 source "${HALCYON_TOP_DIR}/src/constraints.sh"
 source "${HALCYON_TOP_DIR}/src/ghc.sh"
 source "${HALCYON_TOP_DIR}/src/cabal.sh"
