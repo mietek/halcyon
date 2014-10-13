@@ -694,7 +694,7 @@ function deactivate_cabal () {
 
 
 function install_cabal () {
-	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_CABAL_UPDATE HALCYON_NO_BUILD
+	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL HALCYON_NO_BUILD
 
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -704,7 +704,7 @@ function install_cabal () {
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&
-		! (( ${HALCYON_FORCE_CABAL_UPDATE} )) &&
+		! (( ${HALCYON_FORCE_UPDATE_CABAL} )) &&
 		restore_updated_cabal "${cabal_version}"
 	then
 		activate_cabal || die

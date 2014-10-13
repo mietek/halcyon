@@ -24,30 +24,29 @@ source "${HALCYON_TOP_DIR}/src/app.sh"
 
 
 function set_default_vars () {
+	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
+
 	export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
 	export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 
-	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
-
 	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
 	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 
-	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
-	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
-	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
-	export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
-
 	export HALCYON_FORCE_BUILD_ALL="${HALCYON_FORCE_BUILD_ALL:-0}"
+	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
 	export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
+	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
 	export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
+	export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
 	export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
 	export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 
-	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
-	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
-	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
+	export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
+	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
+	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
+	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
 
@@ -68,6 +67,9 @@ function halcyon_install () {
 
 	while (( $# )); do
 		case "$1" in
+		'--halcyon-dir='*)
+			export HALCYON_DIR="${1#*=}";;
+
 		'--aws-access-key-id='*)
 			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
 		'--aws-secret-access-key='*)
@@ -77,40 +79,36 @@ function halcyon_install () {
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
 
-		'--halcyon-dir='*)
-			export HALCYON_DIR="${1#*=}";;
-
 		'--cache-dir='*)
 			export HALCYON_CACHE_DIR="${1#*=}";;
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
 
+		'--force-build-all')
+			export HALCYON_FORCE_BUILD_ALL=1;;
+		'--force-ghc-version='*)
+			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
+		'--force-build-ghc')
+			export HALCYON_FORCE_BUILD_GHC=1;;
+		'--force-cabal-version='*)
+			export HALCYON_FORCE_CABAL_VERSION="${1#*=}";;
+		'--force-build-cabal')
+			export HALCYON_FORCE_BUILD_CABAL=1;;
+		'--force-update-cabal')
+			export HALCYON_FORCE_UPDATE_CABAL=1;;
+		'--force-build-sandbox')
+			export HALCYON_FORCE_BUILD_SANDBOX=1;;
+		'--force-build-app')
+			export HALCYON_FORCE_BUILD_APP=1;;
+
+		'--no-app')
+			export HALCYON_NO_APP=1;;
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
 		'--no-archive')
 			export HALCYON_NO_ARCHIVE=1;;
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
-		'--no-app')
-			export HALCYON_NO_APP=1;;
-
-		'--force-build-all')
-			export HALCYON_FORCE_BUILD_ALL=1;;
-		'--force-build-ghc')
-			export HALCYON_FORCE_BUILD_GHC=1;;
-		'--force-build-cabal')
-			export HALCYON_FORCE_BUILD_CABAL=1;;
-		'--force-build-sandbox')
-			export HALCYON_FORCE_BUILD_SANDBOX=1;;
-		'--force-build-app')
-			export HALCYON_FORCE_BUILD_APP=1;;
-
-		'--force-ghc-version='*)
-			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
-		'--force-cabal-version='*)
-			export HALCYON_FORCE_CABAL_VERSION="${1#*=}";;
-		'--force-cabal-update')
-			export HALCYON_FORCE_CABAL_UPDATE=1;;
 
 		'--quiet')
 			export HALCYON_QUIET=1;;
