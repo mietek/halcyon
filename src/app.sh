@@ -317,8 +317,18 @@ function restore_app () {
 		done
 	filter_not_matching '^= ' <<<"${app_changes}" | quote || die
 
+	local force_configure
+	force_configure=0
+	if filter_matching "^[^=] Setup.hs$" <<<"${app_changes}" |
+		match_exactly_one >'/dev/null'
+	then
+		force_configure=1
+	fi
+
 	mv "${tmp_dist_dir}" "${app_dir}/dist" || die
 	rm -rf "${tmp_old_dir}" || die
+
+	return "${force_configure}"
 }
 
 
