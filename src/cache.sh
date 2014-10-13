@@ -11,9 +11,9 @@ function echo_tmp_old_cache_dir () {
 function prepare_cache () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE
 
-	log_begin 'Preparing cache...'
-
 	if (( ${HALCYON_PURGE_CACHE} )); then
+		log 'Purging cache'
+
 		rm -rf "${HALCYON_CACHE_DIR}"
 	fi
 
@@ -26,8 +26,6 @@ function prepare_cache () {
 		has_old_cache=1
 	fi
 	mkdir -p "${HALCYON_CACHE_DIR}" || die
-
-	log_end 'done'
 
 	if (( ${has_old_cache} )); then
 		log 'Examining cache'
