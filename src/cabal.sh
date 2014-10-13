@@ -118,7 +118,7 @@ function echo_updated_cabal_archive_timestamp () {
 }
 
 
-function echo_cabal_description () {
+function echo_cabal_tag_description () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
@@ -498,7 +498,7 @@ function archive_cabal () {
 
 	local cabal_tag
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
-	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
 
 	log "Archiving ${cabal_description}"
 
@@ -656,7 +656,7 @@ function activate_cabal () {
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
-	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
 
 	log_begin "Activating ${cabal_description}..."
 
@@ -678,7 +678,7 @@ function deactivate_cabal () {
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
-	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
 
 	log_begin "Deactivating ${cabal_description}..."
 
