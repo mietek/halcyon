@@ -95,13 +95,13 @@ function echo_ghc_default_version () {
 function echo_ghc_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_version ghc_variant
-	expect_args ghc_version ghc_variant -- "$@"
+	local ghc_version ghc_digest
+	expect_args ghc_version ghc_digest -- "$@"
 
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "${HALCYON_DIR}\t${os}\tghc-${ghc_version}\t${ghc_variant}"
+	echo -e "${HALCYON_DIR}\t${os}\tghc-${ghc_version}\t${ghc_digest}"
 }
 
 
@@ -113,7 +113,7 @@ function echo_ghc_tag_version () {
 }
 
 
-function echo_ghc_tag_variant () {
+function echo_ghc_tag_digest () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
@@ -125,11 +125,11 @@ function echo_ghc_archive () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_variant
+	local ghc_version ghc_digest
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_variant=$( echo_ghc_tag_variant "${ghc_tag}" ) || die
+	ghc_digest=$( echo_ghc_tag_digest "${ghc_tag}" ) || die
 
-	echo "halcyon-ghc-${ghc_version}${ghc_variant:+-${ghc_variant}}.tar.xz"
+	echo "halcyon-ghc-${ghc_version}${ghc_digest:+-${ghc_digest}}.tar.xz"
 }
 
 
@@ -137,11 +137,11 @@ function echo_ghc_description () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_variant
+	local ghc_version ghc_digest
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_variant=$( echo_ghc_tag_variant "${ghc_tag}" ) || die
+	ghc_digest=$( echo_ghc_tag_digest "${ghc_tag}" ) || die
 
-	echo "GHC ${ghc_version}${ghc_variant:+ (${ghc_variant})}"
+	echo "GHC ${ghc_version}${ghc_digest:+ (${ghc_digest:0:7})}"
 }
 
 
