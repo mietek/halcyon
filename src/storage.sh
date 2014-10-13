@@ -1,9 +1,9 @@
-function has_s3 () {
+function has_private_storage () {
 	has_vars HALCYON_AWS_ACCESS_KEY_ID HALCYON_AWS_SECRET_ACCESS_KEY HALCYON_S3_BUCKET HALCYON_S3_ACL
 }
 
 
-function echo_default_s3_url () {
+function echo_public_storage_url () {
 	local object
 	expect_args object -- "$@"
 
@@ -20,7 +20,7 @@ function download_original () {
 	dst_file="${dst_dir}/${src_file_name}"
 	expect_no_existing "${dst_file}"
 
-	if has_s3; then
+	if has_private_storage; then
 		if s3_download "${HALCYON_S3_BUCKET}" "${src_object}" "${dst_file}"; then
 			return 0
 		fi
@@ -43,7 +43,7 @@ function upload_original () {
 	expect_existing "${src_file}"
 	dst_object="original/${src_file_name}"
 
-	if has_s3 && ! (( ${HALCYON_NO_UPLOAD} )); then
+	if has_private_storage && ! (( ${HALCYON_NO_UPLOAD} )); then
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
 	fi
 }
@@ -58,7 +58,7 @@ function download_layer () {
 	dst_file="${dst_dir}/${src_file_name}"
 	expect_no_existing "${dst_file}"
 
-	if has_s3; then
+	if has_private_storage; then
 		if s3_download "${HALCYON_S3_BUCKET}" "${src_object}" "${dst_file}"; then
 			return 0
 		fi
@@ -66,7 +66,7 @@ function download_layer () {
 	fi
 
 	local src_url
-	src_url=$( echo_default_s3_url "${src_object}" ) || die
+	src_url=$( echo_public_storage_url "${src_object}" ) || die
 
 	curl_download "${src_url}" "${dst_file}"
 }
@@ -76,16 +76,15 @@ function list_layers () {
 	local src_prefix
 	expect_args src_prefix -- "$@"
 
-	if has_s3; then
+	if has_private_storage; then
 		if s3_list "${HALCYON_S3_BUCKET}" "${src_prefix}"; then
 			return 0
 		fi
 		return 1
 	fi
 
-	local bucket_url src_url
-	bucket_url=$( echo_default_s3_url '' ) || die
-	src_url="${bucket_url}${src_prefix:+?prefix=${src_prefix}}"
+	local src_url
+	src_url=$( echo_public_storage_url ${src_prefix:+?prefix=${src_prefix}} ) || die
 
 	log_indent_begin "Listing ${src_url}..."
 
@@ -111,7 +110,7 @@ function upload_layer () {
 	src_file_name=$( basename "${src_file}" ) || die
 	dst_object="${dst_prefix:+${dst_prefix}/}${src_file_name}"
 
-	if has_s3 && ! (( ${HALCYON_NO_UPLOAD} )); then
+	if has_private_storage && ! (( ${HALCYON_NO_UPLOAD} )); then
 		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
 	fi
 }
