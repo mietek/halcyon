@@ -423,7 +423,7 @@ function restore_ghc () {
 
 
 function infer_ghc_version () {
-	expect_vars HALCYON_FAKE_APP
+	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -451,7 +451,7 @@ function infer_ghc_version () {
 		ghc_version=$( echo_ghc_default_version ) || die
 
 		log_end "${ghc_version}, default"
-		if ! (( "${HALCYON_FAKE_APP}" )); then
+		if ! (( "${HALCYON_NO_WARN_CONSTRAINTS}" )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 		fi
 	fi

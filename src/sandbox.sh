@@ -194,7 +194,9 @@ function build_sandbox () {
 	sandbox_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
 	log "Built ${sandbox_description}, ${sandbox_size}"
 
-	log "Validating ${sandbox_description}"
+	if (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
+		return 0
+	fi
 
 	# NOTE: Frozen constraints should never differ before and after installation.
 	# https://github.com/haskell/cabal/issues/1896
@@ -315,7 +317,7 @@ function restore_sandbox () {
 
 
 function infer_sandbox_constraints () {
-	expect_vars HALCYON_FAKE_APP
+	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -328,7 +330,7 @@ function infer_sandbox_constraints () {
 		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
 	else
 		sandbox_constraints=$( freeze_implicit_constraints "${app_dir}" ) || die
-		if ! (( ${HALCYON_FAKE_APP} )); then
+		if ! (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 			log
 			help_add_constraints "${sandbox_constraints}"

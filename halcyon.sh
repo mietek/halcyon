@@ -42,6 +42,8 @@ function set_default_vars () {
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 
+	export HALCYON_NO_WARN_CONSTRAINTS="${HALCYON_NO_WARN_CONSTRAINTS:-0}"
+
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
 
 	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
@@ -115,19 +117,20 @@ function halcyon_install () {
 		shift
 	done
 
-	local app_dir app_label
+	local fake_app app_dir app_label
 	if ! (( $# )); then
-		export HALCYON_FAKE_APP=0
+		fake_app=0
 		app_dir='.'
 		app_label=$( detect_app_label "${app_dir}" ) || die
 	elif [ -d "$1" ]; then
-		export HALCYON_FAKE_APP=0
+		fake_app=0
 		app_dir="$1"
 		app_label=$( detect_app_label "${app_dir}" ) || die
 	else
-		export HALCYON_FAKE_APP=1
+		fake_app=1
 		app_label="$1"
 		app_dir=''
+		export HALCYON_NO_WARN_CONSTRAINTS=1
 	fi
 
 	log "Installing ${app_label}"
@@ -142,14 +145,14 @@ function halcyon_install () {
 	install_cabal "${app_dir}" || return 1
 	log
 
-	if (( ${HALCYON_FAKE_APP} )); then
+	if (( ${fake_app} )); then
 		app_dir=$( fake_app_dir "${app_label}" ) || die
 	fi
 
 	install_sandbox "${app_dir}" || return 1
 	log
 
-	if (( ${HALCYON_FAKE_APP} )); then
+	if (( ${fake_app} )); then
 		rm -rf "${app_dir}" || die
 	elif ! (( ${HALCYON_NO_APP} )); then
 		install_app "${app_dir}" || die
