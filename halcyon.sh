@@ -30,6 +30,7 @@ function set_default_vars () {
 	export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
+	export HALCYON_PUBLIC="${HALCYON_PUBLIC:-0}"
 
 	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
 	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"

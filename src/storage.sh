@@ -3,6 +3,27 @@ function has_private_storage () {
 }
 
 
+function expect_storage () {
+	expect_vars HALCYON_PUBLIC
+
+	if ! has_private_storage; then
+		if ! (( ${HALCYON_PUBLIC} )); then
+			log_error 'Storage is not configured'
+			log
+			help_configure_storage
+			log
+			die
+		fi
+
+		log_warning 'Using public storage'
+	else
+		if (( ${HALCYON_PUBLIC} )); then
+			log_warning 'Ignoring HALCYON_PUBLIC as private storage is configured'
+		fi
+	fi
+}
+
+
 function echo_public_storage_url () {
 	local object
 	expect_args object -- "$@"
@@ -42,6 +63,8 @@ function download_layer () {
 	local src_prefix src_file_name dst_dir
 	expect_args src_prefix src_file_name dst_dir -- "$@"
 
+	expect_storage
+
 	local src_object dst_file
 	src_object="${src_prefix:+${src_prefix}/}${src_file_name}"
 	dst_file="${dst_dir}/${src_file_name}"
@@ -64,6 +87,8 @@ function download_layer () {
 function list_layers () {
 	local src_prefix
 	expect_args src_prefix -- "$@"
+
+	expect_storage
 
 	if has_private_storage; then
 		if s3_list "${HALCYON_S3_BUCKET}" "${src_prefix}"; then
