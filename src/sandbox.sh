@@ -140,11 +140,6 @@ function echo_tmp_sandbox_config () {
 }
 
 
-function echo_tmp_custom_sandbox_dir () {
-	mktemp -du '/tmp/halcyon-custom-sandbox.XXXXXXXXXX'
-}
-
-
 function validate_sandbox_tag () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
@@ -187,41 +182,6 @@ function build_sandbox () {
 
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
-
-		# NOTE: Listing executable-only packages in build-tools causes Cabal to
-		# expect the executables to be installed, but not to install the packages.
-		# https://github.com/haskell/cabal/issues/220
-
-		# NOTE: Listing executable-only packages in build-depends causes Cabal to
-		# install the packages, and to fail to recognise the packages have been
-		# installed.
-		# https://github.com/haskell/cabal/issues/779
-
-		local script_constraint
-		if script_constraint=$(
-			filter_matching "^--custom-script-digest: " <<<"${sandbox_constraints}" |
-			match_exactly_one
-		); then
-			expect_vars HALCYON_CUSTOM_SCRIPT
-			expect_existing "${app_dir}/${HALCYON_CUSTOM_SCRIPT}"
-
-			log "Customizing ${sandbox_description}"
-
-			local script_digest candidate_digest
-			script_digest="${script_constraint##* }"
-			candidate_digest=$( echo_custom_script_digest <"${app_dir}/${HALCYON_CUSTOM_SCRIPT}" ) || die
-
-			if [ "${candidate_digest}" != "${script_digest}" ]; then
-				die "Expected custom script ${script_digest:0:7} and not ${candidate_digest:0:7}"
-			fi
-
-			source "${app_dir}/${HALCYON_CUSTOM_SCRIPT}"
-			customize_sandbox "${app_dir}"
-
-			local customized_size
-			customized_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-			log "Customized ${sandbox_description}, ${customized_size}"
-		fi
 	fi
 	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
@@ -616,36 +576,4 @@ function install_sandbox () {
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
-}
-
-
-# NOTE: To install just the executables of executable-only packages in
-# the sandbox prior to building the sandbox, without polluting the sandbox
-# with extraneous dependencies, you can use a separate sub-sandbox:
-#
-# function customize_sandbox () {
-# 	customize_sandbox_with_execs alex happy
-# }
-
-function customize_sandbox_with_execs () {
-	expect_vars HALCYON_DIR HALCYON_QUIET
-	expect_existing "${HALCYON_DIR}/cabal/tag"
-	expect_no_existing "${HALCYON_DIR}/sandbox/customized-sub-sandbox"
-
-	local tmp_dir
-	tmp_dir=$( echo_tmp_customize_sandbox_dir ) || die
-
-	mkdir -p "${HALCYON_DIR}/sandbox/bin" "${tmp_dir}" || die
-
-	cabal_create_sandbox "${HALCYON_DIR}/sandbox/customized-sub-sandbox" || die
-
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${HALCYON_DIR}/sandbox/customized-sub-sandbox" "${tmp_dir}" install "$@" || die
-
-	local bin_file bin_name
-	for bin_file in "${HALCYON_DIR}/sandbox/customized-sub-sandbox/bin"/*; do
-		bin_name=$( basename "${bin_file}" ) || die
-		ln -s "${bin_file}" "${HALCYON_DIR}/sandbox/bin/${bin_name}" || die
-	done
-
-	rm -rf "${tmp_dir}" || die
 }

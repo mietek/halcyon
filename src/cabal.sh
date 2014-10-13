@@ -337,6 +337,15 @@ function cabal_install () {
 }
 
 
+# NOTE: Listing executable-only packages in build-tools causes Cabal to
+# expect the executables to be installed, but not to install the packages.
+# https://github.com/haskell/cabal/issues/220
+
+# NOTE: Listing executable-only packages in build-depends causes Cabal to
+# install the packages, and to fail to recognise the packages have been
+# installed.
+# https://github.com/haskell/cabal/issues/779
+
 function cabal_install_deps () {
 	expect_vars HALCYON_QUIET
 

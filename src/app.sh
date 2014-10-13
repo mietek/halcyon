@@ -107,16 +107,6 @@ function fake_app_dir () {
 	mkdir -p "${app_dir}" || die
 	echo_fake_package "${app_label}" >"${app_dir}/${app_label}.cabal" || die
 
-	if has_vars HALCYON_CUSTOM_SCRIPT; then
-		expect_existing "${HALCYON_CUSTOM_SCRIPT}"
-
-		local script_name
-		script_name=$( basename "${HALCYON_CUSTOM_SCRIPT}" ) || die
-
-		cp "${HALCYON_CUSTOM_SCRIPT}" "${app_dir}/${script_name}" || die
-		export HALCYON_CUSTOM_SCRIPT="${script_name}"
-	fi
-
 	echo "${app_dir}"
 }
 
