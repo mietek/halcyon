@@ -259,7 +259,7 @@ function archive_app () {
 		--exclude '.cabal'                    \
 		--exclude '.cabal-sandbox'            \
 		--exclude 'cabal.sandbox.config' || die
-	upload_prebuilt "${HALCYON_CACHE_DIR}/${app_archive}" "${os}" || die
+	upload_layer "${HALCYON_CACHE_DIR}/${app_archive}" "${os}" || die
 }
 
 
@@ -286,8 +286,8 @@ function restore_app () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
-		if ! download_prebuilt "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
-			log 'App is not prebuilt'
+		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
+			log 'Locating app failed'
 			return 1
 		fi
 

@@ -373,7 +373,7 @@ function archive_ghc () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
-	upload_prebuilt "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}" || die
+	upload_layer "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}" || die
 }
 
 
@@ -406,8 +406,8 @@ function restore_ghc () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
-		if ! download_prebuilt "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "${ghc_description} is not prebuilt"
+		if ! download_layer "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
+			log "Locating ${ghc_description} failed"
 			return 1
 		fi
 

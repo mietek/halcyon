@@ -272,8 +272,8 @@ function archive_sandbox () {
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
 	cp "${HALCYON_DIR}/sandbox/cabal.config" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
-	upload_prebuilt "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}" || die
-	upload_prebuilt "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}" || die
+	upload_layer "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}" || die
+	upload_layer "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}" || die
 }
 
 
@@ -309,8 +309,8 @@ function restore_sandbox () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
-		if ! download_prebuilt "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "${sandbox_description} is not prebuilt"
+		if ! download_layer "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
+			log "Locating ${sandbox_description} failed"
 			return 1
 		fi
 
@@ -388,13 +388,13 @@ function locate_matched_sandbox_tag () {
 
 	local matched_configs
 	if ! matched_configs=$(
-		list_prebuilt "${os}/${config_prefix}" |
+		list_layers "${os}/${config_prefix}" |
 		sed "s:${os}/::" |
 		filter_matching "^${config_pattern}$" |
 		sort_naturally |
 		match_at_least_one
 	); then
-		log 'No matched sandbox is prebuilt'
+		log 'Locating matched sandboxes failed'
 		return 1
 	fi
 
@@ -408,7 +408,7 @@ function locate_matched_sandbox_tag () {
 		then
 			rm -f "${HALCYON_CACHE_DIR}/${config}" || die
 
-			if ! download_prebuilt "${os}" "${config}" "${HALCYON_CACHE_DIR}"; then
+			if ! download_layer "${os}" "${config}" "${HALCYON_CACHE_DIR}"; then
 				log_warning "Downloading ${config} failed"
 			fi
 

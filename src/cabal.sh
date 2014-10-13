@@ -509,7 +509,7 @@ function archive_cabal () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
-	upload_prebuilt "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}" || die
+	upload_layer "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}" || die
 }
 
 
@@ -540,8 +540,8 @@ function restore_cabal () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
-		if ! download_prebuilt "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cabal ${cabal_version} is not prebuilt"
+		if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
+			log "Locating Cabal ${cabal_version} failed"
 			return 1
 		fi
 
@@ -608,16 +608,16 @@ function restore_updated_cabal () {
 
 	local cabal_archive
 	if ! cabal_archive=$(
-		list_prebuilt "${os}/${archive_prefix}" |
+		list_layers "${os}/${archive_prefix}" |
 		sed "s:${os}/::" |
 		match_updated_cabal_archive "${cabal_version}"
 	); then
-		log "No updated Cabal ${cabal_version} is prebuilt"
+		log "Locating updated Cabal ${cabal_version} failed"
 		return 1
 	fi
 
 	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
-	if ! download_prebuilt "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
+	if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
 		log_warning "Downloading ${cabal_archive} failed"
 		return 1
 	fi

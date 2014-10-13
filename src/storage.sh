@@ -49,7 +49,7 @@ function upload_original () {
 }
 
 
-function download_prebuilt () {
+function download_layer () {
 	local src_prefix src_file_name dst_dir
 	expect_args src_prefix src_file_name dst_dir -- "$@"
 
@@ -72,7 +72,7 @@ function download_prebuilt () {
 }
 
 
-function list_prebuilt () {
+function list_layers () {
 	local src_prefix
 	expect_args src_prefix -- "$@"
 
@@ -101,7 +101,7 @@ function list_prebuilt () {
 }
 
 
-function upload_prebuilt () {
+function upload_layer () {
 	expect_vars HALCYON_NO_UPLOAD
 
 	local src_file dst_prefix
