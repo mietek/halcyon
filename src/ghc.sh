@@ -482,7 +482,7 @@ function deactivate_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
 
-	log_begin "Dectivating ${ghc_description}..."
+	log_begin "Deactivating ${ghc_description}..."
 
 	log_end 'done'
 }
