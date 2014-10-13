@@ -150,7 +150,7 @@ function halcyon_install () {
 	install_ghc "${app_dir}" || return 1
 	log
 
-	install_cabal || return 1
+	install_cabal "${app_dir}" || return 1
 	log
 
 	if (( ${HALCYON_FAKE_APP} )); then

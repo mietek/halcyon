@@ -382,8 +382,8 @@ function build_cabal () {
 	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/tag"
 	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
 
-	local cabal_version
-	expect_args cabal_version -- "$@"
+	local cabal_version app_dir
+	expect_args cabal_version app_dir -- "$@"
 
 	log "Building Cabal ${cabal_version}"
 
@@ -408,11 +408,16 @@ function build_cabal () {
 		fi
 	fi
 
-	log "Bootstrapping Cabal ${cabal_version}"
-
 	local ghc_tag ghc_version
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
+
+	if [ -f "${app_dir}/.halcyon-hooks/cabal-pre-build" ]; then
+		log "Running Cabal pre-build hook"
+		"${app_dir}/.halcyon-hooks/cabal-pre-build" "${ghc_version}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
+	fi
+
+	log "Bootstrapping Cabal ${cabal_version}"
 
 	case "${ghc_version}-${cabal_version}" in
 	'7.8.'*'-1.20.0.'*)
@@ -445,10 +450,16 @@ EOF
 
 	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
 	mv "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
-	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${tmp_dir}" || die
 
 	echo_cabal_config >"${HALCYON_DIR}/cabal/config" || die
 	echo_cabal_tag "${cabal_version}" '' >"${HALCYON_DIR}/cabal/tag" || die
+
+	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
+		log "Running Cabal post-build hook"
+		"${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_version}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
+	fi
+
+	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${tmp_dir}" || die
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
@@ -685,6 +696,9 @@ function deactivate_cabal () {
 function install_cabal () {
 	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_CABAL HALCYON_FORCE_CABAL_UPDATE HALCYON_PREBUILT_ONLY
 
+	local app_dir
+	expect_args app_dir -- "$@"
+
 	local cabal_version
 	cabal_version=$( infer_cabal_version ) || die
 
@@ -709,7 +723,7 @@ function install_cabal () {
 
 	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
-	build_cabal "${cabal_version}" || die
+	build_cabal "${cabal_version}" "${app_dir}" || die
 	archive_cabal || die
 	update_cabal || die
 	archive_cabal || die

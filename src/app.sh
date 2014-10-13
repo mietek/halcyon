@@ -107,6 +107,10 @@ function fake_app_dir () {
 	mkdir -p "${app_dir}" || die
 	echo_fake_package "${app_label}" >"${app_dir}/${app_label}.cabal" || die
 
+	if [ -d '.halcyon-hooks' ]; then
+		cp -R '.halcyon-hooks' "${app_dir}"
+	fi
+
 	echo "${app_dir}"
 }
 
@@ -209,9 +213,22 @@ function build_app () {
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 
+	local ghc_version
+	ghc_version=$( echo_app_tag_ghc_version "${app_tag}" ) || die
+
 	log 'Building app'
 
+	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
+		log "Running app pre-build hook"
+		"${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_version}" "${app_dir}" || die
+	fi
+
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+
+	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
+		log "Running app post-build hook"
+		"${app_dir}/.halcyon-hooks/app-post-build" "${ghc_version}" "${app_dir}" || die
+	fi
 
 	echo "${app_tag}" >"${app_dir}/tag" || die
 }
