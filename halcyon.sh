@@ -58,6 +58,11 @@ function set_default_vars () {
 }
 
 
+function echo_digest () {
+	cat "$@" |  openssl sha1 | sed 's/^.* //'
+}
+
+
 function halcyon_install () {
 	expect_vars HALCYON_NO_APP
 

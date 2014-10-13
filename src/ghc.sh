@@ -92,16 +92,24 @@ function echo_ghc_default_version () {
 }
 
 
+function echo_ghc_hook () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	echo_digest "${app_dir}/.halcyon-hooks/"*'-ghc-'*
+}
+
+
 function echo_ghc_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_version ghc_digest
-	expect_args ghc_version ghc_digest -- "$@"
+	local ghc_version ghc_hook
+	expect_args ghc_version ghc_hook -- "$@"
 
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "${HALCYON_DIR}\t${os}\tghc-${ghc_version}\t${ghc_digest}"
+	echo -e "${HALCYON_DIR}\t${os}\tghc-${ghc_version}\t${ghc_hook}"
 }
 
 
@@ -113,7 +121,7 @@ function echo_ghc_tag_version () {
 }
 
 
-function echo_ghc_tag_digest () {
+function echo_ghc_tag_hook () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
@@ -121,27 +129,27 @@ function echo_ghc_tag_digest () {
 }
 
 
-function echo_ghc_archive () {
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
-
-	local ghc_version ghc_digest
-	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_digest=$( echo_ghc_tag_digest "${ghc_tag}" ) || die
-
-	echo "halcyon-ghc-${ghc_version}${ghc_digest:+-${ghc_digest}}.tar.xz"
-}
-
-
 function echo_ghc_tag_description () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_digest
+	local ghc_version ghc_hook
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_digest=$( echo_ghc_tag_digest "${ghc_tag}" ) || die
+	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
 
-	echo "GHC ${ghc_version}${ghc_digest:+ (${ghc_digest:0:7})}"
+	echo "GHC ${ghc_version}${ghc_hook:+~${ghc_hook:0:7}}"
+}
+
+
+function echo_ghc_archive () {
+	local ghc_tag
+	expect_args ghc_tag -- "$@"
+
+	local ghc_version ghc_hook
+	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
+	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+
+	echo "halcyon-ghc-${ghc_version}${ghc_hook:+~${ghc_hook:0:7}}.tar.xz"
 }
 
 
@@ -237,10 +245,14 @@ function build_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_QUIET
 	expect_no_existing "${HALCYON_DIR}/ghc"
 
-	local ghc_version app_dir
-	expect_args ghc_version app_dir -- "$@"
+	local ghc_tag app_dir
+	expect_args ghc_tag app_dir -- "$@"
 
-	log "Building GHC ${ghc_version}"
+	local ghc_version ghc_description
+	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
+
+	log "Building ${ghc_description}"
 
 	local original_url
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
@@ -269,7 +281,7 @@ function build_ghc () {
 		"${app_dir}/.halcyon-hooks/ghc-pre-build" "${ghc_version}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 	fi
 
-	log "Installing GHC ${ghc_version}"
+	log "Installing ${ghc_description}"
 
 	if ! (
 		cd "${tmp_dir}/ghc-${ghc_version}" &&
@@ -280,7 +292,7 @@ function build_ghc () {
 		die "Installing GHC ${ghc_version} failed"
 	fi
 
-	echo_ghc_tag "${ghc_version}" '' >"${HALCYON_DIR}/ghc/tag" || die
+	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/tag" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
 		log "Running GHC post-build hook"
@@ -291,7 +303,7 @@ function build_ghc () {
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Installed GHC ${ghc_version}, ${ghc_size}"
+	log "Installed ${ghc_description}, ${ghc_size}"
 }
 
 
@@ -299,7 +311,7 @@ function strip_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag"
 
-	local ghc_tag ghc_version
+	local ghc_tag ghc_version ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
@@ -494,9 +506,10 @@ function install_ghc () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_version ghc_tag
+	local ghc_version ghc_hook ghc_tag
 	ghc_version=$( infer_ghc_version "${app_dir}" ) || die
-	ghc_tag=$( echo_ghc_tag "${ghc_version}" '' ) || die
+	ghc_hook=$( echo_ghc_hook "${app_dir}" ) || die
+	ghc_tag=$( echo_ghc_tag "${ghc_version}" "${ghc_hook}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_GHC} )) &&
@@ -508,7 +521,7 @@ function install_ghc () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	build_ghc "${ghc_version}" "${app_dir}" || die
+	build_ghc "${ghc_tag}" "${app_dir}" || die
 	strip_ghc || die
 	archive_ghc || die
 	activate_ghc || die
