@@ -1,16 +1,3 @@
-function log_add_config_help () {
-	local sandbox_constraints
-	expect_args sandbox_constraints -- "$@"
-
-	quote <<-EOF
-		To use explicit constraints, add cabal.config:
-		$ cat >cabal.config <<EOF
-EOF
-	echo_constraints <<<"${sandbox_constraints}" >&2 || die
-	echo 'EOF' >&2
-}
-
-
 function echo_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
@@ -344,7 +331,7 @@ function infer_sandbox_constraints () {
 		if ! (( ${HALCYON_FAKE_APP} )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 			log
-			log_add_config_help "${sandbox_constraints}"
+			help_add_constraints "${sandbox_constraints}"
 			log
 		else
 			echo_constraints <<<"${sandbox_constraints}" >&2 || die
