@@ -694,7 +694,7 @@ function deactivate_cabal () {
 
 
 function install_cabal () {
-	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_CABAL HALCYON_FORCE_CABAL_UPDATE HALCYON_PREBUILT_ONLY
+	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_CABAL_UPDATE HALCYON_NO_BUILD
 
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -702,8 +702,8 @@ function install_cabal () {
 	local cabal_version
 	cabal_version=$( infer_cabal_version ) || die
 
-	if ! (( ${HALCYON_NO_PREBUILT} )) &&
-		! (( ${HALCYON_NO_PREBUILT_CABAL} )) &&
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&
 		! (( ${HALCYON_FORCE_CABAL_UPDATE} )) &&
 		restore_updated_cabal "${cabal_version}"
 	then
@@ -711,8 +711,8 @@ function install_cabal () {
 		return 0
 	fi
 
-	if ! (( ${HALCYON_NO_PREBUILT} )) &&
-		! (( ${HALCYON_NO_PREBUILT_CABAL} )) &&
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&
 		restore_cabal "${cabal_version}"
 	then
 		update_cabal || die
@@ -721,7 +721,7 @@ function install_cabal () {
 		return 0
 	fi
 
-	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
+	! (( ${HALCYON_NO_BUILD} )) || return 1
 
 	build_cabal "${cabal_version}" "${app_dir}" || die
 	archive_cabal || die

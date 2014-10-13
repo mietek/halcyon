@@ -34,12 +34,12 @@ function set_default_vars () {
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 	export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
-	export HALCYON_PREBUILT_ONLY="${HALCYON_PREBUILT_ONLY:-0}"
-	export HALCYON_NO_PREBUILT="${HALCYON_NO_PREBUILT:-0}"
-	export HALCYON_NO_PREBUILT_GHC="${HALCYON_NO_PREBUILT_GHC:-0}"
-	export HALCYON_NO_PREBUILT_CABAL="${HALCYON_NO_PREBUILT_CABAL:-0}"
-	export HALCYON_NO_PREBUILT_SANDBOX="${HALCYON_NO_PREBUILT_SANDBOX:-0}"
-	export HALCYON_NO_PREBUILT_APP="${HALCYON_NO_PREBUILT_APP:-0}"
+	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
+	export HALCYON_FORCE_BUILD_ALL="${HALCYON_FORCE_BUILD_ALL:-0}"
+	export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
+	export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
+	export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
+	export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
 	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
 	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
@@ -86,27 +86,20 @@ function halcyon_install () {
 		'--only-dependencies');&
 		'--only-dep')
 			export HALCYON_DEPENDENCIES_ONLY=1;;
-		'--prebuilt-only');&
-		'--pre-only');&
-		'--only-prebuilt');&
-		'--only-pre')
-			export HALCYON_PREBUILT_ONLY=1;;
 
-		'--no-prebuilt');&
-		'--no-pre')
-			export HALCYON_NO_PREBUILT=1;;
-		'--no-prebuilt-ghc');&
-		'--no-pre-ghc')
-			export HALCYON_NO_PREBUILT_GHC=1;;
-		'--no-prebuilt-cabal');&
-		'--no-pre-cabal')
-			export HALCYON_NO_PREBUILT_CABAL=1;;
-		'--no-prebuilt-sandbox');&
-		'--no-pre-sandbox')
-			export HALCYON_NO_PREBUILT_SANDBOX=1;;
-		'--no-prebuilt-app');&
-		'--no-pre-app')
-			export HALCYON_NO_PREBUILT_APP=1;;
+		'--no-build')
+			export HALCYON_NO_BUILD=1;;
+
+		'--force-build-all')
+			export HALCYON_FORCE_BUILD_ALL=1;;
+		'--force-build-ghc')
+			export HALCYON_FORCE_BUILD_GHC=1;;
+		'--force-build-cabal')
+			export HALCYON_FORCE_BUILD_CABAL=1;;
+		'--force-build-sandbox')
+			export HALCYON_FORCE_BUILD_SANDBOX=1;;
+		'--force-build-app')
+			export HALCYON_FORCE_BUILD_APP=1;;
 
 		'--force-ghc-version='*)
 			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;

@@ -510,7 +510,7 @@ function deactivate_sandbox () {
 
 
 function install_extended_sandbox () {
-	expect_vars HALCYON_DIR HALCYON_PREBUILT_ONLY
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD
 
 	local app_dir sandbox_constraints sandbox_tag matched_tag
 	expect_args app_dir sandbox_constraints sandbox_tag matched_tag -- "$@"
@@ -536,7 +536,7 @@ function install_extended_sandbox () {
 		return 0
 	fi
 
-	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
+	! (( ${HALCYON_NO_BUILD} )) || return 1
 
 	log "Extending matched ${matched_description} to ${sandbox_description}"
 
@@ -550,7 +550,7 @@ function install_extended_sandbox () {
 
 
 function install_sandbox () {
-	expect_vars HALCYON_DIR HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_SANDBOX HALCYON_PREBUILT_ONLY
+	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_SANDBOX HALCYON_NO_BUILD
 	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local app_dir
@@ -568,8 +568,8 @@ function install_sandbox () {
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	sandbox_tag=$( echo_sandbox_tag "${ghc_version}" "${app_label}" "${sandbox_digest}" ) || die
 
-	if ! (( ${HALCYON_NO_PREBUILT} )) &&
-		! (( ${HALCYON_NO_PREBUILT_SANDBOX} )) &&
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
 		restore_sandbox "${sandbox_tag}"
 	then
 		activate_sandbox "${app_dir}" || die
@@ -577,15 +577,15 @@ function install_sandbox () {
 	fi
 
 	local matched_tag
-	if ! (( ${HALCYON_NO_PREBUILT} )) &&
-		! (( ${HALCYON_NO_PREBUILT_SANDBOX} )) &&
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
 		matched_tag=$( locate_matched_sandbox_tag "${sandbox_constraints}" ) &&
 		install_extended_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}"
 	then
 		return 0
 	fi
 
-	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
+	! (( ${HALCYON_NO_BUILD} )) || return 1
 
 	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
 	strip_sandbox || die
