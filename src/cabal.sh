@@ -397,10 +397,9 @@ function build_cabal () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
-		if ! download_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
+		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
 			die "Cabal ${cabal_version} is not available"
 		fi
-		upload_original "${HALCYON_CACHE_DIR}" "${original_archive}"
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die

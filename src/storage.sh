@@ -11,7 +11,9 @@ function echo_public_storage_url () {
 }
 
 
-function download_original () {
+function prepare_original () {
+	expect_vars HALCYON_NO_UPLOAD
+
 	local src_file_name original_url dst_dir
 	expect_args src_file_name original_url dst_dir -- "$@"
 
@@ -29,22 +31,9 @@ function download_original () {
 	if ! curl_download "${original_url}" "${dst_file}"; then
 		return 1
 	fi
-}
-
-
-function upload_original () {
-	expect_vars HALCYON_NO_UPLOAD
-
-	local src_dir src_file_name
-	expect_args src_dir src_file_name -- "$@"
-
-	local src_file dst_object
-	src_file="${src_dir}/${src_file_name}"
-	expect_existing "${src_file}"
-	dst_object="original/${src_file_name}"
 
 	if has_private_storage && ! (( ${HALCYON_NO_UPLOAD} )); then
-		s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
+		s3_upload "${dst_file}" "${HALCYON_S3_BUCKET}" "${src_object}" "${HALCYON_S3_ACL}"
 	fi
 }
 

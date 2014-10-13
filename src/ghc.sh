@@ -254,10 +254,9 @@ function build_ghc () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
-		if ! download_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
+		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
 			die "GHC ${ghc_version} is not available"
 		fi
-		upload_original "${HALCYON_CACHE_DIR}" "${original_archive}" || die
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
