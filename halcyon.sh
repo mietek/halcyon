@@ -1,19 +1,12 @@
 declare HALCYON_TOP_DIR
 HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
-if [ -d "${HALCYON_TOP_DIR}/bashmenot" ]; then
-	source "${HALCYON_TOP_DIR}/bashmenot/bashmenot.sh"
-elif [ -d "${HALCYON_TOP_DIR}/../bashmenot" ]; then
-	source "${HALCYON_TOP_DIR}/../bashmenot/bashmenot.sh"
-elif [ -d "${HALCYON_TOP_DIR}/bower_components/bashmenot" ]; then
-	source "${HALCYON_TOP_DIR}/bower_components/bashmenot/bashmenot.sh"
-elif [ -d "${HALCYON_TOP_DIR}/../bower_components/bashmenot" ]; then
-	source "${HALCYON_TOP_DIR}/../bower_components/bashmenot/bashmenot.sh"
-else
-	echo '   *** ERROR: Failed to locate the bashmenot directory' >&2
+if ! [ -d "${HALCYON_TOP_DIR}/../bashmenot" ]; then
+	echo '   *** ERROR: Locating bashmenot failed' >&2
 	exit 1
 fi
 
+source "${HALCYON_TOP_DIR}/../bashmenot/bashmenot.sh"
 source "${HALCYON_TOP_DIR}/src/cache.sh"
 source "${HALCYON_TOP_DIR}/src/storage.sh"
 source "${HALCYON_TOP_DIR}/src/constraints.sh"

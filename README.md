@@ -30,12 +30,6 @@ $ git clone https://github.com/mietek/bashmenot.git
 $ git clone https://github.com/mietek/halcyon.git
 ```
 
-Also available as a [Bower](http://bower.io/) package.
-
-```
-$ bower install halcyon
-```
-
 
 ### Dependencies
 
