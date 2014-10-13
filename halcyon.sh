@@ -43,7 +43,6 @@ function set_default_vars () {
 	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
 	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
 	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
-	export HALCYON_TRIM_GHC="${HALCYON_TRIM_GHC:-0}"
 	export HALCYON_CUSTOM_SCRIPT="${HALCYON_CUSTOM_SCRIPT:-}"
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
 
@@ -117,8 +116,6 @@ function halcyon_install () {
 		'--force-cabal-update')
 			export HALCYON_FORCE_CABAL_UPDATE=1;;
 
-		'--trim-ghc')
-			export HALCYON_TRIM_GHC=1;;
 		'--custom-script='*)
 			export HALCYON_CUSTOM_SCRIPT="${1#*=}";;
 

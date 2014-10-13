@@ -286,72 +286,6 @@ function build_ghc () {
 }
 
 
-function trim_ghc () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/tag"
-
-	local ghc_tag ghc_version
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
-	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-
-	log_begin "Trimming GHC ${ghc_version}..."
-
-	case "${ghc_version}" in
-	'7.8.'*)
-		rm -rf  "${HALCYON_DIR}/ghc/bin/haddock"                        \
-			"${HALCYON_DIR}/ghc/bin/haddock-ghc-${ghc_version}"     \
-			"${HALCYON_DIR}/ghc/bin/hp2ps"                          \
-			"${HALCYON_DIR}/ghc/bin/hpc"                            \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/haddock" \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/hpc"     \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/html"        \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/latex"       \
-			"${HALCYON_DIR}/ghc/share" || die
-		find "${HALCYON_DIR}/ghc"              \
-				-type f           -and \
-				\(                     \
-				-name '*_p.a'     -or  \
-				-name '*.p_hi'    -or  \
-				-name '*HS*.o'    -or  \
-				-name '*_debug.a'      \
-				\)                     \
-				-delete || die
-		ghc-pkg recache || die
-		;;
-	'7.6.'*)
-		rm -rf  "${HALCYON_DIR}/ghc/bin/haddock"                    \
-			"${HALCYON_DIR}/ghc/bin/haddock-ghc-${ghc_version}" \
-			"${HALCYON_DIR}/ghc/bin/hp2ps"                      \
-			"${HALCYON_DIR}/ghc/bin/hpc"                        \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/haddock" \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/html"    \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/latex"   \
-			"${HALCYON_DIR}/ghc/share" || die
-		find "${HALCYON_DIR}/ghc"              \
-				-type f           -and \
-				\(                     \
-				-name '*_p.a'     -or  \
-				-name '*.p_hi'    -or  \
-				-name '*.dyn_hi'  -or  \
-				-name '*HS*.so'   -or  \
-				-name '*HS*.o'    -or  \
-				-name '*_debug.a'      \
-				\)                     \
-				-delete || die
-		ghc-pkg recache || die
-		;;
-	*)
-		die "Trimming GHC ${ghc_version} is not implemented yet"
-	esac
-
-	echo_ghc_tag "${ghc_version}" 'trimmed' >"${HALCYON_DIR}/ghc/tag" || die
-
-	local ghc_size
-	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log_end "done, ${ghc_size}"
-}
-
-
 function strip_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag"
@@ -546,21 +480,14 @@ function deactivate_ghc () {
 
 
 function install_ghc () {
-	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_GHC HALCYON_PREBUILT_ONLY HALCYON_TRIM_GHC
+	expect_vars HALCYON_NO_PREBUILT HALCYON_NO_PREBUILT_GHC HALCYON_PREBUILT_ONLY
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_variant
-	if (( ${HALCYON_TRIM_GHC} )); then
-		ghc_variant='trimmed'
-	else
-		ghc_variant=''
-	fi
-
 	local ghc_version ghc_tag
 	ghc_version=$( infer_ghc_version "${app_dir}" ) || die
-	ghc_tag=$( echo_ghc_tag "${ghc_version}" "${ghc_variant}" ) || die
+	ghc_tag=$( echo_ghc_tag "${ghc_version}" '' ) || die
 
 	if ! (( ${HALCYON_NO_PREBUILT} )) &&
 		! (( ${HALCYON_NO_PREBUILT_GHC} )) &&
@@ -573,9 +500,6 @@ function install_ghc () {
 	! (( ${HALCYON_PREBUILT_ONLY} )) || return 1
 
 	build_ghc "${ghc_version}" || die
-	if (( ${HALCYON_TRIM_GHC} )); then
-		trim_ghc || die
-	fi
 	strip_ghc || die
 	archive_ghc || die
 	activate_ghc || die
