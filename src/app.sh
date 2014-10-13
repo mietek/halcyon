@@ -339,13 +339,15 @@ function infer_app_tag () {
 
 
 function install_app () {
-	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP
+	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
 	local app_tag
 	app_tag=$( infer_app_tag "${app_dir}" ) || die
+
+	! (( ${HALCYON_NO_BUILD} )) || return 1
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
 		(( ${HALCYON_FORCE_BUILD_APP} )) ||
