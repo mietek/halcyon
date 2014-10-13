@@ -28,35 +28,43 @@ function set_default_vars () {
 	export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
+
 	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
+
 	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
 	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
+
+	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
-	export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
-	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
+	export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
+
 	export HALCYON_FORCE_BUILD_ALL="${HALCYON_FORCE_BUILD_ALL:-0}"
 	export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
 	export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
 	export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
 	export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
+
 	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
 	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
 	export HALCYON_FORCE_CABAL_UPDATE="${HALCYON_FORCE_CABAL_UPDATE:-0}"
+
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
 
 	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/sandbox/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/app/bin:${PATH}"
+
 	export LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LIBRARY_PATH:-}"
 	export LD_LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LD_LIBRARY_PATH:-}"
+
 	export LANG="${LANG:-en_US.UTF-8}"
 }
 
 
 function halcyon_install () {
-	expect_vars HALCYON_DEPENDENCIES_ONLY
+	expect_vars HALCYON_NO_APP
 
 	while (( $# )); do
 		case "$1" in
@@ -71,24 +79,20 @@ function halcyon_install () {
 
 		'--halcyon-dir='*)
 			export HALCYON_DIR="${1#*=}";;
+
 		'--cache-dir='*)
 			export HALCYON_CACHE_DIR="${1#*=}";;
-
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
+
+		'--no-build')
+			export HALCYON_NO_BUILD=1;;
 		'--no-archive')
 			export HALCYON_NO_ARCHIVE=1;;
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
-
-		'--dependencies-only');&
-		'--dep-only');&
-		'--only-dependencies');&
-		'--only-dep')
-			export HALCYON_DEPENDENCIES_ONLY=1;;
-
-		'--no-build')
-			export HALCYON_NO_BUILD=1;;
+		'--no-app')
+			export HALCYON_NO_APP=1;;
 
 		'--force-build-all')
 			export HALCYON_FORCE_BUILD_ALL=1;;
@@ -155,7 +159,7 @@ function halcyon_install () {
 
 	if (( ${HALCYON_FAKE_APP} )); then
 		rm -rf "${app_dir}" || die
-	elif ! (( ${HALCYON_DEPENDENCIES_ONLY} )); then
+	elif ! (( ${HALCYON_NO_APP} )); then
 		install_app "${app_dir}" || die
 		log
 	fi
