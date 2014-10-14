@@ -28,7 +28,7 @@ function echo_sandbox_tag_os () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	awk '{ print $1 }' <<<"${sandbox_tag}"
+	awk -F$'\t' '{ print $1 }' <<<"${sandbox_tag}"
 }
 
 
@@ -36,7 +36,7 @@ function echo_sandbox_tag_halcyon_dir () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	awk '{ print $2 }' <<<"${sandbox_tag}"
+	awk -F$'\t' '{ print $2 }' <<<"${sandbox_tag}"
 }
 
 
@@ -44,7 +44,7 @@ function echo_sandbox_tag_ghc_version () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	awk '{ print $3 }' <<<"${sandbox_tag}" | sed 's/^ghc-//'
+	awk -F$'\t' '{ print $3 }' <<<"${sandbox_tag}" | sed 's/^ghc-//'
 }
 
 
@@ -52,7 +52,7 @@ function echo_sandbox_tag_ghc_hook () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	awk '{ print $4 }' <<<"${sandbox_tag}"
+	awk -F$'\t' '{ print $4 }' <<<"${sandbox_tag}"
 }
 
 
@@ -60,7 +60,7 @@ function echo_sandbox_tag_app_label () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	awk '{ print $5 }' <<<"${sandbox_tag}"
+	awk -F$'\t' '{ print $5 }' <<<"${sandbox_tag}"
 }
 
 
@@ -68,7 +68,7 @@ function echo_sandbox_tag_digest () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	awk '{ print $6 }' <<<"${sandbox_tag}"
+	awk -F$'\t' '{ print $6 }' <<<"${sandbox_tag}"
 }
 
 
@@ -76,7 +76,7 @@ function echo_sandbox_tag_hook () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	awk '{ print $7 }' <<<"${sandbox_tag}"
+	awk -F$'\t' '{ print $7 }' <<<"${sandbox_tag}"
 }
 
 

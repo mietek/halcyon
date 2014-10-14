@@ -53,7 +53,7 @@ function echo_app_tag_os () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $1 }' <<<"${app_tag}"
+	awk -F$'\t' '{ print $1 }' <<<"${app_tag}"
 }
 
 
@@ -61,7 +61,7 @@ function echo_app_tag_halcyon_dir () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $2 }' <<<"${app_tag}"
+	awk -F$'\t' '{ print $2 }' <<<"${app_tag}"
 }
 
 
@@ -69,7 +69,7 @@ function echo_app_tag_ghc_version () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $3 }' <<<"${app_tag}" | sed 's/^ghc-//'
+	awk -F$'\t' '{ print $3 }' <<<"${app_tag}" | sed 's/^ghc-//'
 }
 
 
@@ -77,7 +77,7 @@ function echo_app_tag_ghc_hook () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $4 }' <<<"${app_tag}"
+	awk -F$'\t' '{ print $4 }' <<<"${app_tag}"
 }
 
 
@@ -85,7 +85,7 @@ function echo_app_tag_sandbox_digest () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $5 }' <<<"${app_tag}"
+	awk -F$'\t' '{ print $5 }' <<<"${app_tag}"
 }
 
 
@@ -93,7 +93,7 @@ function echo_app_tag_sandbox_hook () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $6 }' <<<"${app_tag}"
+	awk -F$'\t' '{ print $6 }' <<<"${app_tag}"
 }
 
 
@@ -101,7 +101,7 @@ function echo_app_tag_label () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $7 }' <<<"${app_tag}"
+	awk -F$'\t' '{ print $7 }' <<<"${app_tag}"
 }
 
 
@@ -109,7 +109,7 @@ function echo_app_tag_hook () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	awk '{ print $8 }' <<<"${app_tag}"
+	awk -F$'\t' '{ print $8 }' <<<"${app_tag}"
 }
 
 

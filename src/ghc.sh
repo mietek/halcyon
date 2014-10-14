@@ -109,7 +109,7 @@ function echo_ghc_tag_os () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	awk '{ print $1 }' <<<"${ghc_tag}"
+	awk -F$'\t' '{ print $1 }' <<<"${ghc_tag}"
 }
 
 
@@ -117,7 +117,7 @@ function echo_ghc_tag_halcyon_dir () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	awk '{ print $2 }' <<<"${ghc_tag}"
+	awk -F$'\t' '{ print $2 }' <<<"${ghc_tag}"
 }
 
 
@@ -125,7 +125,7 @@ function echo_ghc_tag_version () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	awk '{ print $3 }' <<<"${ghc_tag}" | sed 's/^ghc-//'
+	awk -F$'\t' '{ print $3 }' <<<"${ghc_tag}" | sed 's/^ghc-//'
 }
 
 
@@ -133,7 +133,7 @@ function echo_ghc_tag_hook () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	awk '{ print $4 }' <<<"${ghc_tag}"
+	awk -F$'\t' '{ print $4 }' <<<"${ghc_tag}"
 }
 
 

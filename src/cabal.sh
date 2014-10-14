@@ -234,7 +234,7 @@ function echo_cabal_tag_os () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	awk '{ print $1 }' <<<"${cabal_tag}"
+	awk -F$'\t' '{ print $1 }' <<<"${cabal_tag}"
 }
 
 
@@ -242,7 +242,7 @@ function echo_cabal_tag_halcyon_dir () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	awk '{ print $2 }' <<<"${cabal_tag}"
+	awk -F$'\t' '{ print $2 }' <<<"${cabal_tag}"
 }
 
 
@@ -250,7 +250,7 @@ function echo_cabal_tag_version () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	awk '{ print $3 }' <<<"${cabal_tag}" | sed 's/^cabal-//'
+	awk -F$'\t' '{ print $3 }' <<<"${cabal_tag}" | sed 's/^cabal-//'
 }
 
 
@@ -258,7 +258,7 @@ function echo_cabal_tag_hook () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	awk '{ print $4 }' <<<"${cabal_tag}"
+	awk -F$'\t' '{ print $4 }' <<<"${cabal_tag}"
 }
 
 
@@ -266,7 +266,7 @@ function echo_cabal_tag_timestamp () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	awk '{ print $5 }' <<<"${cabal_tag}"
+	awk -F$'\t' '{ print $5 }' <<<"${cabal_tag}"
 }
 
 
