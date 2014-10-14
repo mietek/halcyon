@@ -179,6 +179,15 @@ function validate_ghc_tag () {
 }
 
 
+function validate_ghc_hook () {
+	local ghc_hook hooks_dir
+	expect_args ghc_hook hooks_dir -- "$@"
+
+	# TODO
+	return 0
+}
+
+
 function detect_base_version () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc"
@@ -404,15 +413,17 @@ function restore_ghc () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local os ghc_archive ghc_description
+	local os ghc_hook ghc_archive ghc_description
 	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
+	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log "Restoring ${ghc_description}"
 
 	if [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] &&
-		validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag"
+		validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" &&
+		validate_ghc_hook "${ghc_hook}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
 	then
 		return 0
 	fi
@@ -421,7 +432,8 @@ function restore_ghc () {
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
 		! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
-		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag"
+		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" ||
+		! validate_ghc_hook "${ghc_hook}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
@@ -432,7 +444,8 @@ function restore_ghc () {
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
 			! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
-			! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag"
+			! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" ||
+			! validate_ghc_hook "${ghc_hook}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 			log_warning "Restoring ${ghc_archive} failed"

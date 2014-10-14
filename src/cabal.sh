@@ -219,6 +219,15 @@ function validate_cabal_tag () {
 }
 
 
+function validate_cabal_hook () {
+	local cabal_hook hooks_dir
+	expect_args cabal_hook hooks_dir -- "$@"
+
+	# TODO
+	return 0
+}
+
+
 function validate_updated_cabal_timestamp () {
 	local candidate_timestamp
 	expect_args candidate_timestamp -- "$@"
@@ -606,15 +615,17 @@ function restore_cabal () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local os cabal_archive cabal_description
+	local os cabal_hook cabal_archive cabal_description
 	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
+	cabal_hook=$( echo_cabal_tag_hook "${cabal_tag}" ) || die
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Restoring ${cabal_description}"
 
 	if [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] &&
-		validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag"
+		validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" &&
+		validate_cabal_hook "${cabal_hook}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		return 0
 	fi
@@ -623,7 +634,8 @@ function restore_cabal () {
 	if ! [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
-		! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag"
+		! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
+		! validate_cabal_hook "${cabal_hook}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
@@ -634,7 +646,8 @@ function restore_cabal () {
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 			! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
-			! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag"
+			! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
+			! validate_cabal_hook "${cabal_hook}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 			log_warning "Restoring ${cabal_archive} failed"
@@ -650,8 +663,12 @@ function restore_archived_updated_cabal () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
+	local cabal_hook
+	cabal_hook=$( echo_cabal_tag_hook "${cabal_tag}" ) || die
+
 	if [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] &&
-		validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag"
+		validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" &&
+		validate_cabal_hook "${cabal_hook}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		return 0
 	fi
@@ -667,7 +684,8 @@ function restore_archived_updated_cabal () {
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
-		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag"
+		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
+		! validate_cabal_hook "${cabal_hook}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		return 1
@@ -681,7 +699,10 @@ function restore_updated_cabal () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_description
+	local os cabal_hook archive_prefix cabal_description
+	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
+	cabal_hook=$( echo_cabal_tag_hook "${cabal_tag}" ) || die
+	archive_prefix=$( echo_updated_cabal_archive_prefix "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Restoring updated ${cabal_description}"
@@ -691,10 +712,6 @@ function restore_updated_cabal () {
 	fi
 
 	log "Locating updated ${cabal_description}"
-
-	local os archive_prefix
-	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
-	archive_prefix=$( echo_updated_cabal_archive_prefix "${cabal_tag}" ) || die
 
 	local cabal_archive
 	if ! cabal_archive=$(
@@ -714,7 +731,8 @@ function restore_updated_cabal () {
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
-		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag"
+		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
+		! validate_cabal_hook "${cabal_hook}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		log_warning "Restoring ${cabal_archive} failed"
