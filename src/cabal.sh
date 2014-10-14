@@ -59,7 +59,23 @@ function echo_cabal_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "${HALCYON_DIR}\t${os}\tcabal-${cabal_version}\t${cabal_hook}\t${cabal_timestamp}"
+	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_hook}\t${cabal_timestamp}"
+}
+
+
+function echo_cabal_tag_os () {
+	local cabal_tag
+	expect_args cabal_tag -- "$@"
+
+	awk '{ print $1 }' <<<"${cabal_tag}"
+}
+
+
+function echo_cabal_tag_halcyon_dir () {
+	local cabal_tag
+	expect_args cabal_tag -- "$@"
+
+	awk '{ print $2 }' <<<"${cabal_tag}"
 }
 
 

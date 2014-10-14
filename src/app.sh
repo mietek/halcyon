@@ -26,7 +26,23 @@ function echo_app_tag () {
 		die
 	fi
 
-	echo -e "${HALCYON_DIR}\t${os}\tghc-${ghc_version}\t${ghc_hook}\t${sandbox_digest}\t${sandbox_hook}\t${app_label}\t${app_hook}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hook}\t${sandbox_digest}\t${sandbox_hook}\t${app_label}\t${app_hook}"
+}
+
+
+function echo_app_tag_os () {
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	awk '{ print $1 }' <<<"${app_tag}"
+}
+
+
+function echo_app_tag_halcyon_dir () {
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	awk '{ print $2 }' <<<"${app_tag}"
 }
 
 

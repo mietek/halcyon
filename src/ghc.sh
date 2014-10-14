@@ -109,7 +109,23 @@ function echo_ghc_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "${HALCYON_DIR}\t${os}\tghc-${ghc_version}\t${ghc_hook}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hook}"
+}
+
+
+function echo_ghc_tag_os () {
+	local ghc_tag
+	expect_args ghc_tag -- "$@"
+
+	awk '{ print $1 }' <<<"${ghc_tag}"
+}
+
+
+function echo_ghc_tag_halcyon_dir () {
+	local ghc_tag
+	expect_args ghc_tag -- "$@"
+
+	awk '{ print $2 }' <<<"${ghc_tag}"
 }
 
 

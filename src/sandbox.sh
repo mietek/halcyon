@@ -17,7 +17,23 @@ function echo_sandbox_tag () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
 
-	echo -e "${HALCYON_DIR}\t${os}\tghc-${ghc_version}\t${ghc_hook}\t${app_label}\t${sandbox_digest}\t${sandbox_hook}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hook}\t${app_label}\t${sandbox_digest}\t${sandbox_hook}"
+}
+
+
+function echo_sandbox_tag_os () {
+	local sandbox_tag
+	expect_args sandbox_tag -- "$@"
+
+	awk '{ print $1 }' <<<"${sandbox_tag}"
+}
+
+
+function echo_sandbox_tag_halcyon_dir () {
+	local sandbox_tag
+	expect_args sandbox_tag -- "$@"
+
+	awk '{ print $2 }' <<<"${sandbox_tag}"
 }
 
 
