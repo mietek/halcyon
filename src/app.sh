@@ -366,9 +366,9 @@ function archive_app () {
 
 	log "Archiving ${app_description}"
 
-	local app_archive os
+	local os app_archive
+	os=$( echo_app_tag_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
-	os=$( detect_os ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	tar_archive "${app_dir}"                      \
@@ -396,7 +396,7 @@ function restore_app () {
 	log "Restoring ${app_description}"
 
 	local os app_archive tmp_old_dir tmp_dist_dir
-	os=$( detect_os ) || die
+	os=$( echo_app_tag_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	tmp_old_dir=$( echo_tmp_old_app_dir ) || die
 	tmp_dist_dir=$( echo_tmp_app_dist_dir ) || die

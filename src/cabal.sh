@@ -582,9 +582,9 @@ function archive_cabal () {
 
 	log "Archiving ${cabal_description}"
 
-	local cabal_archive os
+	local os cabal_archive
+	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
-	os=$( detect_os ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
@@ -611,7 +611,7 @@ function restore_cabal () {
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
 	local os cabal_archive
-	os=$( detect_os ) || die
+	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ] ||
@@ -687,7 +687,7 @@ function restore_updated_cabal () {
 	log "Locating updated ${cabal_description}"
 
 	local os archive_prefix
-	os=$( detect_os ) || die
+	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
 	archive_prefix=$( echo_updated_cabal_archive_prefix "${cabal_tag}" ) || die
 
 	local cabal_archive

@@ -386,9 +386,9 @@ function archive_ghc () {
 
 	log "Archiving ${ghc_description}"
 
-	local ghc_archive os
+	local os ghc_archive
+	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
-	os=$( detect_os ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
@@ -415,7 +415,7 @@ function restore_ghc () {
 	rm -rf "${HALCYON_DIR}/ghc" || die
 
 	local os ghc_archive
-	os=$( detect_os ) || die
+	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||

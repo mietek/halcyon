@@ -324,10 +324,10 @@ function archive_sandbox () {
 
 	log "Archiving ${sandbox_description}"
 
-	local sandbox_archive sandbox_config os
+	local os sandbox_archive sandbox_config
+	os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 	sandbox_config=$( echo_sandbox_config "${sandbox_tag}" ) || die
-	os=$( detect_os ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
@@ -358,7 +358,7 @@ function restore_sandbox () {
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 
 	local os sandbox_archive
-	os=$( detect_os ) || die
+	os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
@@ -447,9 +447,9 @@ function locate_matched_sandbox_tag () {
 
 	log 'Locating matched sandboxes'
 
-	local os ghc_tag config_prefix config_pattern
-	os=$( detect_os ) || die
+	local ghc_tag os config_prefix config_pattern
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
+	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	config_prefix=$( echo_sandbox_config_prefix "${ghc_tag}" ) || die
 	config_pattern=$( echo_sandbox_config_pattern "${ghc_tag}" "${sandbox_hook}" ) || die
 
