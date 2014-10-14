@@ -228,8 +228,8 @@ function build_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/cabal/tag"
 
-	local app_dir sandbox_constraints sandbox_tag
-	expect_args app_dir sandbox_constraints sandbox_tag -- "$@"
+	local sandbox_constraints sandbox_tag app_dir
+	expect_args sandbox_constraints sandbox_tag app_dir -- "$@"
 	expect_existing "${app_dir}"
 
 	local ghc_tag sandbox_digest sandbox_description
@@ -577,8 +577,8 @@ function deactivate_sandbox () {
 function install_extended_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_NO_BUILD
 
-	local app_dir sandbox_constraints sandbox_tag matched_tag
-	expect_args app_dir sandbox_constraints sandbox_tag matched_tag -- "$@"
+	local sandbox_constraints sandbox_tag matched_tag app_dir
+	expect_args sandbox_constraints sandbox_tag matched_tag app_dir -- "$@"
 
 	if ! restore_sandbox "${matched_tag}"; then
 		return 1
@@ -609,7 +609,7 @@ function install_extended_sandbox () {
 
 	rm -f "${HALCYON_DIR}/sandbox/tag" "${HALCYON_DIR}/sandbox/cabal.config" || die
 
-	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
+	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${app_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
@@ -643,14 +643,14 @@ function install_sandbox () {
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
 		matched_tag=$( locate_matched_sandbox_tag "${sandbox_constraints}" "${sandbox_hook}" ) &&
-		install_extended_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}"
+		install_extended_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}" "${app_dir}"
 	then
 		return 0
 	fi
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	build_sandbox "${app_dir}" "${sandbox_constraints}" "${sandbox_tag}" || die
+	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${app_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
