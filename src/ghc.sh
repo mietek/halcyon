@@ -262,10 +262,8 @@ function build_ghc () {
 
 	log "Building ${ghc_description}"
 
-	local original_url
+	local original_url original_archive tmp_dir
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
-
-	local original_archive tmp_dir
 	original_archive=$( basename "${original_url}" ) || die
 	tmp_dir=$( echo_tmp_ghc_dir ) || die
 
@@ -380,15 +378,13 @@ function archive_ghc () {
 		return 0
 	fi
 
-	local ghc_tag ghc_description
+	local ghc_tag os ghc_archive ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
+	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log "Archiving ${ghc_description}"
-
-	local os ghc_archive
-	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
-	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
@@ -402,7 +398,9 @@ function restore_ghc () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_description
+	local os ghc_archive ghc_description
+	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
+	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log "Restoring ${ghc_description}"
@@ -413,10 +411,6 @@ function restore_ghc () {
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
-
-	local os ghc_archive
-	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
-	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||

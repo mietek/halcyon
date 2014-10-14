@@ -321,16 +321,14 @@ function archive_sandbox () {
 		return 0
 	fi
 
-	local sandbox_tag sandbox_description
+	local sandbox_tag os sandbox_archive sandbox_config sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
-
-	log "Archiving ${sandbox_description}"
-
-	local os sandbox_archive sandbox_config
 	os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 	sandbox_config=$( echo_sandbox_config "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
+
+	log "Archiving ${sandbox_description}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
@@ -346,8 +344,10 @@ function restore_sandbox () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_digest sandbox_description
+	local os sandbox_digest sandbox_archive sandbox_description
+	os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log "Restoring ${sandbox_description}"
@@ -359,10 +359,6 @@ function restore_sandbox () {
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/sandbox" || die
-
-	local os sandbox_archive
-	os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
-	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||

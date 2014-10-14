@@ -579,15 +579,13 @@ function archive_cabal () {
 		return 0
 	fi
 
-	local cabal_tag
+	local cabal_tag os cabal_archive cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
+	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
+	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Archiving ${cabal_description}"
-
-	local os cabal_archive
-	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
-	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
@@ -601,7 +599,9 @@ function restore_cabal () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_description
+	local os cabal_archive cabal_description
+	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
+	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Restoring ${cabal_description}"
@@ -612,10 +612,6 @@ function restore_cabal () {
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
-
-	local os cabal_archive
-	os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
-	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||

@@ -361,15 +361,13 @@ function archive_app () {
 		return 0
 	fi
 
-	local app_tag app_description
+	local app_tag os app_archive app_description
 	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	os=$( echo_app_tag_os "${app_tag}" ) || die
+	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Archiving ${app_description}"
-
-	local os app_archive
-	os=$( echo_app_tag_os "${app_tag}" ) || die
-	app_archive=$( echo_app_archive "${app_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	tar_archive "${app_dir}"                      \
@@ -391,14 +389,14 @@ function restore_app () {
 	expect_existing "${app_dir}"
 	expect_no_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
 
-	local app_description
+	local os app_archive app_description
+	os=$( echo_app_tag_os "${app_tag}" ) || die
+	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Restoring ${app_description}"
 
-	local os app_archive tmp_old_dir tmp_dist_dir
-	os=$( echo_app_tag_os "${app_tag}" ) || die
-	app_archive=$( echo_app_archive "${app_tag}" ) || die
+	local tmp_old_dir tmp_dist_dir
 	tmp_old_dir=$( echo_tmp_old_app_dir ) || die
 	tmp_dist_dir=$( echo_tmp_app_dist_dir ) || die
 
