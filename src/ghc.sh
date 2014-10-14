@@ -286,7 +286,7 @@ function build_ghc () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-pre-build" ]; then
 		log "Running GHC pre-build hook"
-		"${app_dir}/.halcyon-hooks/ghc-pre-build" "${ghc_version}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
+		"${app_dir}/.halcyon-hooks/ghc-pre-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 	fi
 
 	log "Installing ${ghc_description}"
@@ -304,7 +304,7 @@ function build_ghc () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
 		log "Running GHC post-build hook"
-		"${app_dir}/.halcyon-hooks/ghc-post-build" "${ghc_version}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
+		"${app_dir}/.halcyon-hooks/ghc-post-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 	fi
 
 	rm -rf "${tmp_dir}" || die

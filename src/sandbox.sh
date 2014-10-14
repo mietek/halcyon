@@ -232,23 +232,23 @@ function build_sandbox () {
 	expect_args app_dir sandbox_constraints sandbox_tag -- "$@"
 	expect_existing "${app_dir}"
 
-	local ghc_version sandbox_digest sandbox_description
-	ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
+	local ghc_tag sandbox_digest sandbox_description
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
 
 	log "Building ${sandbox_description}"
 
-	local extended_sandbox
-	extended_sandbox=1
+	local extending_sandbox
+	extending_sandbox=1
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
-		extended_sandbox=0
+		extending_sandbox=0
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
 	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-pre-build" ]; then
 		log "Running sandbox pre-build hook"
-		"${app_dir}/.halcyon-hooks/sandbox-pre-build" "${ghc_version}" "${app_dir}" "${sandbox_constraints}" "${sandbox_digest}" "${extended_sandbox}" | die
+		"${app_dir}/.halcyon-hooks/sandbox-pre-build" "${ghc_tag}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" | die
 	fi
 
 	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
@@ -258,7 +258,7 @@ function build_sandbox () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-post-build" ]; then
 		log "Running sandbox post-build hook"
-		"${app_dir}/.halcyon-hooks/sandbox-post-build" "${ghc_version}" "${app_dir}" "${sandbox_constraints}" "${sandbox_digest}" "${extended_sandbox}" | die
+		"${app_dir}/.halcyon-hooks/sandbox-post-build" "${ghc_tag}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" | die
 	fi
 
 	local sandbox_size

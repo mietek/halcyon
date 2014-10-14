@@ -322,20 +322,21 @@ function configure_app () {
 
 function build_app () {
 	expect_vars HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/sandbox/tag"
 
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 
-	local ghc_version sandbox_digest app_description
-	ghc_version=$( echo_app_tag_ghc_version "${app_tag}" ) || die
-	sandbox_digest=$( echo_app_tag_sandbox_digest "${app_tag}" ) || die
+	local ghc_tag sandbox_tag app_description
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
+	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
 	app_description=$( echo_app_tag_description "${app_tag}" ) || die
 
 	log "Building ${app_description}"
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
 		log "Running app pre-build hook"
-		"${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_version}" "${sandbox_digest}" "${app_dir}" || die
+		"${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" || die
 	fi
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
@@ -344,7 +345,7 @@ function build_app () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
 		log "Running app post-build hook"
-		"${app_dir}/.halcyon-hooks/app-post-build" "${ghc_version}" "${sandbox_digest}" "${app_dir}" || die
+		"${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" || die
 	fi
 }
 

@@ -491,7 +491,7 @@ function build_cabal () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-pre-build" ]; then
 		log "Running Cabal pre-build hook"
-		"${app_dir}/.halcyon-hooks/cabal-pre-build" "${ghc_version}" "${cabal_version}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
+		"${app_dir}/.halcyon-hooks/cabal-pre-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
 	fi
 
 	log "Bootstrapping ${cabal_description}"
@@ -533,7 +533,7 @@ EOF
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
 		log "Running Cabal post-build hook"
-		"${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_version}" "${cabal_version}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
+		"${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
 	fi
 
 	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${tmp_dir}" || die
