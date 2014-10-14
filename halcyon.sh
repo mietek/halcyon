@@ -59,7 +59,12 @@ function set_default_vars () {
 
 
 function echo_digest () {
-	cat "$@" |  openssl sha1 | sed 's/^.* //'
+	local file_contents
+	if ! file_contents=$( cat "$@" 2>'/dev/null' ); then
+		return 0
+	fi
+
+	openssl sha1 <<<"${file_contents}" | sed 's/^.* //'
 }
 
 
