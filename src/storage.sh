@@ -98,7 +98,7 @@ function list_layers () {
 	fi
 
 	local src_url
-	src_url=$( echo_public_storage_url ${src_prefix:+?prefix=${src_prefix}} ) || die
+	src_url=$( echo_public_storage_url "${src_prefix:+?prefix=${src_prefix}}" ) || die
 
 	log_indent_begin "Listing ${src_url}..."
 
