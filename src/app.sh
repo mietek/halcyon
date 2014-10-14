@@ -1,12 +1,4 @@
-function echo_app_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-app-'*
-}
-
-
-function echo_app_tag () {
+function derive_app_tag () {
 	expect_vars HALCYON_DIR
 
 	local ghc_tag sandbox_tag app_label app_hook
@@ -305,6 +297,14 @@ function detect_app_label () {
 }
 
 
+function detect_app_hook () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	echo_digest "${app_dir}/.halcyon-hooks/"*'-app-'*
+}
+
+
 function configure_app () {
 	expect_vars HALCYON_DIR
 
@@ -465,8 +465,8 @@ function install_app () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
-	app_hook=$( echo_app_hook "${app_dir}" ) || die
-	app_tag=$( echo_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hook}" ) || die
+	app_hook=$( detect_app_hook "${app_dir}" ) || die
+	app_tag=$( derive_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hook}" ) || die
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 

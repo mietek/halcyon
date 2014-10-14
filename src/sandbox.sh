@@ -1,12 +1,4 @@
-function echo_sandbox_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-sandbox-'*
-}
-
-
-function echo_sandbox_tag () {
+function derive_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
 	local ghc_tag app_label sandbox_digest sandbox_hook
@@ -395,14 +387,14 @@ function restore_sandbox () {
 }
 
 
-function infer_sandbox_constraints () {
+function detect_sandbox_constraints () {
 	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
 	local app_dir
 	expect_args app_dir -- "$@"
 	expect_existing "${app_dir}"
 
-	log 'Inferring sandbox constraints'
+	log 'Detecting sandbox constraints'
 
 	local sandbox_constraints
 	if [ -f "${app_dir}/cabal.config" ]; then
@@ -423,11 +415,11 @@ function infer_sandbox_constraints () {
 }
 
 
-function infer_sandbox_digest () {
+function detect_sandbox_digest () {
 	local sandbox_constraints
 	expect_args sandbox_constraints -- "$@"
 
-	log_begin 'Inferring sandbox digest...'
+	log_begin 'Detecting sandbox digest...'
 
 	local sandbox_digest
 	sandbox_digest=$( echo_constraints_digest <<<"${sandbox_constraints}" ) || die
@@ -435,6 +427,14 @@ function infer_sandbox_digest () {
 	log_end "done, ${sandbox_digest:0:7}"
 
 	echo "${sandbox_digest}"
+}
+
+
+function detect_sandbox_hook () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	echo_digest "${app_dir}/.halcyon-hooks/"*'-sandbox-'*
 }
 
 
@@ -626,10 +626,10 @@ function install_sandbox () {
 	local ghc_tag app_label sandbox_constraints sandbox_digest sandbox_hook sandbox_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
-	sandbox_constraints=$( infer_sandbox_constraints "${app_dir}" ) || die
-	sandbox_digest=$( infer_sandbox_digest "${sandbox_constraints}" ) || die
-	sandbox_hook=$( echo_sandbox_hook "${app_dir}" ) || die
-	sandbox_tag=$( echo_sandbox_tag "${ghc_tag}" "${app_label}" "${sandbox_digest}" "${sandbox_hook}" ) || die
+	sandbox_constraints=$( detect_sandbox_constraints "${app_dir}" ) || die
+	sandbox_digest=$( detect_sandbox_digest "${sandbox_constraints}" ) || die
+	sandbox_hook=$( detect_sandbox_hook "${app_dir}" ) || die
+	sandbox_tag=$( derive_sandbox_tag "${ghc_tag}" "${app_label}" "${sandbox_digest}" "${sandbox_hook}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&

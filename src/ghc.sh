@@ -92,15 +92,7 @@ function echo_ghc_default_version () {
 }
 
 
-function echo_ghc_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-ghc-'*
-}
-
-
-function echo_ghc_tag () {
+function derive_ghc_tag () {
 	expect_vars HALCYON_DIR
 
 	local ghc_version ghc_hook
@@ -450,13 +442,13 @@ function restore_ghc () {
 }
 
 
-function infer_ghc_version () {
+function detect_ghc_version () {
 	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	log_begin 'Inferring GHC version...'
+	log_begin 'Detecting GHC version...'
 
 	local ghc_version
 	if has_vars HALCYON_FORCE_GHC_VERSION; then
@@ -485,6 +477,14 @@ function infer_ghc_version () {
 	fi
 
 	echo "${ghc_version}"
+}
+
+
+function detect_ghc_hook () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	echo_digest "${app_dir}/.halcyon-hooks/"*'-ghc-'*
 }
 
 
@@ -523,9 +523,9 @@ function install_ghc () {
 	expect_args app_dir -- "$@"
 
 	local ghc_version ghc_hook ghc_tag
-	ghc_version=$( infer_ghc_version "${app_dir}" ) || die
-	ghc_hook=$( echo_ghc_hook "${app_dir}" ) || die
-	ghc_tag=$( echo_ghc_tag "${ghc_version}" "${ghc_hook}" ) || die
+	ghc_version=$( detect_ghc_version "${app_dir}" ) || die
+	ghc_hook=$( detect_ghc_hook "${app_dir}" ) || die
+	ghc_tag=$( derive_ghc_tag "${ghc_version}" "${ghc_hook}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_GHC} )) &&
