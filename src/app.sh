@@ -341,12 +341,12 @@ function build_app () {
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
-	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
-
 	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
 		log "Running app post-build hook"
 		"${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" || die
 	fi
+
+	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
 }
 
 

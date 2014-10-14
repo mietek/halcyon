@@ -257,12 +257,13 @@ function build_sandbox () {
 	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
 	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" || die
-	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-post-build" ]; then
 		log "Running sandbox post-build hook"
 		"${app_dir}/.halcyon-hooks/sandbox-post-build" "${ghc_tag}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" | die
 	fi
+
+	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 	local sandbox_size
 	sandbox_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die

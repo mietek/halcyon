@@ -298,12 +298,12 @@ function build_ghc () {
 		die "Installing GHC ${ghc_version} failed"
 	fi
 
-	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
-
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
 		log "Running GHC post-build hook"
 		"${app_dir}/.halcyon-hooks/ghc-post-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 	fi
+
+	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
 	rm -rf "${tmp_dir}" || die
 

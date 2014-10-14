@@ -532,12 +532,13 @@ EOF
 	mv "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
 
 	echo_cabal_config >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
-	echo "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
 		log "Running Cabal post-build hook"
 		"${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
 	fi
+
+	echo "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${tmp_dir}" || die
 
