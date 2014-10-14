@@ -410,7 +410,7 @@ function restore_app () {
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Locating ${app_description} failed"
+			log "Downloading ${app_archive} failed"
 			return 1
 		fi
 

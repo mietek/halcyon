@@ -275,7 +275,7 @@ function build_ghc () {
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
 		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
-			die "GHC ${ghc_version} is not available"
+			die "Downloading ${original_archive} failed"
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
@@ -426,7 +426,7 @@ function restore_ghc () {
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
 		if ! download_layer "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Locating ${ghc_description} failed"
+			log "Downloading ${ghc_archive} failed"
 			return 1
 		fi
 

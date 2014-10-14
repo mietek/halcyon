@@ -370,7 +370,7 @@ function restore_sandbox () {
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
 		if ! download_layer "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Locating ${sandbox_description} failed"
+			log "Downloading ${sandbox_archive} failed"
 			return 1
 		fi
 

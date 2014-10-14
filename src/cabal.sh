@@ -476,7 +476,7 @@ function build_cabal () {
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
 		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
-			die "Cabal ${cabal_version} is not available"
+			die "Downloading ${original_archive} failed"
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
@@ -622,7 +622,7 @@ function restore_cabal () {
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
 		if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Locating ${cabal_description} failed"
+			log "Downloading ${cabal_archive} failed"
 			return 1
 		fi
 
