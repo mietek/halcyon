@@ -53,11 +53,22 @@ function echo_cabal_hook () {
 function echo_cabal_tag () {
 	expect_vars HALCYON_DIR
 
-	local cabal_version cabal_hook cabal_timestamp
-	expect_args cabal_version cabal_hook cabal_timestamp -- "$@"
+	local ghc_tag cabal_version cabal_hook cabal_timestamp
+	expect_args ghc_tag cabal_version cabal_hook cabal_timestamp -- "$@"
 
 	local os
 	os=$( detect_os ) || die
+
+	local ghc_os ghc_halcyon_dir
+	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
+	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
+
+	if [ "${os}" != "${ghc_os}" ]; then
+		die "Unexpected OS in GHC tag: ${ghc_os}"
+	fi
+	if [ "${HALCYON_DIR}" != "${ghc_halcyon_dir}" ]; then
+		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
+	fi
 
 	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_hook}\t${cabal_timestamp}"
 }
@@ -752,14 +763,16 @@ function deactivate_cabal () {
 
 function install_cabal () {
 	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL HALCYON_NO_BUILD
+	expect_existing "${HALCYON_DIR}/ghc/tag"
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local cabal_version cabal_hook cabal_tag
+	local ghc_tag cabal_version cabal_hook cabal_tag
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	cabal_version=$( infer_cabal_version ) || die
 	cabal_hook=$( echo_cabal_hook "${app_dir}" ) || die
-	cabal_tag=$( echo_cabal_tag "${cabal_version}" "${cabal_hook}" '' ) || die
+	cabal_tag=$( echo_cabal_tag "${ghc_tag}" "${cabal_version}" "${cabal_hook}" '' ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&

@@ -12,10 +12,21 @@ function echo_sandbox_tag () {
 	local ghc_tag app_label sandbox_digest sandbox_hook
 	expect_args ghc_tag app_label sandbox_digest sandbox_hook -- "$@"
 
-	local os ghc_version ghc_hook
+	local os
 	os=$( detect_os ) || die
+
+	local ghc_os ghc_halcyon_dir ghc_version ghc_hook
+	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
+	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+
+	if [ "${os}" != "${ghc_os}" ]; then
+		die "Unexpected OS in GHC tag: ${ghc_os}"
+	fi
+	if [ "${HALCYON_DIR}" != "${ghc_halcyon_dir}" ]; then
+		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
+	fi
 
 	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hook}\t${app_label}\t${sandbox_digest}\t${sandbox_hook}"
 }

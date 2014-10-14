@@ -9,21 +9,48 @@ function echo_app_hook () {
 function echo_app_tag () {
 	expect_vars HALCYON_DIR
 
-	local sandbox_tag app_label app_hook
-	expect_args sandbox_tag app_label app_hook -- "$@"
+	local ghc_tag sandbox_tag app_label app_hook
+	expect_args ghc_tag sandbox_tag app_label app_hook -- "$@"
 
-	local os ghc_version ghc_hook sandbox_app_label sandbox_digest sandbox_hook
+	local os
 	os=$( detect_os ) || die
-	ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
-	ghc_hook=$( echo_sandbox_tag_ghc_hook "${sandbox_tag}" ) || die
+
+	local ghc_os ghc_halcyon_dir ghc_version ghc_hook
+	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
+	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
+	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
+	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+
+	if [ "${os}" != "${ghc_os}" ]; then
+		die "Unexpected OS in GHC tag: ${ghc_os}"
+	fi
+	if [ "${HALCYON_DIR}" != "${ghc_halcyon_dir}" ]; then
+		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
+	fi
+
+	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hook sandbox_app_label sandbox_digest sandbox_hook
+	sandbox_os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
+	sandbox_halcyon_dir=$( echo_sandbox_tag_halcyon_dir "${sandbox_tag}" ) || die
+	sandbox_ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
+	sandbox_ghc_hook=$( echo_sandbox_tag_ghc_hook "${sandbox_tag}" ) || die
 	sandbox_app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
 
+	if [ "${os}" != "${sandbox_os}" ]; then
+		die "Unexpected OS in sandbox tag: ${sandbox_os}"
+	fi
+	if [ "${HALCYON_DIR}" != "${sandbox_halcyon_dir}" ]; then
+		die "Unexpected HALCYON_DIR in sandbox tag: ${sandbox_halcyon_dir}"
+	fi
+	if [ "${ghc_version}" != "${sandbox_ghc_version}" ]; then
+		die "Unexpected GHC version in sandbox tag: ${sandbox_ghc_version}"
+	fi
+	if [ "${ghc_hook}" != "${sandbox_ghc_hook}" ]; then
+		die "Unexpected GHC hook in sandbox tag: ${sandbox_ghc_hook}"
+	fi
 	if [ "${app_label}" != "${sandbox_app_label}" ]; then
-		log_error 'Unexpected app label difference:'
-		log_indent "${app_label} is needed and not ${sandbox_app_label}"
-		die
+		die "Unexpected app label in sandbox tag: ${sandbox_app_label}"
 	fi
 
 	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hook}\t${sandbox_digest}\t${sandbox_hook}\t${app_label}\t${app_hook}"
@@ -429,16 +456,17 @@ function restore_app () {
 
 function install_app () {
 	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD
-	expect_existing "${HALCYON_DIR}/sandbox/tag"
+	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/sandbox/tag"
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local sandbox_tag app_label app_hook app_tag
+	local ghc_tag sandbox_tag app_label app_hook app_tag
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	app_hook=$( echo_app_hook "${app_dir}" ) || die
-	app_tag=$( echo_app_tag "${sandbox_tag}" "${app_label}" "${app_hook}" ) || die
+	app_tag=$( echo_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hook}" ) || die
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
