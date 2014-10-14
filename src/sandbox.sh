@@ -228,8 +228,14 @@ function build_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	local sandbox_constraints sandbox_tag app_dir
-	expect_args sandbox_constraints sandbox_tag app_dir -- "$@"
+	local sandbox_constraints sandbox_tag extending_sandbox app_dir
+	expect_args sandbox_constraints sandbox_tag extending_sandbox app_dir -- "$@"
+	if (( ${extending_sandbox} )); then
+		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-cabal.config"
+		rm -f "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-cabal.config" || die
+	else
+		expect_no_existing "${HALCYON_DIR}/sandbox"
+	fi
 	expect_existing "${app_dir}"
 
 	local ghc_tag sandbox_digest sandbox_description
@@ -239,10 +245,7 @@ function build_sandbox () {
 
 	log "Building ${sandbox_description}"
 
-	local extending_sandbox
-	extending_sandbox=1
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
-		extending_sandbox=0
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
 	fi
 
@@ -607,9 +610,8 @@ function install_extended_sandbox () {
 
 	log "Extending matched ${matched_description} to ${sandbox_description}"
 
-	rm -f "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-cabal.config" || die
-
-	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${app_dir}" || die
+	local extending_sandbox=1
+	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
@@ -650,7 +652,8 @@ function install_sandbox () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${app_dir}" || die
+	local extending_sandbox=0
+	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
