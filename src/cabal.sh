@@ -132,7 +132,7 @@ function echo_cabal_tag_timestamp () {
 }
 
 
-function echo_cabal_tag_description () {
+function echo_cabal_description () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
@@ -461,7 +461,7 @@ function build_cabal () {
 
 	local cabal_version cabal_description
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Building ${cabal_description}"
 
@@ -550,7 +550,7 @@ function update_cabal () {
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
-	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Updating ${cabal_description}"
 
@@ -559,7 +559,7 @@ function update_cabal () {
 	local cabal_timestamp updated_cabal_tag updated_cabal_description
 	cabal_timestamp=$( echo_timestamp ) || die
 	updated_cabal_tag=$( derive_updated_cabal_tag "${cabal_tag}" "${cabal_timestamp}" ) || die
-	updated_cabal_description=$( echo_cabal_tag_description "${updated_cabal_tag}" ) || die
+	updated_cabal_description=$( echo_cabal_description "${updated_cabal_tag}" ) || die
 	echo "${updated_cabal_tag}" >"${HALCYON_DIR}/cabal/tag" || die
 
 	local cabal_size
@@ -578,7 +578,7 @@ function archive_cabal () {
 
 	local cabal_tag
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
-	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Archiving ${cabal_description}"
 
@@ -599,7 +599,7 @@ function restore_cabal () {
 	expect_args cabal_tag -- "$@"
 
 	local cabal_description
-	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Restoring ${cabal_description}"
 
@@ -676,7 +676,7 @@ function restore_updated_cabal () {
 	expect_args cabal_tag -- "$@"
 
 	local cabal_description
-	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log "Restoring updated ${cabal_description}"
 
@@ -749,7 +749,7 @@ function activate_cabal () {
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
-	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log_begin "Activating ${cabal_description}..."
 
@@ -771,7 +771,7 @@ function deactivate_cabal () {
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
-	cabal_description=$( echo_cabal_tag_description "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	log_begin "Deactivating ${cabal_description}..."
 

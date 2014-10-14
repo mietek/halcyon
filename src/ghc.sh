@@ -137,7 +137,7 @@ function echo_ghc_tag_hook () {
 }
 
 
-function echo_ghc_tag_description () {
+function echo_ghc_description () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
@@ -258,7 +258,7 @@ function build_ghc () {
 
 	local ghc_version ghc_description
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log "Building ${ghc_description}"
 
@@ -322,7 +322,7 @@ function strip_ghc () {
 	local ghc_tag ghc_version ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log_begin "Stripping ${ghc_description}..."
 
@@ -382,7 +382,7 @@ function archive_ghc () {
 
 	local ghc_tag ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
-	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log "Archiving ${ghc_description}"
 
@@ -403,7 +403,7 @@ function restore_ghc () {
 	expect_args ghc_tag -- "$@"
 
 	local ghc_description
-	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log "Restoring ${ghc_description}"
 
@@ -494,7 +494,7 @@ function activate_ghc () {
 
 	local ghc_tag ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
-	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log_begin "Activating ${ghc_description}..."
 
@@ -508,7 +508,7 @@ function deactivate_ghc () {
 
 	local ghc_tag ghc_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
-	ghc_description=$( echo_ghc_tag_description "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log_begin "Deactivating ${ghc_description}..."
 

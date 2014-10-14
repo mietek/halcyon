@@ -80,7 +80,7 @@ function echo_sandbox_tag_hook () {
 }
 
 
-function echo_sandbox_tag_description () {
+function echo_sandbox_description () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
@@ -235,7 +235,7 @@ function build_sandbox () {
 	local ghc_tag sandbox_digest sandbox_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log "Building ${sandbox_description}"
 
@@ -290,7 +290,7 @@ function strip_sandbox () {
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
-	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log_begin "Stripping ${sandbox_description}..."
 
@@ -320,7 +320,7 @@ function archive_sandbox () {
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
-	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log "Archiving ${sandbox_description}"
 
@@ -345,7 +345,7 @@ function restore_sandbox () {
 
 	local sandbox_digest sandbox_description
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log "Restoring ${sandbox_description}"
 
@@ -535,7 +535,7 @@ function activate_sandbox () {
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
-	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log_begin "Activating ${sandbox_description}..."
 
@@ -560,7 +560,7 @@ function deactivate_sandbox () {
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
-	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log_begin "Deactivating ${sandbox_description}..."
 
@@ -587,12 +587,12 @@ function install_extended_sandbox () {
 	local sandbox_digest sandbox_hook sandbox_description
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
-	sandbox_description=$( echo_sandbox_tag_description "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	local matched_digest matched_hook matched_description
 	matched_digest=$( echo_sandbox_tag_digest "${matched_tag}" ) || die
 	matched_hook=$( echo_sandbox_tag_hook "${matched_tag}" ) || die
-	matched_description=$( echo_sandbox_tag_description "${matched_tag}" ) || die
+	matched_description=$( echo_sandbox_description "${matched_tag}" ) || die
 
 	if [ "${matched_digest}" = "${sandbox_digest}" ] && [ "${matched_hook}" = "${sandbox_hook}" ]; then
 		log "Using matched ${matched_description} as ${sandbox_description}"

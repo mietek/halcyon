@@ -113,7 +113,7 @@ function echo_app_tag_hook () {
 }
 
 
-function echo_app_tag_description () {
+function echo_app_description () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
@@ -312,7 +312,7 @@ function configure_app () {
 	expect_args app_dir app_tag -- "$@"
 
 	local app_description
-	app_description=$( echo_app_tag_description "${app_tag}" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Configuring ${app_description}"
 
@@ -330,7 +330,7 @@ function build_app () {
 	local ghc_tag sandbox_tag app_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
-	app_description=$( echo_app_tag_description "${app_tag}" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Building ${app_description}"
 
@@ -363,7 +363,7 @@ function archive_app () {
 
 	local app_tag app_description
 	app_tag=$( <"${HALCYON_DIR}/app/tag" ) || die
-	app_description=$( echo_app_tag_description "${app_tag}" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Archiving ${app_description}"
 
@@ -392,7 +392,7 @@ function restore_app () {
 	expect_no_existing "${app_dir}/tag" "${app_dir}/dist"
 
 	local app_description
-	app_description=$( echo_app_tag_description "${app_tag}" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Restoring ${app_description}"
 
