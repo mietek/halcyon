@@ -252,6 +252,9 @@ function build_sandbox () {
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-pre-build" ]; then
 		log "Running sandbox pre-build hook"
 		"${app_dir}/.halcyon-hooks/sandbox-pre-build" "${ghc_tag}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" | die
+
+		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+		cp "${app_dir}/.halcyon-hooks/sandbox-pre-build" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
 	fi
 
 	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
@@ -261,6 +264,9 @@ function build_sandbox () {
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-post-build" ]; then
 		log "Running sandbox post-build hook"
 		"${app_dir}/.halcyon-hooks/sandbox-post-build" "${ghc_tag}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" | die
+
+		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+		cp "${app_dir}/.halcyon-hooks/sandbox-pre-build" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
 	fi
 
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
