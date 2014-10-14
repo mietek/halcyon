@@ -516,6 +516,9 @@ EOF
 		die "Bootstrapping Cabal ${cabal_version} with GHC ${ghc_version} is not implemented yet"
 	esac
 
+	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc is specified.
+	# https://ghc.haskell.org/trac/ghc/ticket/9174
+
 	if ! (
 		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
 		cd "${tmp_dir}/cabal-install-${cabal_version}" &&
