@@ -322,14 +322,14 @@ function configure_app () {
 
 function build_app () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/sandbox/tag"
+	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 
 	local ghc_tag sandbox_tag app_description
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Building ${app_description}"
@@ -341,7 +341,7 @@ function build_app () {
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
-	echo "${app_tag}" >"${app_dir}/tag" || die
+	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
 		log "Running app post-build hook"
@@ -355,14 +355,14 @@ function archive_app () {
 
 	local app_dir
 	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}/tag" "${app_dir}/dist"
+	expect_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
 
 	if (( ${HALCYON_NO_ARCHIVE} )); then
 		return 0
 	fi
 
 	local app_tag app_description
-	app_tag=$( <"${HALCYON_DIR}/app/tag" ) || die
+	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	log "Archiving ${app_description}"
@@ -389,7 +389,7 @@ function restore_app () {
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 	expect_existing "${app_dir}"
-	expect_no_existing "${app_dir}/tag" "${app_dir}/dist"
+	expect_no_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
 
 	local app_description
 	app_description=$( echo_app_description "${app_tag}" ) || die
@@ -404,8 +404,8 @@ function restore_app () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
-		! [ -f "${tmp_old_dir}/tag" ] ||
-		! validate_app_tag "${app_tag}" <"${tmp_old_dir}/tag"
+		! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
+		! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
@@ -415,8 +415,8 @@ function restore_app () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
-			! [ -f "${tmp_old_dir}/tag" ] ||
-			! validate_app_tag "${app_tag}" <"${tmp_old_dir}/tag"
+			! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
+			! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 			log_warning "Restoring ${app_archive} failed"
@@ -431,7 +431,7 @@ function restore_app () {
 	local source_changes path
 	source_changes=$(
 		compare_recursively "${tmp_old_dir}" "${app_dir}" |
-		filter_not_matching '^. (\.halcyon/|tag$)'
+		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$)'
 	) || die
 	filter_matching '^= ' <<<"${source_changes}" |
 		sed 's/^= //' |
@@ -457,14 +457,14 @@ function restore_app () {
 
 function install_app () {
 	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD
-	expect_existing "${HALCYON_DIR}/ghc/tag" "${HALCYON_DIR}/sandbox/tag"
+	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
 	local ghc_tag sandbox_tag app_label app_hook app_tag
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	app_hook=$( detect_app_hook "${app_dir}" ) || die
 	app_tag=$( derive_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hook}" ) || die

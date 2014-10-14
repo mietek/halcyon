@@ -51,9 +51,9 @@ function clean_cache () {
 
 	mkdir -p "${tmp_dir}" || die
 
-	if [ -f "${HALCYON_DIR}/ghc/tag" ]; then
+	if [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ]; then
 		local ghc_tag ghc_archive
-		ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
+		ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 		ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ]; then
@@ -61,9 +61,9 @@ function clean_cache () {
 		fi
 	fi
 
-	if [ -f "${HALCYON_DIR}/cabal/tag" ]; then
+	if [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
 		local cabal_tag cabal_archive
-		cabal_tag=$( <"${HALCYON_DIR}/cabal/tag" ) || die
+		cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 		cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ]; then
@@ -71,9 +71,9 @@ function clean_cache () {
 		fi
 	fi
 
-	if [ -f "${HALCYON_DIR}/sandbox/tag" ]; then
+	if [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ]; then
 		local sandbox_tag sandbox_archive
-		sandbox_tag=$( <"${HALCYON_DIR}/sandbox/tag" ) || die
+		sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 		sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ]; then
@@ -81,9 +81,9 @@ function clean_cache () {
 		fi
 	fi
 
-	if [ -f "${app_dir}/tag" ]; then
+	if [ -f "${app_dir}/.halcyon-tag" ]; then
 		local app_tag app_archive
-		app_tag=$( <"${app_dir}/tag" ) || die
+		app_tag=$( <"${app_dir}/.halcyon-tag" ) || die
 		app_archive=$( echo_app_archive "${app_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ]; then

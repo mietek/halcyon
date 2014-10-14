@@ -300,7 +300,7 @@ function build_ghc () {
 		die "Installing GHC ${ghc_version} failed"
 	fi
 
-	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/tag" || die
+	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
 		log "Running GHC post-build hook"
@@ -317,10 +317,10 @@ function build_ghc () {
 
 function strip_ghc () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local ghc_tag ghc_version ghc_description
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
@@ -374,14 +374,14 @@ function strip_ghc () {
 
 function archive_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
-	expect_existing "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	if (( ${HALCYON_NO_ARCHIVE} )); then
 		return 0
 	fi
 
 	local ghc_tag ghc_description
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log "Archiving ${ghc_description}"
@@ -407,8 +407,8 @@ function restore_ghc () {
 
 	log "Restoring ${ghc_description}"
 
-	if [ -f "${HALCYON_DIR}/ghc/tag" ] &&
-		validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/tag"
+	if [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] &&
+		validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag"
 	then
 		return 0
 	fi
@@ -420,8 +420,8 @@ function restore_ghc () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
-		! [ -f "${HALCYON_DIR}/ghc/tag" ] ||
-		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/tag"
+		! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
+		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
@@ -431,8 +431,8 @@ function restore_ghc () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
-			! [ -f "${HALCYON_DIR}/ghc/tag" ] ||
-			! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/tag"
+			! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
+			! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 			log_warning "Restoring ${ghc_archive} failed"
@@ -490,10 +490,10 @@ function detect_ghc_hook () {
 
 function activate_ghc () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local ghc_tag ghc_description
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log_begin "Activating ${ghc_description}..."
@@ -504,10 +504,10 @@ function activate_ghc () {
 
 function deactivate_ghc () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/tag"
+	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local ghc_tag ghc_description
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/tag" ) || die
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	log_begin "Deactivating ${ghc_description}..."
