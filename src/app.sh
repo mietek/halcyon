@@ -156,28 +156,6 @@ function echo_tmp_app_dist_dir () {
 }
 
 
-function validate_app_tag () {
-	local app_tag
-	expect_args app_tag -- "$@"
-
-	local candidate_tag
-	candidate_tag=$( match_exactly_one ) || die
-
-	if [ "${candidate_tag}" != "${app_tag}" ]; then
-		return 1
-	fi
-}
-
-
-function validate_app_hook () {
-	local app_hook hooks_dir
-	expect_args app_hook hooks_dir -- "$@"
-
-	# TODO
-	return 0
-}
-
-
 function echo_fake_app_package () {
 	local app_label
 	expect_args app_label -- "$@"
@@ -311,6 +289,28 @@ function detect_app_hook () {
 	expect_args app_dir -- "$@"
 
 	echo_digest "${app_dir}/.halcyon-hooks/"*'-app-'*
+}
+
+
+function validate_app_tag () {
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	local candidate_tag
+	candidate_tag=$( match_exactly_one ) || die
+
+	if [ "${candidate_tag}" != "${app_tag}" ]; then
+		return 1
+	fi
+}
+
+
+function validate_app_hook () {
+	local app_hook hooks_dir
+	expect_args app_hook hooks_dir -- "$@"
+
+	# TODO
+	return 0
 }
 
 

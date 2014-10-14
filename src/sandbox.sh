@@ -198,6 +198,57 @@ function echo_tmp_sandbox_config () {
 }
 
 
+function detect_sandbox_constraints () {
+	expect_vars HALCYON_NO_WARN_CONSTRAINTS
+
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}"
+
+	log 'Detecting sandbox constraints'
+
+	local sandbox_constraints
+	if [ -f "${app_dir}/cabal.config" ]; then
+		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
+	else
+		sandbox_constraints=$( freeze_implicit_constraints "${app_dir}" ) || die
+		if ! (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
+			log_warning 'Expected cabal.config with explicit constraints'
+			log
+			help_add_constraints "${sandbox_constraints}"
+			log
+		else
+			echo_constraints <<<"${sandbox_constraints}" >&2 || die
+		fi
+	fi
+
+	echo "${sandbox_constraints}"
+}
+
+
+function detect_sandbox_digest () {
+	local sandbox_constraints
+	expect_args sandbox_constraints -- "$@"
+
+	log_begin 'Detecting sandbox digest...'
+
+	local sandbox_digest
+	sandbox_digest=$( echo_constraints_digest <<<"${sandbox_constraints}" ) || die
+
+	log_end "done, ${sandbox_digest:0:7}"
+
+	echo "${sandbox_digest}"
+}
+
+
+function detect_sandbox_hook () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	echo_digest "${app_dir}/.halcyon-hooks/"*'-sandbox-'*
+}
+
+
 function validate_sandbox_tag () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
@@ -403,57 +454,6 @@ function restore_sandbox () {
 			return 1
 		fi
 	fi
-}
-
-
-function detect_sandbox_constraints () {
-	expect_vars HALCYON_NO_WARN_CONSTRAINTS
-
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
-
-	log 'Detecting sandbox constraints'
-
-	local sandbox_constraints
-	if [ -f "${app_dir}/cabal.config" ]; then
-		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
-	else
-		sandbox_constraints=$( freeze_implicit_constraints "${app_dir}" ) || die
-		if ! (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
-			log_warning 'Expected cabal.config with explicit constraints'
-			log
-			help_add_constraints "${sandbox_constraints}"
-			log
-		else
-			echo_constraints <<<"${sandbox_constraints}" >&2 || die
-		fi
-	fi
-
-	echo "${sandbox_constraints}"
-}
-
-
-function detect_sandbox_digest () {
-	local sandbox_constraints
-	expect_args sandbox_constraints -- "$@"
-
-	log_begin 'Detecting sandbox digest...'
-
-	local sandbox_digest
-	sandbox_digest=$( echo_constraints_digest <<<"${sandbox_constraints}" ) || die
-
-	log_end "done, ${sandbox_digest:0:7}"
-
-	echo "${sandbox_digest}"
-}
-
-
-function detect_sandbox_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-sandbox-'*
 }
 
 

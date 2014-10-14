@@ -166,6 +166,62 @@ function echo_tmp_ghc_dir () {
 }
 
 
+function detect_base_version () {
+	expect_vars HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/ghc"
+
+	ghc-pkg list --simple-output |
+		grep -oE '\bbase-[0-9\.]+\b' |
+		sed 's/^base-//' || die
+}
+
+
+function detect_ghc_version () {
+	expect_vars HALCYON_NO_WARN_CONSTRAINTS
+
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	log_begin 'Detecting GHC version...'
+
+	local ghc_version
+	if has_vars HALCYON_FORCE_GHC_VERSION; then
+		ghc_version="${HALCYON_FORCE_GHC_VERSION}"
+
+		log_end "${ghc_version}, forced"
+	elif [ -f "${app_dir}/cabal.config" ]; then
+		local base_version
+		base_version=$(
+			detect_constraints "${app_dir}" |
+			filter_matching "^base " |
+			match_exactly_one |
+			sed 's/^.* //'
+		) || die
+
+		ghc_version=$( echo_ghc_version_from_base_version "${base_version}" ) || die
+
+		log_end "done, ${ghc_version}"
+	else
+		ghc_version=$( echo_ghc_default_version ) || die
+
+		log_end "${ghc_version}, default"
+		if ! (( "${HALCYON_NO_WARN_CONSTRAINTS}" )); then
+			log_warning 'Expected cabal.config with explicit constraints'
+		fi
+	fi
+
+	echo "${ghc_version}"
+}
+
+
+function detect_ghc_hook () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	echo_digest "${app_dir}/.halcyon-hooks/"*'-ghc-'*
+}
+
+
 function validate_ghc_tag () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
@@ -185,16 +241,6 @@ function validate_ghc_hook () {
 
 	# TODO
 	return 0
-}
-
-
-function detect_base_version () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc"
-
-	ghc-pkg list --simple-output |
-		grep -oE '\bbase-[0-9\.]+\b' |
-		sed 's/^base-//' || die
 }
 
 
@@ -452,52 +498,6 @@ function restore_ghc () {
 			return 1
 		fi
 	fi
-}
-
-
-function detect_ghc_version () {
-	expect_vars HALCYON_NO_WARN_CONSTRAINTS
-
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	log_begin 'Detecting GHC version...'
-
-	local ghc_version
-	if has_vars HALCYON_FORCE_GHC_VERSION; then
-		ghc_version="${HALCYON_FORCE_GHC_VERSION}"
-
-		log_end "${ghc_version}, forced"
-	elif [ -f "${app_dir}/cabal.config" ]; then
-		local base_version
-		base_version=$(
-			detect_constraints "${app_dir}" |
-			filter_matching "^base " |
-			match_exactly_one |
-			sed 's/^.* //'
-		) || die
-
-		ghc_version=$( echo_ghc_version_from_base_version "${base_version}" ) || die
-
-		log_end "done, ${ghc_version}"
-	else
-		ghc_version=$( echo_ghc_default_version ) || die
-
-		log_end "${ghc_version}, default"
-		if ! (( "${HALCYON_NO_WARN_CONSTRAINTS}" )); then
-			log_warning 'Expected cabal.config with explicit constraints'
-		fi
-	fi
-
-	echo "${ghc_version}"
-}
-
-
-function detect_ghc_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-ghc-'*
 }
 
 
