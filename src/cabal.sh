@@ -236,14 +236,26 @@ function validate_updated_cabal_tag () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local updated_pattern
-	updated_pattern=$( derive_updated_cabal_tag "${cabal_tag}" '.*' ) || die
-
 	local candidate_tag
-	if ! candidate_tag=$(
-		filter_matching "^${updated_pattern}$" |
-		match_exactly_one
-	); then
+	candidate_tag=$( match_exactly_one ) || die
+
+	local cabal_os cabal_halcyon_dir cabal_version cabal_hook
+	cabal_os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
+	cabal_halcyon_dir=$( echo_cabal_tag_halcyon_dir "${cabal_tag}" ) || die
+	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
+	cabal_hook=$( echo_cabal_tag_hook "${cabal_tag}" ) || die
+
+	local candidate_os candidate_halcyon_dir candidate_cabal_version candidate_cabal_hook candidate_timestamp
+	candidate_os=$( echo_cabal_tag_os "${candidate_tag}" ) || die
+	candidate_halcyon_dir=$( echo_cabal_tag_halcyon_dir "${candidate_tag}" ) || die
+	candidate_version=$( echo_cabal_tag_version "${candidate_tag}" ) || die
+	candidate_hook=$( echo_cabal_tag_hook "${candidate_tag}" ) || die
+
+	if [ "${candidate_os}" != "${cabal_os}" ] ||
+		[ "${candidate_halcyon_dir}" != "${cabal_halcyon_dir}" ] ||
+		[ "${candidate_version}" != "${cabal_version}" ] ||
+		[ "${candidate_hook}" != "${cabal_hook}" ]
+	then
 		return 1
 	fi
 
