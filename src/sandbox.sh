@@ -242,10 +242,10 @@ function detect_sandbox_digest () {
 
 
 function detect_sandbox_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
 
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-sandbox-'*
+	echo_digest "${hooks_dir}/"*'-sandbox-'*
 }
 
 
@@ -279,9 +279,13 @@ function validate_sandbox_hook () {
 	local sandbox_hook hooks_dir
 	expect_args sandbox_hook hooks_dir -- "$@"
 
-	# TODO
-	return 0
-fi
+	local candidate_hook
+	candidate_hook=$( detect_sandbox_hook "${hooks_dir}" ) || die
+
+	if [ "${candidate_hook}" != "${sandbox_hook}" ]; then
+		return 1
+	fi
+}
 
 
 function build_sandbox () {
@@ -646,7 +650,7 @@ function install_sandbox () {
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	sandbox_constraints=$( detect_sandbox_constraints "${app_dir}" ) || die
 	sandbox_digest=$( detect_sandbox_digest "${sandbox_constraints}" ) || die
-	sandbox_hook=$( detect_sandbox_hook "${app_dir}" ) || die
+	sandbox_hook=$( detect_sandbox_hook "${app_dir}/.halcyon-hooks" ) || die
 	sandbox_tag=$( derive_sandbox_tag "${ghc_tag}" "${app_label}" "${sandbox_digest}" "${sandbox_hook}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&

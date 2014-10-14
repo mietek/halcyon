@@ -215,10 +215,10 @@ function detect_ghc_version () {
 
 
 function detect_ghc_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
 
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-ghc-'*
+	echo_digest "${hooks_dir}/"*'-ghc-'*
 }
 
 
@@ -239,8 +239,12 @@ function validate_ghc_hook () {
 	local ghc_hook hooks_dir
 	expect_args ghc_hook hooks_dir -- "$@"
 
-	# TODO
-	return 0
+	local candidate_hook
+	candidate_hook=$( detect_ghc_hook "${hooks_dir}" ) || die
+
+	if [ "${candidate_hook}" != "${ghc_hook}" ]; then
+		return 1
+	fi
 }
 
 
@@ -537,7 +541,7 @@ function install_ghc () {
 
 	local ghc_version ghc_hook ghc_tag
 	ghc_version=$( detect_ghc_version "${app_dir}" ) || die
-	ghc_hook=$( detect_ghc_hook "${app_dir}" ) || die
+	ghc_hook=$( detect_ghc_hook "${app_dir}/.halcyon-hooks" ) || die
 	ghc_tag=$( derive_ghc_tag "${ghc_version}" "${ghc_hook}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&

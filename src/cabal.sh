@@ -363,10 +363,10 @@ function detect_cabal_version () {
 
 
 function detect_cabal_hook () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
 
-	echo_digest "${app_dir}/.halcyon-hooks/"*'-cabal-'*
+	echo_digest "${hooks_dir}/"*'-cabal-'*
 }
 
 
@@ -387,8 +387,12 @@ function validate_cabal_hook () {
 	local cabal_hook hooks_dir
 	expect_args cabal_hook hooks_dir -- "$@"
 
-	# TODO
-	return 0
+	local candidate_hook
+	candidate_hook=$( detect_cabal_hook "${hooks_dir}" ) || die
+
+	if [ "${candidate_hook}" != "${cabal_hook}" ]; then
+		return 1
+	fi
 }
 
 
@@ -819,7 +823,7 @@ function install_cabal () {
 	local ghc_tag cabal_version cabal_hook cabal_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	cabal_version=$( detect_cabal_version ) || die
-	cabal_hook=$( detect_cabal_hook "${app_dir}" ) || die
+	cabal_hook=$( detect_cabal_hook "${app_dir}/.halcyon-hooks" ) || die
 	cabal_tag=$( derive_cabal_tag "${ghc_tag}" "${cabal_version}" "${cabal_hook}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
