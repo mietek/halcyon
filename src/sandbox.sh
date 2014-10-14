@@ -253,7 +253,7 @@ function build_sandbox () {
 
 	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
-	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/cabal.config" || die
+	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" || die
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-post-build" ]; then
@@ -331,7 +331,7 @@ function archive_sandbox () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
-	cp "${HALCYON_DIR}/sandbox/cabal.config" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
+	cp "${HALCYON_DIR}/sandbox/.halcyon-cabal.config" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	upload_layer "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}" || die
 	upload_layer "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}" || die
 }
@@ -351,7 +351,7 @@ function restore_sandbox () {
 
 	if [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] &&
 		validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" &&
-		validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/cabal.config"
+		validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config"
 	then
 		return 0
 	fi
@@ -365,7 +365,7 @@ function restore_sandbox () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
 		! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
 		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
-		! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/cabal.config"
+		! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
@@ -377,7 +377,7 @@ function restore_sandbox () {
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
 			! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
 			! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
-			! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/cabal.config"
+			! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 			log_warning "Restoring ${sandbox_archive} failed"
@@ -607,7 +607,7 @@ function install_extended_sandbox () {
 
 	log "Extending matched ${matched_description} to ${sandbox_description}"
 
-	rm -f "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/cabal.config" || die
+	rm -f "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-cabal.config" || die
 
 	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${app_dir}" || die
 	strip_sandbox || die
