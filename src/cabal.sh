@@ -324,7 +324,7 @@ function cabal_do () {
 
 	if ! (
 		cd "${work_dir}" &&
-		cabal --config-file="${HALCYON_DIR}/cabal/config" "$@"
+		cabal --config-file="${HALCYON_DIR}/cabal/.halcyon-cabal.config" "$@"
 	); then
 		die 'Using Cabal failed'
 	fi
@@ -531,7 +531,7 @@ EOF
 	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
 	mv "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
 
-	echo_cabal_config >"${HALCYON_DIR}/cabal/config" || die
+	echo_cabal_config >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 	echo "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
@@ -762,7 +762,7 @@ function activate_cabal () {
 
 	mkdir -p "${HOME}/.cabal" || die
 	rm -f "${HOME}/.cabal/config" || die
-	ln -s "${HALCYON_DIR}/cabal/config" "${HOME}/.cabal/config" || die
+	ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
 
 	log_end 'done'
 }
