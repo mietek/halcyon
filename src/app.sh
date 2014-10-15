@@ -113,7 +113,7 @@ function echo_app_tag_hook () {
 }
 
 
-function echo_app_description () {
+function echo_app_id () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
@@ -121,7 +121,7 @@ function echo_app_description () {
 	app_label=$( echo_app_tag_label "${app_tag}" ) || die
 	app_hook=$( echo_app_tag_hook "${app_tag}" ) || die
 
-	echo "app ${app_label}${app_hook:+~${app_hook:0:7}}"
+	echo "${app_label}${app_hook:+~${app_hook:0:7}}"
 }
 
 
@@ -129,15 +129,12 @@ function echo_app_archive () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local ghc_version ghc_hook sandbox_digest sandbox_hook app_label app_hook
-	ghc_version=$( echo_app_tag_ghc_version "${app_tag}" ) || die
-	ghc_hook=$( echo_app_tag_ghc_hook "${app_tag}" ) || die
-	sandbox_digest=$( echo_app_tag_digest "${app_tag}" ) || die
-	sandbox_hook=$( echo_app_tag_hook "${app_tag}" ) || die
-	app_label=$( echo_app_tag_app_label "${app_tag}" ) || die
-	app_hook=$( echo_app_tag_app_hook "${app_tag}" ) || die
+	local ghc_id sandbox_id app_id
+	ghc_id=$( echo_ghc_id "${app_tag}" ) || die
+	sandbox_id=$( echo_sandbox_id "${app_tag}" ) || die
+	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	echo "halcyon-app-ghc-${ghc_version}${ghc_hook:+~${ghc_hook:0:7}}-${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}}-${app_label}${app_hook:+~${app_hook:0:7}}.tar.gz"
+	echo "halcyon-app-ghc-${ghc_id}-${sandbox_id}-${app_id}.tar.gz"
 }
 
 
@@ -324,10 +321,10 @@ function configure_app () {
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 
-	local app_description
-	app_description=$( echo_app_description "${app_tag}" ) || die
+	local app_id
+	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Configuring ${app_description}"
+	log "Configuring app ${app_id}"
 
 	cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 }
@@ -340,12 +337,12 @@ function build_app () {
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 
-	local ghc_tag sandbox_tag app_description
+	local ghc_tag sandbox_tag app_id
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	app_description=$( echo_app_description "${app_tag}" ) || die
+	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Building ${app_description}"
+	log "Building app ${app_id}"
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
 		log "Running app pre-build hook"
@@ -374,13 +371,13 @@ function archive_app () {
 		return 0
 	fi
 
-	local app_tag os app_archive app_description
+	local app_tag os app_archive app_id
 	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	os=$( echo_app_tag_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
-	app_description=$( echo_app_description "${app_tag}" ) || die
+	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Archiving ${app_description}"
+	log "Archiving app ${app_id}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	tar_archive "${app_dir}"                      \
@@ -402,13 +399,13 @@ function restore_app () {
 	expect_existing "${app_dir}"
 	expect_no_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
 
-	local os app_hook app_archive app_description
+	local os app_hook app_archive app_id
 	os=$( echo_app_tag_os "${app_tag}" ) || die
 	app_hook=$( echo_app_tag_hook "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
-	app_description=$( echo_app_description "${app_tag}" ) || die
+	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Restoring ${app_description}"
+	log "Restoring app ${app_id}"
 
 	local tmp_old_dir tmp_dist_dir
 	tmp_old_dir=$( echo_tmp_old_app_dir ) || die
