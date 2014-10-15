@@ -573,7 +573,7 @@ function deactivate_ghc () {
 
 
 function install_ghc () {
-	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_GHC HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_GHC HALCYON_NO_BUILD
 
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -592,6 +592,12 @@ function install_ghc () {
 	fi
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
+
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
+		(( ${HALCYON_FORCE_BUILD_GHC} ))
+	then
+		rm -rf "${HALCYON_DIR}/ghc"
+	fi
 
 	build_ghc "${ghc_tag}" "${app_dir}" || die
 	strip_ghc || die
