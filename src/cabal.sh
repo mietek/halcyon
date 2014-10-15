@@ -318,11 +318,10 @@ function echo_updated_cabal_archive_prefix () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_version cabal_hooks_hash
-	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	local cabal_id
+	cabal_id=$( echo_cabal_id "${cabal_tag}" ) || die
 
-	echo "halcyon-cabal-${cabal_version}${cabal_hooks_hash:+~${cabal_hooks_hash:0:7}}-"
+	echo "halcyon-cabal-${cabal_id}-"
 }
 
 
@@ -330,11 +329,10 @@ function echo_updated_cabal_archive_pattern () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_version cabal_hooks_hash
-	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	local cabal_id
+	cabal_id=$( echo_cabal_id "${cabal_tag}" ) || die
 
-	echo "halcyon-cabal-${cabal_version//./\.}${cabal_hooks_hash:+~${cabal_hooks_hash:0:7}}-.*\.tar\.xz"
+	echo "halcyon-cabal-${cabal_id//./\.}-.*\.tar\.xz"
 }
 
 
