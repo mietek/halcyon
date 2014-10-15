@@ -314,7 +314,7 @@ function configure_app () {
 
 
 function build_app () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local app_dir app_tag
@@ -325,7 +325,11 @@ function build_app () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Building app ${app_id} layer"
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_APP} )); then
+		log "Building app ${app_id} layer (forced)"
+	else
+		log "Building app ${app_id} layer"
+	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
 		log "Running app ${app_id} pre-build hook"

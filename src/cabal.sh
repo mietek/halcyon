@@ -562,7 +562,7 @@ function match_updated_cabal_archive () {
 
 
 function build_cabal () {
-	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR HALCYON_QUIET
+	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_QUIET
 	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/.halcyon-tag"
 	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
 
@@ -573,7 +573,11 @@ function build_cabal () {
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Building Cabal ${cabal_description} layer"
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_CABAL} )); then
+		log "Building Cabal ${cabal_description} layer (forced)"
+	else
+		log "Building Cabal ${cabal_description} layer"
+	fi
 
 	local original_url original_archive tmp_dir
 	original_url=$( echo_cabal_original_url "${cabal_version}" ) || die

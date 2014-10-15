@@ -325,7 +325,7 @@ function validate_sandbox () {
 
 
 function build_sandbox () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_SANDBOX
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 	local sandbox_constraints sandbox_tag extending_sandbox app_dir
@@ -343,7 +343,11 @@ function build_sandbox () {
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Building sandbox ${sandbox_description} layer"
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_SANDBOX} )); then
+		log "Building sandbox ${sandbox_description} layer (forced)"
+	else
+		log "Building sandbox ${sandbox_description} layer"
+	fi
 
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die

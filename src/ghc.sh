@@ -355,7 +355,7 @@ function prepare_ghc_libs () {
 
 
 function build_ghc () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_QUIET
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_GHC HALCYON_QUIET
 	expect_no_existing "${HALCYON_DIR}/ghc"
 
 	local ghc_tag app_dir
@@ -365,7 +365,11 @@ function build_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log "Building GHC ${ghc_id} layer"
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
+		log "Building GHC ${ghc_id} layer (forced)"
+	else
+		log "Building GHC ${ghc_id} layer"
+	fi
 
 	local original_url original_archive tmp_dir
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
