@@ -143,17 +143,22 @@ function halcyon_install () {
 			export HALCYON_FORCE_BUILD_ALL=1;;
 		'--force-ghc-version='*)
 			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
-		'--force-build-ghc')
+		'--force-build-ghc');&
+		'--force-ghc-build')
 			export HALCYON_FORCE_BUILD_GHC=1;;
 		'--force-cabal-version='*)
 			export HALCYON_FORCE_CABAL_VERSION="${1#*=}";;
-		'--force-build-cabal')
+		'--force-build-cabal');&
+		'--force-cabal-build')
 			export HALCYON_FORCE_BUILD_CABAL=1;;
-		'--force-update-cabal')
+		'--force-update-cabal');&
+		'--force-cabal-update')
 			export HALCYON_FORCE_UPDATE_CABAL=1;;
-		'--force-build-sandbox')
+		'--force-build-sandbox');&
+		'--force-sandbox-build')
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
-		'--force-build-app')
+		'--force-build-app');&
+		'--force-app-build')
 			export HALCYON_FORCE_BUILD_APP=1;;
 
 		'--no-app')
