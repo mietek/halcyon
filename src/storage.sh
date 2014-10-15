@@ -102,12 +102,12 @@ function list_layer () {
 
 	log_indent_begin "Listing ${src_url}..."
 
-	local status response
+	local status listing
 	status=0
-	if ! response=$( curl_do "${src_url}" -o >( read_s3_listing_xml ) ); then
+	if ! listing=$( curl_do "${src_url}" -o >( read_s3_listing_xml ) ); then
 		status=1
 	else
-		echo "${response}"
+		echo "${listing}"
 	fi
 
 	return "${status}"
