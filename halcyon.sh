@@ -59,13 +59,13 @@ function set_default_vars () {
 }
 
 
-function hash_files () {
-	local file_contents
-	if ! file_contents=$( cat "$@" 2>'/dev/null' ); then
+function hash_hooks () {
+	local hooks
+	if ! hooks=$( cat "$@" 2>'/dev/null' ); then
 		return 0
 	fi
 
-	openssl sha1 <<<"${file_contents}" | sed 's/^.* //'
+	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
 }
 
 

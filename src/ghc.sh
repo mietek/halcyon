@@ -220,7 +220,7 @@ function determine_ghc_hooks_hash () {
 	log_begin 'Determining GHC hooks hash...'
 
 	local ghc_hooks_hash
-	ghc_hooks_hash=$( hash_files "${app_dir}/.halcyon-hooks/ghc-"* ) || die
+	ghc_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/ghc-"* ) || die
 
 	if [ -z "${ghc_hooks_hash}" ]; then
 		log_end 'none'
@@ -250,7 +250,7 @@ function validate_ghc_hooks () {
 	expect_args ghc_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_files "${hooks_dir}/ghc-"* ) || die
+	candidate_hooks_hash=$( hash_hooks "${hooks_dir}/ghc-"* ) || die
 
 	if [ "${candidate_hooks_hash}" != "${ghc_hooks_hash}" ]; then
 		return 1

@@ -240,7 +240,7 @@ function determine_app_hooks_hash () {
 	log_begin 'Determining app hooks hash...'
 
 	local app_hooks_hash
-	app_hooks_hash=$( hash_files "${app_dir}/.halcyon-hooks/app-"* ) || die
+	app_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/app-"* ) || die
 
 	if [ -z "${app_hooks_hash}" ]; then
 		log_end 'none'
@@ -270,7 +270,7 @@ function validate_app_hooks_hash () {
 	expect_args app_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_files "${hooks_dir}/app-"* ) || die
+	candidate_hooks_hash=$( hash_hooks "${hooks_dir}/app-"* ) || die
 
 	if [ "${candidate_hooks_hash}" != "${app_hooks_hash}" ]; then
 		return 1

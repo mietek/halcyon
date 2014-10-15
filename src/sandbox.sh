@@ -252,7 +252,7 @@ function determine_sandbox_hooks_hash () {
 	log_begin 'Determining sandbox hooks hash...'
 
 	local sandbox_hooks_hash
-	sandbox_hooks_hash=$( hash_files "${app_dir}/.halcyon-hooks/sandbox-"* ) || die
+	sandbox_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/sandbox-"* ) || die
 
 	if [ -z "${sandbox_hooks_hash}" ]; then
 		log_end 'none'
@@ -295,7 +295,7 @@ function validate_sandbox_hooks () {
 	expect_args sandbox_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_files "${hooks_dir}/sandbox-"* ) || die
+	candidate_hooks_hash=$( hash_hooks "${hooks_dir}/sandbox-"* ) || die
 
 	if [ "${candidate_hooks_hash}" != "${sandbox_hooks_hash}" ]; then
 		return 1
