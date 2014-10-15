@@ -1,8 +1,8 @@
 function make_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_tag sandbox_digest sandbox_hooks_hash app_label
-	expect_args ghc_tag sandbox_digest sandbox_hooks_hash app_label -- "$@"
+	local ghc_tag sandbox_constraints_hash sandbox_hooks_hash app_label
+	expect_args ghc_tag sandbox_constraints_hash sandbox_hooks_hash app_label -- "$@"
 
 	local os
 	os=$( detect_os ) || die
@@ -21,7 +21,7 @@ function make_sandbox_tag () {
 		die "Unexpected HALCYON_DIR in GHC ${ghc_id} tag: ${ghc_halcyon_dir}"
 	fi
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${sandbox_digest}\t${sandbox_hooks_hash}\t${app_label}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${sandbox_constraints_hash}\t${sandbox_hooks_hash}\t${app_label}"
 }
 
 
@@ -57,7 +57,7 @@ function echo_sandbox_tag_ghc_hooks_hash () {
 }
 
 
-function echo_sandbox_tag_digest () {
+function echo_sandbox_tag_constraints_hash () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
@@ -85,11 +85,11 @@ function echo_sandbox_id () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_digest sandbox_hooks_hash
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	local sandbox_constraints_hash sandbox_hooks_hash
+	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 
-	echo "${sandbox_digest:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}"
+	echo "${sandbox_constraints_hash:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}"
 }
 
 
@@ -135,21 +135,21 @@ function echo_sandbox_config_id () {
 	local sandbox_config
 	expect_args sandbox_config -- "$@"
 
-	local sandbox_digest_etc
-	sandbox_digest_etc="${sandbox_config#halcyon-sandbox-ghc-*-}"
+	local sandbox_constraints_hash_etc
+	sandbox_constraints_hash_etc="${sandbox_config#halcyon-sandbox-ghc-*-}"
 
-	echo "${sandbox_digest_etc%%-*}"
+	echo "${sandbox_constraints_hash_etc%%-*}"
 }
 
 
-function echo_sandbox_config_digest () {
+function echo_sandbox_config_constraints_hash () {
 	local sandbox_config
 	expect_args sandbox_config -- "$@"
 
-	local sandbox_digest_etc
-	sandbox_digest_etc="${sandbox_config#halcyon-sandbox-ghc-*-}"
+	local sandbox_constraints_hash_etc
+	sandbox_constraints_hash_etc="${sandbox_config#halcyon-sandbox-ghc-*-}"
 
-	echo "${sandbox_digest_etc%%[~-]*}"
+	echo "${sandbox_constraints_hash_etc%%[~-]*}"
 }
 
 
@@ -231,18 +231,18 @@ function determine_sandbox_constraints () {
 }
 
 
-function determine_sandbox_digest () {
+function determine_sandbox_constraints_hash () {
 	local sandbox_constraints
 	expect_args sandbox_constraints -- "$@"
 
-	log_begin 'Determining sandbox digest...'
+	log_begin 'Determining sandbox constraints hash...'
 
-	local sandbox_digest
-	sandbox_digest=$( hash_constraints <<<"${sandbox_constraints}" ) || die
+	local sandbox_constraints_hash
+	sandbox_constraints_hash=$( hash_constraints <<<"${sandbox_constraints}" ) || die
 
-	log_end "${sandbox_digest:0:7}"
+	log_end "${sandbox_constraints_hash:0:7}"
 
-	echo "${sandbox_digest}"
+	echo "${sandbox_constraints_hash}"
 }
 
 
@@ -279,13 +279,13 @@ function validate_sandbox_tag () {
 
 
 function validate_sandbox_config () {
-	local sandbox_digest
-	expect_args sandbox_digest -- "$@"
+	local sandbox_constraints_hash
+	expect_args sandbox_constraints_hash -- "$@"
 
-	local candidate_digest
-	candidate_digest=$( read_constraints | hash_constraints ) || die
+	local candidate_constraints_hash
+	candidate_constraints_hash=$( read_constraints | hash_constraints ) || die
 
-	if [ "${candidate_digest}" != "${sandbox_digest}" ]; then
+	if [ "${candidate_constraints_hash}" != "${sandbox_constraints_hash}" ]; then
 		return 1
 	fi
 }
@@ -310,13 +310,13 @@ function validate_sandbox () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_digest sandbox_hooks_hash
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	local sandbox_constraints_hash sandbox_hooks_hash
+	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 
 	if ! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
 		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
-		! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
+		! validate_sandbox_config "${sandbox_constraints_hash}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
 		! validate_sandbox_hooks "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
 	then
 		return 1
@@ -338,9 +338,9 @@ function build_sandbox () {
 	fi
 	expect_existing "${app_dir}"
 
-	local ghc_tag sandbox_digest sandbox_description
+	local ghc_tag sandbox_constraints_hash sandbox_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_SANDBOX} )); then
@@ -394,12 +394,12 @@ function build_sandbox () {
 	# NOTE: Frozen constraints should never differ before and after installation.
 	# https://github.com/haskell/cabal/issues/1896
 
-	local actual_constraints actual_digest
+	local actual_constraints actual_constraints_hash
 	actual_constraints=$( freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${app_dir}" ) || die
-	actual_digest=$( hash_constraints <<<"${actual_constraints}" ) || die
+	actual_constraints_hash=$( hash_constraints <<<"${actual_constraints}" ) || die
 
-	if [ "${actual_digest}" != "${sandbox_digest}" ]; then
-		log_warning "Actual sandbox digest is ${actual_digest:0:7}"
+	if [ "${actual_constraints_hash}" != "${sandbox_constraints_hash}" ]; then
+		log_warning "Actual sandbox constraints hash is ${actual_constraints_hash:0:7}"
 		log_warning 'Unexpected constraints difference:'
 		echo_constraints_difference "${sandbox_constraints}" "${actual_constraints}" | quote
 	fi
@@ -525,12 +525,12 @@ function locate_matched_sandbox_tag () {
 
 	local config
 	while read -r config; do
-		local id digest
+		local id constraints_hash
 		id=$( echo_sandbox_config_id "${config}" ) || die
-		digest=$( echo_sandbox_config_digest "${config}" ) || die
+		constraints_hash=$( echo_sandbox_config_constraints_hash "${config}" ) || die
 
 		if ! [ -f "${HALCYON_CACHE_DIR}/${config}" ] ||
-			! validate_sandbox_config "${digest}" <"${HALCYON_CACHE_DIR}/${config}"
+			! validate_sandbox_config "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${config}"
 		then
 			rm -f "${HALCYON_CACHE_DIR}/${config}" || die
 
@@ -538,7 +538,7 @@ function locate_matched_sandbox_tag () {
 				log_warning "Cannot download matched sandbox layer config ${id}"
 			fi
 
-			if ! validate_sandbox_config "${digest}" <"${HALCYON_CACHE_DIR}/${config}"; then
+			if ! validate_sandbox_config "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${config}"; then
 				rm -f "${HALCYON_CACHE_DIR}/${config}" || die
 				log_warning "Cannot validate matched sandbox layer config ${id}"
 			fi
@@ -555,10 +555,10 @@ function locate_matched_sandbox_tag () {
 				continue
 			fi
 
-			local digest app_label tag description
-			digest=$( echo_sandbox_config_digest "${config}" ) || die
+			local constraints_hash app_label tag description
+			constraints_hash=$( echo_sandbox_config_constraints_hash "${config}" ) || die
 			app_label=$( echo_sandbox_config_app_label "${config}" ) || die
-			tag=$( make_sandbox_tag "${ghc_tag}" "${digest}" "${sandbox_hooks_hash}" "${app_label}" ) || die
+			tag=$( make_sandbox_tag "${ghc_tag}" "${constraints_hash}" "${sandbox_hooks_hash}" "${app_label}" ) || die
 			description=$( echo_sandbox_description "${tag}" ) || die
 
 			local score
@@ -664,13 +664,13 @@ function install_sandbox () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_tag sandbox_constraints sandbox_digest sandbox_hooks_hash sandbox_tag app_label
+	local ghc_tag sandbox_constraints sandbox_constraints_hash sandbox_hooks_hash sandbox_tag app_label
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_constraints=$( determine_sandbox_constraints "${app_dir}" ) || die
-	sandbox_digest=$( determine_sandbox_digest "${sandbox_constraints}" ) || die
+	sandbox_constraints_hash=$( determine_sandbox_constraints_hash "${sandbox_constraints}" ) || die
 	sandbox_hooks_hash=$( determine_sandbox_hooks_hash "${app_dir}" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
-	sandbox_tag=$( make_sandbox_tag "${ghc_tag}" "${sandbox_digest}" "${sandbox_hooks_hash}" "${app_label}" ) || die
+	sandbox_tag=$( make_sandbox_tag "${ghc_tag}" "${sandbox_constraints_hash}" "${sandbox_hooks_hash}" "${app_label}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&

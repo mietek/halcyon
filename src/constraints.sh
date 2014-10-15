@@ -18,9 +18,9 @@ function echo_constraints () {
 function echo_constraints_difference () {
 	expect_args old_constraints new_constraints -- "$@"
 
-	local old_digest new_digest
-	old_digest=$( hash_constraints <<<"${old_constraints}" ) || die
-	new_digest=$( hash_constraints <<<"${new_constraints}" ) || die
+	local old_constraints_hash new_constraints_hash
+	old_constraints_hash=$( hash_constraints <<<"${old_constraints}" ) || die
+	new_constraints_hash=$( hash_constraints <<<"${new_constraints}" ) || die
 
 	local tmp_old_config tmp_new_config
 	tmp_old_config=$( echo_tmp_constraints_config ) || die
@@ -29,8 +29,8 @@ function echo_constraints_difference () {
 	echo_constraints <<<"${old_constraints}" >"${tmp_old_config}" || die
 	echo_constraints <<<"${new_constraints}" >"${tmp_new_config}" || die
 
-	echo "--- ${old_digest:0:7}/cabal.config"
-	echo "+++ ${new_digest:0:7}/cabal.config"
+	echo "--- ${old_constraints_hash:0:7}/cabal.config"
+	echo "+++ ${new_constraints_hash:0:7}/cabal.config"
 	diff -u "${tmp_old_config}" "${tmp_new_config}" | tail -n +3 || true
 
 	rm -f "${tmp_old_config}" "${tmp_new_config}" || die

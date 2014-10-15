@@ -21,13 +21,13 @@ function make_app_tag () {
 		die "Unexpected HALCYON_DIR in GHC ${ghc_id} tag: ${ghc_halcyon_dir}"
 	fi
 
-	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hooks_hash sandbox_app_label sandbox_digest sandbox_hooks_hash sandbox_description
+	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hooks_hash sandbox_app_label sandbox_constraints_hash sandbox_hooks_hash sandbox_description
 	sandbox_os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_halcyon_dir=$( echo_sandbox_tag_halcyon_dir "${sandbox_tag}" ) || die
 	sandbox_ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
 	sandbox_ghc_hooks_hash=$( echo_sandbox_tag_ghc_hooks_hash "${sandbox_tag}" ) || die
 	sandbox_app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
@@ -47,7 +47,7 @@ function make_app_tag () {
 		die "Unexpected app label in sandbox ${sandbox_description} tag: ${sandbox_app_label}"
 	fi
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${sandbox_digest}\t${sandbox_hooks_hash}\t${app_label}\t${app_hooks_hash}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${sandbox_constraints_hash}\t${sandbox_hooks_hash}\t${app_label}\t${app_hooks_hash}"
 }
 
 
@@ -83,7 +83,7 @@ function echo_app_tag_ghc_hooks_hash () {
 }
 
 
-function echo_app_tag_sandbox_digest () {
+function echo_app_tag_sandbox_constraints_hash () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
