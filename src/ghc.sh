@@ -95,13 +95,13 @@ function echo_ghc_default_version () {
 function derive_ghc_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_version ghc_hook
-	expect_args ghc_version ghc_hook -- "$@"
+	local ghc_version ghc_hooks_hash
+	expect_args ghc_version ghc_hooks_hash -- "$@"
 
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hook}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}"
 }
 
 
@@ -129,7 +129,7 @@ function echo_ghc_tag_version () {
 }
 
 
-function echo_ghc_tag_hook () {
+function echo_ghc_tag_hooks_hash () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
@@ -141,11 +141,11 @@ function echo_ghc_id () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_hook
+	local ghc_version ghc_hooks_hash
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
 
-	echo "${ghc_version}${ghc_hook:+~${ghc_hook:0:7}}"
+	echo "${ghc_version}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}"
 }
 
 
@@ -172,6 +172,14 @@ function detect_base_version () {
 	ghc-pkg list --simple-output |
 		grep -oE '\bbase-[0-9\.]+\b' |
 		sed 's/^base-//' || die
+}
+
+
+function detect_ghc_hooks_hash () {
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
+
+	echo_digest "${hooks_dir}/"*'-ghc-'*
 }
 
 
@@ -213,11 +221,22 @@ function determine_ghc_version () {
 }
 
 
-function detect_ghc_hook () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
+function determine_ghc_hooks_hash () {
+	local app_dir
+	expect_args app_dir -- "$@"
 
-	echo_digest "${hooks_dir}/"*'-ghc-'*
+	log_begin 'Determining GHC hooks hash...'
+
+	local ghc_hooks_hash
+	ghc_hooks_hash=$( detect_ghc_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
+
+	if [ -z "${ghc_hooks_hash}" ]; then
+		log_end 'none'
+	else
+		log_end "done, ${ghc_hooks_hash:0:7}"
+	fi
+
+	echo "${ghc_hooks_hash}"
 }
 
 
@@ -234,14 +253,14 @@ function validate_ghc_tag () {
 }
 
 
-function validate_ghc_hook () {
-	local ghc_hook hooks_dir
-	expect_args ghc_hook hooks_dir -- "$@"
+function validate_ghc_hooks_hash () {
+	local ghc_hooks_hash hooks_dir
+	expect_args ghc_hooks_hash hooks_dir -- "$@"
 
-	local candidate_hook
-	candidate_hook=$( detect_ghc_hook "${hooks_dir}" ) || die
+	local candidate_hooks_hash
+	candidate_hooks_hash=$( detect_ghc_hooks_hash "${hooks_dir}" ) || die
 
-	if [ "${candidate_hook}" != "${ghc_hook}" ]; then
+	if [ "${candidate_hooks_hash}" != "${ghc_hooks_hash}" ]; then
 		return 1
 	fi
 }
@@ -480,9 +499,9 @@ function restore_ghc () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local os ghc_hook ghc_archive ghc_id
+	local os ghc_hooks_hash ghc_archive ghc_id
 	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
-	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
@@ -490,7 +509,7 @@ function restore_ghc () {
 
 	if [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] &&
 		validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" &&
-		validate_ghc_hook "${ghc_hook}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
+		validate_ghc_hooks_hash "${ghc_hooks_hash}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
 	then
 		return 0
 	fi
@@ -500,7 +519,7 @@ function restore_ghc () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
 		! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
 		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" ||
-		! validate_ghc_hook "${ghc_hook}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
+		! validate_ghc_hooks_hash "${ghc_hooks_hash}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
@@ -512,7 +531,7 @@ function restore_ghc () {
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
 			! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
 			! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" ||
-			! validate_ghc_hook "${ghc_hook}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
+			! validate_ghc_hooks_hash "${ghc_hooks_hash}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 			log_warning "Restoring ${ghc_archive} failed"
@@ -556,10 +575,10 @@ function install_ghc () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_version ghc_hook ghc_tag
+	local ghc_version ghc_hooks_hash ghc_tag
 	ghc_version=$( determine_ghc_version "${app_dir}" ) || die
-	ghc_hook=$( detect_ghc_hook "${app_dir}/.halcyon-hooks" ) || die
-	ghc_tag=$( derive_ghc_tag "${ghc_version}" "${ghc_hook}" ) || die
+	ghc_hooks_hash=$( determing_ghc_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
+	ghc_tag=$( derive_ghc_tag "${ghc_version}" "${ghc_hooks_hash}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_GHC} )) &&
