@@ -597,12 +597,6 @@ function activate_sandbox () {
 	expect_args app_dir -- "$@"
 	expect_existing "${app_dir}"
 
-	local sandbox_tag sandbox_description
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
-
-	log "Activating sandbox layer ${sandbox_description}"
-
 	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
 		die "Expected no foreign ${app_dir}/cabal.sandbox.config"
 	fi
@@ -614,23 +608,15 @@ function activate_sandbox () {
 
 function deactivate_sandbox () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local app_dir
 	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
-
-	local sandbox_tag sandbox_description
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
-
-	log "Deactivating sandbox layer ${sandbox_description}"
 
 	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
 		die "Expected no foreign ${app_dir}/cabal.sandbox.config"
 	fi
 
-	rm -f "${app_dir}/cabal.sandbox.config" || die
+	rm -rf "${HALCYON_DIR}/sandbox" "${app_dir}/cabal.sandbox.config" || die
 }
 
 
@@ -710,7 +696,7 @@ function install_sandbox () {
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
 		(( ${HALCYON_FORCE_BUILD_SANDBOX} ))
 	then
-		rm -rf "${HALCYON_DIR}/sandbox"
+		deactivate_sandbox "${app_dir}" || die
 	fi
 
 	local extending_sandbox=0

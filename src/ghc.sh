@@ -552,27 +552,16 @@ function activate_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local ghc_tag ghc_id
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
-
-	log "Activating GHC layer ${ghc_id}"
-
 	# TODO: Check ~/.ghc
 }
 
 
 function deactivate_ghc () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
-
-	local ghc_tag ghc_id
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
-
-	log "Deactivating GHC layer ${ghc_id}"
 
 	# TODO: Check ~/.ghc
+
+	rm -rf "${HALCYON_DIR}/ghc" || die
 }
 
 
@@ -600,7 +589,7 @@ function install_ghc () {
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
 		(( ${HALCYON_FORCE_BUILD_GHC} ))
 	then
-		rm -rf "${HALCYON_DIR}/ghc"
+		deactivate_ghc || die
 	fi
 
 	build_ghc "${ghc_tag}" "${app_dir}" || die

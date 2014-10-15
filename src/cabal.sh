@@ -848,12 +848,6 @@ function activate_cabal () {
 	expect_vars HOME HALCYON_DIR
 	expect_existing "${HOME}" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	local cabal_tag cabal_description
-	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
-
-	log "Activating Cabal layer ${cabal_description}"
-
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
 		die "Expected no foreign ${HOME}/.cabal/config"
 	fi
@@ -866,19 +860,13 @@ function activate_cabal () {
 
 function deactivate_cabal () {
 	expect_vars HOME HALCYON_DIR
-	expect_existing "${HOME}" "${HALCYON_DIR}/cabal/.halcyon-tag"
-
-	local cabal_tag cabal_description
-	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
-
-	log "Deactivating Cabal layer ${cabal_description}"
+	expect_existing "${HOME}"
 
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
 		die "Expected no foreign ${HOME}/.cabal/config"
 	fi
 
-	rm -f "${HOME}/.cabal/config" || die
+	rm -rf "${HALCYON_DIR}/cabal" "${HOME}/.cabal/config" || die
 }
 
 
@@ -919,7 +907,7 @@ function install_cabal () {
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
 		(( ${HALCYON_FORCE_BUILD_CABAL} ))
 	then
-		rm -rf "${HALCYON_DIR}/cabal"
+		deactivate_cabal || die
 	fi
 
 	build_cabal "${cabal_tag}" "${app_dir}" || die
