@@ -671,14 +671,18 @@ EOF
 
 
 function update_cabal () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_FORCE_UPDATE_CABAL
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 	local cabal_tag cabal_description
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Updating Cabal ${cabal_description} layer"
+	if (( ${HALCYON_FORCE_UPDATE_CABAL} )); then
+		log "Updating Cabal ${cabal_description} layer (forced)"
+	else
+		log "Updating Cabal ${cabal_description} layer"
+	fi
 
 	cabal_update || die
 
