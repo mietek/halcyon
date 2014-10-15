@@ -270,23 +270,34 @@ function echo_cabal_tag_timestamp () {
 }
 
 
+function echo_cabal_id () {
+	local cabal_tag
+	expect_args cabal_tag -- "$@"
+
+	local cabal_version cabal_hook
+	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
+	cabal_hook=$( echo_cabal_tag_hook "${cabal_tag}" ) || die
+
+	echo "${cabal_version}${cabal_hook:+~${cabal_hook:0:7}}"
+}
+
+
 function echo_cabal_description () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_version cabal_hook cabal_timestamp
-	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hook=$( echo_cabal_tag_hook "${cabal_tag}" ) || die
+	local cabal_id cabal_timestamp
+	cabal_id=$( echo_cabal_id "${cabal_tag}" ) || die
 	cabal_timestamp=$( echo_cabal_tag_timestamp "${cabal_tag}" ) || die
 
 	if [ -z "${cabal_timestamp}" ]; then
-		echo "Cabal ${cabal_version}${cabal_hook:+~${cabal_hook:0:7}}"
+		echo "${cabal_id}"
 	else
 		local timestamp_date timestamp_time
 		timestamp_date="${cabal_timestamp:0:4}-${cabal_timestamp:4:2}-${cabal_timestamp:6:2}"
 		timestamp_time="${cabal_timestamp:8:2}:${cabal_timestamp:10:2}:${cabal_timestamp:12:2}"
 
-		echo "updated Cabal ${cabal_version}${cabal_hook:+~${cabal_hook:0:7}} (${timestamp_date} ${timestamp_time} UTC)"
+		echo "${cabal_id} (${timestamp_date} ${timestamp_time} UTC)"
 	fi
 }
 
@@ -295,12 +306,11 @@ function echo_cabal_archive () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_version cabal_hook cabal_timestamp
-	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hook=$( echo_cabal_tag_hook "${cabal_tag}" ) || die
+	local cabal_id cabal_timestamp
+	cabal_id=$( echo_cabal_id "${cabal_tag}" ) || die
 	cabal_timestamp=$( echo_cabal_tag_timestamp "${cabal_tag}" ) || die
 
-	echo "halcyon-cabal-${cabal_version}${cabal_hook:+~${cabal_hook:0:7}}${cabal_timestamp:+-${cabal_timestamp}}.tar.xz"
+	echo "halcyon-cabal-${cabal_id}${cabal_timestamp:+-${cabal_timestamp}}.tar.xz"
 }
 
 
@@ -502,7 +512,7 @@ function build_cabal () {
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Building ${cabal_description}"
+	log "Building Cabal ${cabal_description}"
 
 	local original_url original_archive tmp_dir
 	original_url=$( echo_cabal_original_url "${cabal_version}" ) || die
@@ -536,7 +546,7 @@ function build_cabal () {
 		cp "${app_dir}/.halcyon-hooks/cabal-pre-build" "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
 	fi
 
-	log "Bootstrapping ${cabal_description}"
+	log "Bootstrapping Cabal ${cabal_description}"
 
 	case "${ghc_version}-${cabal_version}" in
 	'7.8.'*'-1.20.0.'*)
@@ -589,7 +599,7 @@ EOF
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Bootstrapped ${cabal_description}, ${cabal_size}"
+	log "Bootstrapped Cabal ${cabal_description}, ${cabal_size}"
 }
 
 
@@ -601,7 +611,7 @@ function update_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Updating ${cabal_description}"
+	log "Updating Cabal ${cabal_description}"
 
 	cabal_update || die
 
@@ -613,7 +623,7 @@ function update_cabal () {
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Updated ${updated_cabal_description}, ${cabal_size}"
+	log "Updated Cabal ${updated_cabal_description}, ${cabal_size}"
 }
 
 
@@ -631,7 +641,7 @@ function archive_cabal () {
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Archiving ${cabal_description}"
+	log "Archiving Cabal ${cabal_description}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
@@ -651,7 +661,7 @@ function restore_cabal () {
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Restoring ${cabal_description}"
+	log "Restoring Cabal ${cabal_description}"
 
 	if [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] &&
 		validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" &&
@@ -735,13 +745,13 @@ function restore_updated_cabal () {
 	archive_prefix=$( echo_updated_cabal_archive_prefix "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Restoring updated ${cabal_description}"
+	log "Restoring Cabal ${cabal_description}"
 
 	if restore_archived_updated_cabal "${cabal_tag}"; then
 		return 0
 	fi
 
-	log "Locating updated ${cabal_description}"
+	log "Locating Cabal ${cabal_description}"
 
 	local cabal_archive
 	if ! cabal_archive=$(
@@ -749,7 +759,7 @@ function restore_updated_cabal () {
 		sed "s:${os}/::" |
 		match_updated_cabal_archive "${cabal_tag}"
 	); then
-		log "Locating updated ${cabal_description} failed"
+		log "Locating Cabal ${cabal_description} failed"
 		return 1
 	fi
 
@@ -779,7 +789,7 @@ function activate_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log_begin "Activating ${cabal_description}..."
+	log_begin "Activating Cabal ${cabal_description}..."
 
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
 		die "Expected no actual ${HOME}/.cabal/config"
@@ -801,7 +811,7 @@ function deactivate_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log_begin "Deactivating ${cabal_description}..."
+	log_begin "Deactivating Cabal ${cabal_description}..."
 
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
 		die "Expected no actual ${HOME}/.cabal/config"
