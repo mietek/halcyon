@@ -467,8 +467,6 @@ function install_app () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	rm -rf "${HALCYON_DIR}/app"
-
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
 		(( ${HALCYON_FORCE_BUILD_APP} )) ||
 		(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} ))
@@ -479,6 +477,7 @@ function install_app () {
 	build_app "${app_dir}" "${app_tag}" || die
 	archive_app "${app_dir}" || die
 
+	rm -rf "${HALCYON_DIR}/app"
 	cabal_install_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 	echo "${app_tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 }
