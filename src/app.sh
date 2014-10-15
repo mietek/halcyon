@@ -333,14 +333,14 @@ function build_app () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
 		log "Running app ${app_id} pre-build hook"
-		"${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" || die
+		( quote_quietly "${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
 		log "Running app ${app_id} post-build hook"
-		"${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" || die
+		( quote_quietly "${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die

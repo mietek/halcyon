@@ -605,7 +605,7 @@ function build_cabal () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-pre-build" ]; then
 		log "Running Cabal ${cabal_description} pre-build hook"
-		"${app_dir}/.halcyon-hooks/cabal-pre-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
+		( quote_quietly "${app_dir}/.halcyon-hooks/cabal-pre-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
 
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
 		cp "${app_dir}/.halcyon-hooks/cabal-pre-build" "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
@@ -654,7 +654,7 @@ EOF
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
 		log "Running Cabal ${cabal_description} post-build hook"
-		"${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
+		( quote_quietly "${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
 
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
 		cp "${app_dir}/.halcyon-hooks/cabal-post-build" "${HALCYON_DIR}/cabal/.halcyon-hooks" || die

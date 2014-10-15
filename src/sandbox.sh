@@ -354,7 +354,7 @@ function build_sandbox () {
 
 		if [ -f "${app_dir}/.halcyon-hooks/sandbox-create" ]; then
 			log "Running sandbox ${sandbox_description} create hook"
-			"${app_dir}/.halcyon-hooks/sandbox-create" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" | die
+			( quote_quietly "${app_dir}/.halcyon-hooks/sandbox-create" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
 
 			mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-hooks" || die
 			cp "${app_dir}/.halcyon-hooks/sandbox-create" "${HALCYON_DIR}/sandbox/.halcyon-hooks" || die
@@ -363,7 +363,7 @@ function build_sandbox () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-pre-build" ]; then
 		log "Running sandbox ${sandbox_description} pre-build hook"
-		"${app_dir}/.halcyon-hooks/sandbox-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" | die
+		( quote_quietly "${app_dir}/.halcyon-hooks/sandbox-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
 
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-hooks" || die
 		cp "${app_dir}/.halcyon-hooks/sandbox-pre-build" "${HALCYON_DIR}/sandbox/.halcyon-hooks" || die
@@ -375,7 +375,7 @@ function build_sandbox () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/sandbox-post-build" ]; then
 		log "Running sandbox ${sandbox_description} post-build hook"
-		"${app_dir}/.halcyon-hooks/sandbox-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" | die
+		( quote_quietly "${app_dir}/.halcyon-hooks/sandbox-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
 
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-hooks" || die
 		cp "${app_dir}/.halcyon-hooks/sandbox-pre-build" "${HALCYON_DIR}/sandbox/.halcyon-hooks" || die
