@@ -167,12 +167,11 @@ function echo_sandbox_config_description () {
 	local sandbox_config
 	expect_args sandbox_config -- "$@"
 
-	local app_label sandbox_digest sandbox_hooks_hash
+	local sandbox_id app_label
+	sandbox_id=$( echo_sandbox_config_id "${sandbox_config}" ) || die
 	app_label=$( echo_sandbox_config_app_label "${sandbox_config}" ) || die
-	sandbox_digest=$( echo_sandbox_config_digest "${sandbox_config}" ) || die
-	sandbox_hooks_hash=$( echo_sandbox_config_hooks_hash "${sandbox_config}" ) || die
 
-	echo "${sandbox_digest:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}} (${app_label})"
+	echo "${sandbox_id} (${app_label})"
 }
 
 
@@ -180,11 +179,10 @@ function echo_sandbox_config_prefix () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_hooks_hash
-	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
+	local ghc_id
+	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_version}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}-"
+	echo "halcyon-sandbox-ghc-${ghc_id}-"
 }
 
 
@@ -192,11 +190,10 @@ function echo_sandbox_config_pattern () {
 	local ghc_tag sandbox_hooks_hash
 	expect_args ghc_tag sandbox_hooks_hash -- "$@"
 
-	local ghc_version ghc_hooks_hash
-	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
+	local ghc_id
+	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_version//./\.}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}-.*${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}\.cabal\.config"
+	echo "halcyon-sandbox-ghc-${ghc_id//./\.}-.*${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}\.cabal\.config"
 }
 
 
