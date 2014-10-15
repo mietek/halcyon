@@ -585,12 +585,7 @@ function install_ghc () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
-		(( ${HALCYON_FORCE_BUILD_GHC} ))
-	then
-		deactivate_ghc || die
-	fi
-
+	deactivate_ghc || die
 	build_ghc "${ghc_tag}" "${app_dir}" || die
 	strip_ghc || die
 	archive_ghc || die

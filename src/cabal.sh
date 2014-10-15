@@ -904,12 +904,7 @@ function install_cabal () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
-		(( ${HALCYON_FORCE_BUILD_CABAL} ))
-	then
-		deactivate_cabal || die
-	fi
-
+	deactivate_cabal || die
 	build_cabal "${cabal_tag}" "${app_dir}" || die
 	archive_cabal || die
 	update_cabal || die
