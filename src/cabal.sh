@@ -90,6 +90,16 @@ function cabal_create_sandbox () {
 }
 
 
+# NOTE: Listing executable-only packages in build-tools causes Cabal to
+# expect the executables to be installed, but not to install the packages.
+# https://github.com/haskell/cabal/issues/220
+
+# NOTE: Listing executable-only packages in build-depends causes Cabal to
+# install the packages, and to fail to recognise the packages have been
+# installed.
+# https://github.com/haskell/cabal/issues/779
+
+
 function cabal_install () {
 	expect_vars HALCYON_QUIET
 
@@ -99,15 +109,6 @@ function cabal_install () {
 	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
 }
 
-
-# NOTE: Listing executable-only packages in build-tools causes Cabal to
-# expect the executables to be installed, but not to install the packages.
-# https://github.com/haskell/cabal/issues/220
-
-# NOTE: Listing executable-only packages in build-depends causes Cabal to
-# install the packages, and to fail to recognise the packages have been
-# installed.
-# https://github.com/haskell/cabal/issues/779
 
 function cabal_install_deps () {
 	expect_vars HALCYON_QUIET
@@ -136,6 +137,15 @@ function cabal_build_app () {
 	expect_args sandbox_dir app_dir -- "$@"
 
 	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
+}
+
+
+function cabal_install_app () {
+	expect_vars HALCYON_QUIET
+
+	local sandbox_dir app_dir
+	expect_args sandbox_dir app_dir -- "$@"
+
 	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
 }
 
@@ -865,7 +875,7 @@ function deactivate_cabal () {
 
 
 function install_cabal () {
-	expect_vars HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL HALCYON_NO_BUILD
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local app_dir
@@ -897,6 +907,12 @@ function install_cabal () {
 	fi
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
+
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
+		(( ${HALCYON_FORCE_BUILD_CABAL} ))
+	then
+		rm -rf "${HALCYON_DIR}/cabal"
+	fi
 
 	build_cabal "${cabal_tag}" "${app_dir}" || die
 	archive_cabal || die
