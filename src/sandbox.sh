@@ -80,16 +80,27 @@ function echo_sandbox_tag_hook () {
 }
 
 
+function echo_sandbox_id () {
+	local sandbox_tag
+	expect_args sandbox_tag -- "$@"
+
+	local sandbox_digest sandbox_hook
+	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
+
+	echo "${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}}"
+}
+
+
 function echo_sandbox_description () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local app_label sandbox_digest sandbox_hook
+	local app_label sandbox_id
 	app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
+	sandbox_id=$( echo_sandbox_id "${sandbox_tag}" ) || die
 
-	echo "sandbox ${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}} (${app_label})"
+	echo "${sandbox_id} (${app_label})"
 }
 
 
@@ -97,14 +108,12 @@ function echo_sandbox_archive () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local ghc_version ghc_hook app_label sandbox_digest sandbox_hook
-	ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
-	ghc_hook=$( echo_sandbox_tag_ghc_hook "${sandbox_tag}" ) || die
+	local ghc_id app_label sandbox_id
+	ghc_id=$( echo_ghc_id "${sandbox_tag}" ) || die
 	app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
+	sandbox_id=$( echo_sandbox_id "${sandbox_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_version}${ghc_hook:+~${ghc_hook:0:7}}-${app_label}-${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}}.tar.xz"
+	echo "halcyon-sandbox-ghc-${ghc_id}-${app_label}-${sandbox_id}.tar.xz"
 }
 
 
@@ -112,14 +121,12 @@ function echo_sandbox_config () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local ghc_version ghc_hook app_label sandbox_digest sandbox_hook
-	ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
-	ghc_hook=$( echo_sandbox_tag_ghc_hook "${sandbox_tag}" ) || die
+	local ghc_id app_label sandbox_id
+	ghc_id=$( echo_ghc_id "${sandbox_tag}" ) || die
 	app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
+	sandbox_id=$( echo_sandbox_id "${sandbox_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_version}${ghc_hook:+~${ghc_hook:0:7}}-${app_label}-${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}}.cabal.config"
+	echo "halcyon-sandbox-ghc-${ghc_id}-${app_label}-${sandbox_id}.cabal.config"
 }
 
 
@@ -165,7 +172,7 @@ function echo_sandbox_config_description () {
 	sandbox_digest=$( echo_sandbox_config_digest "${sandbox_config}" ) || die
 	sandbox_hook=$( echo_sandbox_config_hook "${sandbox_config}" ) || die
 
-	echo "sandbox ${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}} (${app_label})"
+	echo "${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}} (${app_label})"
 }
 
 
@@ -307,7 +314,7 @@ function build_sandbox () {
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Building ${sandbox_description}"
+	log "Building sandbox ${sandbox_description}"
 
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
@@ -337,7 +344,7 @@ function build_sandbox () {
 
 	local sandbox_size
 	sandbox_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-	log "Built ${sandbox_description}, ${sandbox_size}"
+	log "Built sandbox ${sandbox_description}, ${sandbox_size}"
 
 	if (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
 		return 0
@@ -366,7 +373,7 @@ function strip_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log_begin "Stripping ${sandbox_description}..."
+	log_begin "Stripping sandbox ${sandbox_description}..."
 
 	find "${HALCYON_DIR}/sandbox"       \
 			-type f        -and \
@@ -399,7 +406,7 @@ function archive_sandbox () {
 	sandbox_config=$( echo_sandbox_config "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Archiving ${sandbox_description}"
+	log "Archiving sandbox ${sandbox_description}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
@@ -422,7 +429,7 @@ function restore_sandbox () {
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Restoring ${sandbox_description}"
+	log "Restoring sandbox ${sandbox_description}"
 
 	if [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] &&
 		validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" &&
@@ -560,7 +567,7 @@ function activate_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log_begin "Activating ${sandbox_description}..."
+	log_begin "Activating sandbox ${sandbox_description}..."
 
 	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
 		die "Expected no actual ${app_dir}/cabal.sandbox.config"
@@ -585,7 +592,7 @@ function deactivate_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log_begin "Deactivating ${sandbox_description}..."
+	log_begin "Deactivating sandbox ${sandbox_description}..."
 
 	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
 		die "Expected no actual ${app_dir}/cabal.sandbox.config"
@@ -618,7 +625,7 @@ function install_extended_sandbox () {
 	matched_description=$( echo_sandbox_description "${matched_tag}" ) || die
 
 	if [ "${matched_digest}" = "${sandbox_digest}" ] && [ "${matched_hook}" = "${sandbox_hook}" ]; then
-		log "Using matched ${matched_description} as ${sandbox_description}"
+		log "Using matched sandbox ${matched_description} as sandbox ${sandbox_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 		archive_sandbox || die
@@ -628,7 +635,7 @@ function install_extended_sandbox () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	log "Extending matched ${matched_description} to ${sandbox_description}"
+	log "Extending matched sandbox ${matched_description} to sandbox ${sandbox_description}"
 
 	local extending_sandbox=1
 	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die
