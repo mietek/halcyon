@@ -1,4 +1,4 @@
-function derive_app_tag () {
+function make_app_tag () {
 	expect_vars HALCYON_DIR
 
 	local ghc_tag sandbox_tag app_label app_hook
@@ -481,7 +481,7 @@ function install_app () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	app_hook=$( detect_app_hook "${app_dir}/.halcyon-hooks" ) || die
-	app_tag=$( derive_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hook}" ) || die
+	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hook}" ) || die
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 

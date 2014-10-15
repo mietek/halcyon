@@ -1,4 +1,4 @@
-function derive_sandbox_tag () {
+function make_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
 	local ghc_tag sandbox_digest sandbox_hooks_hash app_label
@@ -594,7 +594,7 @@ function locate_matched_sandbox_tag () {
 			local digest app_label tag description
 			digest=$( echo_sandbox_config_digest "${config}" ) || die
 			app_label=$( echo_sandbox_config_app_label "${config}" ) || die
-			tag=$( derive_sandbox_tag "${ghc_tag}" "${digest}" "${sandbox_hooks_hash}" "${app_label}" ) || die
+			tag=$( make_sandbox_tag "${ghc_tag}" "${digest}" "${sandbox_hooks_hash}" "${app_label}" ) || die
 			description=$( echo_sandbox_description "${tag}" ) || die
 
 			local score
@@ -677,7 +677,7 @@ function install_sandbox () {
 	sandbox_digest=$( determine_sandbox_digest "${sandbox_constraints}" ) || die
 	sandbox_hooks_hash=$( determine_sandbox_hooks_hash "${app_dir}" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
-	sandbox_tag=$( derive_sandbox_tag "${ghc_tag}" "${sandbox_digest}" "${sandbox_hooks_hash}" "${app_label}" ) || die
+	sandbox_tag=$( make_sandbox_tag "${ghc_tag}" "${sandbox_digest}" "${sandbox_hooks_hash}" "${app_label}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
