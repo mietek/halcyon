@@ -355,7 +355,7 @@ function archive_app () {
 	fi
 
 	local app_tag os app_archive app_id
-	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	app_tag=$( <"${app_dir}/.halcyon-tag" ) || die
 	os=$( echo_app_tag_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
