@@ -214,7 +214,7 @@ function halcyon_install () {
 	if (( ${fake_app} )); then
 		rm -rf "${app_dir}" || die
 	elif ! (( ${HALCYON_NO_APP} )); then
-		install_app "${app_dir}" || die
+		install_app "${app_dir}" || return 1
 		log
 	fi
 
