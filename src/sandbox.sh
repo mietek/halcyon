@@ -633,17 +633,15 @@ function install_extended_sandbox () {
 		return 1
 	fi
 
-	local sandbox_digest sandbox_hooks_hash sandbox_description
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
+	local sandbox_id sandbox_description
+	sandbox_id=$( echo_sandbox_id "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	local matched_digest matched_hooks_hash matched_description
-	matched_digest=$( echo_sandbox_tag_digest "${matched_tag}" ) || die
-	matched_hooks_hash=$( echo_sandbox_tag_hooks_hash "${matched_tag}" ) || die
+	local matched_id matched_description
+	matched_id=$( echo_sandbox_id "${matched_tag}" ) || die
 	matched_description=$( echo_sandbox_description "${matched_tag}" ) || die
 
-	if [ "${matched_digest}" = "${sandbox_digest}" ] && [ "${matched_hooks_hash}" = "${sandbox_hooks_hash}" ]; then
+	if [ "${matched_id}" = "${sandbox_id}" ]; then
 		log "Using matched sandbox ${matched_description} as sandbox ${sandbox_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
