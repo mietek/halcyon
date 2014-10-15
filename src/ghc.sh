@@ -381,8 +381,8 @@ function build_ghc () {
 		log "Running GHC pre-build hook"
 		"${app_dir}/.halcyon-hooks/ghc-pre-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 
-		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks"
-		cp "${app_dir}/.halcyon-hooks/ghc-pre-build" "${HALCYON_DIR}/ghc/.halcyon-hooks"
+		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
+		cp "${app_dir}/.halcyon-hooks/ghc-pre-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 	fi
 
 	log "Installing GHC ${ghc_id}"
@@ -400,8 +400,8 @@ function build_ghc () {
 		log "Running GHC post-build hook"
 		"${app_dir}/.halcyon-hooks/ghc-post-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 
-		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks"
-		cp "${app_dir}/.halcyon-hooks/ghc-post-build" "${HALCYON_DIR}/ghc/.halcyon-hooks"
+		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
+		cp "${app_dir}/.halcyon-hooks/ghc-post-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 	fi
 
 	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
