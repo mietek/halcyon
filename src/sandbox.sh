@@ -591,8 +591,11 @@ function locate_matched_sandbox_tag () {
 				continue
 			fi
 
-			local description
-			description=$( echo_sandbox_config_description "${config}" ) || die
+			local digest app_label tag description
+			digest=$( echo_sandbox_config_digest "${config}" ) || die
+			app_label=$( echo_sandbox_config_app_label "${config}" ) || die
+			tag=$( derive_sandbox_tag "${ghc_tag}" "${digest}" "${sandbox_hooks_hash}" "${app_label}" ) || die
+			description=$( echo_sandbox_description "${tag}" ) || die
 
 			local score
 			if ! score=$(
@@ -604,7 +607,7 @@ function locate_matched_sandbox_tag () {
 				continue
 			fi
 
-			echo -e "${score} ${description}"
+			echo -e "${score} ${tag}"
 		done <<<"${matched_configs}" |
 			filter_not_matching '^0 ' |
 			sort_naturally |
