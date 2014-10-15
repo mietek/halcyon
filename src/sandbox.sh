@@ -344,9 +344,9 @@ function build_sandbox () {
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_SANDBOX} )); then
-		log "Building sandbox layer ${sandbox_description} (forced)"
+		log "Building sandbox layer ${sandbox_description}... (forced)"
 	else
-		log "Building sandbox layer ${sandbox_description}"
+		log "Building sandbox layer ${sandbox_description}..."
 	fi
 
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then

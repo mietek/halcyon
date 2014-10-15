@@ -366,9 +366,9 @@ function build_ghc () {
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
-		log "Building GHC layer ${ghc_id} (forced)"
+		log "Building GHC layer ${ghc_id}... (forced)"
 	else
-		log "Building GHC layer ${ghc_id}"
+		log "Building GHC layer ${ghc_id}..."
 	fi
 
 	local original_url original_archive tmp_dir
@@ -399,7 +399,7 @@ function build_ghc () {
 		cp "${app_dir}/.halcyon-hooks/ghc-pre-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 	fi
 
-	log "Installing GHC ${ghc_id}"
+	log "Installing GHC ${ghc_id}..."
 
 	if ! (
 		cd "${tmp_dir}/ghc-${ghc_version}" &&
@@ -408,6 +408,8 @@ function build_ghc () {
 	); then
 		die "Failed to install GHC ${ghc_id}"
 	fi
+
+	log "Installed GHC ${ghc_id}"
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
 		log "Running GHC ${ghc_id} post-build hook"
