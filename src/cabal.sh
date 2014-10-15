@@ -354,7 +354,7 @@ function echo_tmp_cabal_dir () {
 }
 
 
-function detect_cabal_hooks_hash () {
+function hash_cabal_hooks () {
 	local hooks_dir
 	expect_args hooks_dir -- "$@"
 
@@ -387,7 +387,7 @@ function determine_cabal_hooks_hash () {
 	log_begin 'Determining Cabal hooks hash...'
 
 	local cabal_hooks_hash
-	cabal_hooks_hash=$( detect_cabal_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
+	cabal_hooks_hash=$( hash_cabal_hooks "${app_dir}/.halcyon-hooks" ) || die
 
 	if [ -z "${cabal_hooks_hash}" ]; then
 		log_end 'none'
@@ -412,12 +412,12 @@ function validate_cabal_tag () {
 }
 
 
-function validate_cabal_hooks_hash () {
+function validate_cabal_hooks () {
 	local cabal_hooks_hash hooks_dir
 	expect_args cabal_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( detect_cabal_hooks_hash "${hooks_dir}" ) || die
+	candidate_hooks_hash=$( hash_cabal_hooks "${hooks_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${cabal_hooks_hash}" ]; then
 		return 1
@@ -684,7 +684,7 @@ function restore_cabal () {
 
 	if [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] &&
 		validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" &&
-		validate_cabal_hooks_hash "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+		validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		return 0
 	fi
@@ -694,7 +694,7 @@ function restore_cabal () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 		! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-		! validate_cabal_hooks_hash "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
@@ -706,7 +706,7 @@ function restore_cabal () {
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 			! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 			! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-			! validate_cabal_hooks_hash "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+			! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 			log_warning "Restoring ${cabal_archive} failed"
@@ -727,7 +727,7 @@ function restore_archived_updated_cabal () {
 
 	if [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] &&
 		validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" &&
-		validate_cabal_hooks_hash "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+		validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		return 0
 	fi
@@ -744,7 +744,7 @@ function restore_archived_updated_cabal () {
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-		! validate_cabal_hooks_hash "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		return 1
@@ -791,7 +791,7 @@ function restore_updated_cabal () {
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-		! validate_cabal_hooks_hash "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		log_warning "Restoring ${cabal_archive} failed"
