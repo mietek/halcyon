@@ -153,54 +153,6 @@ function echo_tmp_app_dist_dir () {
 }
 
 
-function echo_fake_app_package () {
-	local app_label
-	expect_args app_label -- "$@"
-
-	local app_name app_version build_depends
-	if [ "${app_label}" = 'base' ]; then
-		app_name='base'
-		app_version=$( detect_base_version ) || die
-		build_depends='base'
-	else
-		app_name="${app_label}"
-		if ! app_version=$( cabal_list_latest_package_version "${app_label}" ); then
-			app_name="${app_label%-*}"
-			app_version="${app_label##*-}"
-		fi
-		build_depends="base, ${app_name} == ${app_version}"
-	fi
-
-	cat <<-EOF
-		name:           halcyon-fake-${app_name}
-		version:        ${app_version}
-		build-type:     Simple
-		cabal-version:  >= 1.2
-
-		executable halcyon-fake-${app_name}
-		  build-depends:  ${build_depends}
-EOF
-}
-
-
-function fake_app_dir () {
-	local app_label
-	expect_args app_label -- "$@"
-
-	local app_dir
-	app_dir=$( echo_tmp_app_dir ) || die
-
-	mkdir -p "${app_dir}" || die
-	echo_fake_app_package "${app_label}" >"${app_dir}/${app_label}.cabal" || die
-
-	if [ -d '.halcyon-hooks' ]; then
-		cp -R '.halcyon-hooks' "${app_dir}"
-	fi
-
-	echo "${app_dir}"
-}
-
-
 function detect_app_package () {
 	local app_dir
 	expect_args app_dir -- "$@"
