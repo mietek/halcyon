@@ -643,7 +643,6 @@ EOF
 		cd "${tmp_dir}/cabal-install-${cabal_version}" &&
 		quote_quietly "${HALCYON_QUIET}" ./bootstrap.sh --no-doc
 	); then
-		rm -rf "${tmp_dir}" || die
 		die "Failed to bootstrap Cabal ${cabal_description}"
 	fi
 

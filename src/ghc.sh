@@ -406,7 +406,6 @@ function build_ghc () {
 		quote_quietly "${HALCYON_QUIET}" ./configure --prefix="${HALCYON_DIR}/ghc" &&
 		quote_quietly "${HALCYON_QUIET}" make install
 	); then
-		rm -rf "${tmp_dir}" || die
 		die "Failed to install GHC ${ghc_id}"
 	fi
 
