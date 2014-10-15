@@ -703,6 +703,12 @@ function install_sandbox () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
+		(( ${HALCYON_FORCE_BUILD_SANDBOX} ))
+	then
+		rm -rf "${HALCYON_DIR}/sandbox"
+	fi
+
 	local extending_sandbox=0
 	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die
 	strip_sandbox || die
