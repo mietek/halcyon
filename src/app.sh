@@ -288,7 +288,7 @@ function detect_app_hook () {
 	local hooks_dir
 	expect_args hooks_dir -- "$@"
 
-	echo_digest "${hooks_dir}/"*'-app-'*
+	hash_files "${hooks_dir}/"*'-app-'*
 }
 
 

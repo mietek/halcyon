@@ -58,7 +58,7 @@ function set_default_vars () {
 }
 
 
-function echo_digest () {
+function hash_files () {
 	local file_contents
 	if ! file_contents=$( cat "$@" 2>'/dev/null' ); then
 		return 0

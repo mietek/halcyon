@@ -206,7 +206,7 @@ function hash_sandbox_hooks () {
 	local hooks_dir
 	expect_args hooks_dir -- "$@"
 
-	echo_digest "${hooks_dir}/"*'-sandbox-'*
+	hash_files "${hooks_dir}/"*'-sandbox-'*
 }
 
 
@@ -245,7 +245,7 @@ function determine_sandbox_digest () {
 	log_begin 'Determining sandbox digest...'
 
 	local sandbox_digest
-	sandbox_digest=$( echo_constraints_digest <<<"${sandbox_constraints}" ) || die
+	sandbox_digest=$( hash_constraints <<<"${sandbox_constraints}" ) || die
 
 	log_end "done, ${sandbox_digest:0:7}"
 
@@ -290,7 +290,7 @@ function validate_sandbox_config () {
 	expect_args sandbox_digest -- "$@"
 
 	local candidate_digest
-	candidate_digest=$( read_constraints | echo_constraints_digest ) || die
+	candidate_digest=$( read_constraints | hash_constraints ) || die
 
 	if [ "${candidate_digest}" != "${sandbox_digest}" ]; then
 		return 1
@@ -371,7 +371,7 @@ function build_sandbox () {
 
 	local actual_constraints actual_digest
 	actual_constraints=$( freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${app_dir}" ) || die
-	actual_digest=$( echo_constraints_digest <<<"${actual_constraints}" ) || die
+	actual_digest=$( hash_constraints <<<"${actual_constraints}" ) || die
 
 	if [ "${actual_digest}" != "${sandbox_digest}" ]; then
 		log_warning "Actual sandbox digest is ${actual_digest:0:7}"

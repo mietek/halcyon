@@ -1,10 +1,10 @@
-function echo_tmp_constraints_config () {
-	mktemp -u '/tmp/halcyon-constraints.cabal.config.XXXXXXXXXX'
+function hash_constraints () {
+	openssl sha1 | sed 's/^.* //'
 }
 
 
-function echo_constraints_digest () {
-	openssl sha1 | sed 's/^.* //'
+function echo_tmp_constraints_config () {
+	mktemp -u '/tmp/halcyon-constraints.cabal.config.XXXXXXXXXX'
 }
 
 
@@ -19,8 +19,8 @@ function echo_constraints_difference () {
 	expect_args old_constraints new_constraints -- "$@"
 
 	local old_digest new_digest
-	old_digest=$( echo_constraints_digest <<<"${old_constraints}" ) || die
-	new_digest=$( echo_constraints_digest <<<"${new_constraints}" ) || die
+	old_digest=$( hash_constraints <<<"${old_constraints}" ) || die
+	new_digest=$( hash_constraints <<<"${new_constraints}" ) || die
 
 	local tmp_old_config tmp_new_config
 	tmp_old_config=$( echo_tmp_constraints_config ) || die

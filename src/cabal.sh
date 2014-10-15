@@ -356,7 +356,7 @@ function hash_cabal_hooks () {
 	local hooks_dir
 	expect_args hooks_dir -- "$@"
 
-	echo_digest "${hooks_dir}/"*'-cabal-'*
+	hash_files "${hooks_dir}/"*'-cabal-'*
 }
 
 

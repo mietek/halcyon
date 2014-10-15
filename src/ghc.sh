@@ -179,7 +179,7 @@ function hash_ghc_hooks () {
 	local hooks_dir
 	expect_args hooks_dir -- "$@"
 
-	echo_digest "${hooks_dir}/"*'-ghc-'*
+	hash_files "${hooks_dir}/"*'-ghc-'*
 }
 
 
