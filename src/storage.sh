@@ -8,9 +8,9 @@ function expect_storage () {
 
 	if ! has_private_storage; then
 		if ! (( ${HALCYON_PUBLIC} )); then
-			log_error 'Storage is not configured'
+			log_error 'Expected private or public storage'
 			log
-			help_configure_storage
+			help_storage
 			log
 			die
 		fi
@@ -18,7 +18,7 @@ function expect_storage () {
 		log_warning 'Using public storage'
 	else
 		if (( ${HALCYON_PUBLIC} )); then
-			log_warning 'Ignoring HALCYON_PUBLIC as private storage is configured'
+			log_warning 'Ignoring HALCYON_PUBLIC and using private storage'
 		fi
 	fi
 }

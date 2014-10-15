@@ -177,23 +177,22 @@ function halcyon_install () {
 	done
 
 	local fake_app app_dir app_label
-	if ! (( $# )); then
+	if ! (( $# )) || [ -d "$1" ]; then
 		fake_app=0
-		app_dir='.'
+		if [ -d "$1" ]; then
+			app_dir="$1"
+		else
+			app_dir='.'
+		fi
 		app_label=$( detect_app_label "${app_dir}" ) || die
-	elif [ -d "$1" ]; then
-		fake_app=0
-		app_dir="$1"
-		app_label=$( detect_app_label "${app_dir}" ) || die
+		log "Installing ${app_label}"
+		log
 	else
 		fake_app=1
 		app_label="$1"
 		app_dir=''
 		export HALCYON_NO_WARN_CONSTRAINTS=1
 	fi
-
-	log "Installing ${app_label}"
-	log
 
 	prepare_cache || die
 	log
@@ -219,7 +218,4 @@ function halcyon_install () {
 	fi
 
 	clean_cache "${app_dir}" || die
-	log
-
-	log "Installed ${app_label}"
 }

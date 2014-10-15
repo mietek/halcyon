@@ -69,8 +69,8 @@ function filter_valid_constraints () {
 
 
 function score_constraints () {
-	local constraints sandbox_description
-	expect_args constraints sandbox_description -- "$@"
+	local constraints description
+	expect_args constraints description -- "$@"
 
 	local -A constraints_A
 
@@ -85,19 +85,19 @@ function score_constraints () {
 		local version
 		version="${constraints_A[${candidate_package}]:-}"
 		if [ -z "${version}" ]; then
-			log_indent "Ignoring sandbox ${sandbox_description} as ${candidate_package} is not needed"
+			log_indent "Ignoring ${description} as ${candidate_package} is not needed"
 			echo 0
 			return 0
 		fi
 		if [ "${candidate_version}" != "${version}" ]; then
-			log_indent "Ignoring sandbox ${sandbox_description} as ${candidate_package}-${version} is needed and not ${candidate_version}"
+			log_indent "Ignoring ${description} as ${candidate_package}-${version} is needed and not ${candidate_version}"
 			echo 0
 			return 0
 		fi
 		score=$(( ${score} + 1 ))
 	done
 
-	log_indent "${score}"$'\t'"${sandbox_description}"
+	log_indent "${score}"$'\t'"${description}"
 	echo "${score}"
 }
 

@@ -10,7 +10,7 @@ function echo_ghc_libgmp10_x64_original_url () {
 	'7.8.1')
 		echo 'http://www.haskell.org/ghc/dist/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
 	*)
-		die "Unexpected GHC version for use with libgmp.so.10: ${ghc_version}"
+		die "Unexpected GHC version: ${ghc_version} (libgmp.so.10)"
 	esac
 }
 
@@ -63,7 +63,7 @@ function echo_ghc_libgmp3_x64_original_url () {
 	'6.10.1')
 		echo 'http://www.haskell.org/ghc/dist/6.10.1/ghc-6.10.1-x86_64-unknown-linux-libedit2.tar.bz2';;
 	*)
-		die "Unexpected GHC version for use with libgmp.so.3: ${ghc_version}"
+		die "Unexpected GHC version: ${ghc_version} (libgmp.so.3)"
 	esac
 }
 
@@ -187,7 +187,7 @@ function determine_ghc_version () {
 	if has_vars HALCYON_FORCE_GHC_VERSION; then
 		ghc_version="${HALCYON_FORCE_GHC_VERSION}"
 
-		log_end "${ghc_version}, forced"
+		log_end "${ghc_version} (forced)"
 	elif [ -f "${app_dir}/cabal.config" ]; then
 		local base_version
 		base_version=$(
@@ -199,11 +199,11 @@ function determine_ghc_version () {
 
 		ghc_version=$( echo_ghc_version_from_base_version "${base_version}" ) || die
 
-		log_end "done, ${ghc_version}"
+		log_end "${ghc_version}"
 	else
 		ghc_version=$( echo_ghc_default_version ) || die
 
-		log_end "${ghc_version}, default"
+		log_end "${ghc_version} (default)"
 		if ! (( "${HALCYON_NO_WARN_CONSTRAINTS}" )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 		fi
@@ -223,9 +223,9 @@ function determine_ghc_hooks_hash () {
 	ghc_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/ghc-"* ) || die
 
 	if [ -z "${ghc_hooks_hash}" ]; then
-		log_end 'none'
+		log_end '(none)'
 	else
-		log_end "done, ${ghc_hooks_hash:0:7}"
+		log_end "${ghc_hooks_hash:0:7}"
 	fi
 
 	echo "${ghc_hooks_hash}"
@@ -349,7 +349,7 @@ function prepare_ghc_libs () {
 	*)
 		local os_description
 		os_description=$( echo_os_description "${os}" ) || die
-		die "Installing GHC ${ghc_version} on ${os_description} is not implemented yet"
+		die "Unexpected GHC and OS combination: ${ghc_version} and ${os_description}"
 	esac
 }
 
@@ -365,7 +365,7 @@ function build_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log "Building GHC ${ghc_id}"
+	log "Building GHC ${ghc_id} layer"
 
 	local original_url original_archive tmp_dir
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
@@ -378,17 +378,17 @@ function build_ghc () {
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
 		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
-			die "Downloading ${original_archive} failed"
+			die "Cannot download GHC ${ghc_version} original archive"
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
-			die "Restoring ${original_archive} failed"
+			die "Cannot extract GHC ${ghc_version} original archive"
 		fi
 	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-pre-build" ]; then
-		log "Running GHC pre-build hook"
+		log "Running GHC ${ghc_id} pre-build hook"
 		"${app_dir}/.halcyon-hooks/ghc-pre-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
@@ -403,11 +403,11 @@ function build_ghc () {
 		quote_quietly "${HALCYON_QUIET}" make install
 	); then
 		rm -rf "${tmp_dir}" || die
-		die "Installing GHC ${ghc_version} failed"
+		die "Failed to install GHC ${ghc_id}"
 	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
-		log "Running GHC post-build hook"
+		log "Running GHC ${ghc_id} post-build hook"
 		"${app_dir}/.halcyon-hooks/ghc-post-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" || die
 
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
@@ -420,7 +420,7 @@ function build_ghc () {
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Installed GHC ${ghc_id}, ${ghc_size}"
+	log "Built GHC ${ghc_id} layer, ${ghc_size}"
 }
 
 
@@ -433,7 +433,7 @@ function strip_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log_begin "Stripping GHC ${ghc_id}..."
+	log_begin "Stripping GHC ${ghc_id} layer..."
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -472,12 +472,12 @@ function strip_ghc () {
 			strip0 --strip-unneeded || die
 		;;
 	*)
-		die "Stripping GHC ${ghc_version} is not implemented yet"
+		die "Unexpected GHC version: ${ghc_version}"
 	esac
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log_end "done, ${ghc_size}"
+	log_end "${ghc_size}"
 }
 
 
@@ -495,7 +495,7 @@ function archive_ghc () {
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log "Archiving GHC ${ghc_id}"
+	log "Archiving GHC ${ghc_id} layer"
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
@@ -514,12 +514,13 @@ function restore_ghc () {
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log "Restoring GHC ${ghc_id}"
-
 	if validate_ghc "${ghc_tag}"; then
+		log "Using installed GHC ${ghc_id} layer"
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
+
+	log "Restoring GHC ${ghc_id} layer"
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
@@ -528,7 +529,7 @@ function restore_ghc () {
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
 		if ! download_layer "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Downloading ${ghc_archive} failed"
+			log "Cannot download GHC ${ghc_id} layer archive"
 			return 1
 		fi
 
@@ -536,7 +537,7 @@ function restore_ghc () {
 			! validate_ghc "${ghc_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
-			log_warning "Restoring ${ghc_archive} failed"
+			log_warning "Cannot extract GHC ${ghc_id} layer archive"
 			return 1
 		fi
 	fi
@@ -551,9 +552,9 @@ function activate_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log_begin "Activating GHC ${ghc_id}..."
+	log "Activating GHC ${ghc_id} layer"
 
-	log_end 'done'
+	# TODO: Check ~/.ghc
 }
 
 
@@ -565,9 +566,9 @@ function deactivate_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log_begin "Deactivating GHC ${ghc_id}..."
+	log "Deactivating GHC ${ghc_id} layer"
 
-	log_end 'done'
+	# TODO: Check ~/.ghc
 }
 
 

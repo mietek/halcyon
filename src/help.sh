@@ -1,11 +1,11 @@
-function help_configure_storage () {
+function help_storage () {
 	quote <<-EOF
-		To configure private storage:
+		To use private storage:
 		$ export HALCYON_AWS_ACCESS_KEY_ID=...
 		$ export HALCYON_AWS_SECRET_ACCESS_KEY=...
 		$ export HALCYON_S3_BUCKET=...
 
-		To configure public storage:
+		To use public storage:
 		$ export HALCYON_PUBLIC=1
 EOF
 }

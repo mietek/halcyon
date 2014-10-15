@@ -11,7 +11,11 @@ function cabal_do () {
 		cd "${work_dir}" &&
 		cabal --config-file="${HALCYON_DIR}/cabal/.halcyon-cabal.config" "$@"
 	); then
-		die 'Using Cabal failed'
+		local cabal_tag cabal_id
+		cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
+		cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
+
+		die "Cabal ${cabal_description} failed to execute:" "$@"
 	fi
 }
 
@@ -189,15 +193,16 @@ function make_cabal_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	local ghc_os ghc_halcyon_dir
+	local ghc_os ghc_halcyon_dir ghc_id
 	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
+	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
 	if [ "${os}" != "${ghc_os}" ]; then
-		die "Unexpected OS in GHC tag: ${ghc_os}"
+		die "Unexpected OS in GHC ${ghc_id} tag: ${ghc_os}"
 	fi
 	if [ "${HALCYON_DIR}" != "${ghc_halcyon_dir}" ]; then
-		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
+		die "Unexpected HALCYON_DIR in GHC ${ghc_id} tag: ${ghc_halcyon_dir}"
 	fi
 
 	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_hooks_hash}\t"
@@ -213,17 +218,18 @@ function make_updated_cabal_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	local cabal_os cabal_halcyon_dir cabal_version cabal_hooks_hash
+	local cabal_os cabal_halcyon_dir cabal_version cabal_hooks_hash cabal_description
 	cabal_os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
 	cabal_halcyon_dir=$( echo_cabal_tag_halcyon_dir "${cabal_tag}" ) || die
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if [ "${os}" != "${cabal_os}" ]; then
-		die "Unexpected OS in Cabal tag: ${cabal_os}"
+		die "Unexpected OS in Cabal ${cabal_description} tag: ${cabal_os}"
 	fi
 	if [ "${HALCYON_DIR}" != "${cabal_halcyon_dir}" ]; then
-		die "Unexpected HALCYON_DIR in Cabal tag: ${cabal_halcyon_dir}"
+		die "Unexpected HALCYON_DIR in Cabal ${cabal_description} tag: ${cabal_halcyon_dir}"
 	fi
 
 	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_hooks_hash}\t${cabal_timestamp}"
@@ -359,11 +365,11 @@ function determine_cabal_version () {
 	if has_vars HALCYON_FORCE_CABAL_VERSION; then
 		cabal_version="${HALCYON_FORCE_CABAL_VERSION}"
 
-		log_end "${cabal_version}, forced"
+		log_end "${cabal_version} (forced)"
 	else
 		cabal_version=$( echo_cabal_default_version ) || die
 
-		log_end "done, ${cabal_version}"
+		log_end "${cabal_version} (default)"
 	fi
 
 	echo "${cabal_version}"
@@ -380,9 +386,9 @@ function determine_cabal_hooks_hash () {
 	cabal_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/cabal-"* ) || die
 
 	if [ -z "${cabal_hooks_hash}" ]; then
-		log_end 'none'
+		log_end '(none)'
 	else
-		log_end "done, ${cabal_hooks_hash:0:7}"
+		log_end "${cabal_hooks_hash:0:7}"
 	fi
 
 	echo "${cabal_hooks_hash}"
@@ -557,7 +563,7 @@ function build_cabal () {
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Building Cabal ${cabal_description}"
+	log "Building Cabal ${cabal_description} layer"
 
 	local original_url original_archive tmp_dir
 	original_url=$( echo_cabal_original_url "${cabal_version}" ) || die
@@ -570,12 +576,12 @@ function build_cabal () {
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
 		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
-			die "Downloading ${original_archive} failed"
+			die "Cannot download Cabal ${cabal_version} original archive"
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
-			die "Restoring ${original_archive} failed"
+			die "Cannot extract Cabal ${cabal_version} original archive"
 		fi
 	fi
 
@@ -584,7 +590,7 @@ function build_cabal () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-pre-build" ]; then
-		log "Running Cabal pre-build hook"
+		log "Running Cabal ${cabal_description} pre-build hook"
 		"${app_dir}/.halcyon-hooks/cabal-pre-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
 
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
@@ -592,6 +598,8 @@ function build_cabal () {
 	fi
 
 	log "Bootstrapping Cabal ${cabal_description}"
+
+	# NOTE: Bootstrapping cabal-install 1.20.0.0 with GHC 7.6.* does not work.
 
 	case "${ghc_version}-${cabal_version}" in
 	'7.8.'*'-1.20.0.'*)
@@ -610,7 +618,7 @@ EOF
 		;;
 	*)
 		rm -rf "${tmp_dir}" || die
-		die "Bootstrapping Cabal ${cabal_version} with GHC ${ghc_version} is not implemented yet"
+		die "Unexpected Cabal and GHC combination: ${cabal_version} and ${ghc_version}"
 	esac
 
 	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc is specified.
@@ -622,7 +630,7 @@ EOF
 		quote_quietly "${HALCYON_QUIET}" ./bootstrap.sh --no-doc
 	); then
 		rm -rf "${tmp_dir}" || die
-		die "Bootstrapping Cabal ${cabal_version} failed"
+		die "Failed to bootstrap Cabal ${cabal_description}"
 	fi
 
 	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
@@ -631,7 +639,7 @@ EOF
 	echo_cabal_config >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
-		log "Running Cabal post-build hook"
+		log "Running Cabal ${cabal_description} post-build hook"
 		"${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" || die
 
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
@@ -644,7 +652,7 @@ EOF
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Bootstrapped Cabal ${cabal_description}, ${cabal_size}"
+	log "Built Cabal ${cabal_description} layer, ${cabal_size}"
 }
 
 
@@ -656,7 +664,7 @@ function update_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Updating Cabal ${cabal_description}"
+	log "Updating Cabal ${cabal_description} layer"
 
 	cabal_update || die
 
@@ -668,7 +676,7 @@ function update_cabal () {
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Updated Cabal ${updated_cabal_description}, ${cabal_size}"
+	log "Updated Cabal ${updated_cabal_description} layer, ${cabal_size}"
 }
 
 
@@ -686,7 +694,7 @@ function archive_cabal () {
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Archiving Cabal ${cabal_description}"
+	log "Archiving Cabal ${cabal_description} layer"
 
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
@@ -705,12 +713,13 @@ function restore_cabal () {
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Restoring Cabal ${cabal_description}"
-
 	if validate_cabal "${cabal_tag}"; then
+		log "Using installed Cabal ${cabal_description} layer"
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
+
+	log "Restoring Cabal ${cabal_description} layer"
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
@@ -719,7 +728,7 @@ function restore_cabal () {
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
 		if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Downloading ${cabal_archive} failed"
+			log "Cannot download Cabal ${cabal_description} layer archive"
 			return 1
 		fi
 
@@ -727,14 +736,14 @@ function restore_cabal () {
 			! validate_cabal "${cabal_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
-			log_warning "Restoring ${cabal_archive} failed"
+			log_warning "Cannot extract Cabal ${cabal_description} layer archive"
 			return 1
 		fi
 	fi
 }
 
 
-function restore_archived_updated_cabal () {
+function restore_cached_updated_cabal () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
 	local cabal_tag
@@ -773,13 +782,16 @@ function restore_updated_cabal () {
 	archive_prefix=$( echo_updated_cabal_archive_prefix "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Restoring Cabal ${cabal_description}"
+	if restore_cached_updated_cabal "${cabal_tag}"; then
+		local updated_cabal_tag updated_cabal_description
+		updated_cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
+		updated_cabal_description=$( echo_cabal_description "${updated_cabal_tag}" ) || die
 
-	if restore_archived_updated_cabal "${cabal_tag}"; then
+		log "Using installed Cabal ${updated_cabal_description} layer"
 		return 0
 	fi
 
-	log "Locating Cabal ${cabal_description}"
+	log "Locating updated Cabal ${cabal_description} layers"
 
 	local cabal_archive
 	if ! cabal_archive=$(
@@ -787,13 +799,20 @@ function restore_updated_cabal () {
 		sed "s:${os}/::" |
 		match_updated_cabal_archive "${cabal_tag}"
 	); then
-		log "Locating Cabal ${cabal_description} failed"
+		log "Cannot locate updated Cabal ${cabal_description} layer archives"
 		return 1
 	fi
 
+	local cabal_timestamp updated_cabal_tag updated_cabal_description
+	cabal_timestamp=$( echo_updated_cabal_archive_timestamp "${cabal_archive}" ) || die
+	updated_cabal_tag=$( make_updated_cabal_tag "${cabal_tag}" "${cabal_timestamp}" ) || die
+	updated_cabal_description=$( echo_cabal_description "${updated_cabal_tag}" ) || die
+
+	log "Restoring Cabal ${updated_cabal_description} layer"
+
 	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
 	if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-		log_warning "Downloading ${cabal_archive} failed"
+		log_warning "Cannot download Cabal ${updated_cabal_description} layer archive"
 		return 1
 	fi
 
@@ -801,7 +820,7 @@ function restore_updated_cabal () {
 		! validate_updated_cabal "${cabal_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
-		log_warning "Restoring ${cabal_archive} failed"
+		log_warning "Cannot extract Cabal ${updated_cabal_description} layer archive"
 		return 1
 	fi
 }
@@ -815,17 +834,15 @@ function activate_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log_begin "Activating Cabal ${cabal_description}..."
+	log "Activating Cabal ${cabal_description} layer"
 
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-		die "Expected no actual ${HOME}/.cabal/config"
+		die "Expected no foreign ${HOME}/.cabal/config"
 	fi
 
 	mkdir -p "${HOME}/.cabal" || die
 	rm -f "${HOME}/.cabal/config" || die
 	ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
-
-	log_end 'done'
 }
 
 
@@ -837,15 +854,13 @@ function deactivate_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log_begin "Deactivating Cabal ${cabal_description}..."
+	log "Deactivating Cabal ${cabal_description} layer"
 
 	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-		die "Expected no actual ${HOME}/.cabal/config"
+		die "Expected no foreign ${HOME}/.cabal/config"
 	fi
 
 	rm -f "${HOME}/.cabal/config" || die
-
-	log_end 'done'
 }
 
 

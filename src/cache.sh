@@ -27,9 +27,9 @@ function prepare_cache () {
 	fi
 	mkdir -p "${HALCYON_CACHE_DIR}" || die
 
-	if (( ${has_old_cache} )); then
-		log 'Examining cache'
+	log 'Examining cache'
 
+	if (( ${has_old_cache} )); then
 		cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_OLD_CACHE_TMP_DIR}" || die
 		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
 			sort_naturally |
@@ -44,7 +44,7 @@ function clean_cache () {
 
 	expect_args app_dir -- "$@"
 
-	log_begin 'Cleaning cache...'
+	log 'Cleaning cache'
 
 	local tmp_dir
 	tmp_dir=$( echo_tmp_cache_dir ) || die
@@ -93,8 +93,6 @@ function clean_cache () {
 
 	rm -rf "${HALCYON_CACHE_DIR}" || die
 	mv "${tmp_dir}" "${HALCYON_CACHE_DIR}" || die
-
-	log_end 'done'
 
 	if [ -d "${HALCYON_OLD_CACHE_TMP_DIR}" ]; then
 		log 'Examining cache changes'

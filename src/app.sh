@@ -7,20 +7,21 @@ function make_app_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	local ghc_os ghc_halcyon_dir ghc_version ghc_hooks_hash
+	local ghc_os ghc_halcyon_dir ghc_version ghc_hooks_hash ghc_id
 	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
+	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
 	if [ "${os}" != "${ghc_os}" ]; then
-		die "Unexpected OS in GHC tag: ${ghc_os}"
+		die "Unexpected OS in GHC ${ghc_id} tag: ${ghc_os}"
 	fi
 	if [ "${HALCYON_DIR}" != "${ghc_halcyon_dir}" ]; then
-		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
+		die "Unexpected HALCYON_DIR in GHC ${ghc_id} tag: ${ghc_halcyon_dir}"
 	fi
 
-	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hooks_hash sandbox_app_label sandbox_digest sandbox_hooks_hash
+	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hooks_hash sandbox_app_label sandbox_digest sandbox_hooks_hash sandbox_description
 	sandbox_os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_halcyon_dir=$( echo_sandbox_tag_halcyon_dir "${sandbox_tag}" ) || die
 	sandbox_ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
@@ -28,21 +29,22 @@ function make_app_tag () {
 	sandbox_app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
 	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if [ "${os}" != "${sandbox_os}" ]; then
-		die "Unexpected OS in sandbox tag: ${sandbox_os}"
+		die "Unexpected OS in sandbox ${sandbox_description} tag: ${sandbox_os}"
 	fi
 	if [ "${HALCYON_DIR}" != "${sandbox_halcyon_dir}" ]; then
-		die "Unexpected HALCYON_DIR in sandbox tag: ${sandbox_halcyon_dir}"
+		die "Unexpected HALCYON_DIR in sandbox ${sandbox_description} tag: ${sandbox_halcyon_dir}"
 	fi
 	if [ "${ghc_version}" != "${sandbox_ghc_version}" ]; then
-		die "Unexpected GHC version in sandbox tag: ${sandbox_ghc_version}"
+		die "Unexpected GHC version in sandbox ${sandbox_description} tag: ${sandbox_ghc_version}"
 	fi
 	if [ "${ghc_hooks_hash}" != "${sandbox_ghc_hooks_hash}" ]; then
-		die "Unexpected GHC hooks_hash in sandbox tag: ${sandbox_ghc_hooks_hash}"
+		die "Unexpected GHC hooks_hash in sandbox ${sandbox_description} tag: ${sandbox_ghc_hooks_hash}"
 	fi
 	if [ "${app_label}" != "${sandbox_app_label}" ]; then
-		die "Unexpected app label in sandbox tag: ${sandbox_app_label}"
+		die "Unexpected app label in sandbox ${sandbox_description} tag: ${sandbox_app_label}"
 	fi
 
 	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${sandbox_digest}\t${sandbox_hooks_hash}\t${app_label}\t${app_hooks_hash}"
@@ -163,7 +165,7 @@ function detect_app_package () {
 		find_spaceless_recursively "${app_dir}" -maxdepth 1 -name '*.cabal' |
 		match_exactly_one
 	); then
-		die "Expected exactly one ${app_dir}/*.cabal"
+		die 'Expected exactly one app package'
 	fi
 
 	cat "${app_dir}/${package_file}"
@@ -180,7 +182,7 @@ function detect_app_name () {
 		awk '/^ *[Nn]ame:/ { print $2 }' |
 		match_exactly_one
 	); then
-		die 'Expected exactly one app name'
+		die 'Expected exactly one name in app package'
 	fi
 
 	echo "${app_name}"
@@ -197,7 +199,7 @@ function detect_app_version () {
 		awk '/^ *[Vv]ersion:/ { print $2 }' |
 		match_exactly_one
 	); then
-		die 'Expected exactly one app version'
+		die 'Expected exactly one version in app package'
 	fi
 
 	echo "${app_version}"
@@ -214,7 +216,7 @@ function detect_app_executable () {
 		awk '/^ *[Ee]xecutable / { print $2 }' |
 		match_exactly_one
 	); then
-		die 'Expected exactly one app executable'
+		die 'Expected exactly one executable in app package'
 	fi
 
 	echo "${app_executable}"
@@ -243,9 +245,9 @@ function determine_app_hooks_hash () {
 	app_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/app-"* ) || die
 
 	if [ -z "${app_hooks_hash}" ]; then
-		log_end 'none'
+		log_end '(none)'
 	else
-		log_end "done, ${app_hooks_hash:0:7}"
+		log_end "${app_hooks_hash:0:7}"
 	fi
 
 	echo "${app_hooks_hash}"
@@ -305,7 +307,7 @@ function configure_app () {
 	local app_id
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Configuring app ${app_id}"
+	log "Configuring app ${app_id} layer"
 
 	cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 }
@@ -323,17 +325,17 @@ function build_app () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Building app ${app_id}"
+	log "Building app ${app_id} layer"
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
-		log "Running app pre-build hook"
+		log "Running app ${app_id} pre-build hook"
 		"${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" || die
 	fi
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
-		log "Running app post-build hook"
+		log "Running app ${app_id} post-build hook"
 		"${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" || die
 	fi
 
@@ -358,7 +360,7 @@ function archive_app () {
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Archiving app ${app_id}"
+	log "Archiving app ${app_id} layer"
 
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	tar_archive "${app_dir}"                      \
@@ -385,7 +387,7 @@ function restore_app () {
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Restoring app ${app_id}"
+	log "Restoring app ${app_id} layer"
 
 	local tmp_old_dir tmp_dist_dir
 	tmp_old_dir=$( echo_tmp_old_app_dir ) || die
@@ -398,7 +400,7 @@ function restore_app () {
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Downloading ${app_archive} failed"
+			log "Cannot download ${app_id} layer archive"
 			return 1
 		fi
 
@@ -406,12 +408,12 @@ function restore_app () {
 			! validate_app "${app_tag}" "${tmp_old_dir}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
-			log_warning "Restoring ${app_archive} failed"
+			log_warning "Cannot extract ${app_id} layer archive"
 			return 1
 		fi
 	fi
 
-	log 'Examining source changes'
+	log "Examining app ${app_id} changes"
 
 	mv "${tmp_old_dir}/dist" "${tmp_dist_dir}" || die
 
