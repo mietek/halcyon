@@ -14,6 +14,7 @@ source "${HALCYON_TOP_DIR}/src/ghc.sh"
 source "${HALCYON_TOP_DIR}/src/cabal.sh"
 source "${HALCYON_TOP_DIR}/src/sandbox.sh"
 source "${HALCYON_TOP_DIR}/src/app.sh"
+source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
 function set_default_vars () {
