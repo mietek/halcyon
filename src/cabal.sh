@@ -574,9 +574,9 @@ function build_cabal () {
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_CABAL} )); then
-		log "Building Cabal layer ${cabal_description}... (forced)"
+		log "Building Cabal layer ${cabal_description} (forced)"
 	else
-		log "Building Cabal layer ${cabal_description}..."
+		log "Building Cabal layer ${cabal_description}"
 	fi
 
 	local original_url original_archive tmp_dir
@@ -611,7 +611,7 @@ function build_cabal () {
 		cp "${app_dir}/.halcyon-hooks/cabal-pre-build" "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
 	fi
 
-	log "Bootstrapping Cabal ${cabal_description}..."
+	log "Bootstrapping Cabal ${cabal_description}"
 
 	# NOTE: Bootstrapping cabal-install 1.20.0.0 with GHC 7.6.* does not work.
 
@@ -680,9 +680,9 @@ function update_cabal () {
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_UPDATE_CABAL} )); then
-		log "Updating Cabal layer ${cabal_description}... (forced)"
+		log "Updating Cabal layer ${cabal_description} (forced)"
 	else
-		log "Updating Cabal layer ${cabal_description}..."
+		log "Updating Cabal layer ${cabal_description}"
 	fi
 
 	cabal_update || die

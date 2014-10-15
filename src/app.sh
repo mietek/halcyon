@@ -326,9 +326,9 @@ function build_app () {
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_APP} )); then
-		log "Building app layer ${app_id}... (forced)"
+		log "Building app layer ${app_id} (forced)"
 	else
-		log "Building app layer ${app_id}..."
+		log "Building app layer ${app_id}"
 	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
