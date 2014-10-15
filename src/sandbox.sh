@@ -344,9 +344,9 @@ function build_sandbox () {
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_SANDBOX} )); then
-		log "Building sandbox ${sandbox_description} layer (forced)"
+		log "Building sandbox layer ${sandbox_description} (forced)"
 	else
-		log "Building sandbox ${sandbox_description} layer"
+		log "Building sandbox layer ${sandbox_description}"
 	fi
 
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
@@ -385,7 +385,7 @@ function build_sandbox () {
 
 	local sandbox_size
 	sandbox_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-	log "Built sandbox ${sandbox_description} layer, ${sandbox_size}"
+	log "Built sandbox layer ${sandbox_description}, ${sandbox_size}"
 
 	if (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
 		return 0
@@ -414,7 +414,7 @@ function strip_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log_begin "Stripping sandbox ${sandbox_description} layer..."
+	log_begin "Stripping sandbox layer ${sandbox_description}..."
 
 	find "${HALCYON_DIR}/sandbox"       \
 			-type f        -and \
@@ -447,7 +447,7 @@ function archive_sandbox () {
 	sandbox_config=$( echo_sandbox_config "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Archiving sandbox ${sandbox_description} layer"
+	log "Archiving sandbox layer ${sandbox_description}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
@@ -469,12 +469,12 @@ function restore_sandbox () {
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if validate_sandbox "${sandbox_tag}"; then
-		log "Using installed sandbox ${sandbox_description} layer"
+		log "Using installed sandbox layer ${sandbox_description}"
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 
-	log "Restoring sandbox ${sandbox_description} layer"
+	log "Restoring sandbox layer ${sandbox_description}"
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
@@ -483,7 +483,7 @@ function restore_sandbox () {
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
 		if ! download_layer "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download sandbox ${sandbox_description} layer archive"
+			log "Cannot download sandbox layer archive ${sandbox_description}"
 			return 1
 		fi
 
@@ -491,7 +491,7 @@ function restore_sandbox () {
 			! validate_sandbox "${sandbox_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
-			log_warning "Cannot extract sandbox ${sandbox_description} layer archive"
+			log_warning "Cannot extract sandbox layer archive ${sandbox_description}"
 			return 1
 		fi
 	fi
@@ -510,7 +510,7 @@ function activate_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Activating sandbox ${sandbox_description} layer"
+	log "Activating sandbox layer ${sandbox_description}"
 
 	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
 		die "Expected no foreign ${app_dir}/cabal.sandbox.config"
@@ -533,7 +533,7 @@ function deactivate_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log "Deactivating sandbox ${sandbox_description} layer"
+	log "Deactivating sandbox layer ${sandbox_description}"
 
 	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
 		die "Expected no foreign ${app_dir}/cabal.sandbox.config"
@@ -550,7 +550,7 @@ function locate_matched_sandbox_tag () {
 	local sandbox_constraints sandbox_hooks_hash
 	expect_args sandbox_constraints sandbox_hooks_hash -- "$@"
 
-	log "Locating matched sandbox${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}} layers"
+	log "Locating matched sandbox layers${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
 
 	local ghc_tag os config_prefix config_pattern
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
@@ -566,7 +566,7 @@ function locate_matched_sandbox_tag () {
 		sort_naturally |
 		match_at_least_one
 	); then
-		log "Cannot locate matched sandbox${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}} layer configs"
+		log "Cannot locate matched sandbox layer configs${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
 		return 1
 	fi
 
@@ -582,17 +582,17 @@ function locate_matched_sandbox_tag () {
 			rm -f "${HALCYON_CACHE_DIR}/${config}" || die
 
 			if ! download_layer "${os}" "${config}" "${HALCYON_CACHE_DIR}"; then
-				log_warning "Cannot download matched sandbox ${id} layer config"
+				log_warning "Cannot download matched sandbox layer config ${id}"
 			fi
 
 			if ! validate_sandbox_config "${digest}" <"${HALCYON_CACHE_DIR}/${config}"; then
 				rm -f "${HALCYON_CACHE_DIR}/${config}" || die
-				log_warning "Cannot validate matched sandbox ${id} layer config"
+				log_warning "Cannot validate matched sandbox layer config ${id}"
 			fi
 		fi
 	done <<<"${matched_configs}"
 
-	log "Scoring matched sandbox${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}} layers"
+	log "Scoring matched sandbox layers${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
 
 	local matched_scores
 	if ! matched_scores=$(
@@ -624,7 +624,7 @@ function locate_matched_sandbox_tag () {
 			sort_naturally |
 			match_at_least_one
 	); then
-		log "Cannot extend matched sandbox${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}} layers"
+		log "Cannot extend matched sandbox layers${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
 		return 1
 	fi
 
@@ -653,7 +653,7 @@ function install_extended_sandbox () {
 	matched_description=$( echo_sandbox_description "${matched_tag}" ) || die
 
 	if [ "${matched_id}" = "${sandbox_id}" ]; then
-		log "Using matched sandbox ${matched_description} layer as sandbox ${sandbox_description} layer"
+		log "Using matched sandbox layer ${matched_description} as ${sandbox_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 		archive_sandbox || die
@@ -663,7 +663,7 @@ function install_extended_sandbox () {
 
 	! (( ${HALCYON_NO_BUILD} )) || return 1
 
-	log "Extending matched sandbox ${matched_description} layer to sandbox ${sandbox_description} layer"
+	log "Extending matched sandbox layer ${matched_description} to ${sandbox_description}"
 
 	local extending_sandbox=1
 	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die

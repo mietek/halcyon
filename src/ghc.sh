@@ -366,9 +366,9 @@ function build_ghc () {
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
-		log "Building GHC ${ghc_id} layer (forced)"
+		log "Building GHC layer ${ghc_id} (forced)"
 	else
-		log "Building GHC ${ghc_id} layer"
+		log "Building GHC layer ${ghc_id}"
 	fi
 
 	local original_url original_archive tmp_dir
@@ -424,7 +424,7 @@ function build_ghc () {
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Built GHC ${ghc_id} layer, ${ghc_size}"
+	log "Built GHC layer ${ghc_id}, ${ghc_size}"
 }
 
 
@@ -437,7 +437,7 @@ function strip_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log_begin "Stripping GHC ${ghc_id} layer..."
+	log_begin "Stripping GHC layer ${ghc_id}..."
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -499,7 +499,7 @@ function archive_ghc () {
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log "Archiving GHC ${ghc_id} layer"
+	log "Archiving GHC layer ${ghc_id}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
@@ -519,12 +519,12 @@ function restore_ghc () {
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
 	if validate_ghc "${ghc_tag}"; then
-		log "Using installed GHC ${ghc_id} layer"
+		log "Using installed GHC layer ${ghc_id}"
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
 
-	log "Restoring GHC ${ghc_id} layer"
+	log "Restoring GHC layer ${ghc_id}"
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
@@ -533,7 +533,7 @@ function restore_ghc () {
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
 		if ! download_layer "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download GHC ${ghc_id} layer archive"
+			log "Cannot download GHC layer archive ${ghc_id}"
 			return 1
 		fi
 
@@ -541,7 +541,7 @@ function restore_ghc () {
 			! validate_ghc "${ghc_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
-			log_warning "Cannot extract GHC ${ghc_id} layer archive"
+			log_warning "Cannot extract GHC layer archive ${ghc_id}"
 			return 1
 		fi
 	fi
@@ -556,7 +556,7 @@ function activate_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log "Activating GHC ${ghc_id} layer"
+	log "Activating GHC layer ${ghc_id}"
 
 	# TODO: Check ~/.ghc
 }
@@ -570,7 +570,7 @@ function deactivate_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log "Deactivating GHC ${ghc_id} layer"
+	log "Deactivating GHC layer ${ghc_id}"
 
 	# TODO: Check ~/.ghc
 }

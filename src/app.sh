@@ -307,7 +307,7 @@ function configure_app () {
 	local app_id
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Configuring app ${app_id} layer"
+	log "Configuring app layer ${app_id}"
 
 	cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 }
@@ -326,9 +326,9 @@ function build_app () {
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_APP} )); then
-		log "Building app ${app_id} layer (forced)"
+		log "Building app layer ${app_id} (forced)"
 	else
-		log "Building app ${app_id} layer"
+		log "Building app layer ${app_id}"
 	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
@@ -364,7 +364,7 @@ function archive_app () {
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Archiving app ${app_id} layer"
+	log "Archiving app layer ${app_id}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	tar_archive "${app_dir}"                      \
@@ -391,7 +391,7 @@ function restore_app () {
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Restoring app ${app_id} layer"
+	log "Restoring app layer ${app_id}"
 
 	local tmp_old_dir tmp_dist_dir
 	tmp_old_dir=$( echo_tmp_old_app_dir ) || die
@@ -404,7 +404,7 @@ function restore_app () {
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download ${app_id} layer archive"
+			log "Cannot download app layer archive ${app_id}"
 			return 1
 		fi
 
@@ -412,7 +412,7 @@ function restore_app () {
 			! validate_app "${app_tag}" "${tmp_old_dir}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
-			log_warning "Cannot extract ${app_id} layer archive"
+			log_warning "Cannot extract app layer archive ${app_id}"
 			return 1
 		fi
 	fi
