@@ -487,6 +487,55 @@ function restore_sandbox () {
 }
 
 
+function activate_sandbox () {
+	expect_vars HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
+
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}"
+
+	local sandbox_tag sandbox_description
+	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
+
+	log_begin "Activating sandbox ${sandbox_description}..."
+
+	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
+		die "Expected no actual ${app_dir}/cabal.sandbox.config"
+	fi
+
+	rm -f "${app_dir}/cabal.sandbox.config" || die
+	ln -s "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${app_dir}/cabal.sandbox.config" || die
+
+	log_end 'done'
+}
+
+
+function deactivate_sandbox () {
+	expect_vars HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
+
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}"
+
+	local sandbox_tag sandbox_description
+	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
+
+	log_begin "Deactivating sandbox ${sandbox_description}..."
+
+	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
+		die "Expected no actual ${app_dir}/cabal.sandbox.config"
+	fi
+
+	rm -f "${app_dir}/cabal.sandbox.config" || die
+
+	log_end 'done'
+}
+
+
 function locate_matched_sandbox_tag () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
@@ -571,55 +620,6 @@ function locate_matched_sandbox_tag () {
 	filter_last <<<"${matched_scores}" |
 		match_exactly_one |
 		sed 's/^.* //'
-}
-
-
-function activate_sandbox () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
-
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
-
-	local sandbox_tag sandbox_description
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
-
-	log_begin "Activating sandbox ${sandbox_description}..."
-
-	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
-		die "Expected no actual ${app_dir}/cabal.sandbox.config"
-	fi
-
-	rm -f "${app_dir}/cabal.sandbox.config" || die
-	ln -s "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${app_dir}/cabal.sandbox.config" || die
-
-	log_end 'done'
-}
-
-
-function deactivate_sandbox () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
-
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
-
-	local sandbox_tag sandbox_description
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
-
-	log_begin "Deactivating sandbox ${sandbox_description}..."
-
-	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
-		die "Expected no actual ${app_dir}/cabal.sandbox.config"
-	fi
-
-	rm -f "${app_dir}/cabal.sandbox.config" || die
-
-	log_end 'done'
 }
 
 
