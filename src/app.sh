@@ -278,6 +278,24 @@ function validate_app_hooks_hash () {
 }
 
 
+function validate_app () {
+	expect_vars HALCYON_DIR
+
+	local app_tag tmp_old_dir
+	expect_args app_tag tmp_old_dir -- "$@"
+
+	local app_hooks_hash
+	app_hooks_hash=$( echo_app_tag_hooks_hash "${app_tag}" ) || die
+
+	if ! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
+		! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag" ||
+		! validate_app_hooks_hash "${app_hooks_hash}" "${tmp_old_dir}/.halcyon-hooks"
+	then
+		return 1
+	fi
+}
+
+
 function configure_app () {
 	expect_vars HALCYON_DIR
 
@@ -362,9 +380,8 @@ function restore_app () {
 	expect_existing "${app_dir}"
 	expect_no_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
 
-	local os app_hooks_hash app_archive app_id
+	local os app_archive app_id
 	os=$( echo_app_tag_os "${app_tag}" ) || die
-	app_hooks_hash=$( echo_app_tag_hooks_hash "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
@@ -376,9 +393,7 @@ function restore_app () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
-		! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
-		! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag" ||
-		! validate_app_hooks_hash "${app_hooks_hash}" "${tmp_old_dir}/.halcyon-hooks"
+		! validate_app "${app_tag}" "${tmp_old_dir}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
@@ -388,9 +403,7 @@ function restore_app () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
-			! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
-			! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag" ||
-			! validate_app_hooks_hash "${app_hooks_hash}" "${tmp_old_dir}/.halcyon-hooks"
+			! validate_app "${app_tag}" "${tmp_old_dir}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 			log_warning "Restoring ${app_archive} failed"

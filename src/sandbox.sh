@@ -303,6 +303,26 @@ function validate_sandbox_hooks () {
 }
 
 
+function validate_sandbox () {
+	expect_vars HALCYON_DIR
+
+	local sandbox_tag
+	expect_args sandbox_tag -- "$@"
+
+	local sandbox_digest sandbox_hooks_hash
+	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
+	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
+
+	if ! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
+		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
+		! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
+		! validate_sandbox_hooks "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+	then
+		return 1
+	fi
+}
+
+
 function build_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/cabal/.halcyon-tag"
@@ -430,30 +450,21 @@ function restore_sandbox () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local os sandbox_digest sandbox_hooks_hash sandbox_archive sandbox_description
+	local os sandbox_archive sandbox_description
 	os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
-	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	log "Restoring sandbox ${sandbox_description}"
 
-	if [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] &&
-		validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" &&
-		validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" &&
-		validate_sandbox_hooks "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
-	then
+	if validate_sandbox "${sandbox_tag}"; then
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
-		! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
-		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
-		! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
-		! validate_sandbox_hooks "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+		! validate_sandbox "${sandbox_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
@@ -463,10 +474,7 @@ function restore_sandbox () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
-			! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
-			! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
-			! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
-			! validate_sandbox_hooks "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+			! validate_sandbox "${sandbox_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 			log_warning "Restoring ${sandbox_archive} failed"
