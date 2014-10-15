@@ -1,4 +1,4 @@
-function echo_ghc_libgmp10_x64_original_url () {
+function echo_ghc_libgmp10_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -15,7 +15,7 @@ function echo_ghc_libgmp10_x64_original_url () {
 }
 
 
-function echo_ghc_libgmp3_x64_original_url () {
+function echo_ghc_libgmp3_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -287,7 +287,7 @@ function prepare_ghc_libs () {
 	os=$( detect_os ) || die
 
 	case "${os}-ghc-${ghc_version}" in
-	'linux-ubuntu-14-04-x64-ghc-7.8.'*)
+	'linux-ubuntu-14-04-x86_64-ghc-7.8.'*)
 		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
@@ -295,9 +295,9 @@ function prepare_ghc_libs () {
 		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
 
-		echo_ghc_libgmp10_x64_original_url "${ghc_version}" || die
+		echo_ghc_libgmp10_x86_64_original_url "${ghc_version}" || die
 		;;
-	'linux-ubuntu-14-04-x64-ghc-7.6.'*)
+	'linux-ubuntu-14-04-x86_64-ghc-7.6.'*)
 		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
@@ -313,9 +313,9 @@ function prepare_ghc_libs () {
 		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
 		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so.3" || die
 
-		echo_ghc_libgmp3_x64_original_url "${ghc_version}" || die
+		echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" || die
 		;;
-	'linux-ubuntu-12-04-x64-ghc-7.8.'*)
+	'linux-ubuntu-12-04-x86_64-ghc-7.8.'*)
 		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
@@ -323,9 +323,9 @@ function prepare_ghc_libs () {
 		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
 
-		echo_ghc_libgmp10_x64_original_url "${ghc_version}" || die
+		echo_ghc_libgmp10_x86_64_original_url "${ghc_version}" || die
 		;;
-	'linux-ubuntu-12-04-x64-ghc-7.6.'*)
+	'linux-ubuntu-12-04-x86_64-ghc-7.6.'*)
 		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp3_file='/usr/lib/libgmp.so.3'
 		expect_existing "${libtinfo5_file}" "${libgmp3_file}"
@@ -333,9 +333,9 @@ function prepare_ghc_libs () {
 		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 		ln -s "${libgmp3_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
 
-		echo_ghc_libgmp3_x64_original_url "${ghc_version}" || die
+		echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" || die
 		;;
-	'linux-ubuntu-10-04-x64-ghc-7.'[68]'.'*)
+	'linux-ubuntu-10-04-x86_64-ghc-7.'[68]'.'*)
 		libncurses5_file='/lib/libncurses.so.5'
 		libgmp3_file='/usr/lib/libgmp.so.3'
 		expect_existing "${libncurses5_file}" "${libgmp3_file}"
@@ -344,7 +344,7 @@ function prepare_ghc_libs () {
 		ln -s "${libncurses5_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
 		ln -s "${libgmp3_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
 
-		echo_ghc_libgmp3_x64_original_url "${ghc_version}" || die
+		echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" || die
 		;;
 	*)
 		local os_description
