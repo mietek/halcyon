@@ -226,11 +226,11 @@ function detect_sandbox_constraints () {
 }
 
 
-function detect_sandbox_digest () {
+function determine_sandbox_digest () {
 	local sandbox_constraints
 	expect_args sandbox_constraints -- "$@"
 
-	log_begin 'Detecting sandbox digest...'
+	log_begin 'Determining sandbox digest...'
 
 	local sandbox_digest
 	sandbox_digest=$( echo_constraints_digest <<<"${sandbox_constraints}" ) || die
@@ -649,7 +649,7 @@ function install_sandbox () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	sandbox_constraints=$( detect_sandbox_constraints "${app_dir}" ) || die
-	sandbox_digest=$( detect_sandbox_digest "${sandbox_constraints}" ) || die
+	sandbox_digest=$( determine_sandbox_digest "${sandbox_constraints}" ) || die
 	sandbox_hook=$( detect_sandbox_hook "${app_dir}/.halcyon-hooks" ) || die
 	sandbox_tag=$( derive_sandbox_tag "${ghc_tag}" "${app_label}" "${sandbox_digest}" "${sandbox_hook}" ) || die
 

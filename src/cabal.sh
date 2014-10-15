@@ -344,8 +344,8 @@ function echo_tmp_cabal_dir () {
 }
 
 
-function detect_cabal_version () {
-	log_begin 'Detecting Cabal version...'
+function determine_cabal_version () {
+	log_begin 'Determining Cabal version...'
 
 	local cabal_version
 	if has_vars HALCYON_FORCE_CABAL_VERSION; then
@@ -822,7 +822,7 @@ function install_cabal () {
 
 	local ghc_tag cabal_version cabal_hook cabal_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	cabal_version=$( detect_cabal_version ) || die
+	cabal_version=$( determine_cabal_version ) || die
 	cabal_hook=$( detect_cabal_hook "${app_dir}/.halcyon-hooks" ) || die
 	cabal_tag=$( derive_cabal_tag "${ghc_tag}" "${cabal_version}" "${cabal_hook}" ) || die
 
