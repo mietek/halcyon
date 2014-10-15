@@ -409,7 +409,7 @@ function build_ghc () {
 		die "Failed to install GHC ${ghc_id}"
 	fi
 
-	log "Installed GHC ${ghc_id}"
+	log "Finished installing GHC ${ghc_id}"
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
 		log "Running GHC ${ghc_id} post-build hook"
@@ -425,7 +425,7 @@ function build_ghc () {
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Built GHC layer ${ghc_id}, ${ghc_size}"
+	log "Finished building GHC layer ${ghc_id}, ${ghc_size}"
 }
 
 

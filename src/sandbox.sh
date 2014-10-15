@@ -385,7 +385,7 @@ function build_sandbox () {
 
 	local sandbox_size
 	sandbox_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-	log "Built sandbox layer ${sandbox_description}, ${sandbox_size}"
+	log "Finished building sandbox layer ${sandbox_description}, ${sandbox_size}"
 
 	if (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
 		return 0

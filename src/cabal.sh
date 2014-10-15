@@ -15,7 +15,7 @@ function cabal_do () {
 		cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 		cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-		die "Cabal ${cabal_description} failed to execute:" "$@"
+		die "Failed to run Cabal ${cabal_description}:" "$@"
 	fi
 }
 
@@ -651,7 +651,7 @@ EOF
 
 	echo_cabal_config >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
-	log "Bootstrapped Cabal ${cabal_description}"
+	log "Finished bootstrapping Cabal ${cabal_description}"
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
 		log "Running Cabal ${cabal_description} post-build hook"
@@ -667,7 +667,7 @@ EOF
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Built Cabal layer ${cabal_description}, ${cabal_size}"
+	log "Finished building Cabal layer ${cabal_description}, ${cabal_size}"
 }
 
 
@@ -695,7 +695,7 @@ function update_cabal () {
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Updated Cabal layer ${updated_cabal_description}, ${cabal_size}"
+	log "Finished updating Cabal layer ${updated_cabal_description}, ${cabal_size}"
 }
 
 
