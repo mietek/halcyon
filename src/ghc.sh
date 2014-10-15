@@ -437,7 +437,7 @@ function strip_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log_begin "Stripping GHC layer ${ghc_id}..."
+	log_indent_begin "Stripping GHC layer ${ghc_id}..."
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -498,8 +498,6 @@ function archive_ghc () {
 	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
-
-	log "Archiving GHC layer ${ghc_id}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die

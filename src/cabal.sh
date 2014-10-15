@@ -712,8 +712,6 @@ function archive_cabal () {
 	cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	log "Archiving Cabal layer ${cabal_description}"
-
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	upload_layer "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}" || die

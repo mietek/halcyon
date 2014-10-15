@@ -364,8 +364,6 @@ function archive_app () {
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Archiving app layer ${app_id}"
-
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	tar_archive "${app_dir}"                      \
 		"${HALCYON_CACHE_DIR}/${app_archive}" \

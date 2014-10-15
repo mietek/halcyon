@@ -414,7 +414,7 @@ function strip_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log_begin "Stripping sandbox layer ${sandbox_description}..."
+	log_indent_begin "Stripping sandbox layer ${sandbox_description}..."
 
 	find "${HALCYON_DIR}/sandbox"       \
 			-type f        -and \
@@ -446,8 +446,6 @@ function archive_sandbox () {
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 	sandbox_config=$( echo_sandbox_config "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
-
-	log "Archiving sandbox layer ${sandbox_description}"
 
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die

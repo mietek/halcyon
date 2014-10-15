@@ -40,8 +40,6 @@ function clean_cache () {
 
 	expect_args app_dir -- "$@"
 
-	log 'Cleaning cache'
-
 	local tmp_dir
 	tmp_dir=$( echo_tmp_cache_dir ) || die
 
