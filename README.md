@@ -53,7 +53,7 @@ Commercial support for Halcyon is offered by [Least Fixed](http://leastfixed.com
 Need help?  Say [hello](http://leastfixed.com/).
 
 
-Ac­knowl­edg­ments
+Acknowledgments
 ---------------
 
 Thanks to [CircuitHub](https://circuithub.com/), [Tweag I/O](http://www.tweag.io/), and [Purely Agile](http://purelyagile.com/) for advice and assistance.
