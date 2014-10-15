@@ -184,7 +184,7 @@ function halcyon_install () {
 	local fake_app app_dir app_label
 	if ! (( $# )) || [ -d "$1" ]; then
 		fake_app=0
-		if [ -d "$1" ]; then
+		if (( $# )) && [ -d "$1" ]; then
 			app_dir="$1"
 		else
 			app_dir='.'

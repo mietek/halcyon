@@ -866,6 +866,7 @@ function deactivate_cabal () {
 	fi
 
 	rm -rf "${HALCYON_DIR}/cabal" "${HOME}/.cabal/config" || die
+	rmdir "${HOME}/.cabal" 2>'/dev/null' || true
 }
 
 
