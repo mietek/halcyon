@@ -1,17 +1,17 @@
 function derive_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_tag app_label sandbox_digest sandbox_hook
-	expect_args ghc_tag app_label sandbox_digest sandbox_hook -- "$@"
+	local ghc_tag app_label sandbox_digest sandbox_hooks_hash
+	expect_args ghc_tag app_label sandbox_digest sandbox_hooks_hash -- "$@"
 
 	local os
 	os=$( detect_os ) || die
 
-	local ghc_os ghc_halcyon_dir ghc_version ghc_hook
+	local ghc_os ghc_halcyon_dir ghc_version ghc_hooks_hash
 	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
 
 	if [ "${os}" != "${ghc_os}" ]; then
 		die "Unexpected OS in GHC tag: ${ghc_os}"
@@ -20,7 +20,7 @@ function derive_sandbox_tag () {
 		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
 	fi
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hook}\t${app_label}\t${sandbox_digest}\t${sandbox_hook}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${app_label}\t${sandbox_digest}\t${sandbox_hooks_hash}"
 }
 
 
@@ -48,7 +48,7 @@ function echo_sandbox_tag_ghc_version () {
 }
 
 
-function echo_sandbox_tag_ghc_hook () {
+function echo_sandbox_tag_ghc_hooks_hash () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
@@ -72,7 +72,7 @@ function echo_sandbox_tag_digest () {
 }
 
 
-function echo_sandbox_tag_hook () {
+function echo_sandbox_tag_hooks_hash () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
@@ -84,11 +84,11 @@ function echo_sandbox_id () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_digest sandbox_hook
+	local sandbox_digest sandbox_hooks_hash
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
+	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 
-	echo "${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}}"
+	echo "${sandbox_digest:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}"
 }
 
 
@@ -152,7 +152,7 @@ function echo_sandbox_config_digest () {
 }
 
 
-function echo_sandbox_config_hook () {
+function echo_sandbox_config_hooks_hash () {
 	local sandbox_config
 	expect_args sandbox_config -- "$@"
 
@@ -167,12 +167,12 @@ function echo_sandbox_config_description () {
 	local sandbox_config
 	expect_args sandbox_config -- "$@"
 
-	local app_label sandbox_digest sandbox_hook
+	local app_label sandbox_digest sandbox_hooks_hash
 	app_label=$( echo_sandbox_config_app_label "${sandbox_config}" ) || die
 	sandbox_digest=$( echo_sandbox_config_digest "${sandbox_config}" ) || die
-	sandbox_hook=$( echo_sandbox_config_hook "${sandbox_config}" ) || die
+	sandbox_hooks_hash=$( echo_sandbox_config_hooks_hash "${sandbox_config}" ) || die
 
-	echo "${sandbox_digest:0:7}${sandbox_hook:+~${sandbox_hook:0:7}} (${app_label})"
+	echo "${sandbox_digest:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}} (${app_label})"
 }
 
 
@@ -180,23 +180,23 @@ function echo_sandbox_config_prefix () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_hook
+	local ghc_version ghc_hooks_hash
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_version}${ghc_hook:+~${ghc_hook:0:7}}-"
+	echo "halcyon-sandbox-ghc-${ghc_version}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}-"
 }
 
 
 function echo_sandbox_config_pattern () {
-	local ghc_tag sandbox_hook
-	expect_args ghc_tag sandbox_hook -- "$@"
+	local ghc_tag sandbox_hooks_hash
+	expect_args ghc_tag sandbox_hooks_hash -- "$@"
 
-	local ghc_version ghc_hook
+	local ghc_version ghc_hooks_hash
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hook=$( echo_ghc_tag_hook "${ghc_tag}" ) || die
+	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_version//./\.}${ghc_hook:+~${ghc_hook:0:7}}-.*${sandbox_hook:+~${sandbox_hook:0:7}}\.cabal\.config"
+	echo "halcyon-sandbox-ghc-${ghc_version//./\.}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}-.*${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}\.cabal\.config"
 }
 
 
@@ -205,14 +205,22 @@ function echo_tmp_sandbox_config () {
 }
 
 
-function detect_sandbox_constraints () {
+function detect_sandbox_hooks_hash () {
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
+
+	echo_digest "${hooks_dir}/"*'-sandbox-'*
+}
+
+
+function determine_sandbox_constraints () {
 	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
 	local app_dir
 	expect_args app_dir -- "$@"
 	expect_existing "${app_dir}"
 
-	log 'Detecting sandbox constraints'
+	log 'Determining sandbox constraints'
 
 	local sandbox_constraints
 	if [ -f "${app_dir}/cabal.config" ]; then
@@ -248,11 +256,22 @@ function determine_sandbox_digest () {
 }
 
 
-function detect_sandbox_hook () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
+function determine_sandbox_hooks_hash () {
+	local app_dir
+	expect_args app_dir -- "$@"
 
-	echo_digest "${hooks_dir}/"*'-sandbox-'*
+	log_begin 'Determining sandbox hooks hash...'
+
+	local sandbox_hooks_hash
+	sandbox_hooks_hash=$( detect_sandbox_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
+
+	if [ -z "${sandbox_hooks_hash}" ]; then
+		log_end 'none'
+	else
+		log_end "done, ${sandbox_hooks_hash:0:7}"
+	fi
+
+	echo "${sandbox_hooks_hash}"
 }
 
 
@@ -282,14 +301,14 @@ function validate_sandbox_config () {
 }
 
 
-function validate_sandbox_hook () {
-	local sandbox_hook hooks_dir
-	expect_args sandbox_hook hooks_dir -- "$@"
+function validate_sandbox_hooks_hash () {
+	local sandbox_hooks_hash hooks_dir
+	expect_args sandbox_hooks_hash hooks_dir -- "$@"
 
-	local candidate_hook
-	candidate_hook=$( detect_sandbox_hook "${hooks_dir}" ) || die
+	local candidate_hooks_hash
+	candidate_hooks_hash=$( detect_sandbox_hooks_hash "${hooks_dir}" ) || die
 
-	if [ "${candidate_hook}" != "${sandbox_hook}" ]; then
+	if [ "${candidate_hooks_hash}" != "${sandbox_hooks_hash}" ]; then
 		return 1
 	fi
 }
@@ -422,10 +441,10 @@ function restore_sandbox () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local os sandbox_digest sandbox_hook sandbox_archive sandbox_description
+	local os sandbox_digest sandbox_hooks_hash sandbox_archive sandbox_description
 	os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
+	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 	sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
@@ -434,7 +453,7 @@ function restore_sandbox () {
 	if [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] &&
 		validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" &&
 		validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" &&
-		validate_sandbox_hook "${sandbox_hook}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+		validate_sandbox_hooks_hash "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
 	then
 		return 0
 	fi
@@ -445,7 +464,7 @@ function restore_sandbox () {
 		! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
 		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
 		! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
-		! validate_sandbox_hook "${sandbox_hook}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+		! validate_sandbox_hooks_hash "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
@@ -458,7 +477,7 @@ function restore_sandbox () {
 			! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
 			! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
 			! validate_sandbox_config "${sandbox_digest}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
-			! validate_sandbox_hook "${sandbox_hook}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+			! validate_sandbox_hooks_hash "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 			log_warning "Restoring ${sandbox_archive} failed"
@@ -472,8 +491,8 @@ function locate_matched_sandbox_tag () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local sandbox_constraints sandbox_hook
-	expect_args sandbox_constraints sandbox_hook -- "$@"
+	local sandbox_constraints sandbox_hooks_hash
+	expect_args sandbox_constraints sandbox_hooks_hash -- "$@"
 
 	log 'Locating matched sandboxes'
 
@@ -481,7 +500,7 @@ function locate_matched_sandbox_tag () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	config_prefix=$( echo_sandbox_config_prefix "${ghc_tag}" ) || die
-	config_pattern=$( echo_sandbox_config_pattern "${ghc_tag}" "${sandbox_hook}" ) || die
+	config_pattern=$( echo_sandbox_config_pattern "${ghc_tag}" "${sandbox_hooks_hash}" ) || die
 
 	local matched_configs
 	if ! matched_configs=$(
@@ -614,17 +633,17 @@ function install_extended_sandbox () {
 		return 1
 	fi
 
-	local sandbox_digest sandbox_hook sandbox_description
+	local sandbox_digest sandbox_hooks_hash sandbox_description
 	sandbox_digest=$( echo_sandbox_tag_digest "${sandbox_tag}" ) || die
-	sandbox_hook=$( echo_sandbox_tag_hook "${sandbox_tag}" ) || die
+	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	local matched_digest matched_hook matched_description
+	local matched_digest matched_hooks_hash matched_description
 	matched_digest=$( echo_sandbox_tag_digest "${matched_tag}" ) || die
-	matched_hook=$( echo_sandbox_tag_hook "${matched_tag}" ) || die
+	matched_hooks_hash=$( echo_sandbox_tag_hooks_hash "${matched_tag}" ) || die
 	matched_description=$( echo_sandbox_description "${matched_tag}" ) || die
 
-	if [ "${matched_digest}" = "${sandbox_digest}" ] && [ "${matched_hook}" = "${sandbox_hook}" ]; then
+	if [ "${matched_digest}" = "${sandbox_digest}" ] && [ "${matched_hooks_hash}" = "${sandbox_hooks_hash}" ]; then
 		log "Using matched sandbox ${matched_description} as sandbox ${sandbox_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
@@ -652,13 +671,13 @@ function install_sandbox () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_tag app_label sandbox_constraints sandbox_digest sandbox_hook sandbox_tag
+	local ghc_tag app_label sandbox_constraints sandbox_digest sandbox_hooks_hash sandbox_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
-	sandbox_constraints=$( detect_sandbox_constraints "${app_dir}" ) || die
+	sandbox_constraints=$( determine_sandbox_constraints "${app_dir}" ) || die
 	sandbox_digest=$( determine_sandbox_digest "${sandbox_constraints}" ) || die
-	sandbox_hook=$( detect_sandbox_hook "${app_dir}/.halcyon-hooks" ) || die
-	sandbox_tag=$( derive_sandbox_tag "${ghc_tag}" "${app_label}" "${sandbox_digest}" "${sandbox_hook}" ) || die
+	sandbox_hooks_hash=$( determine_sandbox_hooks_hash "${app_dir}" ) || die
+	sandbox_tag=$( derive_sandbox_tag "${ghc_tag}" "${app_label}" "${sandbox_digest}" "${sandbox_hooks_hash}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
@@ -671,7 +690,7 @@ function install_sandbox () {
 	local matched_tag
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
-		matched_tag=$( locate_matched_sandbox_tag "${sandbox_constraints}" "${sandbox_hook}" ) &&
+		matched_tag=$( locate_matched_sandbox_tag "${sandbox_constraints}" "${sandbox_hooks_hash}" ) &&
 		install_extended_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}" "${app_dir}"
 	then
 		return 0
