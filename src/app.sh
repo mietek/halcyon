@@ -417,35 +417,33 @@ function restore_app () {
 
 	mv "${tmp_old_dir}/dist" "${tmp_dist_dir}" || die
 
-	local source_changes path
-	source_changes=$(
+	local changes path
+	changes=$(
 		compare_recursively "${tmp_old_dir}" "${app_dir}" |
 		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$)'
 	) || die
-	filter_matching '^= ' <<<"${source_changes}" |
+	filter_matching '^= ' <<<"${changes}" |
 		sed 's/^= //' |
 		while read -r path; do
 			cp -p "${tmp_old_dir}/${path}" "${app_dir}/${path}" || die
 		done
-	filter_not_matching '^= ' <<<"${source_changes}" | quote || die
+	filter_not_matching '^= ' <<<"${changes}" | quote || die
 
-	local force_configure
-	force_configure=0
-	if filter_matching "^[^=] Setup.hs$" <<<"${source_changes}" |
+	if filter_matching "^[^=] Setup.hs$" <<<"${changes}" |
 		match_exactly_one >'/dev/null'
 	then
-		force_configure=1
+		export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=1
+	else
+		export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=0
 	fi
 
 	mv "${tmp_dist_dir}" "${app_dir}/dist" || die
 	rm -rf "${tmp_old_dir}" || die
-
-	return "${force_configure}"
 }
 
 
 function install_app () {
-	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD HALCYON_INTERNAL_FORCE_CONFIGURE_APP
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local app_dir
@@ -458,15 +456,27 @@ function install_app () {
 	app_hooks_hash=$( determine_app_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
 	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hooks_hash}" ) || die
 
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_APP} )) &&
+		restore_app "${app_dir}" "${app_tag}"
+	then
+		true
+	fi
+
 	! (( ${HALCYON_NO_BUILD} )) || return 1
+
+	rm -rf "${HALCYON_DIR}/app"
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
 		(( ${HALCYON_FORCE_BUILD_APP} )) ||
-		! restore_app "${app_dir}" "${app_tag}"
+		(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} ))
 	then
 		configure_app "${app_dir}" "${app_tag}" || die
 	fi
 
 	build_app "${app_dir}" "${app_tag}" || die
 	archive_app "${app_dir}" || die
+
+	cabal_install_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+	echo "${app_tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 }
