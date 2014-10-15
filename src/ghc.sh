@@ -579,7 +579,7 @@ function install_ghc () {
 
 	local ghc_version ghc_hooks_hash ghc_tag
 	ghc_version=$( determine_ghc_version "${app_dir}" ) || die
-	ghc_hooks_hash=$( determing_ghc_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
+	ghc_hooks_hash=$( determine_ghc_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
 	ghc_tag=$( make_ghc_tag "${ghc_version}" "${ghc_hooks_hash}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
