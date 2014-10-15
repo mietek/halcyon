@@ -84,7 +84,7 @@ function download_layer () {
 }
 
 
-function list_layers () {
+function list_layer () {
 	local src_prefix
 	expect_args src_prefix -- "$@"
 

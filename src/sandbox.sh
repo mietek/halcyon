@@ -558,7 +558,7 @@ function locate_matched_sandbox_tag () {
 
 	local matched_configs
 	if ! matched_configs=$(
-		list_layers "${os}/${config_prefix}" |
+		list_layer "${os}/${config_prefix}" |
 		sed "s:${os}/::" |
 		filter_matching "^${config_pattern}$" |
 		sort_naturally |

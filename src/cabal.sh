@@ -783,7 +783,7 @@ function restore_updated_cabal () {
 
 	local cabal_archive
 	if ! cabal_archive=$(
-		list_layers "${os}/${archive_prefix}" |
+		list_layer "${os}/${archive_prefix}" |
 		sed "s:${os}/::" |
 		match_updated_cabal_archive "${cabal_tag}"
 	); then
