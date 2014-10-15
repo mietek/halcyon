@@ -15,32 +15,28 @@ function prepare_cache () {
 		log 'Purging cache'
 
 		rm -rf "${HALCYON_CACHE_DIR}"
-	fi
+		mkdir -p "${HALCYON_CACHE_DIR}"
 
-	export HALCYON_OLD_CACHE_TMP_DIR=$( echo_tmp_old_cache_dir ) || die
-	rm -rf "${HALCYON_OLD_CACHE_TMP_DIR}" || die
-
-	local has_old_cache
-	has_old_cache=0
-	if [ -d "${HALCYON_CACHE_DIR}" ]; then
-		has_old_cache=1
+		export HALCYON_INTERNAL_OLD_CACHE_TMP_DIR=''
+		return 0
 	fi
-	mkdir -p "${HALCYON_CACHE_DIR}" || die
 
 	log 'Examining cache'
 
-	if (( ${has_old_cache} )); then
-		cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_OLD_CACHE_TMP_DIR}" || die
-		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
-			sort_naturally |
-			sed 's/^/+ /' |
-			quote || die
-	fi
+	export HALCYON_INTERNAL_OLD_CACHE_TMP_DIR=$( echo_tmp_old_cache_dir ) || die
+	rm -rf "${HALCYON_INTERNAL_OLD_CACHE_TMP_DIR}" || die
+
+	mkdir -p "${HALCYON_CACHE_DIR}"
+	cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_INTERNAL_OLD_CACHE_TMP_DIR}" || die
+	find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
+		sort_naturally |
+		sed 's/^/+ /' |
+		quote || die
 }
 
 
 function clean_cache () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_OLD_CACHE_TMP_DIR
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
 	expect_args app_dir -- "$@"
 
@@ -94,12 +90,12 @@ function clean_cache () {
 	rm -rf "${HALCYON_CACHE_DIR}" || die
 	mv "${tmp_dir}" "${HALCYON_CACHE_DIR}" || die
 
-	if [ -d "${HALCYON_OLD_CACHE_TMP_DIR}" ]; then
+	if has_vars HALCYON_INTERNAL_OLD_CACHE_TMP_DIR && [ -d "${HALCYON_INTERNAL_OLD_CACHE_TMP_DIR}" ]; then
 		log 'Examining cache changes'
 
-		compare_recursively "${HALCYON_OLD_CACHE_TMP_DIR}" "${HALCYON_CACHE_DIR}" |
+		compare_recursively "${HALCYON_INTERNAL_OLD_CACHE_TMP_DIR}" "${HALCYON_CACHE_DIR}" |
 			filter_not_matching '^= ' |
 			quote || die
-		rm -rf "${HALCYON_OLD_CACHE_TMP_DIR}" || die
+		rm -rf "${HALCYON_INTERNAL_OLD_CACHE_TMP_DIR}" || die
 	fi
 }
