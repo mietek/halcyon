@@ -352,14 +352,6 @@ function echo_tmp_cabal_dir () {
 }
 
 
-function hash_cabal_hooks () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
-
-	hash_files "${hooks_dir}/"*'-cabal-'*
-}
-
-
 function determine_cabal_version () {
 	log_begin 'Determining Cabal version...'
 
@@ -385,7 +377,7 @@ function determine_cabal_hooks_hash () {
 	log_begin 'Determining Cabal hooks hash...'
 
 	local cabal_hooks_hash
-	cabal_hooks_hash=$( hash_cabal_hooks "${app_dir}/.halcyon-hooks" ) || die
+	cabal_hooks_hash=$( hash_files "${app_dir}/.halcyon-hooks/cabal-"* ) || die
 
 	if [ -z "${cabal_hooks_hash}" ]; then
 		log_end 'none'
@@ -415,7 +407,7 @@ function validate_cabal_hooks () {
 	expect_args cabal_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_cabal_hooks "${hooks_dir}" ) || die
+	candidate_hooks_hash=$( hash_files "${hooks_dir}/cabal-"* ) || die
 
 	if [ "${candidate_hooks_hash}" != "${cabal_hooks_hash}" ]; then
 		return 1

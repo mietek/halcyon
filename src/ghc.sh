@@ -175,14 +175,6 @@ function detect_base_version () {
 }
 
 
-function hash_ghc_hooks () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
-
-	hash_files "${hooks_dir}/"*'-ghc-'*
-}
-
-
 function determine_ghc_version () {
 	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
@@ -228,7 +220,7 @@ function determine_ghc_hooks_hash () {
 	log_begin 'Determining GHC hooks hash...'
 
 	local ghc_hooks_hash
-	ghc_hooks_hash=$( hash_ghc_hooks "${app_dir}/.halcyon-hooks" ) || die
+	ghc_hooks_hash=$( hash_files "${app_dir}/.halcyon-hooks/ghc-"* ) || die
 
 	if [ -z "${ghc_hooks_hash}" ]; then
 		log_end 'none'
@@ -258,7 +250,7 @@ function validate_ghc_hooks () {
 	expect_args ghc_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_ghc_hooks "${hooks_dir}" ) || die
+	candidate_hooks_hash=$( hash_files "${hooks_dir}/ghc-"* ) || die
 
 	if [ "${candidate_hooks_hash}" != "${ghc_hooks_hash}" ]; then
 		return 1

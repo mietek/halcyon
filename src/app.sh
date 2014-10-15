@@ -233,14 +233,6 @@ function detect_app_label () {
 }
 
 
-function hash_cabal_hooks () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
-
-	hash_files "${hooks_dir}/"*'-app-'*
-}
-
-
 function determine_app_hooks_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -248,7 +240,7 @@ function determine_app_hooks_hash () {
 	log_begin 'Determining app hooks hash...'
 
 	local app_hooks_hash
-	app_hooks_hash=$( hash_app_hooks "${app_dir}/.halcyon-hooks" ) || die
+	app_hooks_hash=$( hash_files "${app_dir}/.halcyon-hooks/app-"* ) || die
 
 	if [ -z "${app_hooks_hash}" ]; then
 		log_end 'none'
@@ -278,7 +270,7 @@ function validate_app_hooks_hash () {
 	expect_args app_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_app_hooks "${hooks_dir}" ) || die
+	candidate_hooks_hash=$( hash_files "${hooks_dir}/app-"* ) || die
 
 	if [ "${candidate_hooks_hash}" != "${app_hooks_hash}" ]; then
 		return 1
