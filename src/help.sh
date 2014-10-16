@@ -16,7 +16,7 @@ function help_add_constraints () {
 	expect_args constraints -- "$@"
 
 	quote <<-EOF
-		To use explicit constraints, add cabal.config:
+		To use explicit constraints, add a cabal.config:
 		$ cat >cabal.config <<EOF
 EOF
 	echo_constraints <<<"${constraints}" >&2 || die
