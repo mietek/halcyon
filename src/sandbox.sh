@@ -450,10 +450,10 @@ function archive_sandbox () {
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
 	cp "${HALCYON_DIR}/sandbox/.halcyon-cabal.config" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}"; then
-		die "Cannot upload sandbox layer archive ${sandbox_archive}"
+		die 'Cannot upload sandbox layer archive'
 	fi
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}"; then
-		die "Cannot upload sandbox layer config ${sandbox_config}"
+		die 'Cannot upload sandbox layer config'
 	fi
 }
 
@@ -484,7 +484,7 @@ function restore_sandbox () {
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
 		if ! download_layer "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download sandbox layer archive ${sandbox_archive}"
+			log 'Cannot download sandbox layer archive'
 			return 1
 		fi
 
@@ -492,7 +492,7 @@ function restore_sandbox () {
 			! validate_sandbox "${sandbox_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
-			log_warning "Cannot extract sandbox layer archive ${sandbox_archive}"
+			log_warning 'Cannot extract sandbox layer archive'
 			return 1
 		fi
 	fi
@@ -506,7 +506,7 @@ function locate_matched_sandbox_tag () {
 	local sandbox_constraints sandbox_hooks_hash
 	expect_args sandbox_constraints sandbox_hooks_hash -- "$@"
 
-	log "Locating matched sandbox layers${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
+	log 'Locating matched sandbox layers'
 
 	local ghc_tag os config_prefix config_pattern
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
@@ -522,14 +522,13 @@ function locate_matched_sandbox_tag () {
 		sort_naturally |
 		match_at_least_one
 	); then
-		log "Cannot locate matched sandbox layer configs${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
+		log 'Cannot locate matched sandbox layer configs'
 		return 1
 	fi
 
 	local config
 	while read -r config; do
-		local id constraints_hash
-		id=$( echo_sandbox_config_id "${config}" ) || die
+		local constraints_hash
 		constraints_hash=$( echo_sandbox_config_constraints_hash "${config}" ) || die
 
 		if ! [ -f "${HALCYON_CACHE_DIR}/${config}" ] ||
@@ -538,17 +537,17 @@ function locate_matched_sandbox_tag () {
 			rm -f "${HALCYON_CACHE_DIR}/${config}" || die
 
 			if ! download_layer "${os}" "${config}" "${HALCYON_CACHE_DIR}"; then
-				log_warning "Cannot download matched sandbox layer config ${config}"
+				log_warning 'Cannot download matched sandbox layer config'
 			fi
 
 			if ! validate_sandbox_config "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${config}"; then
 				rm -f "${HALCYON_CACHE_DIR}/${config}" || die
-				log_warning "Cannot validate matched sandbox layer config ${id}"
+				log_warning 'Cannot validate matched sandbox layer config'
 			fi
 		fi
 	done <<<"${matched_configs}"
 
-	log "Scoring matched sandbox layers${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
+	log 'Scoring matched sandbox layers'
 
 	local matched_scores
 	if ! matched_scores=$(
@@ -580,7 +579,7 @@ function locate_matched_sandbox_tag () {
 			sort_naturally |
 			match_at_least_one
 	); then
-		log "Cannot extend matched sandbox layers${sandbox_hooks_hash:+ ~${sandbox_hooks_hash:0:7}}"
+		log 'Cannot extend matched sandbox layers'
 		return 1
 	fi
 

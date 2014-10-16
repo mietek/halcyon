@@ -51,12 +51,12 @@ function transfer_original () {
 	fi
 
 	if ! curl_download "${original_url}" "${dst_file}"; then
-		die "Cannot download original archive ${dst_file}"
+		die 'Cannot download original archive'
 	fi
 
 	if has_private_storage && ! (( ${HALCYON_NO_UPLOAD} )); then
 		if ! s3_upload "${dst_file}" "${HALCYON_S3_BUCKET}" "${src_object}" "${HALCYON_S3_ACL}"; then
-			die "Cannot upload original archive ${dst_file}"
+			die 'Cannot upload original archive'
 		fi
 	fi
 }

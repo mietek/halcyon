@@ -373,7 +373,7 @@ function archive_app () {
 		--exclude '.cabal-sandbox'            \
 		--exclude 'cabal.sandbox.config' || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${app_archive}" "${os}"; then
-		die "Cannot upload app layer archive ${app_archive}"
+		die 'Cannot upload app layer archive'
 	fi
 }
 
@@ -404,7 +404,7 @@ function restore_app () {
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download app layer archive ${app_archive}"
+			log 'Cannot download app layer archive'
 			return 1
 		fi
 
@@ -412,7 +412,7 @@ function restore_app () {
 			! validate_app "${app_tag}" "${tmp_old_dir}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
-			log_warning "Cannot extract app layer archive ${app_archive}"
+			log_warning 'Cannot extract app layer archive'
 			return 1
 		fi
 	fi
