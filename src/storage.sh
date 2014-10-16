@@ -94,10 +94,17 @@ function list_layer () {
 	expect_storage
 
 	if has_private_storage; then
-		if s3_list "${HALCYON_S3_BUCKET}" "${src_prefix}"; then
-			return 0
+		local status listing
+		status=0
+		if ! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${src_prefix}" ); then
+			status=1
+		else
+			sort_naturally <<<"${listing}" |
+				sed 's/^/+ /' |
+				quote || die
+			echo "${listing}"
 		fi
-		return 1
+		return "${status}"
 	fi
 
 	local src_url
@@ -110,9 +117,11 @@ function list_layer () {
 	if ! listing=$( curl_do "${src_url}" -o >( read_s3_listing_xml ) ); then
 		status=1
 	else
+		sort_naturally <<<"${listing}" |
+			sed 's/^/+ /' |
+			quote || die
 		echo "${listing}"
 	fi
-
 	return "${status}"
 }
 
