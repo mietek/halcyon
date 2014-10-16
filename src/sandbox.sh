@@ -216,7 +216,7 @@ function determine_sandbox_constraints () {
 	if [ -f "${app_dir}/cabal.config" ]; then
 		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
 	else
-		sandbox_constraints=$( freeze_implicit_constraints "${app_dir}" ) || die
+		sandbox_constraints=$( cabal_freeze_implicit_constraints "${app_dir}" ) || die
 		if ! (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
 			log_warning 'Expected cabal.config with explicit constraints'
 			log
@@ -394,7 +394,7 @@ function build_sandbox () {
 	# https://github.com/haskell/cabal/issues/1896
 
 	local actual_constraints actual_constraints_hash
-	actual_constraints=$( freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${app_dir}" ) || die
+	actual_constraints=$( cabal_freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${app_dir}" ) || die
 	actual_constraints_hash=$( hash_constraints <<<"${actual_constraints}" ) || die
 
 	if [ "${actual_constraints_hash}" != "${sandbox_constraints_hash}" ]; then

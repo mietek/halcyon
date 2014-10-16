@@ -58,6 +58,26 @@ function sandboxed_cabal_do () {
 }
 
 
+function cabal_freeze_implicit_constraints () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	cabal_do "${app_dir}" --no-require-sandbox freeze --dry-run |
+		read_constraints_dry_run |
+		filter_correct_constraints "${app_dir}" || die
+}
+
+
+function cabal_freeze_actual_constraints () {
+	local sandbox_dir app_dir
+	expect_args sandbox_dir app_dir -- "$@"
+
+	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" freeze --dry-run |
+		read_constraints_dry_run |
+		filter_correct_constraints "${app_dir}" || die
+}
+
+
 function cabal_update () {
 	expect_vars HALCYON_QUIET
 
