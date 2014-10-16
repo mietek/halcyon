@@ -615,6 +615,11 @@ function restore_cached_updated_cabal () {
 	expect_args cabal_tag -- "$@"
 
 	if validate_updated_cabal "${cabal_tag}"; then
+		local updated_cabal_tag updated_cabal_description
+		updated_cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
+		updated_cabal_description=$( echo_cabal_description "${updated_cabal_tag}" ) || die
+
+		log "Using installed Cabal ${updated_cabal_description} layer"
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
@@ -648,11 +653,6 @@ function restore_updated_cabal () {
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if restore_cached_updated_cabal "${cabal_tag}"; then
-		local updated_cabal_tag updated_cabal_description
-		updated_cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-		updated_cabal_description=$( echo_cabal_description "${updated_cabal_tag}" ) || die
-
-		log "Using installed Cabal ${updated_cabal_description} layer"
 		return 0
 	fi
 
