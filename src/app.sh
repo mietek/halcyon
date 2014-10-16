@@ -307,7 +307,7 @@ function configure_app () {
 	local app_id
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Configuring app layer ${app_id}"
+	log "Configuring app ${app_id} layer"
 
 	cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 }
@@ -326,9 +326,9 @@ function build_app () {
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_APP} )); then
-		log "Building app layer ${app_id} (forced)"
+		log "Building app ${app_id} layer (forced)"
 	else
-		log "Building app layer ${app_id}"
+		log "Building app ${app_id} layer"
 	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
@@ -391,7 +391,7 @@ function restore_app () {
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
 
-	log "Restoring app layer ${app_id}"
+	log "Restoring app ${app_id} layer"
 
 	local tmp_old_dir tmp_dist_dir
 	tmp_old_dir=$( echo_tmp_old_app_dir ) || die

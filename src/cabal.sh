@@ -422,9 +422,9 @@ function build_cabal () {
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_CABAL} )); then
-		log "Building Cabal layer ${cabal_description} (forced)"
+		log "Building Cabal ${cabal_description} layer (forced)"
 	else
-		log "Building Cabal layer ${cabal_description}"
+		log "Building Cabal ${cabal_description} layer"
 	fi
 
 	local original_url original_archive tmp_dir
@@ -512,7 +512,7 @@ EOF
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Finished building Cabal layer ${cabal_description}, ${cabal_size}"
+	log "Finished building Cabal ${cabal_description} layer, ${cabal_size}"
 }
 
 
@@ -525,9 +525,9 @@ function update_cabal () {
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_UPDATE_CABAL} )); then
-		log "Updating Cabal layer ${cabal_description} (forced)"
+		log "Updating Cabal ${cabal_description} layer (forced)"
 	else
-		log "Updating Cabal layer ${cabal_description}"
+		log "Updating Cabal ${cabal_description} layer"
 	fi
 
 	cabal_update || die
@@ -540,7 +540,7 @@ function update_cabal () {
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Finished updating Cabal layer ${updated_cabal_description}, ${cabal_size}"
+	log "Finished updating Cabal ${updated_cabal_description} layer, ${cabal_size}"
 }
 
 
@@ -578,12 +578,12 @@ function restore_cabal () {
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if validate_cabal "${cabal_tag}"; then
-		log "Using installed Cabal layer ${cabal_description}"
+		log "Using installed Cabal ${cabal_description} layer"
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
-	log "Restoring Cabal layer ${cabal_description}"
+	log "Restoring Cabal ${cabal_description} layer"
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
@@ -651,7 +651,7 @@ function restore_updated_cabal () {
 		updated_cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 		updated_cabal_description=$( echo_cabal_description "${updated_cabal_tag}" ) || die
 
-		log "Using installed Cabal layer ${updated_cabal_description}"
+		log "Using installed Cabal ${updated_cabal_description} layer"
 		return 0
 	fi
 
@@ -672,7 +672,7 @@ function restore_updated_cabal () {
 	updated_cabal_tag=$( make_updated_cabal_tag "${cabal_tag}" "${cabal_timestamp}" ) || die
 	updated_cabal_description=$( echo_cabal_description "${updated_cabal_tag}" ) || die
 
-	log "Restoring Cabal layer ${updated_cabal_description}"
+	log "Restoring Cabal ${updated_cabal_description} layer"
 
 	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
 	if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then

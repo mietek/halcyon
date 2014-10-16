@@ -366,9 +366,9 @@ function build_ghc () {
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
-		log "Building GHC layer ${ghc_id} (forced)"
+		log "Building GHC ${ghc_id} layer (forced)"
 	else
-		log "Building GHC layer ${ghc_id}"
+		log "Building GHC ${ghc_id} layer"
 	fi
 
 	local original_url original_archive tmp_dir
@@ -422,7 +422,7 @@ function build_ghc () {
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Finished building GHC layer ${ghc_id}, ${ghc_size}"
+	log "Finished building GHC ${ghc_id} layer, ${ghc_size}"
 }
 
 
@@ -435,7 +435,7 @@ function strip_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	log_begin "Stripping GHC layer ${ghc_id}..."
+	log_begin "Stripping GHC ${ghc_id} layer..."
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -517,12 +517,12 @@ function restore_ghc () {
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
 	if validate_ghc "${ghc_tag}"; then
-		log "Using installed GHC layer ${ghc_id}"
+		log "Using installed GHC ${ghc_id} layer"
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
 
-	log "Restoring GHC layer ${ghc_id}"
+	log "Restoring GHC ${ghc_id} layer"
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
