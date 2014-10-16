@@ -7,7 +7,7 @@ Haskell application deployment.  Used in [Haskell on Heroku](https://haskellonhe
 Usage
 -----
 
-Halcyon is a system for deploying [Haskell](http://haskell.org/) applications rapidly and reliably.
+Halcyon is a system for fast and reliable deployment of [Haskell](http://haskell.org/) applications.
 
 To get started with Halcyon, see the [examples](http://halcyon.sh/), and continue with the [user’s guide](http://halcyon.sh/guide/).
 
@@ -43,23 +43,23 @@ Halcyon requires:
 - [_bashmenot_](http://bashmenot.mietek.io/)
 
 
-Support
--------
+### Bugs
 
-Please report any problems with Halcyon on the [issue tracker](https://github.com/mietek/halcyon/issues/).  There is a [separate issue tracker](https://github.com/mietek/halcyon-website/issues/) for problems with the documentation.
+Please report any problems with Halcyon on the [issue tracker](https://github.com/mietek/halcyon/issues/).
 
-Commercial support for Halcyon is offered by [Least Fixed](http://leastfixed.com/), a functional software consultancy.
-
-Need help?  Say [hello](http://leastfixed.com/).
+There is a [separate issue tracker](https://github.com/mietek/halcyon-website/issues/) for problems with the documentation.
 
 
-Acknowledgments
----------------
+About
+-----
+
+My name is [Miëtek Bak](http://mietek.io/).  I make software, and Halcyon is one of [my projects](http://mietek.io/projects/).
+
+This work is published under the [MIT X11 license](http://halcyon.sh/license/), and supported by my company, [Least Fixed](http://leastfixed.com/).
+
+How can I help you?  Would you like to work with me?  Say [hello](http://mietek.io/).
+
+
+### Acknowledgments
 
 Thanks to [CircuitHub](https://circuithub.com/), [Tweag I/O](http://www.tweag.io/), and [Purely Agile](http://purelyagile.com/) for advice and assistance.
-
-
-License
--------
-
-Made by [Miëtek Bak](http://mietek.io/).  Published under the [MIT X11 license](http://halcyon.sh/license/).
