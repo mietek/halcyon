@@ -7,18 +7,18 @@ function make_sandbox_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	local ghc_os ghc_halcyon_dir ghc_version ghc_hooks_hash ghc_id
+	local ghc_os ghc_halcyon_dir ghc_version ghc_hooks_hash ghc_description
 	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
-	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	if [ "${os}" != "${ghc_os}" ]; then
-		die "Unexpected OS in GHC ${ghc_id} tag: ${ghc_os}"
+		die "Unexpected OS in GHC ${ghc_description} tag: ${ghc_os}"
 	fi
 	if [ "${HALCYON_DIR}" != "${ghc_halcyon_dir}" ]; then
-		die "Unexpected HALCYON_DIR in GHC ${ghc_id} tag: ${ghc_halcyon_dir}"
+		die "Unexpected HALCYON_DIR in GHC ${ghc_description} tag: ${ghc_halcyon_dir}"
 	fi
 
 	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${sandbox_constraints_hash}\t${sandbox_hooks_hash}\t${app_label}"
@@ -89,7 +89,7 @@ function echo_sandbox_id () {
 	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 
-	echo "${sandbox_constraints_hash:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}"
+	echo "${sandbox_constraints_hash}${sandbox_hooks_hash:+~${sandbox_hooks_hash}}"
 }
 
 
@@ -97,11 +97,12 @@ function echo_sandbox_description () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_id app_label
-	sandbox_id=$( echo_sandbox_id "${sandbox_tag}" ) || die
+	local sandbox_constraints_hash sandbox_hooks_hash app_label
+	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
+	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 	app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 
-	echo "${sandbox_id} (${app_label})"
+	echo "${sandbox_constraints_hash:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}} (${app_label})"
 }
 
 
@@ -164,18 +165,6 @@ function echo_sandbox_config_app_label () {
 }
 
 
-function echo_sandbox_config_description () {
-	local sandbox_config
-	expect_args sandbox_config -- "$@"
-
-	local sandbox_id app_label
-	sandbox_id=$( echo_sandbox_config_id "${sandbox_config}" ) || die
-	app_label=$( echo_sandbox_config_app_label "${sandbox_config}" ) || die
-
-	echo "${sandbox_id} (${app_label})"
-}
-
-
 function echo_sandbox_config_prefix () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
@@ -194,7 +183,7 @@ function echo_sandbox_config_pattern () {
 	local ghc_id
 	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_id//./\.}-.*${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}\.cabal\.config"
+	echo "halcyon-sandbox-ghc-${ghc_id//./\.}-.*${sandbox_hooks_hash:+~${sandbox_hooks_hash}}\.cabal\.config"
 }
 
 
