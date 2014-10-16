@@ -664,7 +664,7 @@ function restore_updated_cabal () {
 		sed "s:${os}/::" |
 		match_updated_cabal_archive "${cabal_tag}"
 	); then
-		log 'Cannot locate updated Cabal layer archives'
+		log 'Cannot locate any updated Cabal layer archive'
 		return 1
 	fi
 

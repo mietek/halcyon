@@ -21,14 +21,14 @@ function make_app_tag () {
 		die "Unexpected HALCYON_DIR in GHC ${ghc_description} tag: ${ghc_halcyon_dir}"
 	fi
 
-	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hooks_hash sandbox_app_label sandbox_constraints_hash sandbox_hooks_hash sandbox_description
+	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hooks_hash sandbox_constraints_hash sandbox_hooks_hash sandbox_app_label sandbox_description
 	sandbox_os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_halcyon_dir=$( echo_sandbox_tag_halcyon_dir "${sandbox_tag}" ) || die
 	sandbox_ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
 	sandbox_ghc_hooks_hash=$( echo_sandbox_tag_ghc_hooks_hash "${sandbox_tag}" ) || die
-	sandbox_app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
+	sandbox_app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if [ "${os}" != "${sandbox_os}" ]; then
