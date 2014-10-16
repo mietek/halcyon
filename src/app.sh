@@ -472,29 +472,37 @@ function install_app () {
 	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hooks_hash}" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
+	local installing_app
+	installing_app=0
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_APP} )) &&
 		restore_app "${app_dir}" "${app_tag}"
 	then
-		true
+		installing_app=1
 	fi
 
-	! (( ${HALCYON_NO_BUILD} )) || return 1
+	if ! (( ${HALCYON_NO_BUILD} )); then
+		if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
+			(( ${HALCYON_FORCE_BUILD_APP} )) ||
+			(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} ))
+		then
+			configure_app "${app_dir}" "${app_tag}" || die
+		fi
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
-		(( ${HALCYON_FORCE_BUILD_APP} )) ||
-		(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} ))
-	then
-		configure_app "${app_dir}" "${app_tag}" || die
+		build_app "${app_dir}" "${app_tag}" || die
+		archive_app "${app_dir}" || die
+		installing_app=1
 	fi
 
-	build_app "${app_dir}" "${app_tag}" || die
-	archive_app "${app_dir}" || die
+	if ! (( ${installing_app} )); then
+		log_error 'Cannot install app'
+		return 1
+	fi
 
 	log "Installing app ${app_description}"
 
 	rm -rf "${HALCYON_DIR}/app"
-	cabal_install_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-install" ]; then
 		log "Running app ${app_description} install hook"

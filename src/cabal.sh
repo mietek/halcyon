@@ -923,7 +923,7 @@ function cabal_build_app () {
 }
 
 
-function cabal_install_app () {
+function cabal_copy_app () {
 	expect_vars HALCYON_QUIET
 
 	local sandbox_dir app_dir
