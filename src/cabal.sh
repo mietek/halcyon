@@ -437,13 +437,10 @@ function build_cabal () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
-		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
-			die "Cannot download Cabal ${cabal_version} original archive"
-		fi
-
+		transfer_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
-			die "Cannot extract Cabal ${cabal_version} original archive"
+			die "Cannot extract original archive ${original_archive}"
 		fi
 	fi
 
@@ -563,7 +560,9 @@ function archive_cabal () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
-	upload_layer "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}" || die
+	if ! upload_layer "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}"; then
+		die "Cannot upload Cabal layer archive ${cabal_archive}"
+	fi
 }
 
 
@@ -593,7 +592,7 @@ function restore_cabal () {
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
 		if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download Cabal layer archive ${cabal_description}"
+			log "Cannot download Cabal layer archive ${cabal_archive}"
 			return 1
 		fi
 
@@ -601,7 +600,7 @@ function restore_cabal () {
 			! validate_cabal "${cabal_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
-			log_warning "Cannot extract Cabal layer archive ${cabal_description}"
+			log_warning "Cannot extract Cabal layer archive ${cabal_archive}"
 			return 1
 		fi
 	fi
@@ -677,7 +676,7 @@ function restore_updated_cabal () {
 
 	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
 	if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
-		log_warning "Cannot download Cabal layer archive ${updated_cabal_description}"
+		log_warning "Cannot download updated Cabal layer archive ${cabal_archive}"
 		return 1
 	fi
 
@@ -685,7 +684,7 @@ function restore_updated_cabal () {
 		! validate_updated_cabal "${cabal_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
-		log_warning "Cannot extract Cabal layer archive ${updated_cabal_description}"
+		log_warning "Cannot extract updated Cabal layer archive ${cabal_archive}"
 		return 1
 	fi
 }

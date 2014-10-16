@@ -381,13 +381,10 @@ function build_ghc () {
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
 
-		if ! prepare_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}"; then
-			die "Cannot download GHC ${ghc_version} original archive"
-		fi
-
+		transfer_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
-			die "Cannot extract GHC ${ghc_version} original archive"
+			die "Cannot extract original archive ${original_archive}"
 		fi
 	fi
 
@@ -502,7 +499,9 @@ function archive_ghc () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
-	upload_layer "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}" || die
+	if ! upload_layer "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}"; then
+		die "Cannot upload GHC layer archive ${ghc_archive}"
+	fi
 }
 
 
@@ -532,7 +531,7 @@ function restore_ghc () {
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 
 		if ! download_layer "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download GHC layer archive ${ghc_id}"
+			log "Cannot download GHC layer archive ${ghc_archive}"
 			return 1
 		fi
 
@@ -540,7 +539,7 @@ function restore_ghc () {
 			! validate_ghc "${ghc_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
-			log_warning "Cannot extract GHC layer archive ${ghc_id}"
+			log_warning "Cannot extract GHC layer archive ${ghc_archive}"
 			return 1
 		fi
 	fi

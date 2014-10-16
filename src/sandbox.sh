@@ -449,8 +449,12 @@ function archive_sandbox () {
 	rm -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
 	cp "${HALCYON_DIR}/sandbox/.halcyon-cabal.config" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
-	upload_layer "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}" || die
-	upload_layer "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}" || die
+	if ! upload_layer "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}"; then
+		die "Cannot upload sandbox layer archive ${sandbox_archive}"
+	fi
+	if ! upload_layer "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}"; then
+		die "Cannot upload sandbox layer config ${sandbox_config}"
+	fi
 }
 
 
@@ -480,7 +484,7 @@ function restore_sandbox () {
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
 		if ! download_layer "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
-			log "Cannot download sandbox layer archive ${sandbox_description}"
+			log "Cannot download sandbox layer archive ${sandbox_archive}"
 			return 1
 		fi
 
@@ -488,7 +492,7 @@ function restore_sandbox () {
 			! validate_sandbox "${sandbox_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
-			log_warning "Cannot extract sandbox layer archive ${sandbox_description}"
+			log_warning "Cannot extract sandbox layer archive ${sandbox_archive}"
 			return 1
 		fi
 	fi
@@ -534,7 +538,7 @@ function locate_matched_sandbox_tag () {
 			rm -f "${HALCYON_CACHE_DIR}/${config}" || die
 
 			if ! download_layer "${os}" "${config}" "${HALCYON_CACHE_DIR}"; then
-				log_warning "Cannot download matched sandbox layer config ${id}"
+				log_warning "Cannot download matched sandbox layer config ${config}"
 			fi
 
 			if ! validate_sandbox_config "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${config}"; then
