@@ -396,17 +396,17 @@ function build_ghc () {
 		cp "${app_dir}/.halcyon-hooks/ghc-pre-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 	fi
 
-	log "Installing GHC ${ghc_id}"
+	log "Building GHC ${ghc_id}"
 
 	if ! (
 		cd "${tmp_dir}/ghc-${ghc_version}" &&
 		quote_quietly "${HALCYON_QUIET}" ./configure --prefix="${HALCYON_DIR}/ghc" &&
 		quote_quietly "${HALCYON_QUIET}" make install
 	); then
-		die "Failed to install GHC ${ghc_id}"
+		die "Failed to build GHC ${ghc_id}"
 	fi
 
-	log "Finished installing GHC ${ghc_id}"
+	log "Finished building GHC ${ghc_id}"
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
 		log "Running GHC ${ghc_id} post-build hook"

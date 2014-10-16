@@ -456,7 +456,7 @@ function build_cabal () {
 		cp "${app_dir}/.halcyon-hooks/cabal-pre-build" "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
 	fi
 
-	log "Bootstrapping Cabal ${cabal_description}"
+	log "Building Cabal ${cabal_description}"
 
 	# NOTE: Bootstrapping cabal-install 1.20.0.0 with GHC 7.6.* does not work.
 
@@ -488,7 +488,7 @@ EOF
 		cd "${tmp_dir}/cabal-install-${cabal_version}" &&
 		quote_quietly "${HALCYON_QUIET}" ./bootstrap.sh --no-doc
 	); then
-		die "Failed to bootstrap Cabal ${cabal_description}"
+		die "Failed to build Cabal ${cabal_description}"
 	fi
 
 	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
@@ -496,7 +496,7 @@ EOF
 
 	echo_cabal_config >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
-	log "Finished bootstrapping Cabal ${cabal_description}"
+	log "Finished building Cabal ${cabal_description}"
 
 	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
 		log "Running Cabal ${cabal_description} post-build hook"
