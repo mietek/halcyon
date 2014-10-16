@@ -413,7 +413,7 @@ function strip_sandbox () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	log_indent_begin "Stripping sandbox layer ${sandbox_description}..."
+	log_begin "Stripping sandbox layer ${sandbox_description}..."
 
 	find "${HALCYON_DIR}/sandbox"       \
 			-type f        -and \
