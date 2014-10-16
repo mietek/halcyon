@@ -1,4 +1,4 @@
-declare HALCYON_TOP_DIR
+export HALCYON_TOP_DIR
 HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
 if ! [ -d "${HALCYON_TOP_DIR}/lib/bashmenot" ]; then
