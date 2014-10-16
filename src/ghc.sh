@@ -549,15 +549,11 @@ function restore_ghc () {
 function activate_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
-
-	# TODO: Check ~/.ghc
 }
 
 
 function deactivate_ghc () {
 	expect_vars HALCYON_DIR
-
-	# TODO: Check ~/.ghc
 
 	rm -rf "${HALCYON_DIR}/ghc" || die
 }
