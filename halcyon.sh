@@ -190,8 +190,6 @@ function halcyon_install () {
 			app_dir='.'
 		fi
 		app_label=$( detect_app_label "${app_dir}" ) || die
-		log "Installing ${app_label}"
-		log
 	else
 		fake_app=1
 		app_label="$1"

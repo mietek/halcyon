@@ -453,12 +453,13 @@ function install_app () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_tag sandbox_tag app_label app_hooks_hash app_tag
+	local ghc_tag sandbox_tag app_label app_hooks_hash app_tag app_id
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	app_hooks_hash=$( determine_app_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
 	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hooks_hash}" ) || die
+	app_id=$( echo_app_id "${app_tag}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_APP} )) &&
@@ -479,7 +480,15 @@ function install_app () {
 	build_app "${app_dir}" "${app_tag}" || die
 	archive_app "${app_dir}" || die
 
+	log "Installing app ${app_id}"
+
 	rm -rf "${HALCYON_DIR}/app"
 	cabal_install_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+
+	if [ -f "${app_dir}/.halcyon-hooks/app-install" ]; then
+		log "Running app ${app_id} install hook"
+		( quote_quietly "${app_dir}/.halcyon-hooks/app-install" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+	fi
+
 	echo "${app_tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 }
