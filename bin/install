@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 declare HALCYON_TOP_DIR
-HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
+HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )
 source "${HALCYON_TOP_DIR}/halcyon.sh"
 
 set_default_vars
