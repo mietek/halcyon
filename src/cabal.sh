@@ -888,6 +888,7 @@ function cabal_install () {
 
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
+	shift 2
 
 	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
 }
