@@ -484,29 +484,32 @@ function install_app () {
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=0
-	local installing_app
-	installing_app=0
+	local restored_app
+	restored_app=0
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_APP} )) &&
 		restore_app "${app_dir}" "${app_tag}"
 	then
-		installing_app=1
+		restored_app=1
 	fi
 
+	local built_app
+	built_app=0
 	if ! (( ${HALCYON_NO_BUILD} )); then
-		if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
-			(( ${HALCYON_FORCE_BUILD_APP} )) ||
-			(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} ))
+		if ! (( ${restored_app} )) ||
+			(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} )) ||
+			(( ${HALCYON_FORCE_BUILD_ALL} )) ||
+			(( ${HALCYON_FORCE_BUILD_APP} ))
 		then
 			configure_app "${app_dir}" "${app_tag}" || die
 		fi
 
 		build_app "${app_dir}" "${app_tag}" || die
 		archive_app "${app_dir}" || die
-		installing_app=1
+		built_app=1
 	fi
 
-	if ! (( ${installing_app} )); then
+	if ! (( ${restored_app} )) && ! (( ${built_app} )); then
 		log_error 'Cannot install app'
 		return 1
 	fi
