@@ -424,6 +424,10 @@ function match_updated_cabal_archive () {
 function build_cabal () {
 	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_QUIET
 	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/.halcyon-tag"
+
+	# NOTE: There is no way to prevent Cabal for creating ${HOME}/.cabal/setup-exe-cache.
+	# https://github.com/haskell/cabal/issues/1242
+
 	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
 
 	local cabal_tag app_dir
