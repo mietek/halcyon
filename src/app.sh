@@ -354,9 +354,7 @@ function build_app () {
 
 	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
 
-	local app_size
-	app_size=$( measure_recursively "${app_dir}" ) || die
-	log "Finished building app layer, ${app_size}"
+	log 'Finished building app layer'
 }
 
 
