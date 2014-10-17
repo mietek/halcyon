@@ -763,7 +763,13 @@ function install_cabal () {
 		return 0
 	fi
 
-	! (( ${HALCYON_NO_BUILD} )) || return 1
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&
+		(( ${HALCYON_NO_BUILD} ))
+	then
+		log 'Cannot build Cabal layer'
+		return 1
+	fi
 
 	deactivate_cabal || die
 	build_cabal "${cabal_tag}" "${app_dir}" || die

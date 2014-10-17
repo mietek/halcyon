@@ -602,7 +602,13 @@ function install_ghc () {
 		return 0
 	fi
 
-	! (( ${HALCYON_NO_BUILD} )) || return 1
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_GHC} )) &&
+		(( ${HALCYON_NO_BUILD} ))
+	then
+		log 'Cannot build GHC layer'
+		return 1
+	fi
 
 	deactivate_ghc || die
 	build_ghc "${ghc_tag}" "${app_dir}" || die

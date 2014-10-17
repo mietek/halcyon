@@ -738,7 +738,13 @@ function install_matched_sandbox () {
 		return 0
 	fi
 
-	! (( ${HALCYON_NO_BUILD} )) || return 1
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
+		(( ${HALCYON_NO_BUILD} ))
+	then
+		log 'Cannot build sandbox layer'
+		return 1
+	fi
 
 	log "Extending partially matched sandbox ${matched_description} layer"
 
@@ -789,7 +795,13 @@ function install_sandbox () {
 			fi
 			;;
 		'partial')
-			! (( ${HALCYON_NO_BUILD} )) || return 1
+			if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+				! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
+				(( ${HALCYON_NO_BUILD} ))
+			then
+				log 'Cannot build sandbox layer'
+				return 1
+			fi
 
 			if install_matched_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${matched_tag}" "${app_dir}"; then
 				return 0
@@ -800,7 +812,13 @@ function install_sandbox () {
 		esac
 	fi
 
-	! (( ${HALCYON_NO_BUILD} )) || return 1
+	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
+		(( ${HALCYON_NO_BUILD} ))
+	then
+		log 'Cannot build sandbox layer'
+		return 1
+	fi
 
 	local extending_sandbox=0
 	deactivate_sandbox "${app_dir}" || die

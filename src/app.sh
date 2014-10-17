@@ -493,28 +493,39 @@ function install_app () {
 		restored_app=1
 	fi
 
-	local built_app
-	built_app=0
-	if ! (( ${HALCYON_NO_BUILD} )); then
-		if ! (( ${restored_app} )) ||
-			(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} )) ||
-			(( ${HALCYON_FORCE_BUILD_ALL} )) ||
-			(( ${HALCYON_FORCE_BUILD_APP} ))
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
+		(( ${HALCYON_FORCE_BUILD_APP} )) ||
+		(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} )) ||
+		! (( ${restored_app} ))
+	then
+		if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
+			! (( ${HALCYON_FORCE_BUILD_APP} )) &&
+			(( ${HALCYON_NO_BUILD} ))
 		then
-			configure_app "${app_dir}" "${app_tag}" || die
+			log 'Cannot build app layer'
+			return 1
 		fi
 
+		configure_app "${app_dir}" "${app_tag}" || die
+	fi
+
+	local built_app
+	built_app=0
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
+		(( ${HALCYON_FORCE_BUILD_APP} )) ||
+		! (( ${HALCYON_NO_BUILD} ))
+	then
 		build_app "${app_dir}" "${app_tag}" || die
 		archive_app "${app_dir}" || die
 		built_app=1
 	fi
 
 	if ! (( ${restored_app} )) && ! (( ${built_app} )); then
-		log_error 'Cannot install app'
+		log 'Cannot install app layer'
 		return 1
 	fi
 
-	log "Installing app ${app_description}"
+	log "Installing app ${app_description} layer"
 
 	rm -rf "${HALCYON_DIR}/app"
 	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
