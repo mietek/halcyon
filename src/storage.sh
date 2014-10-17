@@ -100,7 +100,6 @@ function list_layer () {
 			status=1
 		else
 			sort_naturally <<<"${listing}" |
-				sed 's/^/+ /' |
 				quote || die
 			echo "${listing}"
 		fi
@@ -118,7 +117,6 @@ function list_layer () {
 		status=1
 	else
 		sort_naturally <<<"${listing}" |
-			sed 's/^/+ /' |
 			quote || die
 		echo "${listing}"
 	fi

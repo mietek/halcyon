@@ -30,7 +30,6 @@ function prepare_cache () {
 	cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_INTERNAL_OLD_CACHE_TMP_DIR}" || die
 	find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
 		sort_naturally |
-		sed 's/^/+ /' |
 		quote || die
 }
 
