@@ -386,20 +386,17 @@ function build_ghc () {
 	local ghc_tag app_dir
 	expect_args ghc_tag app_dir -- "$@"
 
-	local ghc_version ghc_description
+	local ghc_version original_url original_archive tmp_dir
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
-
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
-		log "Building GHC ${ghc_description} layer (forced)"
-	else
-		log "Building GHC ${ghc_description} layer"
-	fi
-
-	local original_url original_archive tmp_dir
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
 	original_archive=$( basename "${original_url}" ) || die
 	tmp_dir=$( echo_tmp_ghc_dir ) || die
+
+	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
+		log 'Starting to build GHC layer (forced)'
+	else
+		log 'Starting to build GHC layer'
+	fi
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${original_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"
@@ -414,29 +411,25 @@ function build_ghc () {
 	fi
 
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-pre-build" ]; then
-		log "Running GHC ${ghc_description} pre-build hook"
+		log 'Running GHC pre-build hook'
 		( "${app_dir}/.halcyon-hooks/ghc-pre-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
-
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 		cp "${app_dir}/.halcyon-hooks/ghc-pre-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 	fi
 
-	log "Building GHC ${ghc_description}"
+	log 'Installing GHC'
 
 	if ! (
 		cd "${tmp_dir}/ghc-${ghc_version}" &&
 		quote_quietly "${HALCYON_QUIET}" ./configure --prefix="${HALCYON_DIR}/ghc" &&
 		quote_quietly "${HALCYON_QUIET}" make install
 	); then
-		die "Failed to build GHC ${ghc_description}"
+		die 'Failed to install GHC'
 	fi
 
-	log "Finished building GHC ${ghc_description}"
-
 	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
-		log "Running GHC ${ghc_description} post-build hook"
+		log 'Running GHC post-build hook'
 		( "${app_dir}/.halcyon-hooks/ghc-post-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
-
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 		cp "${app_dir}/.halcyon-hooks/ghc-post-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
 	fi
@@ -447,7 +440,7 @@ function build_ghc () {
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Finished building GHC ${ghc_description} layer, ${ghc_size}"
+	log "Finished building GHC layer, ${ghc_size}"
 }
 
 
@@ -455,12 +448,11 @@ function strip_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local ghc_tag ghc_version ghc_description
+	local ghc_tag ghc_version
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
-	log_begin "Stripping GHC ${ghc_description} layer..."
+	log_begin "Stripping GHC layer..."
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -521,6 +513,8 @@ function archive_ghc () {
 	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 
+	log 'Archiving GHC layer'
+
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}"; then
@@ -535,18 +529,17 @@ function restore_ghc () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local os ghc_archive ghc_description
+	local os ghc_archive
 	os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
-	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	if validate_ghc "${ghc_tag}"; then
-		log "Using installed GHC ${ghc_description} layer"
+		log 'Using installed GHC layer'
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
 
-	log "Restoring GHC ${ghc_description} layer"
+	log 'Restoring GHC layer'
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
@@ -573,6 +566,13 @@ function restore_ghc () {
 function activate_ghc () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
+
+	local ghc_tag ghc_description
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
+
+	log "GHC layer installed:"
+	log_indent "${ghc_description}"
 }
 
 
@@ -589,10 +589,11 @@ function install_ghc () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_version ghc_hooks_hash ghc_tag
+	local ghc_version ghc_hooks_hash ghc_tag ghc_description
 	ghc_version=$( determine_ghc_version "${app_dir}" ) || die
 	ghc_hooks_hash=$( determine_ghc_hooks_hash "${app_dir}" ) || die
 	ghc_tag=$( make_ghc_tag "${ghc_version}" "${ghc_hooks_hash}" ) || die
+	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
 		! (( ${HALCYON_FORCE_BUILD_GHC} )) &&
