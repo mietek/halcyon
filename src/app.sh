@@ -345,14 +345,14 @@ function build_app () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
 		log "Running app ${app_description} pre-build hook"
-		( quote_quietly "${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
 		log "Running app ${app_description} post-build hook"
-		( quote_quietly "${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
@@ -506,7 +506,7 @@ function install_app () {
 
 	if [ -f "${app_dir}/.halcyon-hooks/app-install" ]; then
 		log "Running app ${app_description} install hook"
-		( quote_quietly "${app_dir}/.halcyon-hooks/app-install" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-hooks/app-install" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	echo "${app_tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
