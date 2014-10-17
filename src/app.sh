@@ -448,8 +448,6 @@ function restore_app () {
 		match_exactly_one >'/dev/null'
 	then
 		export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=1
-	else
-		export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=0
 	fi
 
 	mv "${tmp_dist_dir}" "${app_dir}/dist" || die
@@ -458,7 +456,7 @@ function restore_app () {
 
 
 function install_app () {
-	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD HALCYON_INTERNAL_FORCE_CONFIGURE_APP
+	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local app_dir
@@ -472,6 +470,7 @@ function install_app () {
 	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hooks_hash}" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
+	export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=0
 	local installing_app
 	installing_app=0
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
