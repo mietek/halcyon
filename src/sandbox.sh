@@ -438,9 +438,9 @@ function build_sandbox () {
 	actual_constraints_hash=$( hash_constraints <<<"${actual_constraints}" ) || die
 
 	if [ "${actual_constraints_hash}" != "${sandbox_constraints_hash}" ]; then
-		log_warning "Actual sandbox constraints hash is ${actual_constraints_hash:0:7}"
 		log_warning 'Unexpected constraints difference:'
 		echo_constraints_difference "${sandbox_constraints}" "${actual_constraints}" | quote
+		log_indent 'Please report this as a comment on https://github.com/mietek/halcyon/issues/1'
 	fi
 }
 
