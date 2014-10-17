@@ -277,6 +277,19 @@ function determine_sandbox_constraints_hash () {
 }
 
 
+function hash_sandbox_hooks () {
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
+
+	local hooks
+	if ! hooks=$( cat "${hooks_dir}/.halcyon-hooks/sandbox-"* 2>'/dev/null' ); then
+		return 0
+	fi
+
+	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
+}
+
+
 function determine_sandbox_hooks_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -284,7 +297,7 @@ function determine_sandbox_hooks_hash () {
 	log_begin 'Determining sandbox hooks hash...'
 
 	local sandbox_hooks_hash
-	sandbox_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/sandbox-"* ) || die
+	sandbox_hooks_hash=$( hash_sandbox_hooks "${app_dir}" ) || die
 
 	if [ -z "${sandbox_hooks_hash}" ]; then
 		log_end '(none)'
@@ -327,7 +340,7 @@ function validate_sandbox_hooks () {
 	expect_args sandbox_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_hooks "${hooks_dir}/sandbox-"* ) || die
+	candidate_hooks_hash=$( hash_sandbox_hooks "${hooks_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${sandbox_hooks_hash}" ]; then
 		return 1
@@ -348,7 +361,7 @@ function validate_sandbox () {
 	if ! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
 		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
 		! validate_sandbox_config "${sandbox_constraints_hash}" <"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" ||
-		! validate_sandbox_hooks "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox/.halcyon-hooks"
+		! validate_sandbox_hooks "${sandbox_hooks_hash}" "${HALCYON_DIR}/sandbox"
 	then
 		return 1
 	fi

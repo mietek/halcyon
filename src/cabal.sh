@@ -235,6 +235,19 @@ function determine_cabal_version () {
 }
 
 
+function hash_cabal_hooks () {
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
+
+	local hooks
+	if ! hooks=$( cat "${hooks_dir}/.halcyon-hooks/cabal-"* 2>'/dev/null' ); then
+		return 0
+	fi
+
+	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
+}
+
+
 function determine_cabal_hooks_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -242,7 +255,7 @@ function determine_cabal_hooks_hash () {
 	log_begin 'Determining Cabal hooks hash...'
 
 	local cabal_hooks_hash
-	cabal_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/cabal-"* ) || die
+	cabal_hooks_hash=$( hash_cabal_hooks "${app_dir}" ) || die
 
 	if [ -z "${cabal_hooks_hash}" ]; then
 		log_end '(none)'
@@ -272,7 +285,7 @@ function validate_cabal_hooks () {
 	expect_args cabal_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_hooks "${hooks_dir}/cabal-"* ) || die
+	candidate_hooks_hash=$( hash_cabal_hooks "${hooks_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${cabal_hooks_hash}" ]; then
 		return 1
@@ -291,7 +304,7 @@ function validate_cabal () {
 
 	if ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 		! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal"
 	then
 		return 1
 	fi
@@ -356,7 +369,7 @@ function validate_updated_cabal () {
 
 	if ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal/.halcyon-hooks"
+		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal"
 	then
 		return 1
 	fi

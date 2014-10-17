@@ -59,16 +59,6 @@ function set_default_vars () {
 }
 
 
-function hash_hooks () {
-	local hooks
-	if ! hooks=$( cat "$@" 2>'/dev/null' ); then
-		return 0
-	fi
-
-	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
-}
-
-
 function echo_fake_app_package () {
 	local app_label
 	expect_args app_label -- "$@"

@@ -225,6 +225,19 @@ function determine_ghc_version () {
 }
 
 
+function hash_ghc_hooks () {
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
+
+	local hooks
+	if ! hooks=$( cat "${hooks_dir}/.halcyon-hooks/ghc-"* 2>'/dev/null' ); then
+		return 0
+	fi
+
+	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
+}
+
+
 function determine_ghc_hooks_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -232,7 +245,7 @@ function determine_ghc_hooks_hash () {
 	log_begin 'Determining GHC hooks hash...'
 
 	local ghc_hooks_hash
-	ghc_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/ghc-"* ) || die
+	ghc_hooks_hash=$( hash_ghc_hooks "${app_dir}" ) || die
 
 	if [ -z "${ghc_hooks_hash}" ]; then
 		log_end '(none)'
@@ -262,7 +275,7 @@ function validate_ghc_hooks () {
 	expect_args ghc_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_hooks "${hooks_dir}/ghc-"* ) || die
+	candidate_hooks_hash=$( hash_ghc_hooks "${hooks_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${ghc_hooks_hash}" ]; then
 		return 1
@@ -281,7 +294,7 @@ function validate_ghc () {
 
 	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
 		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" ||
-		! validate_ghc_hooks "${ghc_hooks_hash}" "${HALCYON_DIR}/ghc/.halcyon-hooks"
+		! validate_ghc_hooks "${ghc_hooks_hash}" "${HALCYON_DIR}/ghc"
 	then
 		return 1
 	fi
@@ -578,7 +591,7 @@ function install_ghc () {
 
 	local ghc_version ghc_hooks_hash ghc_tag
 	ghc_version=$( determine_ghc_version "${app_dir}" ) || die
-	ghc_hooks_hash=$( determine_ghc_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
+	ghc_hooks_hash=$( determine_ghc_hooks_hash "${app_dir}" ) || die
 	ghc_tag=$( make_ghc_tag "${ghc_version}" "${ghc_hooks_hash}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&

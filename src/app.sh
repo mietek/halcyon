@@ -247,6 +247,19 @@ function detect_app_label () {
 }
 
 
+function hash_app_hooks () {
+	local hooks_dir
+	expect_args hooks_dir -- "$@"
+
+	local hooks
+	if ! hooks=$( cat "${hooks_dir}/.halcyon-hooks/app-"* 2>'/dev/null' ); then
+		return 0
+	fi
+
+	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
+}
+
+
 function determine_app_hooks_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -254,7 +267,7 @@ function determine_app_hooks_hash () {
 	log_begin 'Determining app hooks hash...'
 
 	local app_hooks_hash
-	app_hooks_hash=$( hash_hooks "${app_dir}/.halcyon-hooks/app-"* ) || die
+	app_hooks_hash=$( hash_app_hooks "${app_dir}" ) || die
 
 	if [ -z "${app_hooks_hash}" ]; then
 		log_end '(none)'
@@ -284,7 +297,7 @@ function validate_app_hooks_hash () {
 	expect_args app_hooks_hash hooks_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_hooks "${hooks_dir}/app-"* ) || die
+	candidate_hooks_hash=$( hash_app_hooks "${hooks_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${app_hooks_hash}" ]; then
 		return 1
@@ -303,7 +316,7 @@ function validate_app () {
 
 	if ! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
 		! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag" ||
-		! validate_app_hooks_hash "${app_hooks_hash}" "${tmp_old_dir}/.halcyon-hooks"
+		! validate_app_hooks_hash "${app_hooks_hash}" "${tmp_old_dir}"
 	then
 		return 1
 	fi
@@ -466,7 +479,7 @@ function install_app () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
-	app_hooks_hash=$( determine_app_hooks_hash "${app_dir}/.halcyon-hooks" ) || die
+	app_hooks_hash=$( determine_app_hooks_hash "${app_dir}" ) || die
 	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hooks_hash}" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
