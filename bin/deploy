@@ -7,4 +7,4 @@ set -eu -o pipefail
 source "${HALCYON_TOP_DIR}/halcyon.sh"
 
 set_default_vars
-halcyon_install "$@"
+halcyon_deploy "$@"
