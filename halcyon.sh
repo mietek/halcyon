@@ -165,6 +165,9 @@ function halcyon_install () {
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
 
+		'--no-warn-constraints')
+			export HALCYON_NO_WARN_CONSTRAINTS=1;;
+
 		'--quiet')
 			export HALCYON_QUIET=1;;
 

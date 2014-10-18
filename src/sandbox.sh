@@ -235,8 +235,6 @@ function determine_sandbox_constraints () {
 			log
 			help_add_constraints "${sandbox_constraints}"
 			log
-		else
-			echo_constraints <<<"${sandbox_constraints}" >&2 || die
 		fi
 	fi
 
