@@ -203,7 +203,7 @@ function echo_updated_cabal_archive_timestamp () {
 	expect_args cabal_archive -- "$@"
 
 	local timestamp_etc
-	timestamp_etc="${cabal_archive##*-}"
+	timestamp_etc="${cabal_archive#halcyon-cabal-*-}"
 
 	echo "${timestamp_etc%.tar.xz}"
 }
