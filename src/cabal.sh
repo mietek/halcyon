@@ -140,7 +140,7 @@ function echo_cabal_id () {
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
 
-	echo "${cabal_version}${cabal_hooks_hash:+~${cabal_hooks_hash}}"
+	echo "${cabal_version}${cabal_hooks_hash:+~${cabal_hooks_hash:0:7}}"
 }
 
 
@@ -148,19 +148,18 @@ function echo_cabal_description () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_version cabal_hooks_hash cabal_timestamp
-	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	local cabal_id cabal_timestamp
+	cabal_id=$( echo_cabal_id "${cabal_tag}" ) || die
 	cabal_timestamp=$( echo_cabal_tag_timestamp "${cabal_tag}" ) || die
 
 	if [ -z "${cabal_timestamp}" ]; then
-		echo "${cabal_version}${cabal_hooks_hash:+~${cabal_hooks_hash:0:7}}"
+		echo "${cabal_id}"
 	else
 		local timestamp_date timestamp_time
 		timestamp_date="${cabal_timestamp:0:4}-${cabal_timestamp:4:2}-${cabal_timestamp:6:2}"
 		timestamp_time="${cabal_timestamp:8:2}:${cabal_timestamp:10:2}:${cabal_timestamp:12:2}"
 
-		echo "${cabal_version}${cabal_hooks_hash:+~${cabal_hooks_hash:0:7}} (${timestamp_date} ${timestamp_time} UTC)"
+		echo "${cabal_id} (${timestamp_date} ${timestamp_time} UTC)"
 	fi
 }
 

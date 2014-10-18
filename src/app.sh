@@ -121,7 +121,7 @@ function echo_app_id () {
 	app_label=$( echo_app_tag_label "${app_tag}" ) || die
 	app_hooks_hash=$( echo_app_tag_hooks_hash "${app_tag}" ) || die
 
-	echo "${app_label}${app_hooks_hash:+~${app_hooks_hash}}"
+	echo "${app_label}${app_hooks_hash:+~${app_hooks_hash:0:7}}"
 }
 
 
@@ -129,11 +129,7 @@ function echo_app_description () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local app_label app_hooks_hash
-	app_label=$( echo_app_tag_label "${app_tag}" ) || die
-	app_hooks_hash=$( echo_app_tag_hooks_hash "${app_tag}" ) || die
-
-	echo "${app_label}${app_hooks_hash:+~${app_hooks_hash:0:7}}"
+	echo_app_id "${app_tag}" || die
 }
 
 

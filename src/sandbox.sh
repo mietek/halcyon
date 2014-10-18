@@ -115,7 +115,7 @@ function echo_sandbox_id () {
 	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
 
-	echo "${sandbox_constraints_hash}${sandbox_hooks_hash:+~${sandbox_hooks_hash}}"
+	echo "${sandbox_constraints_hash:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}}"
 }
 
 
@@ -123,12 +123,11 @@ function echo_sandbox_description () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_constraints_hash sandbox_hooks_hash app_label
-	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
-	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
+	local sandbox_id app_label
+	sandbox_id=$( echo_sandbox_id "${sandbox_tag}" ) || die
 	app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 
-	echo "${sandbox_constraints_hash:0:7}${sandbox_hooks_hash:+~${sandbox_hooks_hash:0:7}} (${app_label})"
+	echo "${sandbox_id} (${app_label})"
 }
 
 
@@ -158,18 +157,7 @@ function echo_sandbox_config () {
 }
 
 
-function echo_sandbox_config_id () {
-	local sandbox_config
-	expect_args sandbox_config -- "$@"
-
-	local sandbox_constraints_hash_etc
-	sandbox_constraints_hash_etc="${sandbox_config#halcyon-sandbox-ghc-*-}"
-
-	echo "${sandbox_constraints_hash_etc%%-*}"
-}
-
-
-function echo_sandbox_config_constraints_hash () {
+function echo_sandbox_config_constraints_hash_short () {
 	local sandbox_config
 	expect_args sandbox_config -- "$@"
 
@@ -328,6 +316,19 @@ function validate_sandbox_config () {
 	candidate_constraints_hash=$( read_constraints | hash_constraints ) || die
 
 	if [ "${candidate_constraints_hash}" != "${sandbox_constraints_hash}" ]; then
+		return 1
+	fi
+}
+
+
+function validate_sandbox_config_short () {
+	local sandbox_constraints_hash_short
+	expect_args sandbox_constraints_hash_short -- "$@"
+
+	local candidate_constraints_hash
+	candidate_constraints_hash=$( read_constraints | hash_constraints ) || die
+
+	if [ "${candidate_constraints_hash:0:7}" != "${sandbox_constraints_hash_short}" ]; then
 		return 1
 	fi
 }
@@ -615,11 +616,11 @@ function match_sandbox_tag () {
 
 	local partial_config
 	while read -r partial_config; do
-		local constraints_hash
-		constraints_hash=$( echo_sandbox_config_constraints_hash "${partial_config}" ) || die
+		local constraints_hash_short
+		constraints_hash_short=$( echo_sandbox_config_constraints_hash_short "${partial_config}" ) || die
 
 		if ! [ -f "${HALCYON_CACHE_DIR}/${partial_config}" ] ||
-			! validate_sandbox_config "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${partial_config}"
+			! validate_sandbox_config_short "${constraints_hash_short}" <"${HALCYON_CACHE_DIR}/${partial_config}"
 		then
 			rm -f "${HALCYON_CACHE_DIR}/${partial_config}" || die
 
@@ -628,7 +629,7 @@ function match_sandbox_tag () {
 				continue
 			fi
 
-			if ! validate_sandbox_config "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${partial_config}"; then
+			if ! validate_sandbox_config_short "${constraints_hash_short}" <"${HALCYON_CACHE_DIR}/${partial_config}"; then
 				rm -f "${HALCYON_CACHE_DIR}/${partial_config}" || die
 				log_warning 'Cannot validate partially matched sandbox layer config'
 				continue
@@ -647,7 +648,10 @@ function match_sandbox_tag () {
 			fi
 
 			local constraints_hash app_label tag description
-			constraints_hash=$( echo_sandbox_config_constraints_hash "${partial_config}" ) || die
+			constraints_hash=$(
+				read_constraints <"${HALCYON_CACHE_DIR}/${partial_config}" |
+				hash_constraints
+			) || die
 			app_label=$( echo_sandbox_config_app_label "${partial_config}" ) || die
 			tag=$( make_matched_sandbox_tag "${sandbox_tag}" "${constraints_hash}" "${app_label}" ) || die
 			description=$( echo_sandbox_description "${tag}" ) || die
@@ -726,13 +730,18 @@ function install_matched_sandbox () {
 		return 1
 	fi
 
-	local sandbox_id matched_id sandbox_description matched_description
-	sandbox_id=$( echo_sandbox_id "${sandbox_tag}" ) || die
-	matched_id=$( echo_sandbox_id "${matched_tag}" ) || die
-	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
+	local sandbox_constraints_hash sandbox_hooks_hash
+	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
+	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
+
+	local matched_constraints_hash matched_hooks_hash matched_description
+	matched_constraints_hash=$( echo_sandbox_tag_constraints_hash "${matched_tag}" ) || die
+	matched_hooks_hash=$( echo_sandbox_tag_hooks_hash "${matched_tag}" ) || die
 	matched_description=$( echo_sandbox_description "${matched_tag}" ) || die
 
-	if [ "${matched_id}" = "${sandbox_id}" ]; then
+	if [ "${matched_constraints_hash}" = "${sandbox_constraints_hash}" ] &&
+		[ "${matched_hooks_hash}" = "${sandbox_hooks_hash}" ]
+	then
 		log "Using fully matched sandbox layer: ${matched_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die

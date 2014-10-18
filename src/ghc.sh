@@ -145,7 +145,7 @@ function echo_ghc_id () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
 
-	echo "${ghc_version}${ghc_hooks_hash:+~${ghc_hooks_hash}}"
+	echo "${ghc_version}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}"
 }
 
 
@@ -153,11 +153,7 @@ function echo_ghc_description () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_hooks_hash
-	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
-
-	echo "${ghc_version}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}"
+	echo_ghc_id "${ghc_tag}" || die
 }
 
 
