@@ -316,7 +316,7 @@ function build_app () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_APP} )); then
+	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_APP )); then
 		log 'Starting to build app layer (forced)'
 	else
 		log 'Starting to build app layer'
@@ -349,7 +349,7 @@ function archive_app () {
 	expect_args app_dir -- "$@"
 	expect_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
 
-	if (( ${HALCYON_NO_ARCHIVE} )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -452,24 +452,23 @@ function install_app () {
 	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_magic_hash}" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
-	export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=0
 	local restored_app
 	restored_app=0
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_APP} )) &&
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_APP )) &&
 		restore_app "${app_dir}" "${app_tag}"
 	then
 		restored_app=1
 	fi
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
-		(( ${HALCYON_FORCE_BUILD_APP} )) ||
-		(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP} )) ||
-		! (( ${restored_app} ))
+	if (( HALCYON_FORCE_BUILD_ALL )) ||
+		(( HALCYON_FORCE_BUILD_APP )) ||
+		(( ${HALCYON_INTERNAL_FORCE_CONFIGURE_APP:-0} )) ||
+		! (( restored_app ))
 	then
-		if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-			! (( ${HALCYON_FORCE_BUILD_APP} )) &&
-			(( ${HALCYON_NO_BUILD} ))
+		if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+			! (( HALCYON_FORCE_BUILD_APP )) &&
+			(( HALCYON_NO_BUILD ))
 		then
 			log 'Cannot build app layer'
 			return 1
@@ -484,16 +483,16 @@ function install_app () {
 
 	local built_app
 	built_app=0
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) ||
-		(( ${HALCYON_FORCE_BUILD_APP} )) ||
-		! (( ${HALCYON_NO_BUILD} ))
+	if (( HALCYON_FORCE_BUILD_ALL )) ||
+		(( HALCYON_FORCE_BUILD_APP )) ||
+		! (( HALCYON_NO_BUILD ))
 	then
 		build_app "${app_dir}" "${app_tag}" || die
 		archive_app "${app_dir}" || die
 		built_app=1
 	fi
 
-	if ! (( ${restored_app} )) && ! (( ${built_app} )); then
+	if ! (( restored_app )) && ! (( built_app )); then
 		log 'Cannot install app layer'
 		return 1
 	fi

@@ -1,13 +1,11 @@
 function prepare_cache () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE
 
-	if (( ${HALCYON_PURGE_CACHE} )); then
+	if (( HALCYON_PURGE_CACHE )); then
 		log 'Purging cache'
 
 		rm -rf "${HALCYON_CACHE_DIR}"
 		mkdir -p "${HALCYON_CACHE_DIR}"
-
-		export HALCYON_INTERNAL_OLD_CACHE_DIR=''
 		return 0
 	fi
 

@@ -433,7 +433,7 @@ function build_cabal () {
 	original_archive=$( basename "${original_url}" ) || die
 	tmp_dir=$( echo_tmp_dir_name 'halcyon.cabal' ) || die
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_CABAL} )); then
+	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_CABAL )); then
 		log 'Starting to build Cabal layer (forced)'
 	else
 		log 'Starting to build Cabal layer'
@@ -526,7 +526,7 @@ function update_cabal () {
 	local cabal_tag
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 
-	if (( ${HALCYON_FORCE_UPDATE_CABAL} )); then
+	if (( HALCYON_FORCE_UPDATE_CABAL )); then
 		log 'Starting to update Cabal layer (forced)'
 	else
 		log 'Starting to update Cabal layer'
@@ -549,7 +549,7 @@ function archive_cabal () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	if (( ${HALCYON_NO_ARCHIVE} )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -733,17 +733,17 @@ function install_cabal () {
 	cabal_tag=$( make_cabal_tag "${ghc_tag}" "${cabal_version}" "${cabal_magic_hash}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&
-		! (( ${HALCYON_FORCE_UPDATE_CABAL} )) &&
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_CABAL )) &&
+		! (( HALCYON_FORCE_UPDATE_CABAL )) &&
 		restore_updated_cabal "${cabal_tag}"
 	then
 		activate_cabal || die
 		return 0
 	fi
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_CABAL )) &&
 		restore_cabal "${cabal_tag}"
 	then
 		update_cabal || die
@@ -752,9 +752,9 @@ function install_cabal () {
 		return 0
 	fi
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_CABAL} )) &&
-		(( ${HALCYON_NO_BUILD} ))
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_CABAL )) &&
+		(( HALCYON_NO_BUILD ))
 	then
 		log 'Cannot build Cabal layer'
 		return 1

@@ -229,7 +229,7 @@ function determine_sandbox_constraints () {
 		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
 	else
 		sandbox_constraints=$( cabal_freeze_implicit_constraints "${app_dir}" ) || die
-		if ! (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
+		if ! (( HALCYON_NO_WARN_CONSTRAINTS )); then
 			log_warning 'Using newest available versions of all packages'
 			log_warning 'Expected cabal.config with explicit constraints'
 			log
@@ -367,7 +367,7 @@ function build_sandbox () {
 
 	local sandbox_constraints sandbox_tag extending_sandbox app_dir
 	expect_args sandbox_constraints sandbox_tag extending_sandbox app_dir -- "$@"
-	if (( ${extending_sandbox} )); then
+	if (( extending_sandbox )); then
 		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-cabal.config"
 	else
 		expect_no_existing "${HALCYON_DIR}/sandbox"
@@ -378,24 +378,24 @@ function build_sandbox () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_SANDBOX} )); then
+	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_SANDBOX )); then
 		log 'Starting to build sandbox layer (forced)'
 	else
 		log 'Starting to build sandbox layer'
 	fi
 
-	if ! (( ${extending_sandbox} )) && [ -f "${app_dir}/.halcyon-magic/sandbox-precreate-hook" ]; then
+	if ! (( extending_sandbox )) && [ -f "${app_dir}/.halcyon-magic/sandbox-precreate-hook" ]; then
 		log 'Running sandbox pre-create hook'
 		( "${app_dir}/.halcyon-magic/sandbox-precreate-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/sandbox-precreate-hook" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	fi
 
-	if ! (( ${extending_sandbox} )) && ! [ -d "${HALCYON_DIR}/sandbox" ]; then
+	if ! (( extending_sandbox )) && ! [ -d "${HALCYON_DIR}/sandbox" ]; then
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
 	fi
 
-	if ! (( ${extending_sandbox} )) && [ -f "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" ]; then
+	if ! (( extending_sandbox )) && [ -f "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" ]; then
 		log 'Running sandbox post-create hook'
 		( "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
@@ -428,7 +428,7 @@ function build_sandbox () {
 	sandbox_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
 	log "Finished building sandbox layer, ${sandbox_size}"
 
-	if (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
+	if (( HALCYON_NO_WARN_CONSTRAINTS )); then
 		return 0
 	fi
 
@@ -476,7 +476,7 @@ function archive_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	if (( ${HALCYON_NO_ARCHIVE} )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -752,9 +752,9 @@ function install_matched_sandbox () {
 		return 0
 	fi
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
-		(( ${HALCYON_NO_BUILD} ))
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
+		(( HALCYON_NO_BUILD ))
 	then
 		log 'Cannot build sandbox layer'
 		return 1
@@ -787,8 +787,8 @@ function install_sandbox () {
 	sandbox_tag=$( make_sandbox_tag "${ghc_tag}" "${sandbox_constraints_hash}" "${sandbox_magic_hash}" "${app_label}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
 		restore_sandbox "${sandbox_tag}"
 	then
 		activate_sandbox "${app_dir}" || die
@@ -796,8 +796,8 @@ function install_sandbox () {
 	fi
 
 	local match_result
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
 		match_result=$( match_sandbox_tag "${sandbox_constraints}" "${sandbox_tag}" )
 	then
 		local match_class match_tag
@@ -811,9 +811,9 @@ function install_sandbox () {
 			fi
 			;;
 		'partial')
-			if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-				! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
-				(( ${HALCYON_NO_BUILD} ))
+			if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+				! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
+				(( HALCYON_NO_BUILD ))
 			then
 				log 'Cannot build sandbox layer'
 				return 1
@@ -828,9 +828,9 @@ function install_sandbox () {
 		esac
 	fi
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_SANDBOX} )) &&
-		(( ${HALCYON_NO_BUILD} ))
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
+		(( HALCYON_NO_BUILD ))
 	then
 		log 'Cannot build sandbox layer'
 		return 1

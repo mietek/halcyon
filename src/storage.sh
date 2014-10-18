@@ -7,7 +7,7 @@ function expect_storage () {
 	expect_vars HALCYON_PUBLIC
 
 	if ! has_private_storage; then
-		if ! (( ${HALCYON_PUBLIC} )); then
+		if ! (( HALCYON_PUBLIC )); then
 			log_error 'Expected private or public storage'
 			log
 			help_configure_storage
@@ -17,7 +17,7 @@ function expect_storage () {
 
 		log 'Using public storage'
 	else
-		if (( ${HALCYON_PUBLIC} )); then
+		if (( HALCYON_PUBLIC )); then
 			log_warning 'Cannot use both private and public storage'
 			log 'Using private storage'
 		fi
@@ -54,7 +54,7 @@ function transfer_original () {
 		die 'Cannot download original archive'
 	fi
 
-	if has_private_storage && ! (( ${HALCYON_NO_UPLOAD} )); then
+	if has_private_storage && ! (( HALCYON_NO_UPLOAD )); then
 		if ! s3_upload "${dst_file}" "${HALCYON_S3_BUCKET}" "${src_object}" "${HALCYON_S3_ACL}"; then
 			die 'Cannot upload original archive'
 		fi
@@ -138,7 +138,7 @@ function upload_layer () {
 	src_file_name=$( basename "${src_file}" ) || die
 	dst_object="${dst_prefix:+${dst_prefix}/}${src_file_name}"
 
-	if has_private_storage && ! (( ${HALCYON_NO_UPLOAD} )); then
+	if has_private_storage && ! (( HALCYON_NO_UPLOAD )); then
 		if ! s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"; then
 			return 1
 		fi

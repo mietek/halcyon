@@ -206,7 +206,7 @@ function determine_ghc_version () {
 		ghc_version=$( echo_ghc_default_version ) || die
 
 		log_end "${ghc_version} (default)"
-		if ! (( "${HALCYON_NO_WARN_CONSTRAINTS}" )); then
+		if ! (( HALCYON_NO_WARN_CONSTRAINTS )); then
 			log_warning 'Using newest available version of GHC'
 			log_warning 'Expected cabal.config with explicit constraints'
 		fi
@@ -383,7 +383,7 @@ function build_ghc () {
 	original_archive=$( basename "${original_url}" ) || die
 	tmp_dir=$( echo_tmp_dir_name 'halcyon.ghc' ) || die
 
-	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
+	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_GHC )); then
 		log 'Starting to build GHC layer (forced)'
 	else
 		log 'Starting to build GHC layer'
@@ -495,7 +495,7 @@ function archive_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	if (( ${HALCYON_NO_ARCHIVE} )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -586,17 +586,17 @@ function install_ghc () {
 	ghc_tag=$( make_ghc_tag "${ghc_version}" "${ghc_magic_hash}" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_GHC} )) &&
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_GHC )) &&
 		restore_ghc "${ghc_tag}"
 	then
 		activate_ghc || die
 		return 0
 	fi
 
-	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
-		! (( ${HALCYON_FORCE_BUILD_GHC} )) &&
-		(( ${HALCYON_NO_BUILD} ))
+	if ! (( HALCYON_FORCE_BUILD_ALL )) &&
+		! (( HALCYON_FORCE_BUILD_GHC )) &&
+		(( HALCYON_NO_BUILD ))
 	then
 		log 'Cannot build GHC layer'
 		return 1

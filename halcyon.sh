@@ -233,38 +233,38 @@ function halcyon_install () {
 		export HALCYON_NO_WARN_CONSTRAINTS=1
 	fi
 
-	if ! (( ${HALCYON_NO_MAINTAIN_CACHE} )); then
+	if ! (( HALCYON_NO_MAINTAIN_CACHE )); then
 		prepare_cache || die
 		log
 	fi
 
-	if ! (( ${HALCYON_NO_GHC} )); then
+	if ! (( HALCYON_NO_GHC )); then
 		install_ghc "${app_dir}" || return 1
 		log
 	fi
 
-	if ! (( ${HALCYON_NO_CABAL} )); then
+	if ! (( HALCYON_NO_CABAL )); then
 		install_cabal "${app_dir}" || return 1
 		log
 	fi
 
-	if (( ${fake_app} )); then
+	if (( fake_app )); then
 		app_dir=$( prepare_fake_app_dir "${app_label}" ) || die
 	fi
 
-	if ! (( ${HALCYON_NO_SANDBOX} )); then
+	if ! (( HALCYON_NO_SANDBOX )); then
 		install_sandbox "${app_dir}" || return 1
 		log
 	fi
 
-	if (( ${fake_app} )); then
+	if (( fake_app )); then
 		rm -rf "${app_dir}" || die
-	elif ! (( ${HALCYON_NO_APP} )); then
+	elif ! (( HALCYON_NO_APP )); then
 		install_app "${app_dir}" || return 1
 		log
 	fi
 
-	if ! (( ${HALCYON_NO_MAINTAIN_CACHE} )); then
+	if ! (( HALCYON_NO_MAINTAIN_CACHE )); then
 		clean_cache "${app_dir}" || die
 	fi
 }
