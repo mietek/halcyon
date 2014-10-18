@@ -290,15 +290,15 @@ function validate_app_magic_hash () {
 function validate_app () {
 	expect_vars HALCYON_DIR
 
-	local app_tag tmp_old_dir
-	expect_args app_tag tmp_old_dir -- "$@"
+	local app_tag app_dir
+	expect_args app_tag app_dir -- "$@"
 
 	local app_magic_hash
 	app_magic_hash=$( echo_app_tag_magic_hash "${app_tag}" ) || die
 
-	if ! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
-		! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag" ||
-		! validate_app_magic_hash "${app_magic_hash}" "${tmp_old_dir}"
+	if ! [ -f "${app_dir}/.halcyon-tag" ] ||
+		! validate_app_tag "${app_tag}" <"${app_dir}/.halcyon-tag" ||
+		! validate_app_magic_hash "${app_magic_hash}" "${app_dir}"
 	then
 		return 1
 	fi
@@ -388,24 +388,24 @@ function restore_app () {
 
 	log 'Restoring app layer'
 
-	local tmp_old_dir
-	tmp_old_dir=$( echo_tmp_dir_name 'halcyon.old-app' ) || die
+	local tmp_dir
+	tmp_dir=$( echo_tmp_dir_name 'halcyon.old-app' ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
-		! validate_app "${app_tag}" "${tmp_old_dir}"
+		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_dir}" ||
+		! validate_app "${app_tag}" "${tmp_dir}"
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
+		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_dir}" || die
 
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
 			log 'Cannot download app layer archive'
 			return 1
 		fi
 
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
-			! validate_app "${app_tag}" "${tmp_old_dir}"
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_dir}" ||
+			! validate_app "${app_tag}" "${tmp_dir}"
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
+			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_dir}" || die
 			log_warning 'Cannot extract app layer archive'
 			return 1
 		fi
@@ -415,13 +415,13 @@ function restore_app () {
 
 	local changes path
 	changes=$(
-		compare_recursively "${tmp_old_dir}" "${app_dir}" |
+		compare_recursively "${tmp_dir}" "${app_dir}" |
 		filter_not_matching '^. (\.halcyon/|\.halcyon-tag|dist$)'
 	) || die
 	filter_matching '^= ' <<<"${changes}" |
 		sed 's/^= //' |
 		while read -r path; do
-			cp -p "${tmp_old_dir}/${path}" "${app_dir}/${path}" || die
+			cp -p "${tmp_dir}/${path}" "${app_dir}/${path}" || die
 		done
 	filter_not_matching '^= ' <<<"${changes}" | quote || die
 
@@ -432,8 +432,8 @@ function restore_app () {
 	fi
 
 	rm -rf "${app_dir}/dist" || die
-	mv "${tmp_old_dir}/dist" "${app_dir}" || die
-	rm -rf "${tmp_old_dir}" || die
+	mv "${tmp_dir}/dist" "${app_dir}" || die
+	rm -rf "${tmp_dir}" || die
 }
 
 
