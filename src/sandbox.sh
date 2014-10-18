@@ -211,7 +211,7 @@ function echo_partially_matched_sandbox_config_pattern () {
 	ghc_id=$( echo_ghc_id "${sandbox_tag}" ) || die
 	sandbox_magic_hash=$( echo_sandbox_tag_magic_hash "${sandbox_tag}" ) || die
 
-	echo "halcyon-sandbox-ghc-${ghc_id//./\.}-.*${sandbox_magic_hash:+~${sandbox_magic_hash:0:7}}-.*\.cabal\.config"
+	echo "halcyon-sandbox-ghc-${ghc_id//./\.}-[^~]*${sandbox_magic_hash:+~${sandbox_magic_hash:0:7}}-.*\.cabal\.config"
 }
 
 
