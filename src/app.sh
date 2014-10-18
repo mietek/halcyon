@@ -491,7 +491,7 @@ function install_app () {
 
 		log 'Configuring app'
 
-		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${HALCYON_DIR}/app" || die
 	else
 		log 'Using restored app configuration'
 	fi
