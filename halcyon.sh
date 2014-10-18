@@ -117,18 +117,36 @@ function halcyon_install () {
 
 	while (( $# )); do
 		case "$1" in
+		'--halcyon-dir')
+			shift
+			export HALCYON_DIR="$1";;
 		'--halcyon-dir='*)
 			export HALCYON_DIR="${1#*=}";;
 
+		'--aws-access-key-id')
+			shift
+			export HALCYON_AWS_ACCESS_KEY_ID="$1";;
 		'--aws-access-key-id='*)
 			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
+		'--aws-secret-access-key')
+			shift
+			export HALCYON_AWS_SECRET_ACCESS_KEY="$1";;
 		'--aws-secret-access-key='*)
 			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
+		'--s3-bucket')
+			shift
+			export HALCYON_S3_BUCKET="$1";;
 		'--s3-bucket='*)
 			export HALCYON_S3_BUCKET="${1#*=}";;
+		'--s3-acl')
+			shift
+			export HALCYON_S3_ACL="$1";;
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
 
+		'--cache-dir')
+			shift
+			export HALCYON_CACHE_DIR="$1";;
 		'--cache-dir='*)
 			export HALCYON_CACHE_DIR="${1#*=}";;
 		'--purge-cache')
@@ -136,10 +154,16 @@ function halcyon_install () {
 
 		'--force-build-all')
 			export HALCYON_FORCE_BUILD_ALL=1;;
+		'--force-ghc-version')
+			shift
+			export HALCYON_FORCE_GHC_VERSION="$1";;
 		'--force-ghc-version='*)
 			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
 		'--force-build-ghc')
 			export HALCYON_FORCE_BUILD_GHC=1;;
+		'--force-cabal-version')
+			shift
+			export HALCYON_FORCE_CABAL_VERSION="$1";;
 		'--force-cabal-version='*)
 			export HALCYON_FORCE_CABAL_VERSION="${1#*=}";;
 		'--force-build-cabal')
