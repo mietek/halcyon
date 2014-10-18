@@ -742,7 +742,8 @@ function install_matched_sandbox () {
 	if [ "${matched_constraints_hash}" = "${sandbox_constraints_hash}" ] &&
 		[ "${matched_magic_hash}" = "${sandbox_magic_hash}" ]
 	then
-		log "Using fully matched sandbox layer: ${matched_description}"
+		log 'Using fully matched sandbox layer:'
+		log_indent "${matched_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 		archive_sandbox || die
@@ -758,7 +759,8 @@ function install_matched_sandbox () {
 		return 1
 	fi
 
-	log "Extending partially matched sandbox layer: ${matched_description}"
+	log 'Extending partially matched sandbox layer:'
+	log_indent "${matched_description}"
 
 	local extending_sandbox=1
 	build_sandbox "${sandbox_constraints}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die
