@@ -46,6 +46,7 @@ function set_default_vars () {
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 
+	export HALCYON_NO_MAINTAIN_CACHE="${HALCYON_NO_MAINTAIN_CACHE:-0}"
 	export HALCYON_NO_WARN_CONSTRAINTS="${HALCYON_NO_WARN_CONSTRAINTS:-0}"
 
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
@@ -165,6 +166,8 @@ function halcyon_install () {
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
 
+		'--no-maintain-cache')
+			export HALCYON_NO_MAINTAIN_CACHE=1;;
 		'--no-warn-constraints')
 			export HALCYON_NO_WARN_CONSTRAINTS=1;;
 
@@ -195,8 +198,10 @@ function halcyon_install () {
 		export HALCYON_NO_WARN_CONSTRAINTS=1
 	fi
 
-	prepare_cache || die
-	log
+	if ! (( ${HALCYON_NO_MAINTAIN_CACHE} )); then
+		prepare_cache || die
+		log
+	fi
 
 	if ! (( ${HALCYON_NO_GHC} )); then
 		install_ghc "${app_dir}" || return 1
@@ -224,5 +229,7 @@ function halcyon_install () {
 		log
 	fi
 
-	clean_cache "${app_dir}" || die
+	if ! (( ${HALCYON_NO_MAINTAIN_CACHE} )); then
+		clean_cache "${app_dir}" || die
+	fi
 }
