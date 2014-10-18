@@ -10,7 +10,7 @@ function expect_storage () {
 		if ! (( ${HALCYON_PUBLIC} )); then
 			log_error 'Expected private or public storage'
 			log
-			help_storage
+			help_configure_storage
 			log
 			die
 		fi

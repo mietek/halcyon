@@ -1,4 +1,4 @@
-function help_storage () {
+function help_configure_storage () {
 	quote <<-EOF
 		To use private storage:
 		$ export HALCYON_AWS_ACCESS_KEY_ID=...
