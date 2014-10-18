@@ -380,7 +380,7 @@ function restore_app () {
 	local app_dir app_tag
 	expect_args app_dir app_tag -- "$@"
 	expect_existing "${app_dir}"
-	expect_no_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
+	expect_no_existing "${app_dir}/.halcyon-tag"
 
 	local os app_archive
 	os=$( echo_app_tag_os "${app_tag}" ) || die
@@ -388,9 +388,8 @@ function restore_app () {
 
 	log 'Restoring app layer'
 
-	local tmp_old_dir tmp_dist_dir
+	local tmp_old_dir
 	tmp_old_dir=$( echo_tmp_dir_name 'halcyon.old-app' ) || die
-	tmp_dist_dir=$( echo_tmp_dir_name 'halcyon.app-dist' ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
@@ -414,12 +413,10 @@ function restore_app () {
 
 	log 'Examining app changes'
 
-	mv "${tmp_old_dir}/dist" "${tmp_dist_dir}" || die
-
 	local changes path
 	changes=$(
 		compare_recursively "${tmp_old_dir}" "${app_dir}" |
-		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$)'
+		filter_not_matching '^. (\.halcyon/|\.halcyon-tag|dist$)'
 	) || die
 	filter_matching '^= ' <<<"${changes}" |
 		sed 's/^= //' |
@@ -434,7 +431,8 @@ function restore_app () {
 		export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=1
 	fi
 
-	mv "${tmp_dist_dir}" "${app_dir}/dist" || die
+	rm -rf "${app_dir}/dist" || die
+	mv "${tmp_old_dir}/dist" "${app_dir}" || die
 	rm -rf "${tmp_old_dir}" || die
 }
 
