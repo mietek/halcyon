@@ -99,8 +99,8 @@ function prepare_fake_app_dir () {
 	mkdir -p "${app_dir}" || die
 	echo_fake_app_package "${app_label}" >"${app_dir}/${app_label}.cabal" || die
 
-	if [ -d '.halcyon-hooks' ]; then
-		cp -R '.halcyon-hooks' "${app_dir}"
+	if [ -d '.halcyon-magic' ]; then
+		cp -R '.halcyon-magic' "${app_dir}"
 	fi
 
 	echo "${app_dir}"

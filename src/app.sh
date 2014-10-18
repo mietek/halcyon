@@ -1,17 +1,17 @@
 function make_app_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_tag sandbox_tag app_label app_hooks_hash
-	expect_args ghc_tag sandbox_tag app_label app_hooks_hash -- "$@"
+	local ghc_tag sandbox_tag app_label app_magic_hash
+	expect_args ghc_tag sandbox_tag app_label app_magic_hash -- "$@"
 
 	local os
 	os=$( detect_os ) || die
 
-	local ghc_os ghc_halcyon_dir ghc_version ghc_hooks_hash
+	local ghc_os ghc_halcyon_dir ghc_version ghc_magic_hash
 	ghc_os=$( echo_ghc_tag_os "${ghc_tag}" ) || die
 	ghc_halcyon_dir=$( echo_ghc_tag_halcyon_dir "${ghc_tag}" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
+	ghc_magic_hash=$( echo_ghc_tag_magic_hash "${ghc_tag}" ) || die
 
 	if [ "${os}" != "${ghc_os}" ]; then
 		die "Unexpected OS in GHC tag: ${ghc_os}"
@@ -20,13 +20,13 @@ function make_app_tag () {
 		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
 	fi
 
-	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_hooks_hash sandbox_constraints_hash sandbox_hooks_hash sandbox_app_label
+	local sandbox_os sandbox_halcyon_dir sandbox_ghc_version sandbox_ghc_magic_hash sandbox_constraints_hash sandbox_magic_hash sandbox_app_label
 	sandbox_os=$( echo_sandbox_tag_os "${sandbox_tag}" ) || die
 	sandbox_halcyon_dir=$( echo_sandbox_tag_halcyon_dir "${sandbox_tag}" ) || die
 	sandbox_ghc_version=$( echo_sandbox_tag_ghc_version "${sandbox_tag}" ) || die
-	sandbox_ghc_hooks_hash=$( echo_sandbox_tag_ghc_hooks_hash "${sandbox_tag}" ) || die
+	sandbox_ghc_magic_hash=$( echo_sandbox_tag_ghc_magic_hash "${sandbox_tag}" ) || die
 	sandbox_constraints_hash=$( echo_sandbox_tag_constraints_hash "${sandbox_tag}" ) || die
-	sandbox_hooks_hash=$( echo_sandbox_tag_hooks_hash "${sandbox_tag}" ) || die
+	sandbox_magic_hash=$( echo_sandbox_tag_magic_hash "${sandbox_tag}" ) || die
 	sandbox_app_label=$( echo_sandbox_tag_app_label "${sandbox_tag}" ) || die
 
 	if [ "${os}" != "${sandbox_os}" ]; then
@@ -38,14 +38,14 @@ function make_app_tag () {
 	if [ "${ghc_version}" != "${sandbox_ghc_version}" ]; then
 		die "Unexpected GHC version in sandbox tag: ${sandbox_ghc_version}"
 	fi
-	if [ "${ghc_hooks_hash}" != "${sandbox_ghc_hooks_hash}" ]; then
-		die "Unexpected GHC hooks_hash in sandbox tag: ${sandbox_ghc_hooks_hash}"
+	if [ "${ghc_magic_hash}" != "${sandbox_ghc_magic_hash}" ]; then
+		die "Unexpected GHC magic_hash in sandbox tag: ${sandbox_ghc_magic_hash}"
 	fi
 	if [ "${app_label}" != "${sandbox_app_label}" ]; then
 		die "Unexpected app label in sandbox tag: ${sandbox_app_label}"
 	fi
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}\t${sandbox_constraints_hash}\t${sandbox_hooks_hash}\t${app_label}\t${app_hooks_hash}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_magic_hash}\t${sandbox_constraints_hash}\t${sandbox_magic_hash}\t${app_label}\t${app_magic_hash}"
 }
 
 
@@ -73,7 +73,7 @@ function echo_app_tag_ghc_version () {
 }
 
 
-function echo_app_tag_ghc_hooks_hash () {
+function echo_app_tag_ghc_magic_hash () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
@@ -89,7 +89,7 @@ function echo_app_tag_sandbox_constraints_hash () {
 }
 
 
-function echo_app_tag_sandbox_hooks_hash () {
+function echo_app_tag_sandbox_magic_hash () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
@@ -105,7 +105,7 @@ function echo_app_tag_label () {
 }
 
 
-function echo_app_tag_hooks_hash () {
+function echo_app_tag_magic_hash () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
@@ -117,11 +117,11 @@ function echo_app_id () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local app_label app_hooks_hash
+	local app_label app_magic_hash
 	app_label=$( echo_app_tag_label "${app_tag}" ) || die
-	app_hooks_hash=$( echo_app_tag_hooks_hash "${app_tag}" ) || die
+	app_magic_hash=$( echo_app_tag_magic_hash "${app_tag}" ) || die
 
-	echo "${app_label}${app_hooks_hash:+~${app_hooks_hash:0:7}}"
+	echo "${app_label}${app_magic_hash:+~${app_magic_hash:0:7}}"
 }
 
 
@@ -241,35 +241,35 @@ function detect_app_label () {
 }
 
 
-function hash_app_hooks () {
+function hash_app_magic () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local hooks
-	if ! hooks=$( cat "${app_dir}/.halcyon-hooks/app-"* 2>'/dev/null' ); then
+	local magic
+	if ! magic=$( cat "${app_dir}/.halcyon-magic/app-"* 2>'/dev/null' ); then
 		return 0
 	fi
 
-	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
+	openssl sha1 <<<"${magic}" | sed 's/^.* //'
 }
 
 
-function determine_app_hooks_hash () {
+function determine_app_magic_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	log_begin 'Determining app hooks hash...'
+	log_begin 'Determining app magic hash...'
 
-	local app_hooks_hash
-	app_hooks_hash=$( hash_app_hooks "${app_dir}" ) || die
+	local app_magic_hash
+	app_magic_hash=$( hash_app_magic "${app_dir}" ) || die
 
-	if [ -z "${app_hooks_hash}" ]; then
+	if [ -z "${app_magic_hash}" ]; then
 		log_end '(none)'
 	else
-		log_end "${app_hooks_hash:0:7}"
+		log_end "${app_magic_hash:0:7}"
 	fi
 
-	echo "${app_hooks_hash}"
+	echo "${app_magic_hash}"
 }
 
 
@@ -286,14 +286,14 @@ function validate_app_tag () {
 }
 
 
-function validate_app_hooks_hash () {
-	local app_hooks_hash app_dir
-	expect_args app_hooks_hash app_dir -- "$@"
+function validate_app_magic_hash () {
+	local app_magic_hash app_dir
+	expect_args app_magic_hash app_dir -- "$@"
 
-	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_app_hooks "${app_dir}" ) || die
+	local candidate_magic_hash
+	candidate_magic_hash=$( hash_app_magic "${app_dir}" ) || die
 
-	if [ "${candidate_hooks_hash}" != "${app_hooks_hash}" ]; then
+	if [ "${candidate_magic_hash}" != "${app_magic_hash}" ]; then
 		return 1
 	fi
 }
@@ -305,12 +305,12 @@ function validate_app () {
 	local app_tag tmp_old_dir
 	expect_args app_tag tmp_old_dir -- "$@"
 
-	local app_hooks_hash
-	app_hooks_hash=$( echo_app_tag_hooks_hash "${app_tag}" ) || die
+	local app_magic_hash
+	app_magic_hash=$( echo_app_tag_magic_hash "${app_tag}" ) || die
 
 	if ! [ -f "${tmp_old_dir}/.halcyon-tag" ] ||
 		! validate_app_tag "${app_tag}" <"${tmp_old_dir}/.halcyon-tag" ||
-		! validate_app_hooks_hash "${app_hooks_hash}" "${tmp_old_dir}"
+		! validate_app_magic_hash "${app_magic_hash}" "${tmp_old_dir}"
 	then
 		return 1
 	fi
@@ -334,18 +334,18 @@ function build_app () {
 		log 'Starting to build app layer'
 	fi
 
-	if [ -f "${app_dir}/.halcyon-hooks/app-pre-build" ]; then
+	if [ -f "${app_dir}/.halcyon-magic/app-prebuild-hook" ]; then
 		log 'Running app pre-build hook'
-		( "${app_dir}/.halcyon-hooks/app-pre-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	log 'Building app'
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
-	if [ -f "${app_dir}/.halcyon-hooks/app-post-build" ]; then
+	if [ -f "${app_dir}/.halcyon-magic/app-postbuild-hook" ]; then
 		log 'Running app post-build hook'
-		( "${app_dir}/.halcyon-hooks/app-post-build" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
@@ -458,12 +458,12 @@ function install_app () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_tag sandbox_tag app_label app_hooks_hash app_tag app_description
+	local ghc_tag sandbox_tag app_label app_magic_hash app_tag app_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
-	app_hooks_hash=$( determine_app_hooks_hash "${app_dir}" ) || die
-	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_hooks_hash}" ) || die
+	app_magic_hash=$( determine_app_magic_hash "${app_dir}" ) || die
+	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_magic_hash}" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	export HALCYON_INTERNAL_FORCE_CONFIGURE_APP=0
@@ -517,9 +517,9 @@ function install_app () {
 	rm -rf "${HALCYON_DIR}/app"
 	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
-	if [ -f "${app_dir}/.halcyon-hooks/app-install" ]; then
+	if [ -f "${app_dir}/.halcyon-magic/app-install-hook" ]; then
 		log 'Running app install hook'
-		( "${app_dir}/.halcyon-hooks/app-install" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/app-install-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	echo "${app_tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die

@@ -45,8 +45,8 @@ EOF
 function make_cabal_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_tag cabal_version cabal_hooks_hash
-	expect_args ghc_tag cabal_version cabal_hooks_hash -- "$@"
+	local ghc_tag cabal_version cabal_magic_hash
+	expect_args ghc_tag cabal_version cabal_magic_hash -- "$@"
 
 	local os
 	os=$( detect_os ) || die
@@ -62,7 +62,7 @@ function make_cabal_tag () {
 		die "Unexpected HALCYON_DIR in GHC tag: ${ghc_halcyon_dir}"
 	fi
 
-	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_hooks_hash}\t"
+	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_magic_hash}\t"
 }
 
 
@@ -75,11 +75,11 @@ function make_updated_cabal_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	local cabal_os cabal_halcyon_dir cabal_version cabal_hooks_hash
+	local cabal_os cabal_halcyon_dir cabal_version cabal_magic_hash
 	cabal_os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
 	cabal_halcyon_dir=$( echo_cabal_tag_halcyon_dir "${cabal_tag}" ) || die
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	cabal_magic_hash=$( echo_cabal_tag_magic_hash "${cabal_tag}" ) || die
 
 	if [ "${os}" != "${cabal_os}" ]; then
 		die "Unexpected OS in Cabal tag: ${cabal_os}"
@@ -88,7 +88,7 @@ function make_updated_cabal_tag () {
 		die "Unexpected HALCYON_DIR in Cabal tag: ${cabal_halcyon_dir}"
 	fi
 
-	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_hooks_hash}\t${cabal_timestamp}"
+	echo -e "${os}\t${HALCYON_DIR}\tcabal-${cabal_version}\t${cabal_magic_hash}\t${cabal_timestamp}"
 }
 
 
@@ -116,7 +116,7 @@ function echo_cabal_tag_version () {
 }
 
 
-function echo_cabal_tag_hooks_hash () {
+function echo_cabal_tag_magic_hash () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
@@ -136,11 +136,11 @@ function echo_cabal_id () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_version cabal_hooks_hash
+	local cabal_version cabal_magic_hash
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	cabal_magic_hash=$( echo_cabal_tag_magic_hash "${cabal_tag}" ) || die
 
-	echo "${cabal_version}${cabal_hooks_hash:+~${cabal_hooks_hash:0:7}}"
+	echo "${cabal_version}${cabal_magic_hash:+~${cabal_magic_hash:0:7}}"
 }
 
 
@@ -232,35 +232,35 @@ function determine_cabal_version () {
 }
 
 
-function hash_cabal_hooks () {
+function hash_cabal_magic () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local hooks
-	if ! hooks=$( cat "${app_dir}/.halcyon-hooks/cabal-"* 2>'/dev/null' ); then
+	local magic
+	if ! magic=$( cat "${app_dir}/.halcyon-magic/cabal-"* 2>'/dev/null' ); then
 		return 0
 	fi
 
-	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
+	openssl sha1 <<<"${magic}" | sed 's/^.* //'
 }
 
 
-function determine_cabal_hooks_hash () {
+function determine_cabal_magic_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	log_begin 'Determining Cabal hooks hash...'
+	log_begin 'Determining Cabal magic hash...'
 
-	local cabal_hooks_hash
-	cabal_hooks_hash=$( hash_cabal_hooks "${app_dir}" ) || die
+	local cabal_magic_hash
+	cabal_magic_hash=$( hash_cabal_magic "${app_dir}" ) || die
 
-	if [ -z "${cabal_hooks_hash}" ]; then
+	if [ -z "${cabal_magic_hash}" ]; then
 		log_end '(none)'
 	else
-		log_end "${cabal_hooks_hash:0:7}"
+		log_end "${cabal_magic_hash:0:7}"
 	fi
 
-	echo "${cabal_hooks_hash}"
+	echo "${cabal_magic_hash}"
 }
 
 
@@ -277,14 +277,14 @@ function validate_cabal_tag () {
 }
 
 
-function validate_cabal_hooks () {
-	local cabal_hooks_hash app_dir
-	expect_args cabal_hooks_hash app_dir -- "$@"
+function validate_cabal_magic () {
+	local cabal_magic_hash app_dir
+	expect_args cabal_magic_hash app_dir -- "$@"
 
-	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_cabal_hooks "${app_dir}" ) || die
+	local candidate_magic_hash
+	candidate_magic_hash=$( hash_cabal_magic "${app_dir}" ) || die
 
-	if [ "${candidate_hooks_hash}" != "${cabal_hooks_hash}" ]; then
+	if [ "${candidate_magic_hash}" != "${cabal_magic_hash}" ]; then
 		return 1
 	fi
 }
@@ -296,12 +296,12 @@ function validate_cabal () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_hooks_hash
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	local cabal_magic_hash
+	cabal_magic_hash=$( echo_cabal_tag_magic_hash "${cabal_tag}" ) || die
 
 	if ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 		! validate_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal"
+		! validate_cabal_magic "${cabal_magic_hash}" "${HALCYON_DIR}/cabal"
 	then
 		return 1
 	fi
@@ -328,22 +328,22 @@ function validate_updated_cabal_tag () {
 	local candidate_tag
 	candidate_tag=$( match_exactly_one ) || die
 
-	local cabal_os cabal_halcyon_dir cabal_version cabal_hooks_hash
+	local cabal_os cabal_halcyon_dir cabal_version cabal_magic_hash
 	cabal_os=$( echo_cabal_tag_os "${cabal_tag}" ) || die
 	cabal_halcyon_dir=$( echo_cabal_tag_halcyon_dir "${cabal_tag}" ) || die
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	cabal_magic_hash=$( echo_cabal_tag_magic_hash "${cabal_tag}" ) || die
 
-	local candidate_os candidate_halcyon_dir candidate_cabal_version candidate_cabal_hooks_hash candidate_timestamp
+	local candidate_os candidate_halcyon_dir candidate_cabal_version candidate_cabal_magic_hash candidate_timestamp
 	candidate_os=$( echo_cabal_tag_os "${candidate_tag}" ) || die
 	candidate_halcyon_dir=$( echo_cabal_tag_halcyon_dir "${candidate_tag}" ) || die
 	candidate_version=$( echo_cabal_tag_version "${candidate_tag}" ) || die
-	candidate_hooks_hash=$( echo_cabal_tag_hooks_hash "${candidate_tag}" ) || die
+	candidate_magic_hash=$( echo_cabal_tag_magic_hash "${candidate_tag}" ) || die
 
 	if [ "${candidate_os}" != "${cabal_os}" ] ||
 		[ "${candidate_halcyon_dir}" != "${cabal_halcyon_dir}" ] ||
 		[ "${candidate_version}" != "${cabal_version}" ] ||
-		[ "${candidate_hooks_hash}" != "${cabal_hooks_hash}" ]
+		[ "${candidate_magic_hash}" != "${cabal_magic_hash}" ]
 	then
 		return 1
 	fi
@@ -361,12 +361,12 @@ function validate_updated_cabal () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_hooks_hash
-	cabal_hooks_hash=$( echo_cabal_tag_hooks_hash "${cabal_tag}" ) || die
+	local cabal_magic_hash
+	cabal_magic_hash=$( echo_cabal_tag_magic_hash "${cabal_tag}" ) || die
 
 	if ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ] ||
 		! validate_updated_cabal_tag "${cabal_tag}" <"${HALCYON_DIR}/cabal/.halcyon-tag" ||
-		! validate_cabal_hooks "${cabal_hooks_hash}" "${HALCYON_DIR}/cabal"
+		! validate_cabal_magic "${cabal_magic_hash}" "${HALCYON_DIR}/cabal"
 	then
 		return 1
 	fi
@@ -460,11 +460,11 @@ function build_cabal () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 
-	if [ -f "${app_dir}/.halcyon-hooks/cabal-pre-build" ]; then
+	if [ -f "${app_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
 		log 'Running Cabal pre-build hook'
-		( "${app_dir}/.halcyon-hooks/cabal-pre-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
-		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
-		cp "${app_dir}/.halcyon-hooks/cabal-pre-build" "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
+		( "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
+		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
+		cp "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	fi
 
 	log 'Bootstrapping Cabal'
@@ -507,11 +507,11 @@ EOF
 
 	echo_cabal_config >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
-	if [ -f "${app_dir}/.halcyon-hooks/cabal-post-build" ]; then
+	if [ -f "${app_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
 		log 'Running Cabal post-build hook'
-		( "${app_dir}/.halcyon-hooks/cabal-post-build" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
-		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
-		cp "${app_dir}/.halcyon-hooks/cabal-post-build" "${HALCYON_DIR}/cabal/.halcyon-hooks" || die
+		( "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
+		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
+		cp "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	fi
 
 	echo "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
@@ -731,11 +731,11 @@ function install_cabal () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_tag cabal_version cabal_hooks_hash cabal_tag cabal_description
+	local ghc_tag cabal_version cabal_magic_hash cabal_tag cabal_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	cabal_version=$( determine_cabal_version ) || die
-	cabal_hooks_hash=$( determine_cabal_hooks_hash "${app_dir}" ) || die
-	cabal_tag=$( make_cabal_tag "${ghc_tag}" "${cabal_version}" "${cabal_hooks_hash}" ) || die
+	cabal_magic_hash=$( determine_cabal_magic_hash "${app_dir}" ) || die
+	cabal_tag=$( make_cabal_tag "${ghc_tag}" "${cabal_version}" "${cabal_magic_hash}" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&

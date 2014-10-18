@@ -95,13 +95,13 @@ function echo_ghc_default_version () {
 function make_ghc_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_version ghc_hooks_hash
-	expect_args ghc_version ghc_hooks_hash -- "$@"
+	local ghc_version ghc_magic_hash
+	expect_args ghc_version ghc_magic_hash -- "$@"
 
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_hooks_hash}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_magic_hash}"
 }
 
 
@@ -129,7 +129,7 @@ function echo_ghc_tag_version () {
 }
 
 
-function echo_ghc_tag_hooks_hash () {
+function echo_ghc_tag_magic_hash () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
@@ -141,11 +141,11 @@ function echo_ghc_id () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_version ghc_hooks_hash
+	local ghc_version ghc_magic_hash
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
-	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
+	ghc_magic_hash=$( echo_ghc_tag_magic_hash "${ghc_tag}" ) || die
 
-	echo "${ghc_version}${ghc_hooks_hash:+~${ghc_hooks_hash:0:7}}"
+	echo "${ghc_version}${ghc_magic_hash:+~${ghc_magic_hash:0:7}}"
 }
 
 
@@ -221,35 +221,35 @@ function determine_ghc_version () {
 }
 
 
-function hash_ghc_hooks () {
+function hash_ghc_magic () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local hooks
-	if ! hooks=$( cat "${app_dir}/.halcyon-hooks/ghc-"* 2>'/dev/null' ); then
+	local magic
+	if ! magic=$( cat "${app_dir}/.halcyon-magic/ghc-"* 2>'/dev/null' ); then
 		return 0
 	fi
 
-	openssl sha1 <<<"${hooks}" | sed 's/^.* //'
+	openssl sha1 <<<"${magic}" | sed 's/^.* //'
 }
 
 
-function determine_ghc_hooks_hash () {
+function determine_ghc_magic_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	log_begin 'Determining GHC hooks hash...'
+	log_begin 'Determining GHC magic hash...'
 
-	local ghc_hooks_hash
-	ghc_hooks_hash=$( hash_ghc_hooks "${app_dir}" ) || die
+	local ghc_magic_hash
+	ghc_magic_hash=$( hash_ghc_magic "${app_dir}" ) || die
 
-	if [ -z "${ghc_hooks_hash}" ]; then
+	if [ -z "${ghc_magic_hash}" ]; then
 		log_end '(none)'
 	else
-		log_end "${ghc_hooks_hash:0:7}"
+		log_end "${ghc_magic_hash:0:7}"
 	fi
 
-	echo "${ghc_hooks_hash}"
+	echo "${ghc_magic_hash}"
 }
 
 
@@ -266,14 +266,14 @@ function validate_ghc_tag () {
 }
 
 
-function validate_ghc_hooks () {
-	local ghc_hooks_hash app_dir
-	expect_args ghc_hooks_hash app_dir -- "$@"
+function validate_ghc_magic () {
+	local ghc_magic_hash app_dir
+	expect_args ghc_magic_hash app_dir -- "$@"
 
-	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_ghc_hooks "${app_dir}" ) || die
+	local candidate_magic_hash
+	candidate_magic_hash=$( hash_ghc_magic "${app_dir}" ) || die
 
-	if [ "${candidate_hooks_hash}" != "${ghc_hooks_hash}" ]; then
+	if [ "${candidate_magic_hash}" != "${ghc_magic_hash}" ]; then
 		return 1
 	fi
 }
@@ -285,12 +285,12 @@ function validate_ghc () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_hooks_hash
-	ghc_hooks_hash=$( echo_ghc_tag_hooks_hash "${ghc_tag}" ) || die
+	local ghc_magic_hash
+	ghc_magic_hash=$( echo_ghc_tag_magic_hash "${ghc_tag}" ) || die
 
 	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
 		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" ||
-		! validate_ghc_hooks "${ghc_hooks_hash}" "${HALCYON_DIR}/ghc"
+		! validate_ghc_magic "${ghc_magic_hash}" "${HALCYON_DIR}/ghc"
 	then
 		return 1
 	fi
@@ -406,11 +406,11 @@ function build_ghc () {
 		fi
 	fi
 
-	if [ -f "${app_dir}/.halcyon-hooks/ghc-pre-build" ]; then
+	if [ -f "${app_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
 		log 'Running GHC pre-build hook'
-		( "${app_dir}/.halcyon-hooks/ghc-pre-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
-		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
-		cp "${app_dir}/.halcyon-hooks/ghc-pre-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
+		( "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
+		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
+		cp "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	fi
 
 	log 'Installing GHC'
@@ -423,11 +423,11 @@ function build_ghc () {
 		die 'Failed to install GHC'
 	fi
 
-	if [ -f "${app_dir}/.halcyon-hooks/ghc-post-build" ]; then
+	if [ -f "${app_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
 		log 'Running GHC post-build hook'
-		( "${app_dir}/.halcyon-hooks/ghc-post-build" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
-		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
-		cp "${app_dir}/.halcyon-hooks/ghc-post-build" "${HALCYON_DIR}/ghc/.halcyon-hooks" || die
+		( "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
+		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
+		cp "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	fi
 
 	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
@@ -585,10 +585,10 @@ function install_ghc () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_version ghc_hooks_hash ghc_tag ghc_description
+	local ghc_version ghc_magic_hash ghc_tag ghc_description
 	ghc_version=$( determine_ghc_version "${app_dir}" ) || die
-	ghc_hooks_hash=$( determine_ghc_hooks_hash "${app_dir}" ) || die
-	ghc_tag=$( make_ghc_tag "${ghc_version}" "${ghc_hooks_hash}" ) || die
+	ghc_magic_hash=$( determine_ghc_magic_hash "${app_dir}" ) || die
+	ghc_tag=$( make_ghc_tag "${ghc_version}" "${ghc_magic_hash}" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	if ! (( ${HALCYON_FORCE_BUILD_ALL} )) &&
