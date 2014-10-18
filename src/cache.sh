@@ -27,10 +27,10 @@ function clean_cache () {
 
 	expect_args app_dir -- "$@"
 
-	local tmp_dir
-	tmp_dir=$( echo_tmp_dir_name 'halcyon.cache' ) || die
+	local tmp_cache_dir
+	tmp_cache_dir=$( echo_tmp_dir_name 'halcyon.cache' ) || die
 
-	mkdir -p "${tmp_dir}" || die
+	mkdir -p "${tmp_cache_dir}" || die
 
 	if [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ]; then
 		local ghc_tag ghc_archive
@@ -38,7 +38,7 @@ function clean_cache () {
 		ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${ghc_archive}" "${tmp_dir}" || die
+			mv "${HALCYON_CACHE_DIR}/${ghc_archive}" "${tmp_cache_dir}" || die
 		fi
 	fi
 
@@ -48,7 +48,7 @@ function clean_cache () {
 		cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${cabal_archive}" "${tmp_dir}" || die
+			mv "${HALCYON_CACHE_DIR}/${cabal_archive}" "${tmp_cache_dir}" || die
 		fi
 	fi
 
@@ -58,7 +58,7 @@ function clean_cache () {
 		sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${tmp_dir}" || die
+			mv "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${tmp_cache_dir}" || die
 		fi
 	fi
 
@@ -68,12 +68,12 @@ function clean_cache () {
 		app_archive=$( echo_app_archive "${app_tag}" ) || die
 
 		if [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_dir}" || die
+			mv "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_cache_dir}" || die
 		fi
 	fi
 
 	rm -rf "${HALCYON_CACHE_DIR}" || die
-	mv "${tmp_dir}" "${HALCYON_CACHE_DIR}" || die
+	mv "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" || die
 
 	if has_vars HALCYON_INTERNAL_OLD_CACHE_DIR && [ -d "${HALCYON_INTERNAL_OLD_CACHE_DIR}" ]; then
 		log 'Examining cache changes'

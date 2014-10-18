@@ -427,11 +427,11 @@ function build_cabal () {
 	local cabal_tag app_dir
 	expect_args cabal_tag app_dir -- "$@"
 
-	local cabal_version original_url original_archive tmp_dir
+	local cabal_version original_url original_archive tmp_build_dir
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	original_url=$( echo_cabal_original_url "${cabal_version}" ) || die
 	original_archive=$( basename "${original_url}" ) || die
-	tmp_dir=$( echo_tmp_dir_name 'halcyon.cabal' ) || die
+	tmp_build_dir=$( echo_tmp_dir_name 'halcyon.cabal' ) || die
 
 	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_CABAL )); then
 		log 'Starting to build Cabal layer (forced)'
@@ -440,13 +440,13 @@ function build_cabal () {
 	fi
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${original_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"
+		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}"
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
+		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" || die
 
 		transfer_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
-			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}"; then
+			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" || die
 			die 'Cannot extract original archive'
 		fi
 	fi
@@ -457,7 +457,7 @@ function build_cabal () {
 
 	if [ -f "${app_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
 		log 'Running Cabal pre-build hook'
-		( "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_build_dir}/cabal-install-${cabal_version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	fi
@@ -469,7 +469,7 @@ function build_cabal () {
 	case "${ghc_version}-${cabal_version}" in
 	'7.8.'*'-1.20.0.'*)
 		(
-			cd "${tmp_dir}/cabal-install-${cabal_version}" || die
+			cd "${tmp_build_dir}/cabal-install-${cabal_version}" || die
 			patch -s <<-EOF
 				--- a/bootstrap.sh
 				+++ b/bootstrap.sh
@@ -482,7 +482,7 @@ EOF
 		) || die
 		;;
 	*)
-		rm -rf "${tmp_dir}" || die
+		rm -rf "${tmp_build_dir}" || die
 		die "Unexpected Cabal and GHC combination: ${cabal_version} and ${ghc_version}"
 	esac
 
@@ -491,7 +491,7 @@ EOF
 
 	if ! (
 		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
-		cd "${tmp_dir}/cabal-install-${cabal_version}" &&
+		cd "${tmp_build_dir}/cabal-install-${cabal_version}" &&
 		quote_quietly "${HALCYON_QUIET}" ./bootstrap.sh --no-doc
 	); then
 		die 'Failed to bootstrap Cabal'
@@ -504,14 +504,14 @@ EOF
 
 	if [ -f "${app_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
 		log 'Running Cabal post-build hook'
-		( "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_build_dir}/cabal-install-${cabal_version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	fi
 
 	echo "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
-	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${tmp_dir}" || die
+	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${tmp_build_dir}" || die
 
 	local cabal_size
 	cabal_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
@@ -933,14 +933,14 @@ function cabal_install_hygienically () {
 	expect_args install_dir package_name -- "$@"
 	shift 2
 
-	local tmp_dir
-	tmp_dir=$( echo_tmp_dir_name 'halcyon.hygienic-cabal' ) || die
+	local tmp_install_dir
+	tmp_install_dir=$( echo_tmp_dir_name 'halcyon.hygienic-cabal' ) || die
 
-	mkdir -p "${tmp_dir}" || die
+	mkdir -p "${tmp_install_dir}" || die
 
 	local package_dirname
 	if ! package_dirname=$(
-		cabal_do "${tmp_dir}" unpack "${package_name}" |
+		cabal_do "${tmp_install_dir}" unpack "${package_name}" |
 			filter_last |
 			match_exactly_one |
 			sed 's:^Unpacking to \(.*\)/$:\1:'
@@ -955,8 +955,8 @@ function cabal_install_hygienically () {
 	fi
 
 	local tmp_sandbox_dir tmp_app_dir
-	tmp_sandbox_dir="${tmp_dir}/.cabal-sandbox"
-	tmp_app_dir="${tmp_dir}/${package_dirname}"
+	tmp_sandbox_dir="${tmp_install_dir}/.cabal-sandbox"
+	tmp_app_dir="${tmp_install_dir}/${package_dirname}"
 
 	cabal_create_sandbox "${tmp_sandbox_dir}" || die
 	cabal_install_deps "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
@@ -966,5 +966,5 @@ function cabal_install_hygienically () {
 
 	log "Installed ${package_dirname}"
 
-	rm -rf "${tmp_dir}" || die
+	rm -rf "${tmp_install_dir}" || die
 }

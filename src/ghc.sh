@@ -368,11 +368,11 @@ function build_ghc () {
 	local ghc_tag app_dir
 	expect_args ghc_tag app_dir -- "$@"
 
-	local ghc_version original_url original_archive tmp_dir
+	local ghc_version original_url original_archive tmp_build_dir
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
 	original_archive=$( basename "${original_url}" ) || die
-	tmp_dir=$( echo_tmp_dir_name 'halcyon.ghc' ) || die
+	tmp_build_dir=$( echo_tmp_dir_name 'halcyon.ghc' ) || die
 
 	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_GHC )); then
 		log 'Starting to build GHC layer (forced)'
@@ -381,20 +381,20 @@ function build_ghc () {
 	fi
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${original_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"
+		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}"
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
+		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" || die
 
 		transfer_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}"; then
-			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_dir}" || die
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}"; then
+			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" || die
 			die 'Cannot extract original archive'
 		fi
 	fi
 
 	if [ -f "${app_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
 		log 'Running GHC pre-build hook'
-		( "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_build_dir}/ghc-${ghc-version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	fi
@@ -402,7 +402,7 @@ function build_ghc () {
 	log 'Installing GHC'
 
 	if ! (
-		cd "${tmp_dir}/ghc-${ghc_version}" &&
+		cd "${tmp_build_dir}/ghc-${ghc_version}" &&
 		quote_quietly "${HALCYON_QUIET}" ./configure --prefix="${HALCYON_DIR}/ghc" &&
 		quote_quietly "${HALCYON_QUIET}" make install
 	); then
@@ -411,14 +411,14 @@ function build_ghc () {
 
 	if [ -f "${app_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
 		log 'Running GHC post-build hook'
-		( "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_build_dir}/ghc-${ghc-version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	fi
 
 	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
-	rm -rf "${tmp_dir}" || die
+	rm -rf "${tmp_build_dir}" || die
 
 	local ghc_size
 	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
