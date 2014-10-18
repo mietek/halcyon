@@ -3,11 +3,6 @@ function hash_constraints () {
 }
 
 
-function echo_tmp_constraints_config () {
-	mktemp -u '/tmp/halcyon-constraints.cabal.config.XXXXXXXXXX'
-}
-
-
 function echo_constraints () {
 	awk 'BEGIN { printf "constraints:"; separator = " " }
 		!/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
@@ -23,8 +18,8 @@ function echo_constraints_difference () {
 	new_constraints_hash=$( hash_constraints <<<"${new_constraints}" ) || die
 
 	local tmp_old_config tmp_new_config
-	tmp_old_config=$( echo_tmp_constraints_config ) || die
-	tmp_new_config=$( echo_tmp_constraints_config ) || die
+	tmp_old_config=$( echo_tmp_file_name 'halcyon.old-config' ) || die
+	tmp_new_config=$( echo_tmp_file_name 'halcyon.new-config' ) || die
 
 	echo_constraints <<<"${old_constraints}" >"${tmp_old_config}" || die
 	echo_constraints <<<"${new_constraints}" >"${tmp_new_config}" || die

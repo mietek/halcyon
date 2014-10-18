@@ -215,11 +215,6 @@ function echo_partially_matched_sandbox_config_pattern () {
 }
 
 
-function echo_tmp_sandbox_config () {
-	mktemp -u '/tmp/halcyon-sandbox.cabal.config.XXXXXXXXXX'
-}
-
-
 function determine_sandbox_constraints () {
 	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 

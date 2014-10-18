@@ -209,11 +209,6 @@ function echo_updated_cabal_archive_timestamp () {
 }
 
 
-function echo_tmp_cabal_dir () {
-	mktemp -du '/tmp/halcyon-cabal.XXXXXXXXXX'
-}
-
-
 function determine_cabal_version () {
 	log_begin 'Determining Cabal version...'
 
@@ -436,7 +431,7 @@ function build_cabal () {
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	original_url=$( echo_cabal_original_url "${cabal_version}" ) || die
 	original_archive=$( basename "${original_url}" ) || die
-	tmp_dir=$( echo_tmp_cabal_dir ) || die
+	tmp_dir=$( echo_tmp_dir_name 'halcyon.cabal' ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_CABAL} )); then
 		log 'Starting to build Cabal layer (forced)'
@@ -802,11 +797,11 @@ function sandboxed_cabal_do () {
 	# for a config file.
 	# https://github.com/haskell/cabal/issues/1915
 
-	local saved_config
-	saved_config=''
+	local tmp_saved_config
+	tmp_saved_config=''
 	if [ -f "${sandbox_dir}/cabal.config" ]; then
-		saved_config=$( echo_tmp_sandbox_config ) || die
-		mv "${sandbox_dir}/cabal.config" "${saved_config}" || die
+		tmp_saved_config=$( echo_tmp_file_name 'halcyon.saved-config' ) || die
+		mv "${sandbox_dir}/cabal.config" "${tmp_saved_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
 		cp "${work_dir}/cabal.config" "${sandbox_dir}/cabal.config" || die
@@ -822,8 +817,8 @@ function sandboxed_cabal_do () {
 	fi
 
 	rm -f "${sandbox_dir}/cabal.config" || die
-	if [ -n "${saved_config}" ]; then
-		mv "${saved_config}" "${sandbox_dir}/cabal.config" || die
+	if [ -n "${tmp_saved_config}" ]; then
+		mv "${tmp_saved_config}" "${sandbox_dir}/cabal.config" || die
 	fi
 
 	return "${status}"

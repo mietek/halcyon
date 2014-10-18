@@ -97,7 +97,7 @@ function prepare_fake_app_dir () {
 	expect_args app_label -- "$@"
 
 	local app_dir
-	app_dir=$( echo_tmp_app_dir ) || die
+	app_dir=$( echo_tmp_dir_name 'halcyon.fake-app' ) || die
 
 	mkdir -p "${app_dir}" || die
 	echo_fake_app_package "${app_label}" >"${app_dir}/${app_label}.cabal" || die

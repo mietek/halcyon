@@ -168,11 +168,6 @@ function echo_ghc_archive () {
 }
 
 
-function echo_tmp_ghc_dir () {
-	mktemp -du '/tmp/halcyon-ghc.XXXXXXXXXX'
-}
-
-
 function detect_base_version () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc"
@@ -386,7 +381,7 @@ function build_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
 	original_archive=$( basename "${original_url}" ) || die
-	tmp_dir=$( echo_tmp_ghc_dir ) || die
+	tmp_dir=$( echo_tmp_dir_name 'halcyon.ghc' ) || die
 
 	if (( ${HALCYON_FORCE_BUILD_ALL} )) || (( ${HALCYON_FORCE_BUILD_GHC} )); then
 		log 'Starting to build GHC layer (forced)'

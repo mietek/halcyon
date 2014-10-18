@@ -146,21 +146,6 @@ function echo_app_archive () {
 }
 
 
-function echo_tmp_app_dir () {
-	mktemp -du '/tmp/halcyon-app.XXXXXXXXXX'
-}
-
-
-function echo_tmp_old_app_dir () {
-	mktemp -du '/tmp/halcyon-app.old.XXXXXXXXXX'
-}
-
-
-function echo_tmp_app_dist_dir () {
-	mktemp -du '/tmp/halcyon-app.dist.XXXXXXXXXX'
-}
-
-
 function detect_app_package () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -401,8 +386,8 @@ function restore_app () {
 	log 'Restoring app layer'
 
 	local tmp_old_dir tmp_dist_dir
-	tmp_old_dir=$( echo_tmp_old_app_dir ) || die
-	tmp_dist_dir=$( echo_tmp_app_dist_dir ) || die
+	tmp_old_dir=$( echo_tmp_dir_name 'halcyon.old-app' ) || die
+	tmp_dist_dir=$( echo_tmp_dir_name 'halcyon.app-dist' ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
