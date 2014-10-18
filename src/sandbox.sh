@@ -264,11 +264,11 @@ function determine_sandbox_constraints_hash () {
 
 
 function hash_sandbox_hooks () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	local hooks
-	if ! hooks=$( cat "${hooks_dir}/.halcyon-hooks/sandbox-"* 2>'/dev/null' ); then
+	if ! hooks=$( cat "${app_dir}/.halcyon-hooks/sandbox-"* 2>'/dev/null' ); then
 		return 0
 	fi
 
@@ -335,11 +335,11 @@ function validate_sandbox_config_short () {
 
 
 function validate_sandbox_hooks () {
-	local sandbox_hooks_hash hooks_dir
-	expect_args sandbox_hooks_hash hooks_dir -- "$@"
+	local sandbox_hooks_hash app_dir
+	expect_args sandbox_hooks_hash app_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_sandbox_hooks "${hooks_dir}" ) || die
+	candidate_hooks_hash=$( hash_sandbox_hooks "${app_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${sandbox_hooks_hash}" ]; then
 		return 1

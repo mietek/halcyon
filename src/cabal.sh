@@ -233,11 +233,11 @@ function determine_cabal_version () {
 
 
 function hash_cabal_hooks () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	local hooks
-	if ! hooks=$( cat "${hooks_dir}/.halcyon-hooks/cabal-"* 2>'/dev/null' ); then
+	if ! hooks=$( cat "${app_dir}/.halcyon-hooks/cabal-"* 2>'/dev/null' ); then
 		return 0
 	fi
 
@@ -278,11 +278,11 @@ function validate_cabal_tag () {
 
 
 function validate_cabal_hooks () {
-	local cabal_hooks_hash hooks_dir
-	expect_args cabal_hooks_hash hooks_dir -- "$@"
+	local cabal_hooks_hash app_dir
+	expect_args cabal_hooks_hash app_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_cabal_hooks "${hooks_dir}" ) || die
+	candidate_hooks_hash=$( hash_cabal_hooks "${app_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${cabal_hooks_hash}" ]; then
 		return 1

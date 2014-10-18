@@ -222,11 +222,11 @@ function determine_ghc_version () {
 
 
 function hash_ghc_hooks () {
-	local hooks_dir
-	expect_args hooks_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 
 	local hooks
-	if ! hooks=$( cat "${hooks_dir}/.halcyon-hooks/ghc-"* 2>'/dev/null' ); then
+	if ! hooks=$( cat "${app_dir}/.halcyon-hooks/ghc-"* 2>'/dev/null' ); then
 		return 0
 	fi
 
@@ -267,11 +267,11 @@ function validate_ghc_tag () {
 
 
 function validate_ghc_hooks () {
-	local ghc_hooks_hash hooks_dir
-	expect_args ghc_hooks_hash hooks_dir -- "$@"
+	local ghc_hooks_hash app_dir
+	expect_args ghc_hooks_hash app_dir -- "$@"
 
 	local candidate_hooks_hash
-	candidate_hooks_hash=$( hash_ghc_hooks "${hooks_dir}" ) || die
+	candidate_hooks_hash=$( hash_ghc_hooks "${app_dir}" ) || die
 
 	if [ "${candidate_hooks_hash}" != "${ghc_hooks_hash}" ]; then
 		return 1
