@@ -171,6 +171,7 @@ function detect_app_name () {
 	if ! app_name=$(
 		detect_app_package "${app_dir}" |
 		awk '/^ *[Nn]ame:/ { print $2 }' |
+		tr -d '\r' |
 		match_exactly_one
 	); then
 		die 'Expected exactly one name in app package description'
@@ -188,6 +189,7 @@ function detect_app_version () {
 	if ! app_version=$(
 		detect_app_package "${app_dir}" |
 		awk '/^ *[Vv]ersion:/ { print $2 }' |
+		tr -d '\r' |
 		match_exactly_one
 	); then
 		die 'Expected exactly one version in app package description'
@@ -205,6 +207,7 @@ function detect_app_executable () {
 	if ! app_executable=$(
 		detect_app_package "${app_dir}" |
 		awk '/^ *[Ee]xecutable / { print $2 }' |
+		tr -d '\r' |
 		match_exactly_one
 	); then
 		die 'Expected exactly one executable in app package description'

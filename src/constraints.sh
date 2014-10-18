@@ -34,6 +34,7 @@ function echo_constraints_difference () {
 
 function read_constraints () {
 	awk '/^ *[Cc]onstraints:/, !/[:,]/ { print }' |
+		tr -d '\r' |
 		sed 's/[Cc]onstraints://;s/[, ]//g;s/==/ /;/^$/d'
 }
 
