@@ -38,6 +38,9 @@ function set_default_vars () {
 	export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
 	export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 
+	export HALCYON_NO_GHC="${HALCYON_NO_GHC:-0}"
+	export HALCYON_NO_CABAL="${HALCYON_NO_CABAL:-0}"
+	export HALCYON_NO_SANDBOX="${HALCYON_NO_SANDBOX:-0}"
 	export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
@@ -108,7 +111,7 @@ function prepare_fake_app_dir () {
 
 
 function halcyon_install () {
-	expect_vars HALCYON_NO_APP
+	expect_vars HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX HALCYON_NO_APP
 
 	while (( $# )); do
 		case "$1" in
@@ -146,6 +149,12 @@ function halcyon_install () {
 		'--force-build-app')
 			export HALCYON_FORCE_BUILD_APP=1;;
 
+		'--no-ghc')
+			export HALCYON_NO_GHC=1;;
+		'--no-cabal')
+			export HALCYON_NO_CABAL=1;;
+		'--no-sandbox')
+			export HALCYON_NO_SANDBOX=1;;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
 		'--no-build')
@@ -185,18 +194,24 @@ function halcyon_install () {
 	prepare_cache || die
 	log
 
-	install_ghc "${app_dir}" || return 1
-	log
+	if ! (( ${HALCYON_NO_GHC} )); then
+		install_ghc "${app_dir}" || return 1
+		log
+	fi
 
-	install_cabal "${app_dir}" || return 1
-	log
+	if ! (( ${HALCYON_NO_CABAL} )); then
+		install_cabal "${app_dir}" || return 1
+		log
+	fi
 
 	if (( ${fake_app} )); then
 		app_dir=$( prepare_fake_app_dir "${app_label}" ) || die
 	fi
 
-	install_sandbox "${app_dir}" || return 1
-	log
+	if ! (( ${HALCYON_NO_SANDBOX} )); then
+		install_sandbox "${app_dir}" || return 1
+		log
+	fi
 
 	if (( ${fake_app} )); then
 		rm -rf "${app_dir}" || die
