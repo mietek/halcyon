@@ -82,7 +82,7 @@ function echo_ghc_version_from_base_version () {
 	'4.6.0.0')
 		echo '7.6.1';;
 	*)
-		die "Unexpected base version: ${base_version}"
+		die "Unexpected base package version: ${base_version}"
 	esac
 }
 
@@ -208,7 +208,8 @@ function determine_ghc_version () {
 
 		log_end "${ghc_version} (default)"
 		if ! (( "${HALCYON_NO_WARN_CONSTRAINTS}" )); then
-			log_warning 'Expected cabal.config with explicit constraints'
+			log_warning 'Using newest available version of GHC'
+			log_indent 'Expected cabal.config with explicit constraints'
 		fi
 	fi
 

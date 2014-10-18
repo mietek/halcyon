@@ -58,7 +58,7 @@ function filter_valid_constraints () {
 	done
 
 	if [ -z "${constraints_A[base]:+_}" ]; then
-		die 'Expected base constraint'
+		die 'Expected base package constraint'
 	fi
 }
 
@@ -80,12 +80,12 @@ function score_constraints () {
 		local version
 		version="${constraints_A[${candidate_package}]:-}"
 		if [ -z "${version}" ]; then
-			log_indent "Ignoring ${description} as ${candidate_package} is not needed"
+			log_indent "Cannot use ${description} as ${candidate_package} is not needed"
 			echo 0
 			return 0
 		fi
 		if [ "${candidate_version}" != "${version}" ]; then
-			log_indent "Ignoring ${description} as ${candidate_package}-${version} is needed and not ${candidate_version}"
+			log_indent "Cannot use ${description} as ${candidate_package}-${candidate_version} is not ${version}"
 			echo 0
 			return 0
 		fi

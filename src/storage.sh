@@ -18,7 +18,7 @@ function expect_storage () {
 		log 'Using public storage'
 	else
 		if (( ${HALCYON_PUBLIC} )); then
-			log_warning 'Cannot use private and public storage'
+			log_warning 'Cannot use both private and public storage'
 			log 'Using private storage'
 		fi
 	fi

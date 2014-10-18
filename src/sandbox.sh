@@ -230,7 +230,8 @@ function determine_sandbox_constraints () {
 	else
 		sandbox_constraints=$( cabal_freeze_implicit_constraints "${app_dir}" ) || die
 		if ! (( ${HALCYON_NO_WARN_CONSTRAINTS} )); then
-			log_warning 'Expected cabal.config with explicit constraints'
+			log_warning 'Using newest available versions of all packages'
+			log_indent 'Expected cabal.config with explicit constraints'
 			log
 			help_add_constraints "${sandbox_constraints}"
 			log
@@ -434,9 +435,10 @@ function build_sandbox () {
 	actual_constraints_hash=$( hash_constraints <<<"${actual_constraints}" ) || die
 
 	if [ "${actual_constraints_hash}" != "${sandbox_constraints_hash}" ]; then
-		log_warning 'Unexpected constraints difference:'
+		log_warning 'Unexpected constraints difference'
+		log_indent 'Please report this on https://github.com/mietek/halcyon/issues/1'
 		echo_constraints_difference "${sandbox_constraints}" "${actual_constraints}" | quote
-		log_indent 'Please report this as a comment on https://github.com/mietek/halcyon/issues/1'
+		log
 	fi
 }
 

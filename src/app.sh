@@ -156,7 +156,7 @@ function detect_app_package () {
 		find_spaceless_recursively "${app_dir}" -maxdepth 1 -name '*.cabal' |
 		match_exactly_one
 	); then
-		die 'Expected exactly one app package'
+		die 'Expected exactly one app package description'
 	fi
 
 	cat "${app_dir}/${package_file}"
@@ -173,7 +173,7 @@ function detect_app_name () {
 		awk '/^ *[Nn]ame:/ { print $2 }' |
 		match_exactly_one
 	); then
-		die 'Expected exactly one name in app package'
+		die 'Expected exactly one name in app package description'
 	fi
 
 	echo "${app_name}"
@@ -190,7 +190,7 @@ function detect_app_version () {
 		awk '/^ *[Vv]ersion:/ { print $2 }' |
 		match_exactly_one
 	); then
-		die 'Expected exactly one version in app package'
+		die 'Expected exactly one version in app package description'
 	fi
 
 	echo "${app_version}"
@@ -207,7 +207,7 @@ function detect_app_executable () {
 		awk '/^ *[Ee]xecutable / { print $2 }' |
 		match_exactly_one
 	); then
-		die 'Expected exactly one executable in app package'
+		die 'Expected exactly one executable in app package description'
 	fi
 
 	echo "${app_executable}"
