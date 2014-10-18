@@ -393,11 +393,11 @@ function build_sandbox () {
 	if ! [ -d "${HALCYON_DIR}/sandbox" ]; then
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
 
-		if [ -f "${app_dir}/.halcyon-magic/sandbox-create-hook" ]; then
-			log 'Running sandbox create hook'
-			( "${app_dir}/.halcyon-magic/sandbox-create-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
+		if [ -f "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" ]; then
+			log 'Running sandbox post-create hook'
+			( "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
 			mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
-			cp "${app_dir}/.halcyon-magic/sandbox-create-hook" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
+			cp "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		fi
 	fi
 

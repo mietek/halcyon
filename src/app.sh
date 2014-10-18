@@ -517,9 +517,9 @@ function install_app () {
 	rm -rf "${HALCYON_DIR}/app"
 	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
-	if [ -f "${app_dir}/.halcyon-magic/app-install-hook" ]; then
-		log 'Running app install hook'
-		( "${app_dir}/.halcyon-magic/app-install-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+	if [ -f "${app_dir}/.halcyon-magic/app-postinstall-hook" ]; then
+		log 'Running app post-install hook'
+		( "${app_dir}/.halcyon-magic/app-postinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
 	fi
 
 	echo "${app_tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
