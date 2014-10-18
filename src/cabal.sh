@@ -887,17 +887,6 @@ function cabal_create_sandbox () {
 # https://github.com/haskell/cabal/issues/779
 
 
-function cabal_install () {
-	expect_vars HALCYON_QUIET
-
-	local sandbox_dir app_dir
-	expect_args sandbox_dir app_dir -- "$@"
-	shift 2
-
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install "$@" || die
-}
-
-
 function cabal_install_deps () {
 	expect_vars HALCYON_QUIET
 
@@ -936,4 +925,46 @@ function cabal_copy_app () {
 	expect_args sandbox_dir app_dir -- "$@"
 
 	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
+}
+
+
+function cabal_install_hygienically () {
+	local install_dir package_name
+	expect_args install_dir package_name -- "$@"
+	shift 2
+
+	local tmp_dir
+	tmp_dir=$( echo_tmp_dir_name 'halcyon.hygienic-cabal' ) || die
+
+	mkdir -p "${tmp_dir}" || die
+
+	local package_dirname
+	if ! package_dirname=$(
+		cabal_do "${tmp_dir}" unpack "${package_name}" |
+			filter_last |
+			match_exactly_one |
+			sed 's:^Unpacking to \(.*\)/$:\1:'
+	); then
+		die "Cannot install ${package_name}"
+	fi
+
+	log "Installing ${package_dirname}"
+	if [ "${package_dirname}" != "${package_name}" ]; then
+		log_warning "Using newest available version of ${package_name}"
+		log_indent 'Expected package name with explicit version'
+	fi
+
+	local tmp_sandbox_dir tmp_app_dir
+	tmp_sandbox_dir="${tmp_dir}/.cabal-sandbox"
+	tmp_app_dir="${tmp_dir}/${package_dirname}"
+
+	cabal_create_sandbox "${tmp_sandbox_dir}" || die
+	cabal_install_deps "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
+	cabal_configure_app "${tmp_sandbox_dir}" "${tmp_app_dir}" --prefix="${install_dir}" "$@" || die
+	cabal_build_app "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
+	cabal_copy_app "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
+
+	log "Installed ${package_dirname}"
+
+	rm -rf "${tmp_dir}" || die
 }
