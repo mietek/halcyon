@@ -20,15 +20,6 @@ To learn more, see the [full list of examples](http://halcyon.sh/examples/), and
 Interested in deploying Haskell web applications?  Try [_Haskell on Heroku_](http://haskellonheroku.com/).
 
 
-### Internals
-
-For an in-depth discussion of Halcyon internals, see the [programmer’s reference](http://halcyon.sh/reference/).
-
-Halcyon is built with [_bashmenot_](http://bashmenot.mietek.io/), a library of functions for safer shell scripting in [GNU _bash_](http://gnu.org/software/bash/).
-
-Additional information is available in the [_bashmenot_ programmer’s reference](http://bashmenot.mietek.io/reference/).
-
-
 ### Installation
 
 ```
@@ -40,6 +31,12 @@ $ git clone --depth=1 https://github.com/mietek/bashmenot.git halcyon/lib
 
 ### Dependencies
 
+Currently, Halcyon supports:
+
+- Ubuntu [10.04 LTS](http://releases.ubuntu.com/10.04/), [12.04 LTS](http://releases.ubuntu.com/12.04/), and [14.04 LTS](http://releases.ubuntu.com/14.04/) (64-bit)
+- GHC [7.6.1](http://www.haskell.org/ghc/download_ghc_7_6_1), [7.6.3](http://www.haskell.org/ghc/download_ghc_7_6_3), [7.8.2](http://www.haskell.org/ghc/download_ghc_7_8_2), and [7.8.3](http://www.haskell.org/ghc/download_ghc_7_8_3)
+- _cabal-install_ [1.20.0.0](http://www.haskell.org/cabal/download.html) and newer
+
 Halcyon requires:
 
 - [GNU _bash_](http://gnu.org/software/bash/) 4 or newer
@@ -49,11 +46,14 @@ Halcyon requires:
 - [OpenSSL](https://www.openssl.org/)
 - [_bashmenot_](http://bashmenot.mietek.io/)
 
-Currently, Halcyon supports:
 
-- Ubuntu [10.04 LTS](http://releases.ubuntu.com/10.04/), [12.04 LTS](http://releases.ubuntu.com/12.04/), and [14.04 LTS](http://releases.ubuntu.com/14.04/) (64-bit)
-- GHC [7.6.1](http://www.haskell.org/ghc/download_ghc_7_6_1), [7.6.3](http://www.haskell.org/ghc/download_ghc_7_6_3), [7.8.2](http://www.haskell.org/ghc/download_ghc_7_8_2), and [7.8.3](http://www.haskell.org/ghc/download_ghc_7_8_3)
-- _cabal-install_ [1.20.0.0](http://www.haskell.org/cabal/download.html) and newer
+### Internals
+
+For an in-depth discussion of Halcyon internals, see the [programmer’s reference](http://halcyon.sh/reference/).
+
+Halcyon is built with [_bashmenot_](http://bashmenot.mietek.io/), a library of functions for safer shell scripting in [GNU _bash_](http://gnu.org/software/bash/).
+
+Additional information is available in the [_bashmenot_ programmer’s reference](http://bashmenot.mietek.io/reference/).
 
 
 ### Bugs
