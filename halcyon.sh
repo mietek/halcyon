@@ -51,16 +51,20 @@ function set_default_vars () {
 
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
 
-	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
-	export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
-	export PATH="${HALCYON_DIR}/sandbox/bin:${PATH}"
-	export PATH="${HALCYON_DIR}/app/bin:${PATH}"
-	export PATH="${HALCYON_TOP_DIR}/bin:${PATH}"
+	if ! (( ${HALCYON_INTERNAL_NO_SET_ENV:-0} )); then
+		export HALCYON_INTERNAL_NO_SET_ENV=1
 
-	export LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LIBRARY_PATH:-}"
-	export LD_LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LD_LIBRARY_PATH:-}"
+		export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
+		export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
+		export PATH="${HALCYON_DIR}/sandbox/bin:${PATH}"
+		export PATH="${HALCYON_DIR}/app/bin:${PATH}"
+		export PATH="${HALCYON_TOP_DIR}/bin:${PATH}"
 
-	export LANG="${LANG:-en_US.UTF-8}"
+		export LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LIBRARY_PATH:-}"
+		export LD_LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LD_LIBRARY_PATH:-}"
+
+		export LANG="${LANG:-en_US.UTF-8}"
+	fi
 }
 
 
