@@ -68,7 +68,7 @@ function echo_ghc_libgmp3_x86_64_original_url () {
 }
 
 
-function echo_ghc_version_from_base_version () {
+function echo_ghc_version_from_base_package_version () {
 	local base_version
 	expect_args base_version -- "$@"
 
@@ -168,15 +168,6 @@ function echo_ghc_archive () {
 }
 
 
-function detect_base_version () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc"
-
-	ghc-pkg list --simple-output |
-		awk -F- 'BEGIN { RS=" " } /base-[0-9\.]+/ { print $2 }'
-}
-
-
 function determine_ghc_version () {
 	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
@@ -199,7 +190,7 @@ function determine_ghc_version () {
 			sed 's/^.* //'
 		) || die
 
-		ghc_version=$( echo_ghc_version_from_base_version "${base_version}" ) || die
+		ghc_version=$( echo_ghc_version_from_base_package_version "${base_version}" ) || die
 
 		log_end "${ghc_version}"
 	else
@@ -607,4 +598,13 @@ function install_ghc () {
 	strip_ghc || die
 	archive_ghc || die
 	activate_ghc || die
+}
+
+
+function detect_base_package_version () {
+	expect_vars HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/ghc"
+
+	ghc-pkg list --simple-output |
+		awk -F- 'BEGIN { RS=" " } /base-[0-9\.]+/ { print $2 }'
 }
