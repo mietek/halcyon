@@ -457,7 +457,7 @@ function build_cabal () {
 
 	if [ -f "${app_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
 		log 'Running Cabal pre-build hook'
-		( "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	fi
@@ -504,7 +504,7 @@ EOF
 
 	if [ -f "${app_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
 		log 'Running Cabal post-build hook'
-		( "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_dir}/cabal-install-${cabal_version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	fi

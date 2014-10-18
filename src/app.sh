@@ -324,7 +324,7 @@ function build_app () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-prebuild-hook" ]; then
 		log 'Running app pre-build hook'
-		( "${app_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
 	fi
 
 	log 'Building app'
@@ -333,7 +333,7 @@ function build_app () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-postbuild-hook" ]; then
 		log 'Running app post-build hook'
-		( "${app_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
 	fi
 
 	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
@@ -504,7 +504,7 @@ function install_app () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-postinstall-hook" ]; then
 		log 'Running app post-install hook'
-		( "${app_dir}/.halcyon-magic/app-postinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/app-postinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
 	fi
 
 	log "App layer installed:"

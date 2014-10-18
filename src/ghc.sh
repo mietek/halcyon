@@ -403,7 +403,7 @@ function build_ghc () {
 
 	if [ -f "${app_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
 		log 'Running GHC pre-build hook'
-		( "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	fi
@@ -420,7 +420,7 @@ function build_ghc () {
 
 	if [ -f "${app_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
 		log 'Running GHC post-build hook'
-		( "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_dir}/ghc-${ghc-version}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	fi

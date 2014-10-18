@@ -386,7 +386,7 @@ function build_sandbox () {
 
 	if ! (( ${extending_sandbox} )) && [ -f "${app_dir}/.halcyon-magic/sandbox-precreate-hook" ]; then
 		log 'Running sandbox pre-create hook'
-		( "${app_dir}/.halcyon-magic/sandbox-precreate-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/sandbox-precreate-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/sandbox-precreate-hook" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	fi
@@ -397,14 +397,14 @@ function build_sandbox () {
 
 	if ! (( ${extending_sandbox} )) && [ -f "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" ]; then
 		log 'Running sandbox post-create hook'
-		( "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/sandbox-postcreate-hook" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	fi
 
 	if [ -f "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'
-		( "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	fi
@@ -417,7 +417,7 @@ function build_sandbox () {
 
 	if [ -f "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
-		( "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) || die
+		( "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_dir}" ) | quote || die
 		mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		cp "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	fi
