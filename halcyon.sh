@@ -171,6 +171,13 @@ function halcyon_install () {
 		'--no-warn-constraints')
 			export HALCYON_NO_WARN_CONSTRAINTS=1;;
 
+		'--recursive')
+			export HALCYON_NO_GHC=1
+			export HALCYON_NO_CABAL=1
+			export HALCYON_NO_MAINTAIN_CACHE=1
+			export HALCYON_NO_WARN_CONSTRAINTS=1
+			;;
+
 		'--quiet')
 			export HALCYON_QUIET=1;;
 
