@@ -173,8 +173,7 @@ function detect_base_version () {
 	expect_existing "${HALCYON_DIR}/ghc"
 
 	ghc-pkg list --simple-output |
-		grep -oE '\bbase-[0-9\.]+\b' |
-		sed 's/^base-//' || die
+		awk -F- 'BEGIN { RS=" " } /base-[0-9\.]+/ { print $2 }'
 }
 
 
