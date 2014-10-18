@@ -416,7 +416,7 @@ function restore_app () {
 	local changes path
 	changes=$(
 		compare_recursively "${tmp_dir}" "${app_dir}" |
-		filter_not_matching '^. (\.halcyon/|\.halcyon-tag|dist$)'
+		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$|dist/)'
 	) || die
 	filter_matching '^= ' <<<"${changes}" |
 		sed 's/^= //' |
