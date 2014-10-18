@@ -208,7 +208,7 @@ function determine_ghc_version () {
 		log_end "${ghc_version} (default)"
 		if ! (( "${HALCYON_NO_WARN_CONSTRAINTS}" )); then
 			log_warning 'Using newest available version of GHC'
-			log_indent 'Expected cabal.config with explicit constraints'
+			log_warning 'Expected cabal.config with explicit constraints'
 		fi
 	fi
 

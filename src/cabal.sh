@@ -951,7 +951,7 @@ function cabal_install_hygienically () {
 	log "Installing ${package_dirname}"
 	if [ "${package_dirname}" != "${package_name}" ]; then
 		log_warning "Using newest available version of ${package_name}"
-		log_indent 'Expected package name with explicit version'
+		log_warning 'Expected package name with explicit version'
 	fi
 
 	local tmp_sandbox_dir tmp_app_dir
