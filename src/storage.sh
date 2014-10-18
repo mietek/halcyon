@@ -99,8 +99,10 @@ function list_layer () {
 		if ! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${src_prefix}" ); then
 			status=1
 		else
-			sort_naturally <<<"${listing}" |
-				quote || die
+			if [ -n "${listing}" ]; then
+				sort_naturally <<<"${listing}" |
+					quote || die
+			fi
 			echo "${listing}"
 		fi
 		return "${status}"
@@ -116,8 +118,10 @@ function list_layer () {
 	if ! listing=$( curl_do "${src_url}" -o >( read_s3_listing_xml ) ); then
 		status=1
 	else
-		sort_naturally <<<"${listing}" |
-			quote || die
+		if [ -n "${listing}" ]; then
+			sort_naturally <<<"${listing}" |
+				quote || die
+		fi
 		echo "${listing}"
 	fi
 	return "${status}"
