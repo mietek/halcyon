@@ -15,7 +15,7 @@ EOF
 
 
 function deploy_local_app () {
-	expect_vars HALCYON_NO_PREPARE_CACHE HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
 
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -37,9 +37,19 @@ function deploy_local_app () {
 		install_cabal "${app_dir}" || return 1
 	fi
 
+	local tmp_protected_sandbox
+	tmp_protected_sandbox=''
+	if [ -f "${HALCYON_DIR}/sandbox" ]; then
+		tmp_protected_sandbox=$( echo_tmp_dir_name 'halcyon.protected-sandbox' ) || die
+		mv "${HALCYON_DIR}/sandbox" "${tmp_protected_sandbox}" || die
+	fi
 	if ! (( HALCYON_NO_SANDBOX )); then
 		(( delimit )) && log || delimit=1
 		install_sandbox "${app_dir}" || return 1
+	fi
+	if [ -n "${tmp_protected_sandbox}" ]; then
+		rm -rf "${HALCYON_DIR}/sandbox" || die
+		mv "${tmp_protected_sandbox}/sandbox" "${HALCYON_DIR}" || die
 	fi
 
 	if ! (( HALCYON_NO_APP )); then

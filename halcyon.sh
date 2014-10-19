@@ -52,6 +52,7 @@ function set_default_vars () {
 	export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 	export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
 
+	export HALCYON_PROTECT_SANDBOX="${HALCYON_PROTECT_SANDBOX:-0}"
 	export HALCYON_INTO_SANDBOX="${HALCYON_INTO_SANDBOX:-0}"
 
 	export HALCYON_QUIET="${HALCYON_QUIET:-0}"
@@ -166,6 +167,8 @@ function halcyon_deploy () {
 		'--no-clean-cache')
 			export HALCYON_NO_CLEAN_CACHE=1;;
 
+		'--protect-sandbox')
+			export HALCYON_PROTECT_SANDBOX=1;;
 		'--into-sandbox')
 			export HALCYON_INTO_SANDBOX=1;;
 
