@@ -182,15 +182,10 @@ function determine_ghc_version () {
 
 		log_end "${ghc_version} (forced)"
 	elif [ -f "${app_dir}/cabal.config" ]; then
-		local base_version
-		base_version=$(
+		ghc_version=$(
 			detect_constraints "${app_dir}" |
-			filter_matching "^base " |
-			match_exactly_one |
-			sed 's/^.* //'
+			echo_ghc_version_from_constraints
 		) || die
-
-		ghc_version=$( echo_ghc_version_from_base_package_version "${base_version}" ) || die
 
 		log_end "${ghc_version}"
 	else
