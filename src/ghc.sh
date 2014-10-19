@@ -222,22 +222,16 @@ function prepare_ghc_libs () {
 	local os
 	os=$( detect_os ) || die
 
+	local libtinfo5 libgmp3 libgmp10 url
+	libtinfo5=''
+	libgmp3=''
+	libgmp10=''
 	case "${os}-ghc-${ghc_version}" in
 	'linux-ubuntu-14.04-x86_64-ghc-7.8.'*)
-		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
-
-		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
-
-		echo_ghc_libgmp10_x86_64_original_url "${ghc_version}" || die
+		libtinfo5='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp10='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		;;
 	'linux-ubuntu-14.04-x86_64-ghc-7.6.'*)
-		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
-
 		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no
 		# .10-flavoured binary distribution of GHC 7.6.*.  However, GHC does not
 		# use the `mpn_bdivmod` function, which is the only difference between
@@ -245,48 +239,46 @@ function prepare_ghc_libs () {
 		# .10 to .3, and use the .3-flavoured binary distribution.
 		# https://github.com/gentoo-haskell/gentoo-haskell/blob/master/dev-lang/ghc/files/ghc-apply-gmp-hack
 
-		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
-		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so.3" || die
-
-		echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" || die
+		libtinfo5='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp3='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-7.8.'*)
-		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp10_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		expect_existing "${libtinfo5_file}" "${libgmp10_file}"
-
-		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-		ln -s "${libgmp10_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
-
-		echo_ghc_libgmp10_x86_64_original_url "${ghc_version}" || die
+		libtinfo5='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp10='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-7.6.'*)
-		libtinfo5_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp3_file='/usr/lib/libgmp.so.3'
-		expect_existing "${libtinfo5_file}" "${libgmp3_file}"
-
-		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-		ln -s "${libgmp3_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
-
-		echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" || die
+		libtinfo5='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp3='/usr/lib/libgmp.so.3'
 		;;
 	'linux-ubuntu-10.04-x86_64-ghc-7.'[68]'.'*)
-		libncurses5_file='/lib/libncurses.so.5'
-		libgmp3_file='/usr/lib/libgmp.so.3'
-		expect_existing "${libncurses5_file}" "${libgmp3_file}"
-
-		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-		ln -s "${libncurses5_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
-		ln -s "${libgmp3_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
-
-		echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" || die
+		libtinfo5='/lib/libncurses.so.5'
+		libgmp3='/usr/lib/libgmp.so.3'
 		;;
 	*)
 		local os_description
 		os_description=$( echo_os_description "${os}" ) || die
 		die "Unexpected GHC and OS combination: ${ghc_version} and ${os_description}"
 	esac
+
+	mkdir -p "${HALCYON_DIR}/ghc/lib" || die
+
+	expect_existing "${libtinfo5}"
+	ln -s "${libtinfo5}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
+	ln -s "${libtinfo5}" "${HALCYON_DIR}/ghc/lib/libtinfo.so" || die
+
+	if [ -n "${libgmp3}" ]; then
+		expect_existing "${libgmp3}"
+		ln -s "${libgmp3}" "${HALCYON_DIR}/ghc/lib/libgmp.so.3" || die
+		ln -s "${libgmp3}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
+		echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" || die
+	elif [ -n "${libgmp10}" ]; then
+		expect_existing "${libgmp10}"
+		ln -s "${libgmp10}" "${HALCYON_DIR}/ghc/lib/libgmp.so.10" || die
+		ln -s "${libgmp10}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
+		echo_ghc_libgmp10_x86_64_original_url "${ghc_version}" || die
+	else
+		die 'Unexpected libgmp version'
+	fi
 }
 
 
