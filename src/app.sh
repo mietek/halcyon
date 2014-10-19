@@ -507,6 +507,11 @@ function install_app () {
 
 	log 'Installing app'
 
+	if [ -f "${app_dir}/.halcyon-magic/app-preinstall-hook" ]; then
+		log 'Running app pre-install hook'
+		( "${app_dir}/.halcyon-magic/app-preinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
+	fi
+
 	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
 	if [ -f "${app_dir}/.halcyon-magic/app-postinstall-hook" ]; then
