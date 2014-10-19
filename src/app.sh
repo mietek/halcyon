@@ -393,7 +393,8 @@ function restore_app () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
-		! validate_app "${app_tag}" "${tmp_old_dir}"
+		! validate_app "${app_tag}" "${tmp_old_dir}" ||
+		! touch -c "${HALCYON_CACHE_DIR}/${app_archive}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" || die
 

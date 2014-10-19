@@ -381,7 +381,8 @@ function build_ghc () {
 	fi
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${original_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}"
+		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" ||
+		! touch -c "${HALCYON_CACHE_DIR}/${original_archive}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" || die
 
@@ -525,7 +526,8 @@ function restore_ghc () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
-		! validate_ghc "${ghc_tag}"
+		! validate_ghc "${ghc_tag}" ||
+		! touch -c "${HALCYON_CACHE_DIR}/${ghc_archive}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 

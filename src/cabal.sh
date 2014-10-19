@@ -440,7 +440,8 @@ function build_cabal () {
 	fi
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${original_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}"
+		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" ||
+		! touch -c "${HALCYON_CACHE_DIR}/${original_archive}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_build_dir}" || die
 
@@ -588,7 +589,8 @@ function restore_cabal () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
-		! validate_cabal "${cabal_tag}"
+		! validate_cabal "${cabal_tag}" ||
+		! touch -c "${HALCYON_CACHE_DIR}/${cabal_archive}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 
@@ -629,7 +631,8 @@ function restore_cached_updated_cabal () {
 	fi
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
-		! validate_updated_cabal "${cabal_tag}"
+		! validate_updated_cabal "${cabal_tag}" ||
+		! touch -c "${HALCYON_CACHE_DIR}/${cabal_archive}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		return 1

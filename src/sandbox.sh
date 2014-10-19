@@ -520,7 +520,8 @@ function restore_sandbox () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
-		! validate_sandbox "${sandbox_tag}"
+		! validate_sandbox "${sandbox_tag}" ||
+		! touch -c "${HALCYON_CACHE_DIR}/${sandbox_archive}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 
@@ -579,7 +580,8 @@ function match_sandbox_tag () {
 		local full_config
 		while read -r full_config; do
 			if ! [ -f "${HALCYON_CACHE_DIR}/${full_config}" ] ||
-				! validate_sandbox_config "${sandbox_constraints_hash}" <"${HALCYON_CACHE_DIR}/${full_config}"
+				! validate_sandbox_config "${sandbox_constraints_hash}" <"${HALCYON_CACHE_DIR}/${full_config}" ||
+				! touch -c "${HALCYON_CACHE_DIR}/${full_config}"
 			then
 				rm -f "${HALCYON_CACHE_DIR}/${full_config}" || die
 
@@ -621,7 +623,8 @@ function match_sandbox_tag () {
 		constraints_hash_short=$( echo_sandbox_config_constraints_hash_short "${partial_config}" ) || die
 
 		if ! [ -f "${HALCYON_CACHE_DIR}/${partial_config}" ] ||
-			! validate_sandbox_config_short "${constraints_hash_short}" <"${HALCYON_CACHE_DIR}/${partial_config}"
+			! validate_sandbox_config_short "${constraints_hash_short}" <"${HALCYON_CACHE_DIR}/${partial_config}" ||
+			! touch -c "${HALCYON_CACHE_DIR}/${partial_config}"
 		then
 			rm -f "${HALCYON_CACHE_DIR}/${partial_config}" || die
 

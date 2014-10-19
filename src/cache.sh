@@ -14,66 +14,41 @@ function prepare_cache () {
 	export HALCYON_INTERNAL_OLD_CACHE_DIR=$( echo_tmp_dir_name 'halcyon.old-cache' ) || die
 	rm -rf "${HALCYON_INTERNAL_OLD_CACHE_DIR}" || die
 
-	mkdir -p "${HALCYON_CACHE_DIR}"
+	mkdir -p "${HALCYON_CACHE_DIR}" || die
 	cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_INTERNAL_OLD_CACHE_DIR}" || die
+	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
 	find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
 		sort_naturally |
 		quote || die
+	touch "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
 }
 
 
 function clean_cache () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
+	expect_existing "${HALCYON_CACHE_DIR}/.halcyon-mark"
 
-	expect_args app_dir -- "$@"
+	local mark_time
+	mark_time=$( echo_file_modification_time "${HALCYON_CACHE_DIR}/.halcyon-mark" ) || die
 
-	local tmp_cache_dir
-	tmp_cache_dir=$( echo_tmp_dir_name 'halcyon.cache' ) || die
+	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/"*'.cabal.config' || die
 
-	mkdir -p "${tmp_cache_dir}" || die
+	local -a files
+	files=( "${HALCYON_CACHE_DIR}/"* )
 
-	if [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ]; then
-		local ghc_tag ghc_archive
-		ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-		ghc_archive=$( echo_ghc_archive "${ghc_tag}" ) || die
-
-		if [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${ghc_archive}" "${tmp_cache_dir}" || die
+	local file
+	for file in "${files[@]}"; do
+		if ! [ -f "${file}" ]; then
+			continue
 		fi
-	fi
 
-	if [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
-		local cabal_tag cabal_archive
-		cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-		cabal_archive=$( echo_cabal_archive "${cabal_tag}" ) || die
+		local file_time
+		file_time=$( echo_file_modification_time "${file}" ) || die
 
-		if [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${cabal_archive}" "${tmp_cache_dir}" || die
+		if (( file_time <= mark_time )); then
+			rm -f "${file}" || die
 		fi
-	fi
-
-	if [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ]; then
-		local sandbox_tag sandbox_archive
-		sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-		sandbox_archive=$( echo_sandbox_archive "${sandbox_tag}" ) || die
-
-		if [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${tmp_cache_dir}" || die
-		fi
-	fi
-
-	if [ -f "${app_dir}/.halcyon-tag" ]; then
-		local app_tag app_archive
-		app_tag=$( <"${app_dir}/.halcyon-tag" ) || die
-		app_archive=$( echo_app_archive "${app_tag}" ) || die
-
-		if [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ]; then
-			mv "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_cache_dir}" || die
-		fi
-	fi
-
-	rm -rf "${HALCYON_CACHE_DIR}" || die
-	mv "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" || die
+	done
 
 	if has_vars HALCYON_INTERNAL_OLD_CACHE_DIR && [ -d "${HALCYON_INTERNAL_OLD_CACHE_DIR}" ]; then
 		log 'Examining cache changes'
