@@ -350,14 +350,12 @@ function restore_app () {
 	expect_existing "${app_dir}"
 	expect_no_existing "${app_dir}/.halcyon-tag"
 
-	local os app_archive
+	local os app_archive tmp_old_dir
 	os=$( echo_app_tag_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
+	tmp_old_dir=$( echo_tmp_dir_name 'halcyon.old-app' ) || die
 
 	log 'Restoring app layer'
-
-	local tmp_old_dir
-	tmp_old_dir=$( echo_tmp_dir_name 'halcyon.old-app' ) || die
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_old_dir}" ||
@@ -425,25 +423,28 @@ function determine_app_magic_hash () {
 }
 
 
-function install_app () {
+function install_app_1 () {
 	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_APP HALCYON_NO_BUILD
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local app_dir
-	expect_args app_dir -- "$@"
+	local app_dir tmp_install_dir
+	expect_args app_dir tmp_install_dir -- "$@"
 
 	if has_vars HALCYON_FORCE_APP_FLAGS; then
 		mkdir -p "${app_dir}/.halcyon-magic" || die
 		echo "${HALCYON_FORCE_APP_FLAGS}" >"${app_dir}/.halcyon-magic/app-flags" || die
 	fi
+	if has_vars HALCYON_FORCE_APP_INSTALL_DIR; then
+		mkdir -p "${app_dir}/.halcyon-magic" || die
+		echo "${HALCYON_FORCE_APP_INSTALL_DIR}" >"${app_dir}/.halcyon-magic/app-install-dir" || die
+	fi
 
-	local ghc_tag sandbox_tag app_label app_magic_hash app_tag app_description
+	local ghc_tag sandbox_tag app_label app_magic_hash app_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	app_label=$( detect_app_label "${app_dir}" ) || die
 	app_magic_hash=$( determine_app_magic_hash "${app_dir}" ) || die
 	app_tag=$( make_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${app_magic_hash}" ) || die
-	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	local restored_app
 	restored_app=0
@@ -469,14 +470,19 @@ function install_app () {
 
 		log 'Configuring app'
 
-		if [ -f "${app_dir}/.halcyon-magic/app-flags" ]; then
-			local app_flags
-			app_flags=$( <"${app_dir}/.halcyon-magic/app-flags" )
-
-			cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${HALCYON_DIR}/app" "${app_flags[@]}" || die
-		else
-			cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${HALCYON_DIR}/app" || die
+		local app_install_dir
+		app_install_dir="${HALCYON_DIR}/app"
+		if [ -f "${app_dir}/.halcyon-magic/app-install-dir" ]; then
+			app_install_dir=$( <"${app_dir}/.halcyon-magic/app-install-dir" ) || die
 		fi
+
+		local -a app_flags
+		app_flags=( --prefix="${app_install_dir}" )
+		if [ -f "${app_dir}/.halcyon-magic/app-flags" ]; then
+			app_flags+=( $( <"${app_dir}/.halcyon-magic/app-flags" ) )
+		fi
+
+		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" "${app_flags[@]}" || die
 	else
 		log 'Using restored app configuration'
 	fi
@@ -501,14 +507,34 @@ function install_app () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-preinstall-hook" ]; then
 		log 'Running app pre-install hook'
-		( "${app_dir}/.halcyon-magic/app-preinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/app-preinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" "${tmp_install_dir}" "${app_install_dir}" ) | quote || die
 	fi
 
-	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${tmp_install_dir}" || die
+}
+
+
+function install_app_2 () {
+	local app_dir tmp_install_dir
+	expect_args app_dir tmp_install_dir -- "$@"
+
+	local ghc_tag sandbox_tag app_tag app_description
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	app_tag=$( <"${app_dir}/.halcyon-tag" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
+
+	local app_install_dir
+	app_install_dir="${HALCYON_DIR}/app"
+	if [ -f "${app_dir}/.halcyon-magic/app-install-dir" ]; then
+		app_install_dir=$( <"${app_dir}/.halcyon-magic/app-install-dir" ) || die
+	fi
+
+	cp -R "${tmp_install_dir}/." "${app_install_dir}" || die
 
 	if [ -f "${app_dir}/.halcyon-magic/app-postinstall-hook" ]; then
 		log 'Running app post-install hook'
-		( "${app_dir}/.halcyon-magic/app-postinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/app-postinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" "${tmp_install_dir}" "${app_install_dir}" ) | quote || die
 	fi
 
 	log "App layer installed:"

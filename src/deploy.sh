@@ -57,22 +57,25 @@ function deploy_layers () {
 		tmp_protected_sandbox=$( echo_tmp_dir_name 'halcyon.protected-sandbox' ) || die
 		mv "${HALCYON_DIR}/sandbox" "${tmp_protected_sandbox}" || die
 	fi
-
 	if ! (( HALCYON_NO_SANDBOX )); then
 		log_space
 		install_sandbox "${app_dir}" || return 1
 	fi
 
+	local tmp_install_dir
+	tmp_install_dir=$( echo_tmp_dir_name 'halcyon.install' ) || die
 	if ! (( HALCYON_NO_APP )); then
 		log_space
-		install_app "${app_dir}" || return 1
+		install_app_1 "${app_dir}" "${tmp_install_dir}" || return 1
 	fi
-
 	if (( HALCYON_PROTECT_SANDBOX )) && [ -n "${tmp_protected_sandbox}" ]; then
 		log 'Uncovering protected sandbox'
 
 		rm -rf "${HALCYON_DIR}/sandbox" || die
 		mv "${tmp_protected_sandbox}/sandbox" "${HALCYON_DIR}" || die
+	fi
+	if ! (( HALCYON_NO_APP )); then
+		install_app_2 "${app_dir}" "${tmp_install_dir}" || return 1
 	fi
 
 	if ! (( HALCYON_NO_CLEAN_CACHE )); then

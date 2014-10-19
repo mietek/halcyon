@@ -40,6 +40,7 @@ function set_default_vars () {
 	export HALCYON_FORCE_SANDBOX_FLAGS="${HALCYON_FORCE_SANDBOX_FLAGS:-}"
 	export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 	export HALCYON_FORCE_APP_FLAGS="${HALCYON_FORCE_APP_FLAGS:-}"
+	export HALCYON_FORCE_APP_INSTALL_DIR="${HALCYON_FORCE_APP_INSTALL_DIR:-}"
 
 	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
@@ -173,6 +174,12 @@ function halcyon_deploy () {
 			export HALCYON_FORCE_APP_FLAGS="${force_app_flags}";;
 		'--force-app-flags='*)
 			export HALCYON_FORCE_APP_FLAGS="${1#*=}";;
+		'--force-app-install-dir')
+			shift
+			expect_args force_app_install_dir -- "$@"
+			export HALCYON_FORCE_APP_INSTALL_DIR="${force_app_install_dir}";;
+		'--force-app-install-dir='*)
+			export HALCYON_FORCE_APP_INSTALL_DIR="${1#*=}";;
 
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
@@ -200,14 +207,14 @@ function halcyon_deploy () {
 		'--protect-sandbox')
 			export HALCYON_PROTECT_SANDBOX=1;;
 		'--into-sandbox')
-			export HALCYON_INTO_SANDBOX=1;;
+			export HALCYON_FORCE_APP_INSTALL_DIR="${HALCYON_DIR}/sandbox";;
 
 		'--recursive')
 			export HALCYON_NO_WARN_CONSTRAINTS=1
 			export HALCYON_NO_PREPARE_CACHE=1
 			export HALCYON_NO_GHC=1
 			export HALCYON_NO_CABAL=1
-			export HALCYON_INTO_SANDBOX=1
+			export HALCYON_PROTECT_SANDBOX=1
 			export HALCYON_NO_CLEAN_CACHE=1
 			;;
 
