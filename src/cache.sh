@@ -15,8 +15,8 @@ function prepare_cache () {
 	rm -rf "${HALCYON_INTERNAL_OLD_CACHE_DIR}" || die
 
 	mkdir -p "${HALCYON_CACHE_DIR}" || die
-	cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_INTERNAL_OLD_CACHE_DIR}" || die
 	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
+	cp -R "${HALCYON_CACHE_DIR}" "${HALCYON_INTERNAL_OLD_CACHE_DIR}" || die
 	find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
 		sort_naturally |
 		quote || die
