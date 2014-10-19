@@ -477,7 +477,14 @@ function install_app () {
 
 		log 'Configuring app'
 
-		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${HALCYON_DIR}/app" || die
+		if [ -f "${app_dir}/.halcyon-magic/app-flags" ]; then
+			local app_flags
+			app_flags=$( <"${app_dir}/.halcyon-magic/app-flags" )
+
+			cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${HALCYON_DIR}/app" "${app_flags[@]}" || die
+		else
+			cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${HALCYON_DIR}/app" || die
+		fi
 	else
 		log 'Using restored app configuration'
 	fi

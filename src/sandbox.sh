@@ -392,6 +392,8 @@ function build_sandbox () {
 	fi
 
 	if ! (( extending_sandbox )) && ! [ -d "${HALCYON_DIR}/sandbox" ]; then
+		log 'Creating sandbox'
+
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
 	fi
 
@@ -411,7 +413,14 @@ function build_sandbox () {
 
 	log 'Building sandbox'
 
-	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+	if [ -f "${app_dir}/.halcyon-magic/sandbox-flags" ]; then
+		local sandbox_flags
+		sandbox_flags=$( <"${app_dir}/.halcyon-magic/sandbox-flags" )
+
+		cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" "${sandbox_flags[@]}" || die
+	else
+		cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+	fi
 
 	echo_constraints <<<"${sandbox_constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-cabal.config" || die
 
