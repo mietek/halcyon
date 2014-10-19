@@ -90,7 +90,7 @@ function score_constraints () {
 			echo 0
 			return 0
 		fi
-		(( score++ ))
+		score=$(( score + 1 ))
 	done
 
 	log_indent "${score}"$'\t'"${description}"
