@@ -372,6 +372,11 @@ function build_cabal () {
 	# NOTE: There is no way to prevent Cabal for creating ${HOME}/.cabal/setup-exe-cache.
 	# https://github.com/haskell/cabal/issues/1242
 
+	if [ -d "${HOME}/.cabal/setup-exe-cache" ]; then
+		rm -rf "${HOME}/.cabal/setup-exe-cache" || die
+		rmdir "${HOME}/.cabal" || true
+	fi
+
 	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
 
 	local cabal_tag app_dir
