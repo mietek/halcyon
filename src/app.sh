@@ -229,19 +229,6 @@ function detect_app_label () {
 }
 
 
-function hash_app_magic () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	local magic
-	if ! magic=$( cat "${app_dir}/.halcyon-magic/app-"* 2>'/dev/null' ); then
-		return 0
-	fi
-
-	openssl sha1 <<<"${magic}" | sed 's/^.* //'
-}
-
-
 function determine_app_magic_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -249,7 +236,7 @@ function determine_app_magic_hash () {
 	log_begin 'Determining app magic hash...'
 
 	local app_magic_hash
-	app_magic_hash=$( hash_app_magic "${app_dir}" ) || die
+	app_magic_hash=$( hash_magic "${app_dir}" 'app-' ) || die
 
 	if [ -z "${app_magic_hash}" ]; then
 		log_end '(none)'
@@ -279,7 +266,7 @@ function validate_app_magic_hash () {
 	expect_args app_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_app_magic "${app_dir}" ) || die
+	candidate_magic_hash=$( hash_magic "${app_dir}" 'app-' ) || die
 
 	if [ "${candidate_magic_hash}" != "${app_magic_hash}" ]; then
 		return 1

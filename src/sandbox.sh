@@ -257,19 +257,6 @@ function determine_sandbox_constraints_hash () {
 }
 
 
-function hash_sandbox_magic () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	local magic
-	if ! magic=$( cat "${app_dir}/.halcyon-magic/sandbox-"* 2>'/dev/null' ); then
-		return 0
-	fi
-
-	openssl sha1 <<<"${magic}" | sed 's/^.* //'
-}
-
-
 function determine_sandbox_magic_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -277,7 +264,7 @@ function determine_sandbox_magic_hash () {
 	log_begin 'Determining sandbox magic hash...'
 
 	local sandbox_magic_hash
-	sandbox_magic_hash=$( hash_sandbox_magic "${app_dir}" ) || die
+	sandbox_magic_hash=$( hash_magic "${app_dir}" 'sandbox-' ) || die
 
 	if [ -z "${sandbox_magic_hash}" ]; then
 		log_end '(none)'
@@ -333,7 +320,7 @@ function validate_sandbox_magic () {
 	expect_args sandbox_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_sandbox_magic "${app_dir}" ) || die
+	candidate_magic_hash=$( hash_magic "${app_dir}" 'sandbox-' ) || die
 
 	if [ "${candidate_magic_hash}" != "${sandbox_magic_hash}" ]; then
 		return 1

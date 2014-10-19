@@ -227,19 +227,6 @@ function determine_cabal_version () {
 }
 
 
-function hash_cabal_magic () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	local magic
-	if ! magic=$( cat "${app_dir}/.halcyon-magic/cabal-"* 2>'/dev/null' ); then
-		return 0
-	fi
-
-	openssl sha1 <<<"${magic}" | sed 's/^.* //'
-}
-
-
 function determine_cabal_magic_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -247,7 +234,7 @@ function determine_cabal_magic_hash () {
 	log_begin 'Determining Cabal magic hash...'
 
 	local cabal_magic_hash
-	cabal_magic_hash=$( hash_cabal_magic "${app_dir}" ) || die
+	cabal_magic_hash=$( hash_magic "${app_dir}" 'cabal-' ) || die
 
 	if [ -z "${cabal_magic_hash}" ]; then
 		log_end '(none)'
@@ -277,7 +264,7 @@ function validate_cabal_magic () {
 	expect_args cabal_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_cabal_magic "${app_dir}" ) || die
+	candidate_magic_hash=$( hash_magic "${app_dir}" 'cabal-' ) || die
 
 	if [ "${candidate_magic_hash}" != "${cabal_magic_hash}" ]; then
 		return 1

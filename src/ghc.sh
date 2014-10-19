@@ -207,19 +207,6 @@ function determine_ghc_version () {
 }
 
 
-function hash_ghc_magic () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	local magic
-	if ! magic=$( cat "${app_dir}/.halcyon-magic/ghc-"* 2>'/dev/null' ); then
-		return 0
-	fi
-
-	openssl sha1 <<<"${magic}" | sed 's/^.* //'
-}
-
-
 function determine_ghc_magic_hash () {
 	local app_dir
 	expect_args app_dir -- "$@"
@@ -227,7 +214,7 @@ function determine_ghc_magic_hash () {
 	log_begin 'Determining GHC magic hash...'
 
 	local ghc_magic_hash
-	ghc_magic_hash=$( hash_ghc_magic "${app_dir}" ) || die
+	ghc_magic_hash=$( hash_magic "${app_dir}" 'ghc-' ) || die
 
 	if [ -z "${ghc_magic_hash}" ]; then
 		log_end '(none)'
@@ -257,7 +244,7 @@ function validate_ghc_magic () {
 	expect_args ghc_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_ghc_magic "${app_dir}" ) || die
+	candidate_magic_hash=$( hash_magic "${app_dir}" 'ghc-' ) || die
 
 	if [ "${candidate_magic_hash}" != "${ghc_magic_hash}" ]; then
 		return 1
