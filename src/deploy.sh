@@ -15,10 +15,10 @@ EOF
 
 
 function log_space () {
-	if (( ${HALCYON_INTERNAL_SPACE:-0} )); then
-		log
-	else
+	if ! (( ${HALCYON_INTERNAL_SPACE:-0} )); then
 		export HALCYON_INTERNAL_SPACE=1
+	else
+		log
 	fi
 }
 
@@ -28,7 +28,7 @@ function reset_space () {
 }
 
 
-function deploy_app () {
+function deploy_layers () {
 	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
 
 	local app_dir
@@ -80,7 +80,7 @@ function deploy_local_app () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	deploy_app "${app_dir}" || return 1
+	deploy_layers "${app_dir}" || return 1
 	reset_space
 }
 
@@ -92,7 +92,7 @@ function deploy_base_package () {
 	expect_args name_or_label -- "$@"
 
 	HALCYON_NO_CABAL=1 HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
-		deploy_app '/dev/null' || return 1
+		deploy_layers '/dev/null' || return 1
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local base_version tmp_app_dir
@@ -108,7 +108,7 @@ function deploy_base_package () {
 	echo_fake_base_package "${base_version}" >"${tmp_app_dir}/halcyon-fake-base.cabal" || die
 
 	HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_APP=1 \
-		deploy_app "${tmp_app_dir}" || return 1
+		deploy_layers "${tmp_app_dir}" || return 1
 
 	rm -rf "${tmp_app_dir}" || die
 	reset_space
@@ -118,51 +118,70 @@ function deploy_base_package () {
 function deploy_remote_app () {
 	expect_vars HALCYON_DIR
 
-	local url_or_name_or_label
-	expect_args url_or_name_or_label -- "$@"
+	local arg
+	expect_args arg -- "$@"
 
 	local tmp_remote_dir
 	tmp_remote_dir=$( echo_tmp_dir_name 'halcyon.remote' ) || die
 
 	mkdir -p "${tmp_remote_dir}" || die
 
-	case "${url_or_name_or_label}" in
+	case "${arg}" in
 	'https://'*);&
 	'ssh://'*);&
 	'git@'*);&
 	'file://'*);&
 	'http://'*);&
 	'git://'*)
-		if ! git clone --depth=1 "${url_or_name_or_label}" "${tmp_remote_dir}"; then
-			die "Cannot install ${url_or_name_or_label}"
+		if ! git clone --depth=1 "${arg}" "${tmp_remote_dir}"; then
+			die "Cannot install ${arg}"
 		fi
-		deploy_app "${tmp_remote_dir}" || return 1
+		deploy_layers "${tmp_remote_dir}" || return 1
 		;;
 	*)
 		HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
-			deploy_app '/dev/null' || return 1
+			deploy_layers '/dev/null' || return 1
 		expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 		local label
 		if ! label=$(
-			cabal_do "${tmp_remote_dir}" unpack "${url_or_name_or_label}" |
+			cabal_do "${tmp_remote_dir}" unpack "${arg}" |
 				filter_last |
 				match_exactly_one |
 				sed 's:^Unpacking to \(.*\)/$:\1:'
 		); then
-			die "Cannot install ${url_or_name_or_label}"
+			die "Cannot install ${arg}"
 		fi
 
-		if [ "${label}" != "${url_or_name_or_label}" ]; then
+		if [ "${label}" != "${arg}" ]; then
 			log_space
-			log_warning "Using newest available version of ${url_or_name_or_label}"
+			log_warning "Using newest available version of ${arg}"
 			log_warning 'Expected package name with explicit version'
 		fi
 
 		HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
-			deploy_app "${tmp_remote_dir}/${label}" || return 1
+			deploy_layers "${tmp_remote_dir}/${label}" || return 1
 	esac
 
 	rm -rf "${tmp_remote_dir}" || die
 	reset_space
+}
+
+
+function deploy_some_app () {
+	local arg
+	expect_args arg -- "$@"
+
+	case "${arg}" in
+	'base');&
+	'base-'[0-9]*)
+		deploy_base_package "${arg}" || return 1
+		;;
+	*)
+		if [ -d "${arg}" ]; then
+			deploy_local_app "${arg%/}" || return 1
+		else
+			deploy_remote_app "${arg}" || return 1
+		fi
+	esac
 }

@@ -74,6 +74,22 @@ function set_default_vars () {
 }
 
 
+function log_deploy_space () {
+	if ! (( ${HALCYON_INTERNAL_DEPLOY_SPACE:-0} )); then
+		export HALCYON_INTERNAL_DEPLOY_SPACE=1
+	else
+		log
+		log_delimiter
+		log
+	fi
+}
+
+
+function reset_deploy_space () {
+	unset HALCYON_INTERNAL_DEPLOY_SPACE
+}
+
+
 function halcyon_deploy () {
 	local -a args
 	while (( $# )); do
@@ -195,32 +211,24 @@ function halcyon_deploy () {
 
 	if ! (( ${#args[@]} )); then
 		deploy_local_app '.' || return 1
+	elif (( ${#args[@]} == 1 )); then
+		deploy_some_app "${args[0]}" || return 1
 	else
-		local count
-		count=0
+		local index
+		index=0
 		for arg in "${args[@]}"; do
-			if (( count )); then
-				log
-				log
-				log_delimiter
-				log
-				log
+			log_deploy_space
+			if ! (( index )); then
+				HALCYON_NO_CLEAN_CACHE=1 \
+					deploy_some_app "${arg}" || return 1
+			elif (( index == ${#args[@]} - 1 )); then
+				HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
+					deploy_some_app "${arg}" || return 1
 			else
-				count=$(( count + 1 ))
+				HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_CLEAN_CACHE=1 \
+					deploy_some_app "${arg}" || return 1
 			fi
-
-			case "${arg}" in
-			'base');&
-			'base-'[0-9]*)
-				deploy_base_package "${arg}" || return 1
-				;;
-			*)
-				if [ -d "${arg}" ]; then
-					deploy_local_app "${arg%/}" || return 1
-				else
-					deploy_remote_app "${arg}" || return 1
-				fi
-			esac
+			index=$(( index + 1 ))
 		done
 	fi
 }
