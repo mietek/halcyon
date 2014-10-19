@@ -214,7 +214,7 @@ function determine_ghc_magic_hash () {
 	log_begin 'Determining GHC magic hash...'
 
 	local ghc_magic_hash
-	ghc_magic_hash=$( hash_magic "${app_dir}" 'ghc-' ) || die
+	ghc_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' ) || die
 
 	if [ -z "${ghc_magic_hash}" ]; then
 		log_end '(none)'
@@ -244,7 +244,7 @@ function validate_ghc_magic () {
 	expect_args ghc_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_magic "${app_dir}" 'ghc-' ) || die
+	candidate_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' ) || die
 
 	if [ "${candidate_magic_hash}" != "${ghc_magic_hash}" ]; then
 		return 1

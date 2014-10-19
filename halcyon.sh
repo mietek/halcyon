@@ -18,36 +18,6 @@ source "${HALCYON_TOP_DIR}/src/app.sh"
 source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
-function hash_magic () {
-	local dir prefix
-	expect_args dir prefix -- "$@"
-
-	local -a files
-	files=( "${dir}/.halcyon-magic/${prefix}"* )
-
-	local -a args
-	args=()
-	local file
-	for file in "${files[@]}"; do
-		if ! [ -f "${file}" ]; then
-			continue
-		fi
-
-		args+=( "<( echo ${file} )" )
-		args+=( "${file}" )
-	done
-
-	if [ -z "${args[@]:+${args[@]}}" ]; then
-		return 0
-	fi
-
-	local magic
-	magic=$( eval 'cat' "${args[@]}" ) || die
-
-	openssl sha1 <<<"${magic}" | sed 's/^.* //' || die
-}
-
-
 function set_default_vars () {
 	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
 

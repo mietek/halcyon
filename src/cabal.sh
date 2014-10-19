@@ -234,7 +234,7 @@ function determine_cabal_magic_hash () {
 	log_begin 'Determining Cabal magic hash...'
 
 	local cabal_magic_hash
-	cabal_magic_hash=$( hash_magic "${app_dir}" 'cabal-' ) || die
+	cabal_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'cabal-*' ) || die
 
 	if [ -z "${cabal_magic_hash}" ]; then
 		log_end '(none)'
@@ -264,7 +264,7 @@ function validate_cabal_magic () {
 	expect_args cabal_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_magic "${app_dir}" 'cabal-' ) || die
+	candidate_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'cabal-*' ) || die
 
 	if [ "${candidate_magic_hash}" != "${cabal_magic_hash}" ]; then
 		return 1

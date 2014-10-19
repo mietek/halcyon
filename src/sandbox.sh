@@ -264,7 +264,7 @@ function determine_sandbox_magic_hash () {
 	log_begin 'Determining sandbox magic hash...'
 
 	local sandbox_magic_hash
-	sandbox_magic_hash=$( hash_magic "${app_dir}" 'sandbox-' ) || die
+	sandbox_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
 
 	if [ -z "${sandbox_magic_hash}" ]; then
 		log_end '(none)'
@@ -320,7 +320,7 @@ function validate_sandbox_magic () {
 	expect_args sandbox_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_magic "${app_dir}" 'sandbox-' ) || die
+	candidate_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
 
 	if [ "${candidate_magic_hash}" != "${sandbox_magic_hash}" ]; then
 		return 1

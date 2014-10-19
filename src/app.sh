@@ -236,7 +236,7 @@ function determine_app_magic_hash () {
 	log_begin 'Determining app magic hash...'
 
 	local app_magic_hash
-	app_magic_hash=$( hash_magic "${app_dir}" 'app-' ) || die
+	app_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'app-*' ) || die
 
 	if [ -z "${app_magic_hash}" ]; then
 		log_end '(none)'
@@ -266,7 +266,7 @@ function validate_app_magic_hash () {
 	expect_args app_magic_hash app_dir -- "$@"
 
 	local candidate_magic_hash
-	candidate_magic_hash=$( hash_magic "${app_dir}" 'app-' ) || die
+	candidate_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'app-*' ) || die
 
 	if [ "${candidate_magic_hash}" != "${app_magic_hash}" ]; then
 		return 1
