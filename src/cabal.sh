@@ -855,7 +855,7 @@ function cabal_update () {
 }
 
 
-function cabal_list_latest_package_version () {
+function cabal_list_newest_package_version () {
 	local package_name
 	expect_args package_name -- "$@"
 
