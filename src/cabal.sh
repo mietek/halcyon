@@ -800,11 +800,11 @@ function sandboxed_cabal_do () {
 	# for a config file.
 	# https://github.com/haskell/cabal/issues/1915
 
-	local tmp_saved_config
-	tmp_saved_config=''
+	local tmp_protected_config
+	tmp_protected_config=''
 	if [ -f "${sandbox_dir}/cabal.config" ]; then
-		tmp_saved_config=$( echo_tmp_file_name 'halcyon.saved-config' ) || die
-		mv "${sandbox_dir}/cabal.config" "${tmp_saved_config}" || die
+		tmp_protected_config=$( echo_tmp_file_name 'halcyon.protected-config' ) || die
+		mv "${sandbox_dir}/cabal.config" "${tmp_protected_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
 		cp "${work_dir}/cabal.config" "${sandbox_dir}/cabal.config" || die
@@ -820,8 +820,8 @@ function sandboxed_cabal_do () {
 	fi
 
 	rm -f "${sandbox_dir}/cabal.config" || die
-	if [ -n "${tmp_saved_config}" ]; then
-		mv "${tmp_saved_config}" "${sandbox_dir}/cabal.config" || die
+	if [ -n "${tmp_protected_config}" ]; then
+		mv "${tmp_protected_config}" "${sandbox_dir}/cabal.config" || die
 	fi
 
 	return "${status}"
