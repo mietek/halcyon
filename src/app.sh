@@ -432,6 +432,11 @@ function install_app () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
+	if has_vars HALCYON_FORCE_APP_FLAGS; then
+		mkdir -p "${app_dir}/.halcyon-magic" || die
+		echo "${HALCYON_FORCE_APP_FLAGS}" >"${app_dir}/.halcyon-magic/app-flags" || die
+	fi
+
 	local ghc_tag sandbox_tag app_label app_magic_hash app_tag app_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die

@@ -777,6 +777,11 @@ function install_sandbox () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
+	if has_vars HALCYON_FORCE_SANDBOX_FLAGS; then
+		mkdir -p "${app_dir}/.halcyon-magic" || die
+		echo "${HALCYON_FORCE_SANDBOX_FLAGS}" >"${app_dir}/.halcyon-magic/sandbox-flags" || die
+	fi
+
 	local ghc_tag sandbox_constraints sandbox_constraints_hash sandbox_magic_hash app_label sandbox_tag sandbox_description
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_constraints=$( determine_sandbox_constraints "${app_dir}" ) || die

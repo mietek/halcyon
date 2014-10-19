@@ -37,7 +37,9 @@ function set_default_vars () {
 	export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
 	export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
 	export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
+	export HALCYON_FORCE_SANDBOX_FLAGS="${HALCYON_FORCE_SANDBOX_FLAGS:-}"
 	export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
+	export HALCYON_FORCE_APP_FLAGS="${HALCYON_FORCE_APP_FLAGS:-}"
 
 	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
@@ -157,8 +159,20 @@ function halcyon_deploy () {
 			export HALCYON_FORCE_UPDATE_CABAL=1;;
 		'--force-build-sandbox')
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
+		'--force-sandbox-flags')
+			shift
+			expect_args force_sandbox_flags -- "$@"
+			export HALCYON_FORCE_SANDBOX_FLAGS="${force_sandbox_flags}";;
+		'--force-sandbox-flags='*)
+			export HALCYON_FORCE_SANDBOX_FLAGS="${1#*=}";;
 		'--force-build-app')
 			export HALCYON_FORCE_BUILD_APP=1;;
+		'--force-app-flags')
+			shift
+			expect_args force_app_flags -- "$@"
+			export HALCYON_FORCE_APP_FLAGS="${force_app_flags}";;
+		'--force-app-flags='*)
+			export HALCYON_FORCE_APP_FLAGS="${1#*=}";;
 
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
