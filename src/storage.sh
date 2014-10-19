@@ -144,3 +144,18 @@ function upload_layer () {
 		fi
 	fi
 }
+
+
+function delete_layer () {
+	local dst_prefix dst_file_name
+	expect_args dst_prefix dst_file_name -- "$@"
+
+	local dst_object
+	dst_object="${dst_prefix:+${dst_prefix}/}${dst_file_name}"
+
+	if has_private_storage; then
+		if ! s3_delete "${HALCYON_S3_BUCKET}" "${dst_object}"; then
+			return 1
+		fi
+	fi
+}

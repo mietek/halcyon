@@ -606,12 +606,34 @@ function restore_updated_cabal () {
 
 	log 'Locating updated Cabal layers'
 
-	local cabal_archive
-	if ! cabal_archive=$(
+	local cabal_archives
+	if ! cabal_archives=$(
 		list_layer "${os}/${archive_prefix}" |
 		sed "s:${os}/::" |
-		match_updated_cabal_archive "${cabal_tag}"
+		match_at_least_one
 	); then
+		log 'Cannot locate any updated Cabal layer archive'
+		return 1
+	fi
+
+	local cabal_archive
+	cabal_archive=$( match_updated_cabal_archive "${cabal_tag}" <<<"${cabal_archives}" ) || true
+
+	if has_private_storage; then
+		local old_archives
+		if old_archives=$(
+			filter_not_matching "^${cabal_archive//./\.}$" <<<"${cabal_archives}" |
+			match_at_least_one
+		); then
+			log 'Cleaning Cabal layer archives'
+
+			while read -r old_archive; do
+				delete_layer "${os}" "${old_archive}" || true
+			done <<<"${old_archives}"
+		fi
+	fi
+
+	if [ -z "${cabal_archive}" ]; then
 		log 'Cannot locate any updated Cabal layer archive'
 		return 1
 	fi
