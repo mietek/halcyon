@@ -892,13 +892,14 @@ function cabal_install_deps () {
 
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
+	shift 2
 
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only "$@" || die
 }
 
 
 function cabal_configure_app () {
-	expect_vars HALCYON_DIR HALCYON_QUIET
+	expect_vars HALCYON_QUIET
 
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
@@ -913,8 +914,9 @@ function cabal_build_app () {
 
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
+	shift 2
 
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build "$@" || die
 }
 
 
@@ -923,48 +925,7 @@ function cabal_copy_app () {
 
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
-
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy || die
-}
-
-
-function cabal_install_hygienically () {
-	local install_dir package_name
-	expect_args install_dir package_name -- "$@"
 	shift 2
 
-	local tmp_install_dir
-	tmp_install_dir=$( echo_tmp_dir_name 'halcyon.hygienic-cabal' ) || die
-
-	mkdir -p "${tmp_install_dir}" || die
-
-	local package_dirname
-	if ! package_dirname=$(
-		cabal_do "${tmp_install_dir}" unpack "${package_name}" |
-			filter_last |
-			match_exactly_one |
-			sed 's:^Unpacking to \(.*\)/$:\1:'
-	); then
-		die "Cannot install ${package_name}"
-	fi
-
-	log "Installing ${package_dirname}"
-	if [ "${package_dirname}" != "${package_name}" ]; then
-		log_warning "Using newest available version of ${package_name}"
-		log_warning 'Expected package name with explicit version'
-	fi
-
-	local tmp_sandbox_dir tmp_app_dir
-	tmp_sandbox_dir="${tmp_install_dir}/.cabal-sandbox"
-	tmp_app_dir="${tmp_install_dir}/${package_dirname}"
-
-	cabal_create_sandbox "${tmp_sandbox_dir}" || die
-	cabal_install_deps "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
-	cabal_configure_app "${tmp_sandbox_dir}" "${tmp_app_dir}" --prefix="${install_dir}" "$@" || die
-	cabal_build_app "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
-	cabal_copy_app "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
-
-	log "Installed ${package_dirname}"
-
-	rm -rf "${tmp_install_dir}" || die
+	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy "$@" || die
 }
