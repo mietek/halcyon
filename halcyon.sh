@@ -196,10 +196,19 @@ function halcyon_deploy () {
 	if ! (( ${#args[@]} )); then
 		deploy_local_app '.' || return 1
 	else
-		local delimit_deploys
-		delimit_deploys=0
+		local count
+		count=0
 		for arg in "${args[@]}"; do
-			(( delimit_deploys )) && log && log || delimit_deploys=1
+			if (( count )); then
+				log
+				log
+				log_delimiter
+				log
+				log
+			else
+				count=$(( count + 1 ))
+			fi
+
 			case "${arg}" in
 			'base');&
 			'base-'[0-9]*)

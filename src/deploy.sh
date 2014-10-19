@@ -14,26 +14,38 @@ EOF
 }
 
 
-function deploy_local_app () {
+function log_space () {
+	if (( ${HALCYON_INTERNAL_SPACE:-0} )); then
+		log
+	else
+		export HALCYON_INTERNAL_SPACE=1
+	fi
+}
+
+
+function reset_space () {
+	unset HALCYON_INTERNAL_SPACE
+}
+
+
+function deploy_app () {
 	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
 
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local delimit
-	delimit=0
 	if ! (( HALCYON_NO_PREPARE_CACHE )); then
-		(( delimit )) && log || delimit=1
+		log_space
 		prepare_cache || die
 	fi
 
 	if ! (( HALCYON_NO_GHC )); then
-		(( delimit )) && log || delimit=1
+		log_space
 		install_ghc "${app_dir}" || return 1
 	fi
 
 	if ! (( HALCYON_NO_CABAL )); then
-		(( delimit )) && log || delimit=1
+		log_space
 		install_cabal "${app_dir}" || return 1
 	fi
 
@@ -44,7 +56,7 @@ function deploy_local_app () {
 		mv "${HALCYON_DIR}/sandbox" "${tmp_protected_sandbox}" || die
 	fi
 	if ! (( HALCYON_NO_SANDBOX )); then
-		(( delimit )) && log || delimit=1
+		log_space
 		install_sandbox "${app_dir}" || return 1
 	fi
 	if [ -n "${tmp_protected_sandbox}" ]; then
@@ -53,14 +65,23 @@ function deploy_local_app () {
 	fi
 
 	if ! (( HALCYON_NO_APP )); then
-		(( delimit )) && log || delimit=1
+		log_space
 		install_app "${app_dir}" || return 1
 	fi
 
 	if ! (( HALCYON_NO_CLEAN_CACHE )); then
-		(( delimit )) && log || delimit=1
+		log_space
 		clean_cache || die
 	fi
+}
+
+
+function deploy_local_app () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	deploy_app "${app_dir}" || return 1
+	reset_space
 }
 
 
@@ -71,7 +92,7 @@ function deploy_base_package () {
 	expect_args name_or_label -- "$@"
 
 	HALCYON_NO_CABAL=1 HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
-		deploy_local_app '/dev/null' || return 1
+		deploy_app '/dev/null' || return 1
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local base_version tmp_app_dir
@@ -87,9 +108,10 @@ function deploy_base_package () {
 	echo_fake_base_package "${base_version}" >"${tmp_app_dir}/halcyon-fake-base.cabal" || die
 
 	HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_APP=1 \
-		deploy_local_app "${tmp_app_dir}" || return 1
+		deploy_app "${tmp_app_dir}" || return 1
 
 	rm -rf "${tmp_app_dir}" || die
+	reset_space
 }
 
 
@@ -114,11 +136,11 @@ function deploy_remote_app () {
 		if ! git clone --depth=1 "${url_or_name_or_label}" "${tmp_remote_dir}"; then
 			die "Cannot install ${url_or_name_or_label}"
 		fi
-		deploy_local_app "${tmp_remote_dir}" || return 1
+		deploy_app "${tmp_remote_dir}" || return 1
 		;;
 	*)
 		HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
-			deploy_local_app '/dev/null' || return 1
+			deploy_app '/dev/null' || return 1
 		expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 		local label
@@ -132,13 +154,15 @@ function deploy_remote_app () {
 		fi
 
 		if [ "${label}" != "${url_or_name_or_label}" ]; then
+			log_space
 			log_warning "Using newest available version of ${url_or_name_or_label}"
 			log_warning 'Expected package name with explicit version'
 		fi
 
 		HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
-			deploy_local_app "${tmp_remote_dir}/${label}" || return 1
+			deploy_app "${tmp_remote_dir}/${label}" || return 1
 	esac
 
 	rm -rf "${tmp_remote_dir}" || die
+	reset_space
 }
