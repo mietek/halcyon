@@ -97,7 +97,7 @@ function deploy_base_package () {
 	local name_or_label
 	expect_args name_or_label -- "$@"
 
-	HALCYON_NO_CABAL=1 HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
+	HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_CABAL=1 HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
 		deploy_layers '/dev/null' || return 1
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
@@ -113,7 +113,7 @@ function deploy_base_package () {
 	mkdir -p "${tmp_app_dir}" || die
 	echo_fake_base_package "${base_version}" >"${tmp_app_dir}/halcyon-fake-base.cabal" || die
 
-	HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_APP=1 \
+	HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_APP=1 \
 		deploy_layers "${tmp_app_dir}" || return 1
 
 	rm -rf "${tmp_app_dir}" || die
@@ -145,7 +145,7 @@ function deploy_remote_app () {
 		deploy_layers "${tmp_remote_dir}" || return 1
 		;;
 	*)
-		HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
+		HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
 			deploy_layers '/dev/null' || return 1
 		expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
@@ -165,7 +165,7 @@ function deploy_remote_app () {
 			log_warning 'Expected package name with explicit version'
 		fi
 
-		HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
+		HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
 			deploy_layers "${tmp_remote_dir}/${label}" || return 1
 	esac
 
