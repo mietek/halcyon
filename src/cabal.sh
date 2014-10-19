@@ -209,43 +209,6 @@ function echo_updated_cabal_archive_timestamp () {
 }
 
 
-function determine_cabal_version () {
-	log_begin 'Determining Cabal version...'
-
-	local cabal_version
-	if has_vars HALCYON_FORCE_CABAL_VERSION; then
-		cabal_version="${HALCYON_FORCE_CABAL_VERSION}"
-
-		log_end "${cabal_version} (forced)"
-	else
-		cabal_version=$( echo_cabal_default_version ) || die
-
-		log_end "${cabal_version} (default)"
-	fi
-
-	echo "${cabal_version}"
-}
-
-
-function determine_cabal_magic_hash () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	log_begin 'Determining Cabal magic hash...'
-
-	local cabal_magic_hash
-	cabal_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'cabal-*' ) || die
-
-	if [ -z "${cabal_magic_hash}" ]; then
-		log_end '(none)'
-	else
-		log_end "${cabal_magic_hash:0:7}"
-	fi
-
-	echo "${cabal_magic_hash}"
-}
-
-
 function validate_cabal_tag () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
@@ -706,6 +669,43 @@ function deactivate_cabal () {
 
 	rm -rf "${HALCYON_DIR}/cabal" "${HOME}/.cabal/config" || die
 	rmdir "${HOME}/.cabal" 2>'/dev/null' || true
+}
+
+
+function determine_cabal_version () {
+	log_begin 'Determining Cabal version...'
+
+	local cabal_version
+	if has_vars HALCYON_FORCE_CABAL_VERSION; then
+		cabal_version="${HALCYON_FORCE_CABAL_VERSION}"
+
+		log_end "${cabal_version} (forced)"
+	else
+		cabal_version=$( echo_cabal_default_version ) || die
+
+		log_end "${cabal_version} (default)"
+	fi
+
+	echo "${cabal_version}"
+}
+
+
+function determine_cabal_magic_hash () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	log_begin 'Determining Cabal magic hash...'
+
+	local cabal_magic_hash
+	cabal_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'cabal-*' ) || die
+
+	if [ -z "${cabal_magic_hash}" ]; then
+		log_end '(none)'
+	else
+		log_end "${cabal_magic_hash:0:7}"
+	fi
+
+	echo "${cabal_magic_hash}"
 }
 
 

@@ -215,67 +215,6 @@ function echo_partially_matched_sandbox_config_pattern () {
 }
 
 
-function determine_sandbox_constraints () {
-	expect_vars HALCYON_NO_WARN_CONSTRAINTS
-
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
-
-	log 'Determining sandbox constraints'
-
-	local sandbox_constraints
-	if [ -f "${app_dir}/cabal.config" ]; then
-		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
-	else
-		sandbox_constraints=$( cabal_freeze_implicit_constraints "${app_dir}" ) || die
-		if ! (( HALCYON_NO_WARN_CONSTRAINTS )); then
-			log_warning 'Using newest available versions of all packages'
-			log_warning 'Expected cabal.config with explicit constraints'
-			log
-			help_add_constraints "${sandbox_constraints}"
-			log
-		fi
-	fi
-
-	echo "${sandbox_constraints}"
-}
-
-
-function determine_sandbox_constraints_hash () {
-	local sandbox_constraints
-	expect_args sandbox_constraints -- "$@"
-
-	log_begin 'Determining sandbox constraints hash...'
-
-	local sandbox_constraints_hash
-	sandbox_constraints_hash=$( hash_constraints <<<"${sandbox_constraints}" ) || die
-
-	log_end "${sandbox_constraints_hash:0:7}"
-
-	echo "${sandbox_constraints_hash}"
-}
-
-
-function determine_sandbox_magic_hash () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	log_begin 'Determining sandbox magic hash...'
-
-	local sandbox_magic_hash
-	sandbox_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
-
-	if [ -z "${sandbox_magic_hash}" ]; then
-		log_end '(none)'
-	else
-		log_end "${sandbox_magic_hash:0:7}"
-	fi
-
-	echo "${sandbox_magic_hash}"
-}
-
-
 function validate_sandbox_tag () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
@@ -767,6 +706,67 @@ function install_matched_sandbox () {
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
+}
+
+
+function determine_sandbox_constraints () {
+	expect_vars HALCYON_NO_WARN_CONSTRAINTS
+
+	local app_dir
+	expect_args app_dir -- "$@"
+	expect_existing "${app_dir}"
+
+	log 'Determining sandbox constraints'
+
+	local sandbox_constraints
+	if [ -f "${app_dir}/cabal.config" ]; then
+		sandbox_constraints=$( detect_constraints "${app_dir}" ) || die
+	else
+		sandbox_constraints=$( cabal_freeze_implicit_constraints "${app_dir}" ) || die
+		if ! (( HALCYON_NO_WARN_CONSTRAINTS )); then
+			log_warning 'Using newest available versions of all packages'
+			log_warning 'Expected cabal.config with explicit constraints'
+			log
+			help_add_constraints "${sandbox_constraints}"
+			log
+		fi
+	fi
+
+	echo "${sandbox_constraints}"
+}
+
+
+function determine_sandbox_constraints_hash () {
+	local sandbox_constraints
+	expect_args sandbox_constraints -- "$@"
+
+	log_begin 'Determining sandbox constraints hash...'
+
+	local sandbox_constraints_hash
+	sandbox_constraints_hash=$( hash_constraints <<<"${sandbox_constraints}" ) || die
+
+	log_end "${sandbox_constraints_hash:0:7}"
+
+	echo "${sandbox_constraints_hash}"
+}
+
+
+function determine_sandbox_magic_hash () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	log_begin 'Determining sandbox magic hash...'
+
+	local sandbox_magic_hash
+	sandbox_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
+
+	if [ -z "${sandbox_magic_hash}" ]; then
+		log_end '(none)'
+	else
+		log_end "${sandbox_magic_hash:0:7}"
+	fi
+
+	echo "${sandbox_magic_hash}"
 }
 
 

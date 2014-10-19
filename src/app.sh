@@ -229,25 +229,6 @@ function detect_app_label () {
 }
 
 
-function determine_app_magic_hash () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	log_begin 'Determining app magic hash...'
-
-	local app_magic_hash
-	app_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'app-*' ) || die
-
-	if [ -z "${app_magic_hash}" ]; then
-		log_end '(none)'
-	else
-		log_end "${app_magic_hash:0:7}"
-	fi
-
-	echo "${app_magic_hash}"
-}
-
-
 function validate_app_tag () {
 	local app_tag
 	expect_args app_tag -- "$@"
@@ -422,6 +403,25 @@ function restore_app () {
 	rm -rf "${app_dir}/dist" || die
 	mv "${tmp_old_dir}/dist" "${app_dir}" || die
 	rm -rf "${tmp_old_dir}" || die
+}
+
+
+function determine_app_magic_hash () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	log_begin 'Determining app magic hash...'
+
+	local app_magic_hash
+	app_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'app-*' ) || die
+
+	if [ -z "${app_magic_hash}" ]; then
+		log_end '(none)'
+	else
+		log_end "${app_magic_hash:0:7}"
+	fi
+
+	echo "${app_magic_hash}"
 }
 
 

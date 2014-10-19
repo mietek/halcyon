@@ -168,59 +168,6 @@ function echo_ghc_archive () {
 }
 
 
-function determine_ghc_version () {
-	expect_vars HALCYON_NO_WARN_CONSTRAINTS
-
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	log_begin 'Determining GHC version...'
-
-	local ghc_version
-	if has_vars HALCYON_FORCE_GHC_VERSION; then
-		ghc_version="${HALCYON_FORCE_GHC_VERSION}"
-
-		log_end "${ghc_version} (forced)"
-	elif [ -f "${app_dir}/cabal.config" ]; then
-		ghc_version=$(
-			detect_constraints "${app_dir}" |
-			echo_ghc_version_from_constraints
-		) || die
-
-		log_end "${ghc_version}"
-	else
-		ghc_version=$( echo_ghc_default_version ) || die
-
-		log_end "${ghc_version} (default)"
-		if ! (( HALCYON_NO_WARN_CONSTRAINTS )); then
-			log_warning 'Using newest available version of GHC'
-			log_warning 'Expected cabal.config with explicit constraints'
-		fi
-	fi
-
-	echo "${ghc_version}"
-}
-
-
-function determine_ghc_magic_hash () {
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	log_begin 'Determining GHC magic hash...'
-
-	local ghc_magic_hash
-	ghc_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' ) || die
-
-	if [ -z "${ghc_magic_hash}" ]; then
-		log_end '(none)'
-	else
-		log_end "${ghc_magic_hash:0:7}"
-	fi
-
-	echo "${ghc_magic_hash}"
-}
-
-
 function validate_ghc_tag () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
@@ -546,6 +493,59 @@ function deactivate_ghc () {
 	expect_vars HALCYON_DIR
 
 	rm -rf "${HALCYON_DIR}/ghc" || die
+}
+
+
+function determine_ghc_version () {
+	expect_vars HALCYON_NO_WARN_CONSTRAINTS
+
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	log_begin 'Determining GHC version...'
+
+	local ghc_version
+	if has_vars HALCYON_FORCE_GHC_VERSION; then
+		ghc_version="${HALCYON_FORCE_GHC_VERSION}"
+
+		log_end "${ghc_version} (forced)"
+	elif [ -f "${app_dir}/cabal.config" ]; then
+		ghc_version=$(
+			detect_constraints "${app_dir}" |
+			echo_ghc_version_from_constraints
+		) || die
+
+		log_end "${ghc_version}"
+	else
+		ghc_version=$( echo_ghc_default_version ) || die
+
+		log_end "${ghc_version} (default)"
+		if ! (( HALCYON_NO_WARN_CONSTRAINTS )); then
+			log_warning 'Using newest available version of GHC'
+			log_warning 'Expected cabal.config with explicit constraints'
+		fi
+	fi
+
+	echo "${ghc_version}"
+}
+
+
+function determine_ghc_magic_hash () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	log_begin 'Determining GHC magic hash...'
+
+	local ghc_magic_hash
+	ghc_magic_hash=$( hash_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' ) || die
+
+	if [ -z "${ghc_magic_hash}" ]; then
+		log_end '(none)'
+	else
+		log_end "${ghc_magic_hash:0:7}"
+	fi
+
+	echo "${ghc_magic_hash}"
 }
 
 
