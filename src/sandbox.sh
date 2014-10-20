@@ -532,7 +532,12 @@ function match_sandbox_tag () {
 				fi
 			fi
 
-			echo "full ${full_config}"
+			local app_label tag
+			app_label=$( echo_sandbox_config_app_label "${full_config}" ) || die
+			tag=$( make_matched_sandbox_tag "${sandbox_tag}" "${sandbox_constraints_hash}" "${app_label}" ) || die
+			log_debug "${tag}"
+
+			echo "full ${tag}"
 			return 0
 		done <<<"${full_configs}"
 
