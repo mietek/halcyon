@@ -353,7 +353,7 @@ function restore_app () {
 	local os app_archive tmp_old_dir
 	os=$( echo_app_tag_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive "${app_tag}" ) || die
-	tmp_old_dir=$( echo_tmp_dir_name 'halcyon.old-app' ) || die
+	tmp_old_dir=$( echo_tmp_dir_name 'halcyon.restore_app' ) || die
 
 	log 'Restoring app layer'
 

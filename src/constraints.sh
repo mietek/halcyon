@@ -13,8 +13,8 @@ function echo_constraints_difference () {
 	new_constraints_hash=$( do_hash <<<"${new_constraints}" ) || die
 
 	local tmp_old_config tmp_new_config
-	tmp_old_config=$( echo_tmp_file_name 'halcyon.old-config' ) || die
-	tmp_new_config=$( echo_tmp_file_name 'halcyon.new-config' ) || die
+	tmp_old_config=$( echo_tmp_file_name 'halcyon.echo_constraints_difference.old' ) || die
+	tmp_new_config=$( echo_tmp_file_name 'halcyon.echo_constraints_difference.new' ) || die
 
 	echo_constraints <<<"${old_constraints}" >"${tmp_old_config}" || die
 	echo_constraints <<<"${new_constraints}" >"${tmp_new_config}" || die

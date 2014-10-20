@@ -293,7 +293,7 @@ function build_ghc () {
 	ghc_version=$( echo_ghc_tag_version "${ghc_tag}" ) || die
 	original_url=$( prepare_ghc_libs "${ghc_version}" ) || die
 	original_archive=$( basename "${original_url}" ) || die
-	tmp_build_dir=$( echo_tmp_dir_name 'halcyon.ghc' ) || die
+	tmp_build_dir=$( echo_tmp_dir_name 'halcyon.build_ghc' ) || die
 
 	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_GHC )); then
 		log 'Starting to build GHC layer (forced)'

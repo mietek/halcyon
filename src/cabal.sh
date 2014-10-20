@@ -386,7 +386,7 @@ function build_cabal () {
 	cabal_version=$( echo_cabal_tag_version "${cabal_tag}" ) || die
 	original_url=$( echo_cabal_original_url "${cabal_version}" ) || die
 	original_archive=$( basename "${original_url}" ) || die
-	tmp_build_dir=$( echo_tmp_dir_name 'halcyon.cabal' ) || die
+	tmp_build_dir=$( echo_tmp_dir_name 'halcyon.build_cabal' ) || die
 
 	if (( HALCYON_FORCE_BUILD_ALL )) || (( HALCYON_FORCE_BUILD_CABAL )); then
 		log 'Starting to build Cabal layer (forced)'
@@ -817,7 +817,7 @@ function sandboxed_cabal_do () {
 	local tmp_protected_config
 	tmp_protected_config=''
 	if [ -f "${sandbox_dir}/cabal.config" ]; then
-		tmp_protected_config=$( echo_tmp_file_name 'halcyon.protected-config' ) || die
+		tmp_protected_config=$( echo_tmp_file_name 'halcyon.sandboxed_cabal_do' ) || die
 		mv "${sandbox_dir}/cabal.config" "${tmp_protected_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
