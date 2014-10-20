@@ -158,7 +158,7 @@ function echo_cabal_archive_name () {
 	repo_name=$( echo_cabal_remote_repo_name "${cabal_tag}" | tr '[:upper:]' '[:lower:]' ) || die
 	cabal_timestamp=$( echo_cabal_timestamp "${cabal_tag}" ) || die
 
-	echo "halcyon-cabal-${cabal_id}-${repo_name}-${cabal_timestamp:+-${cabal_timestamp}}.tar.xz"
+	echo "halcyon-cabal-${cabal_id}-${repo_name}${cabal_timestamp:+-${cabal_timestamp}}.tar.xz"
 }
 
 
