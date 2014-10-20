@@ -12,12 +12,22 @@ function prepare_cache () {
 		return 0
 	fi
 
-	copy_dotless_contents "${HALCYON_CACHE_DIR}" "${tmp_cache_dir}" || die
-	touch "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
+	if ! [ -d "${HALCYON_CACHE_DIR}" ]; then
+		mkdir -p "${HALCYON_CACHE_DIR}" || die
+	else
+		local files
+		files=$( find_spaceless_recursively "${HALCYON_CACHE_DIR}" ) || die
+		if [ -z "${files}" ]; then
+			return 0
+		fi
 
-	log 'Examining cache'
+		log 'Examining cache'
 
-	find_spaceless_recursively "${tmp_cache_dir}" | sort_naturally | quote || die
+		copy_dotless_contents "${HALCYON_CACHE_DIR}" "${tmp_cache_dir}" || die
+		touch "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
+
+		sort_naturally <<<"${files}" | quote || die
+	fi
 }
 
 
@@ -44,10 +54,14 @@ function clean_cache () {
 		done
 
 	if [ -d "${tmp_cache_dir}" ]; then
+		local changes
+		changes=$(  compare_recursively "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" ) || die
+		if [ -z "${changes}" ]; then
+			return 0
+		fi
+
 		log 'Examining cache changes'
 
-		compare_recursively "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" |
-			filter_not_matching '^= ' |
-			quote || die
+		filter_not_matching '^= ' <<<"${changes}" | quote || die
 	fi
 }
