@@ -17,10 +17,7 @@ function echo_sandbox_os () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_tag_a
-	IFS=$'\t' read -r -a sandbox_tag_a <<<"${sandbox_tag}"
-
-	echo "${sandbox_tag_a[0]}"
+	awk -F$'\t' '{ print $1 }' <<<"${sandbox_tag}"
 }
 
 
@@ -28,10 +25,7 @@ function echo_sandbox_constraints_hash () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_tag_a
-	IFS=$'\t' read -r -a sandbox_tag_a <<<"${sandbox_tag}"
-
-	echo "${sandbox_tag_a[4]}"
+	awk -F$'\t' '{ print $5 }' <<<"${sandbox_tag}"
 }
 
 
@@ -39,10 +33,7 @@ function echo_sandbox_magic_hash () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_tag_a
-	IFS=$'\t' read -r -a sandbox_tag_a <<<"${sandbox_tag}"
-
-	echo "${sandbox_tag_a[5]}"
+	awk -F$'\t' '{ print $6 }' <<<"${sandbox_tag}"
 }
 
 
@@ -50,10 +41,7 @@ function echo_sandbox_label () {
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local sandbox_tag_a
-	IFS=$'\t' read -r -a sandbox_tag_a <<<"${sandbox_tag}"
-
-	echo "${sandbox_tag_a[6]}"
+	awk -F$'\t' '{ print $7 }' <<<"${sandbox_tag}"
 }
 
 

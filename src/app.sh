@@ -19,10 +19,7 @@ function echo_app_os () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local app_tag_a
-	IFS=$'\t' read -r -a app_tag_a <<<"${app_tag}"
-
-	echo "${app_tag_a[0]}"
+	awk -F$'\t' '{ print $1 }' <<<"${app_tag}"
 }
 
 
@@ -30,10 +27,7 @@ function echo_app_label () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local app_tag_a
-	IFS=$'\t' read -r -a app_tag_a <<<"${app_tag}"
-
-	echo "${app_tag_a[6]}"
+	awk -F$'\t' '{ print $7 }' <<<"${app_tag}"
 }
 
 
@@ -41,10 +35,7 @@ function echo_app_magic_hash () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local app_tag_a
-	IFS=$'\t' read -r -a app_tag_a <<<"${app_tag}"
-
-	echo "${app_tag_a[7]}"
+	awk -F$'\t' '{ print $8 }' <<<"${app_tag}"
 }
 
 

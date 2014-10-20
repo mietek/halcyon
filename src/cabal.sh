@@ -42,10 +42,7 @@ function echo_cabal_os () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_tag_a
-	IFS=$'\t' read -r -a cabal_tag_a <<<"${cabal_tag}"
-
-	echo "${cabal_tag_a[0]}"
+	awk -F$'\t' '{ print $1 }' <<<"${cabal_tag}"
 }
 
 
@@ -53,10 +50,7 @@ function echo_cabal_halcyon_dir () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_tag_a
-	IFS=$'\t' read -r -a cabal_tag_a <<<"${cabal_tag}"
-
-	echo "${cabal_tag_a[1]}"
+	awk -F$'\t' '{ print $2 }' <<<"${cabal_tag}"
 }
 
 
@@ -64,10 +58,7 @@ function echo_cabal_version () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_tag_a
-	IFS=$'\t' read -r -a cabal_tag_a <<<"${cabal_tag}"
-
-	echo "${cabal_tag_a[2]#cabal-}"
+	awk -F$'\t' '{ print $3 }' <<<"${cabal_tag}" | sed 's/^cabal-//'
 }
 
 
@@ -75,10 +66,7 @@ function echo_cabal_remote_repo () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_tag_a
-	IFS=$'\t' read -r -a cabal_tag_a <<<"${cabal_tag}"
-
-	echo "${cabal_tag_a[3]}"
+	awk -F$'\t' '{ print $4 }' <<<"${cabal_tag}"
 }
 
 
@@ -86,10 +74,7 @@ function echo_cabal_magic_hash () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_tag_a
-	IFS=$'\t' read -r -a cabal_tag_a <<<"${cabal_tag}"
-
-	echo "${cabal_tag_a[4]}"
+	awk -F$'\t' '{ print $5 }' <<<"${cabal_tag}"
 }
 
 
@@ -97,10 +82,7 @@ function echo_cabal_timestamp () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_tag_a
-	IFS=$'\t' read -r -a cabal_tag_a <<<"${cabal_tag}"
-
-	echo "${cabal_tag_a[5]}"
+	awk -F$'\t' '{ print $6 }' <<<"${cabal_tag}"
 }
 
 

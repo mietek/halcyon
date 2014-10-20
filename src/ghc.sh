@@ -93,10 +93,7 @@ function echo_ghc_os () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_tag_a
-	IFS=$'\t' read -r -a ghc_tag_a <<<"${ghc_tag}"
-
-	echo "${ghc_tag_a[0]}"
+	awk -F$'\t' '{ print $1 }' <<<"${ghc_tag}"
 }
 
 
@@ -104,10 +101,7 @@ function echo_ghc_version () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_tag_a
-	IFS=$'\t' read -r -a ghc_tag_a <<<"${ghc_tag}"
-
-	echo "${ghc_tag_a[2]#ghc-}"
+	awk -F$'\t' '{ print $3 }' <<<"${ghc_tag}" | sed 's/^ghc-//'
 }
 
 
@@ -115,10 +109,7 @@ function echo_ghc_magic_hash () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local ghc_tag_a
-	IFS=$'\t' read -r -a ghc_tag_a <<<"${ghc_tag}"
-
-	echo "${ghc_tag_a[3]}"
+	awk -F$'\t' '{ print $4 }' <<<"${ghc_tag}"
 }
 
 
