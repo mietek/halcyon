@@ -77,22 +77,6 @@ function set_default_vars () {
 }
 
 
-function log_deploy_space () {
-	if ! (( ${HALCYON_INTERNAL_DEPLOY_SPACE:-0} )); then
-		export HALCYON_INTERNAL_DEPLOY_SPACE=1
-	else
-		log
-		log_delimiter
-		log
-	fi
-}
-
-
-function reset_deploy_space () {
-	unset HALCYON_INTERNAL_DEPLOY_SPACE
-}
-
-
 function halcyon_deploy () {
 	local -a args
 	while (( $# )); do
@@ -238,7 +222,9 @@ function halcyon_deploy () {
 		local index
 		index=0
 		for arg in "${args[@]}"; do
-			log_deploy_space
+			log
+			log_delimiter
+			log
 			if ! (( index )); then
 				HALCYON_NO_CLEAN_CACHE=1 \
 					deploy_some_app "${arg}" || return 1

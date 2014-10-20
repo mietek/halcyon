@@ -14,20 +14,6 @@ EOF
 }
 
 
-function log_space () {
-	if ! (( ${HALCYON_INTERNAL_SPACE:-0} )); then
-		export HALCYON_INTERNAL_SPACE=1
-	else
-		log
-	fi
-}
-
-
-function reset_space () {
-	unset HALCYON_INTERNAL_SPACE
-}
-
-
 function deploy_layers () {
 	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
 
@@ -35,17 +21,17 @@ function deploy_layers () {
 	expect_args app_dir -- "$@"
 
 	if ! (( HALCYON_NO_PREPARE_CACHE )); then
-		log_space
+		log
 		prepare_cache || die
 	fi
 
 	if ! (( HALCYON_NO_GHC )); then
-		log_space
+		log
 		install_ghc "${app_dir}" || return 1
 	fi
 
 	if ! (( HALCYON_NO_CABAL )); then
-		log_space
+		log
 		install_cabal "${app_dir}" || return 1
 	fi
 
@@ -58,14 +44,14 @@ function deploy_layers () {
 		mv "${HALCYON_DIR}/sandbox" "${tmp_protected_sandbox}" || die
 	fi
 	if ! (( HALCYON_NO_SANDBOX )); then
-		log_space
+		log
 		install_sandbox "${app_dir}" || return 1
 	fi
 
 	local tmp_install_dir
 	tmp_install_dir=$( echo_tmp_dir_name 'halcyon.install' ) || die
 	if ! (( HALCYON_NO_APP )); then
-		log_space
+		log
 		install_app_1 "${app_dir}" "${tmp_install_dir}" || return 1
 	fi
 	if (( HALCYON_PROTECT_SANDBOX )) && [ -n "${tmp_protected_sandbox}" ]; then
@@ -79,7 +65,7 @@ function deploy_layers () {
 	fi
 
 	if ! (( HALCYON_NO_CLEAN_CACHE )); then
-		log_space
+		log
 		clean_cache || die
 	fi
 }
@@ -90,7 +76,6 @@ function deploy_local_app () {
 	expect_args app_dir -- "$@"
 
 	deploy_layers "${app_dir}" || return 1
-	reset_space
 }
 
 
@@ -120,7 +105,6 @@ function deploy_base_package () {
 		deploy_layers "${tmp_app_dir}" || return 1
 
 	rm -rf "${tmp_app_dir}" || die
-	reset_space
 }
 
 
@@ -163,7 +147,7 @@ function deploy_remote_app () {
 		fi
 
 		if [ "${label}" != "${arg}" ]; then
-			log_space
+			log
 			log_warning "Using newest available version of ${arg}"
 			log_warning 'Expected package name with explicit version'
 		fi
@@ -173,7 +157,6 @@ function deploy_remote_app () {
 	esac
 
 	rm -rf "${tmp_remote_dir}" || die
-	reset_space
 }
 
 
