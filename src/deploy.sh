@@ -17,13 +17,8 @@ EOF
 function deploy_layers () {
 	expect_vars HALCYON_DIR HALCYON_AS_BUILDTIME_DEP HALCYON_AS_RUNTIME_DEP HALCYON_NO_INSTALL_GHC HALCYON_NO_INSTALL_CABAL HALCYON_NO_INSTALL_SANDBOX HALCYON_NO_INSTALL_APP HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
-	local app_dir
-	expect_args app_dir -- "$@"
-
-	local tmp_cache_dir tmp_sandbox_dir tmp_app_dir
-	tmp_cache_dir=$( echo_tmp_dir_name 'halcyon.deploy_layers.cache' ) || die
-	tmp_sandbox_dir=$( echo_tmp_dir_name 'halcyon.deploy_layers.sandbox' ) || die
-	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_layers.app' ) || die
+	local app_dir tmp_cache_dir tmp_sandbox_dir tmp_app_dir
+	expect_args app_dir tmp_cache_dir tmp_sandbox_dir tmp_app_dir -- "$@"
 
 	if ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
@@ -66,8 +61,27 @@ function deploy_layers () {
 		log
 		clean_cache "${tmp_cache_dir}" || die
 	fi
+}
 
-	rm -rf "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}"
+
+function deploy_all_layers () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	local tmp_cache_dir tmp_sandbox_dir tmp_app_dir
+	tmp_cache_dir=$( echo_tmp_dir_name 'halcyon.deploy_all_layers.cache' ) || die
+	tmp_sandbox_dir=$( echo_tmp_dir_name 'halcyon.deploy_all_layers.sandbox' ) || die
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_all_layers.app' ) || die
+
+	local status
+	status=0
+	if ! deploy_layers "${app_dir}" "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}"; then
+		status=1
+	fi
+
+	rm -rf "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
+
+	return "${status}"
 }
 
 
@@ -82,7 +96,7 @@ function deploy_local_app () {
 	log 'Deploying local app:'
 	log_indent "${name}"
 
-	if ! deploy_layers "${app_dir}"; then
+	if ! deploy_all_layers "${app_dir}"; then
 		log_warning 'Cannot deploy local app'
 		return 1
 	fi
@@ -104,7 +118,7 @@ function deploy_cloned_app () {
 	if ! git clone --depth=1 --quiet "${url}" "${tmp_app_dir}"; then
 		die 'Cannot deploy cloned app'
 	fi
-	if ! deploy_layers "${tmp_app_dir}"; then
+	if ! deploy_all_layers "${tmp_app_dir}"; then
 		log_warning 'Cannot deploy cloned app'
 		return 1
 	fi
@@ -119,8 +133,11 @@ function deploy_base_package () {
 	local arg
 	expect_args arg -- "$@"
 
-	local tmp_app_dir
-	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package' ) || die
+	local tmp_deploy_dir tmp_cache_dir tmp_sandbox_dir tmp_app_dir
+	tmp_deploy_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package.deploy' ) || die
+	tmp_cache_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package.cache' ) || die
+	tmp_sandbox_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package.sandbox' ) || die
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package.app' ) || die
 
 	log_delimiter
 	log 'Deploying base package:'
@@ -132,7 +149,7 @@ function deploy_base_package () {
 		HALCYON_NO_INSTALL_APP=1     \
 		HALCYON_NO_CLEAN_CACHE=1     \
 		HALCYON_NO_WARN_IMPLICIT=1   \
-		deploy_layers '/dev/null'
+		deploy_layers '/dev/null' "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}"
 	then
 		log_warning 'Cannot deploy base package'
 		return 1
@@ -154,21 +171,21 @@ function deploy_base_package () {
 		log_warning 'Expected base package name with explicit version'
 	fi
 
-	mkdir -p "${tmp_app_dir}" || die
-	echo_fake_base_package "${base_version}" >"${tmp_app_dir}/halcyon-fake-base.cabal" || die
+	mkdir -p "${tmp_deploy_dir}/halcyon-fake-base" || die
+	echo_fake_base_package "${base_version}" >"${tmp_deploy_dir}/halcyon-fake-base/halcyon-fake-base.cabal" || die
 
 	if !                               \
 		HALCYON_NO_PREPARE_CACHE=1 \
 		HALCYON_NO_INSTALL_GHC=1   \
 		HALCYON_NO_INSTALL_APP=1   \
 		HALCYON_NO_WARN_IMPLICIT=1 \
-		deploy_layers "${tmp_app_dir}"
+		deploy_layers "${tmp_deploy_dir}/halcyon-fake-base" "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}"
 	then
 		log_warning 'Cannot deploy base package'
 		return 1
 	fi
 
-	rm -rf "${tmp_app_dir}" || die
+	rm -rf "${tmp_deploy_dir}" "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
 }
 
 
@@ -178,8 +195,11 @@ function deploy_unpacked_app () {
 	local arg
 	expect_args arg -- "$@"
 
-	local tmp_app_dir
-	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_unpacked_app' ) || die
+	local tmp_deploy_dir tmp_cache_dir tmp_sandbox_dir tmp_app_dir
+	tmp_deploy_dir=$( echo_tmp_dir_name 'halcyon.deploy_unpacked_app.deploy' ) || die
+	tmp_cache_dir=$( echo_tmp_dir_name 'halcyon.deploy_unpacked_app.cache' ) || die
+	tmp_sandbox_dir=$( echo_tmp_dir_name 'halcyon.deploy_unpacked_app.sandbox' ) || die
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_unpacked_app.app' ) || die
 
 	log_delimiter
 	log "Deploying unpacked app:"
@@ -190,7 +210,7 @@ function deploy_unpacked_app () {
 		HALCYON_NO_INSTALL_APP=1     \
 		HALCYON_NO_CLEAN_CACHE=1     \
 		HALCYON_NO_WARN_IMPLICIT=1   \
-		deploy_layers '/dev/null'
+		deploy_layers '/dev/null' "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}"
 	then
 		log_warning 'Cannot deploy unpacked app'
 		return 1
@@ -199,11 +219,11 @@ function deploy_unpacked_app () {
 	log
 	log_begin 'Determining unpacked app version...'
 
-	mkdir -p "${tmp_app_dir}" || die
+	mkdir -p "${tmp_deploy_dir}" || die
 
 	local label
 	if ! label=$(
-		cabal_do "${tmp_app_dir}" unpack "${arg}" |
+		cabal_do "${tmp_deploy_dir}" unpack "${arg}" |
 			filter_last |
 			match_exactly_one |
 			sed 's:^Unpacking to \(.*\)/$:\1:'
@@ -229,13 +249,13 @@ function deploy_unpacked_app () {
 		HALCYON_NO_INSTALL_GHC=1   \
 		HALCYON_NO_INSTALL_CABAL=1 \
 		HALCYON_NO_WARN_IMPLICIT=1 \
-		deploy_layers "${tmp_app_dir}/${label}"
+		deploy_layers "${tmp_deploy_dir}/${label}" "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}"
 	then
 		log_warning 'Cannot deploy unpacked app'
 		return 1
 	fi
 
-	rm -rf "${tmp_app_dir}" || die
+	rm -rf "${tmp_deploy_dir}" "${tmp_cache_dir}" "${tmp_sandbox_dir}" "${tmp_app_dir}" || die
 }
 
 

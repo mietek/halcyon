@@ -12,26 +12,25 @@ function prepare_cache () {
 		return 0
 	fi
 
-	if ! [ -d "${HALCYON_CACHE_DIR}" ]; then
-		mkdir -p "${HALCYON_CACHE_DIR}" || die
+	mkdir -p "${HALCYON_CACHE_DIR}" || die
+
+	log 'Examining cache:'
+
+	local files
+	if ! files=$(
+		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
+		filter_not_matching '.halcyon-mark' |
+		sort_naturally |
+		match_at_least_one
+	); then
+		log_indent '(empty)'
 	else
-		log 'Examining cache:'
-
-		local files
-		if ! files=$(
-			find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
-			sort_naturally |
-			match_at_least_one
-		); then
-			log_indent '(empty)'
-			return 0
-		fi
-
 		copy_dotless_contents "${HALCYON_CACHE_DIR}" "${tmp_cache_dir}" || die
-		touch "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
 
 		quote <<<"${files}"
 	fi
+
+	touch "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
 }
 
 
@@ -52,24 +51,22 @@ function clean_cache () {
 		while read -r file; do
 			local file_time
 			file_time=$( echo_file_modification_time "${HALCYON_CACHE_DIR}/${file}" ) || die
-			if (( file_time <= mark_time )); then
-				rm -f "${file}" || die
+			if (( file_time < mark_time )); then
+				rm -f "${HALCYON_CACHE_DIR}/${file}" || die
 			fi
 		done
 
-	if [ -d "${tmp_cache_dir}" ]; then
-		log 'Examining cache changes:'
+	log 'Examining cache changes:'
 
-		local changes
-		if ! changes=$(
-			compare_recursively "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" |
-			filter_not_matching '^= ' |
-			match_at_least_one
-		); then
-			log_indent '(none)'
-			return 0
-		fi
-
-		quote <<<"${changes}"
+	local changes
+	if ! changes=$(
+		compare_recursively "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" |
+		filter_not_matching '^= ' |
+		match_at_least_one
+	); then
+		log_indent '(none)'
+		return 0
 	fi
+
+	quote <<<"${changes}"
 }
