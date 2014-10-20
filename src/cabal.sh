@@ -519,7 +519,7 @@ function archive_cabal () {
 	rm -f "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${cabal_archive}" "${os}"; then
-		die 'Cannot upload Cabal layer archive'
+		log_warning 'Cannot upload Cabal layer archive'
 	fi
 }
 
@@ -773,7 +773,7 @@ function install_cabal () {
 		! (( HALCYON_FORCE_BUILD_CABAL )) &&
 		(( HALCYON_NO_BUILD ))
 	then
-		log 'Cannot build Cabal layer'
+		log_warning 'Cannot build Cabal layer'
 		return 1
 	fi
 

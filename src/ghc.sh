@@ -422,7 +422,7 @@ function archive_ghc () {
 	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}"; then
-		die 'Cannot upload GHC layer archive'
+		log_warning 'Cannot upload GHC layer archive'
 	fi
 }
 
@@ -564,7 +564,7 @@ function install_ghc () {
 		! (( HALCYON_FORCE_BUILD_GHC )) &&
 		(( HALCYON_NO_BUILD ))
 	then
-		log 'Cannot build GHC layer'
+		log_warning 'Cannot build GHC layer'
 		return 1
 	fi
 

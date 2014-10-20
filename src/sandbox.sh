@@ -427,10 +427,10 @@ function archive_sandbox () {
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${sandbox_archive}" || die
 	cp "${HALCYON_DIR}/sandbox/.halcyon-cabal.config" "${HALCYON_CACHE_DIR}/${sandbox_config}" || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${os}"; then
-		die 'Cannot upload sandbox layer archive'
+		log_warning 'Cannot upload sandbox layer archive'
 	fi
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${sandbox_config}" "${os}"; then
-		die 'Cannot upload sandbox layer config'
+		log_warning 'Cannot upload sandbox layer config'
 	fi
 }
 
@@ -699,7 +699,7 @@ function install_matched_sandbox () {
 		! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
 		(( HALCYON_NO_BUILD ))
 	then
-		log 'Cannot build sandbox layer'
+		log_warning 'Cannot build sandbox layer'
 		return 1
 	fi
 
@@ -824,7 +824,7 @@ function install_sandbox () {
 				! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
 				(( HALCYON_NO_BUILD ))
 			then
-				log 'Cannot build sandbox layer'
+				log_warning 'Cannot build sandbox layer'
 				return 1
 			fi
 
@@ -841,7 +841,7 @@ function install_sandbox () {
 		! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
 		(( HALCYON_NO_BUILD ))
 	then
-		log 'Cannot build sandbox layer'
+		log_warning 'Cannot build sandbox layer'
 		return 1
 	fi
 

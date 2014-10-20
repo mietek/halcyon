@@ -337,7 +337,7 @@ function archive_app () {
 		--exclude '.cabal-sandbox'            \
 		--exclude 'cabal.sandbox.config' || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${app_archive}" "${os}"; then
-		die 'Cannot upload app layer archive'
+		log_warning 'Cannot upload app layer archive'
 	fi
 }
 
@@ -464,7 +464,7 @@ function install_app_1 () {
 			! (( HALCYON_FORCE_BUILD_APP )) &&
 			(( HALCYON_NO_BUILD ))
 		then
-			log 'Cannot build app layer'
+			log_warning 'Cannot build app layer'
 			return 1
 		fi
 
@@ -499,7 +499,7 @@ function install_app_1 () {
 	fi
 
 	if ! (( restored_app )) && ! (( built_app )); then
-		log 'Cannot install app layer'
+		log_warning 'Cannot install app layer'
 		return 1
 	fi
 

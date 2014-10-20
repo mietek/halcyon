@@ -56,7 +56,7 @@ function transfer_original () {
 
 	if has_private_storage && ! (( HALCYON_NO_UPLOAD )); then
 		if ! s3_upload "${dst_file}" "${HALCYON_S3_BUCKET}" "${src_object}" "${HALCYON_S3_ACL}"; then
-			die 'Cannot upload original archive'
+			log_warning 'Cannot upload original archive'
 		fi
 	fi
 }
