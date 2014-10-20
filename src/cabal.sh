@@ -835,8 +835,8 @@ function cabal_freeze_implicit_constraints () {
 
 	cabal_do "${app_dir}" --no-require-sandbox freeze --dry-run |
 		read_constraints_from_cabal_dry_freeze |
-		filter_valid_constraints |
-		filter_nonself_constraints "${app_dir}" || die
+		filter_valid_sandbox_constraints |
+		filter_nonself_sandbox_constraints "${app_dir}" || die
 }
 
 
@@ -846,8 +846,8 @@ function cabal_freeze_actual_constraints () {
 
 	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" freeze --dry-run |
 		read_constraints_from_cabal_dry_freeze |
-		filter_valid_constraints |
-		filter_nonself_constraints "${app_dir}" || die
+		filter_valid_sandbox_constraints |
+		filter_nonself_sandbox_constraints "${app_dir}" || die
 }
 
 

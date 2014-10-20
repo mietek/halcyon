@@ -474,7 +474,7 @@ function determine_ghc_tag () {
 		log_end "${ghc_version}"
 	elif [ -f "${app_dir}/cabal.config" ]; then
 		local constraints
-		constraints=$( detect_constraints "${app_dir}" ) || die
+		constraints=$( detect_sandbox_constraints "${app_dir}" ) || die
 		ghc_version=$( echo_ghc_version_from_constraints "${constraints}" ) || die
 
 		log_end "${ghc_version} (constraints)"

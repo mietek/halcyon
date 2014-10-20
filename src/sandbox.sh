@@ -324,7 +324,7 @@ function verify_sandbox_constraints () {
 		constraints_name=$( echo_sandbox_constraints_name "${sandbox_tag}" ) || die
 		expect_existing "${HALCYON_CACHE_DIR}/${constraints_name}"
 
-		echo_constraints <<<"${actual_constraints}" >"${tmp_constraints_name}" || die
+		echo_sandbox_constraints <<<"${actual_constraints}" >"${tmp_constraints_name}" || die
 
 		log_warning 'Unexpected constraints difference'
 		log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'
@@ -584,7 +584,7 @@ function determine_sandbox_tag () {
 	sandbox_tag=$( echo_sandbox_tag "${ghc_tag}" "${constraints_hash}" "${magic_hash}" "${sandbox_label}" ) || die
 	constraints_name=$( echo_sandbox_constraints_name "${sandbox_tag}" ) || die
 
-	echo_constraints <<<"${constraints}" >"${HALCYON_CACHE_DIR}/${constraints_name}" || die
+	echo_sandbox_constraints <<<"${constraints}" >"${HALCYON_CACHE_DIR}/${constraints_name}" || die
 
 	echo "${sandbox_tag}"
 }
