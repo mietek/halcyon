@@ -241,7 +241,7 @@ function prepare_ghc () {
 	*)
 		die "Unexpected GHC and OS combination: ${ghc_version} and ${os_description}"
 	esac
-	expect_existing "${libgmp}" "${libtinfo}"
+	expect_existing "${libgmp_src_file}" "${libtinfo_src_file}"
 
 	mkdir -p "${HALCYON_DIR}/ghc/lib" || die
 	ln -s "${libtinfo_src_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
