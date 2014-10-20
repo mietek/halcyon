@@ -7,6 +7,8 @@ if ! [ -d "${HALCYON_TOP_DIR}/lib/bashmenot" ]; then
 fi
 
 source "${HALCYON_TOP_DIR}/lib/bashmenot/bashmenot.sh"
+source "${HALCYON_TOP_DIR}/src/paths.sh"
+source "${HALCYON_TOP_DIR}/src/vars.sh"
 source "${HALCYON_TOP_DIR}/src/deploy.sh"
 source "${HALCYON_TOP_DIR}/src/cache.sh"
 source "${HALCYON_TOP_DIR}/src/storage.sh"
@@ -18,74 +20,25 @@ source "${HALCYON_TOP_DIR}/src/app.sh"
 source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
-function set_default_vars () {
-	export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
-
-	export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
-	export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
-	export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
-	export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
-	export HALCYON_PUBLIC="${HALCYON_PUBLIC:-0}"
-
-	export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
-	export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
-
-	export HALCYON_FORCE_BUILD_ALL="${HALCYON_FORCE_BUILD_ALL:-0}"
-	export HALCYON_FORCE_GHC_VERSION="${HALCYON_FORCE_GHC_VERSION:-}"
-	export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
-	export HALCYON_FORCE_CABAL_VERSION="${HALCYON_FORCE_CABAL_VERSION:-}"
-	export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
-	export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
-	export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
-	export HALCYON_FORCE_SANDBOX_FLAGS="${HALCYON_FORCE_SANDBOX_FLAGS:-}"
-	export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
-	export HALCYON_FORCE_APP_FLAGS="${HALCYON_FORCE_APP_FLAGS:-}"
-	export HALCYON_FORCE_APP_INSTALL_DIR="${HALCYON_FORCE_APP_INSTALL_DIR:-}"
-
-	export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
-	export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
-	export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
-
-	export HALCYON_NO_WARN_CONSTRAINTS="${HALCYON_NO_WARN_CONSTRAINTS:-0}"
-
-	export HALCYON_NO_PREPARE_CACHE="${HALCYON_NO_PREPARE_CACHE:-0}"
-	export HALCYON_NO_GHC="${HALCYON_NO_GHC:-0}"
-	export HALCYON_NO_CABAL="${HALCYON_NO_CABAL:-0}"
-	export HALCYON_NO_SANDBOX="${HALCYON_NO_SANDBOX:-0}"
-	export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
-	export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
-
-	export HALCYON_PROTECT_SANDBOX="${HALCYON_PROTECT_SANDBOX:-0}"
-	export HALCYON_INTO_SANDBOX="${HALCYON_INTO_SANDBOX:-0}"
-
-	if ! (( ${HALCYON_INTERNAL_NO_SET_ENV:-0} )); then
-		export HALCYON_INTERNAL_NO_SET_ENV=1
-
-		export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
-		export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
-		export PATH="${HALCYON_DIR}/sandbox/bin:${PATH}"
-		export PATH="${HALCYON_DIR}/app/bin:${PATH}"
-		export PATH="${HALCYON_TOP_DIR}/bin:${PATH}"
-
-		export LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LIBRARY_PATH:-}"
-		export LD_LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LD_LIBRARY_PATH:-}"
-
-		export LANG="${LANG:-en_US.UTF-8}"
-	fi
-}
-
-
 function halcyon_deploy () {
 	local -a args
 	while (( $# )); do
 		case "$1" in
+	# Paths:
 		'--halcyon-dir')
 			shift
 			expect_args halcyon_dir -- "$@"
 			export HALCYON_DIR="${halcyon_dir}";;
 		'--halcyon-dir='*)
 			export HALCYON_DIR="${1#*=}";;
+		'--cache-dir')
+			shift
+			expect_args cache_dir -- "$@"
+			export HALCYON_CACHE_DIR="${cache_dir}";;
+		'--cache-dir='*)
+			export HALCYON_CACHE_DIR="${1#*=}";;
 
+	# Vars set once and inherited:
 		'--aws-access-key-id')
 			shift
 			expect_args aws_access_key_id -- "$@"
@@ -111,57 +64,13 @@ function halcyon_deploy () {
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
 
-		'--cache-dir')
-			shift
-			expect_args cache_dir -- "$@"
-			export HALCYON_CACHE_DIR="${cache_dir}";;
-		'--cache-dir='*)
-			export HALCYON_CACHE_DIR="${1#*=}";;
-		'--purge-cache')
-			export HALCYON_PURGE_CACHE=1;;
+		'--public')
+			export HALCYON_PUBLIC=1;;
 
-		'--force-build-all')
-			export HALCYON_FORCE_BUILD_ALL=1;;
-		'--force-ghc-version')
-			shift
-			expect_args force_ghc_version -- "$@"
-			export HALCYON_FORCE_GHC_VERSION="${force_ghc_version}";;
-		'--force-ghc-version='*)
-			export HALCYON_FORCE_GHC_VERSION="${1#*=}";;
-		'--force-build-ghc')
-			export HALCYON_FORCE_BUILD_GHC=1;;
-		'--force-cabal-version')
-			shift
-			expect_args force_cabal_version -- "$@"
-			export HALCYON_FORCE_CABAL_VERSION="${force_cabal_version}";;
-		'--force-cabal-version='*)
-			export HALCYON_FORCE_CABAL_VERSION="${1#*=}";;
-		'--force-build-cabal')
-			export HALCYON_FORCE_BUILD_CABAL=1;;
-		'--force-update-cabal')
-			export HALCYON_FORCE_UPDATE_CABAL=1;;
-		'--force-build-sandbox')
-			export HALCYON_FORCE_BUILD_SANDBOX=1;;
-		'--force-sandbox-flags')
-			shift
-			expect_args force_sandbox_flags -- "$@"
-			export HALCYON_FORCE_SANDBOX_FLAGS="${force_sandbox_flags}";;
-		'--force-sandbox-flags='*)
-			export HALCYON_FORCE_SANDBOX_FLAGS="${1#*=}";;
-		'--force-build-app')
-			export HALCYON_FORCE_BUILD_APP=1;;
-		'--force-app-flags')
-			shift
-			expect_args force_app_flags -- "$@"
-			export HALCYON_FORCE_APP_FLAGS="${force_app_flags}";;
-		'--force-app-flags='*)
-			export HALCYON_FORCE_APP_FLAGS="${1#*=}";;
-		'--force-app-install-dir')
-			shift
-			expect_args force_app_install_dir -- "$@"
-			export HALCYON_FORCE_APP_INSTALL_DIR="${force_app_install_dir}";;
-		'--force-app-install-dir='*)
-			export HALCYON_FORCE_APP_INSTALL_DIR="${1#*=}";;
+		'--as-buildtime-dep')
+			export HALCYON_AS_BUILDTIME_DEP=1;;
+		'--as-runtime-dep')
+			export HALCYON_AS_RUNTIME_DEP=1;;
 
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
@@ -170,35 +79,77 @@ function halcyon_deploy () {
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
 
-		'--no-warn-constraints')
-			export HALCYON_NO_WARN_CONSTRAINTS=1;;
+		'--no-install-ghc')
+			export HALCYON_NO_INSTALL_GHC=1;;
+		'--no-install-cabal')
+			export HALCYON_NO_INSTALL_CABAL=1;;
+		'--no-install-sandbox')
+			export HALCYON_NO_INSTALL_SANDBOX=1;;
+		'--no-install-app')
+			export HALCYON_NO_INSTALL_APP=1;;
 
 		'--no-prepare-cache')
 			export HALCYON_NO_PREPARE_CACHE=1;;
-		'--no-ghc')
-			export HALCYON_NO_GHC=1;;
-		'--no-cabal')
-			export HALCYON_NO_CABAL=1;;
-		'--no-sandbox')
-			export HALCYON_NO_SANDBOX=1;;
-		'--no-app')
-			export HALCYON_NO_APP=1;;
 		'--no-clean-cache')
 			export HALCYON_NO_CLEAN_CACHE=1;;
 
-		'--protect-sandbox')
-			export HALCYON_PROTECT_SANDBOX=1;;
-		'--into-sandbox')
-			export HALCYON_FORCE_APP_INSTALL_DIR="${HALCYON_DIR}/sandbox";;
+		'--no-warn-implicit')
+			export HALCYON_NO_WARN_IMPLICIT=1;;
 
-		'--recursive')
-			export HALCYON_NO_WARN_CONSTRAINTS=1
-			export HALCYON_NO_PREPARE_CACHE=1
-			export HALCYON_NO_GHC=1
-			export HALCYON_NO_CABAL=1
-			export HALCYON_PROTECT_SANDBOX=1
-			export HALCYON_NO_CLEAN_CACHE=1
-			;;
+	# Vars inherited once and reset:
+		'--buildtime-deps')
+			shift
+			expect_args buildtime_deps -- "$@"
+			export HALCYON_BUILDTIME_DEPS="${buildtime_deps}";;
+		'--buildtime-deps='*)
+			export HALCYON_BUILDTIME_DEPS="${1#*=}";;
+		'--runtime-deps')
+			shift
+			expect_args runtime_deps -- "$@"
+			export HALCYON_RUNTIME_DEPS="${runtime_deps}";;
+		'--runtime-deps='*)
+			export HALCYON_RUNTIME_DEPS="${1#*=}";;
+
+		'--ghc-version')
+			shift
+			expect_args ghc_version -- "$@"
+			export HALCYON_GHC_VERSION="${ghc_version}";;
+		'--ghc-version='*)
+			export HALCYON_GHC_VERSION="${1#*=}";;
+		'--cabal-version')
+			shift
+			expect_args cabal_version -- "$@"
+			export HALCYON_CABAL_VERSION="${cabal_version}";;
+		'--cabal-version='*)
+			export HALCYON_CABAL_VERSION="${1#*=}";;
+
+		'--sandbox-flags')
+			shift
+			expect_args sandbox_flags -- "$@"
+			export HALCYON_SANDBOX_FLAGS="${sandbox_flags}";;
+		'--sandbox-flags='*)
+			export HALCYON_SANDBOX_FLAGS="${1#*=}";;
+		'--app-flags')
+			shift
+			expect_args app_flags -- "$@"
+			export HALCYON_APP_FLAGS="${app_flags}";;
+		'--app-flags='*)
+			export HALCYON_APP_FLAGS="${1#*=}";;
+
+		'--build-ghc')
+			export HALCYON_BUILD_GHC=1;;
+		'--build-cabal')
+			export HALCYON_BUILD_CABAL=1;;
+		'--build-sandbox')
+			export HALCYON_BUILD_SANDBOX=1;;
+		'--build-app')
+			export HALCYON_BUILD_APP=1;;
+
+		'--update-cabal')
+			export HALCYON_UPDATE_CABAL=1;;
+
+		'--purge-cache')
+			export HALCYON_PURGE_CACHE=1;;
 
 		'-'*)
 			die "Unexpected option: $1";;
@@ -211,24 +162,34 @@ function halcyon_deploy () {
 
 	if ! (( ${#args[@]} )); then
 		deploy_local_app '.' || return 1
+
 	elif (( ${#args[@]} == 1 )); then
 		deploy_app "${args[0]}" || return 1
+
 	else
 		local index
 		index=0
 		for arg in "${args[@]}"; do
+			index=$(( index + 1 ))
 			log
-			if ! (( index )); then
+
+			if (( index == 1 )); then
 				HALCYON_NO_CLEAN_CACHE=1 \
 					deploy_app "${arg}" || return 1
-			elif (( index == ${#args[@]} - 1 )); then
-				HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
+
+			elif (( index == ${#args[@]} )); then
+				HALCYON_NO_PREPARE_CACHE=1 \
+				HALCYON_NO_INSTALL_GHC=1   \
+				HALCYON_NO_INSTALL_CABAL=1 \
 					deploy_app "${arg}" || return 1
+
 			else
-				HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_CLEAN_CACHE=1 \
+				HALCYON_NO_PREPARE_CACHE=1 \
+				HALCYON_NO_INSTALL_GHC=1   \
+				HALCYON_NO_INSTAL_CABAL=1  \
+				HALCYON_NO_CLEAN_CACHE=1 \
 					deploy_app "${arg}" || return 1
 			fi
-			index=$(( index + 1 ))
 		done
 	fi
 }

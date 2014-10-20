@@ -6,5 +6,5 @@ HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )
 set -eu -o pipefail
 source "${HALCYON_TOP_DIR}/halcyon.sh"
 
-set_default_vars
+set_halcyon_vars
 halcyon_deploy "$@"
