@@ -97,6 +97,26 @@ function halcyon_deploy () {
 			export HALCYON_NO_WARN_IMPLICIT=1;;
 
 	# Vars inherited once and reset:
+		'--ghc-version')
+			shift
+			expect_args ghc_version -- "$@"
+			export HALCYON_GHC_VERSION="${ghc_version}";;
+		'--ghc-version='*)
+			export HALCYON_GHC_VERSION="${1#*=}";;
+
+		'--cabal-version')
+			shift
+			expect_args cabal_version -- "$@"
+			export HALCYON_CABAL_VERSION="${cabal_version}";;
+		'--cabal-version='*)
+			export HALCYON_CABAL_VERSION="${1#*=}";;
+		'--cabal-remote-repo')
+			shift
+			expect_args remote_repo -- "$@"
+			export HALCYON_CABAL_REMOTE_REPO="${remote_repo}";;
+		'--cabal-remote-repo='*)
+			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
+
 		'--buildtime-deps')
 			shift
 			expect_args buildtime_deps -- "$@"
@@ -109,32 +129,6 @@ function halcyon_deploy () {
 			export HALCYON_RUNTIME_DEPS="${runtime_deps}";;
 		'--runtime-deps='*)
 			export HALCYON_RUNTIME_DEPS="${1#*=}";;
-
-		'--ghc-version')
-			shift
-			expect_args ghc_version -- "$@"
-			export HALCYON_GHC_VERSION="${ghc_version}";;
-		'--ghc-version='*)
-			export HALCYON_GHC_VERSION="${1#*=}";;
-		'--cabal-version')
-			shift
-			expect_args cabal_version -- "$@"
-			export HALCYON_CABAL_VERSION="${cabal_version}";;
-		'--cabal-version='*)
-			export HALCYON_CABAL_VERSION="${1#*=}";;
-
-		'--sandbox-flags')
-			shift
-			expect_args sandbox_flags -- "$@"
-			export HALCYON_SANDBOX_FLAGS="${sandbox_flags}";;
-		'--sandbox-flags='*)
-			export HALCYON_SANDBOX_FLAGS="${1#*=}";;
-		'--app-flags')
-			shift
-			expect_args app_flags -- "$@"
-			export HALCYON_APP_FLAGS="${app_flags}";;
-		'--app-flags='*)
-			export HALCYON_APP_FLAGS="${1#*=}";;
 
 		'--build-ghc')
 			export HALCYON_BUILD_GHC=1;;

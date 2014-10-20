@@ -34,12 +34,6 @@ function read_constraints () {
 }
 
 
-function read_constraints_dry_run () {
-	tail -n +3 |
-		sed 's/ == / /'
-}
-
-
 function filter_valid_constraints () {
 	local -A constraints_A
 
