@@ -292,7 +292,7 @@ function build_app () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-prebuild-hook" ]; then
 		log 'Running app pre-build hook'
-		( "${app_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) |& quote || die
 	fi
 
 	log 'Building app'
@@ -301,7 +301,7 @@ function build_app () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-postbuild-hook" ]; then
 		log 'Running app post-build hook'
-		( "${app_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) |& quote || die
 	fi
 
 	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
@@ -390,7 +390,7 @@ function restore_app () {
 		while read -r path; do
 			cp -p "${tmp_old_dir}/${path}" "${app_dir}/${path}" || die
 		done
-	filter_not_matching '^= ' <<<"${changes}" | quote || die
+	filter_not_matching '^= ' <<<"${changes}" |& quote || die
 
 	if filter_matching "^[^=] Setup.hs$" <<<"${changes}" |
 		match_exactly_one >'/dev/null'
@@ -507,7 +507,7 @@ function install_app_1 () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-preinstall-hook" ]; then
 		log 'Running app pre-install hook'
-		( "${app_dir}/.halcyon-magic/app-preinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" "${tmp_install_dir}" "${app_install_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/app-preinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" "${tmp_install_dir}" "${app_install_dir}" ) |& quote || die
 	fi
 
 	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${tmp_install_dir}" || die
@@ -534,7 +534,7 @@ function install_app_2 () {
 
 	if [ -f "${app_dir}/.halcyon-magic/app-postinstall-hook" ]; then
 		log 'Running app post-install hook'
-		( "${app_dir}/.halcyon-magic/app-postinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" "${tmp_install_dir}" "${app_install_dir}" ) | quote || die
+		( "${app_dir}/.halcyon-magic/app-postinstall-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" "${tmp_install_dir}" "${app_install_dir}" ) |& quote || die
 	fi
 
 	log "App layer installed:"
