@@ -11,7 +11,7 @@ EOF
 }
 
 
-function help_add_constraints () {
+function help_add_explicit_constraints () {
 	local constraints
 	expect_args constraints -- "$@"
 
