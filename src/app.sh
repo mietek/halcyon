@@ -302,26 +302,28 @@ function restore_app () {
 		touch -c "${HALCYON_CACHE_DIR}/${app_archive}" || true
 	fi
 
-	log 'Examining app changes'
+	log 'Examining app changes:'
 
 	local changes
-	changes=$(
+	if ! changes=$(
 		compare_recursively "${tmp_app_dir}" "${app_dir}" |
-		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$|dist/)'
-	) || die
+		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$|dist/)' |
+		match_at_least_one
+	); then
+		log_indent '(none)'
+	else
+		local nonchange
+		filter_matching '^= ' <<<"${changes}" |
+			sed 's/^= //' |
+			while read -r nonchange; do
+				cp -p "${tmp_app_dir}/${nonchange}" "${app_dir}/${nonchange}" || die
+			done
 
-	local change
-	filter_matching '^= ' <<<"${changes}" |
-		sed 's/^= //' |
-		while read -r change; do
-			cp -p "${tmp_app_dir}/${change}" "${app_dir}/${change}" || die
-		done
-	filter_not_matching '^= ' <<<"${changes}" |& quote || die
+		if filter_matching "^[^=] Setup.hs$" <<<"${changes}" | match_exactly_one >'/dev/null'; then
+			export HALCYON_CONFIGURE_APP=1
+		fi
 
-	if filter_matching "^[^=] Setup.hs$" <<<"${changes}" |
-		match_exactly_one >'/dev/null'
-	then
-		export HALCYON_CONFIGURE_APP=1
+		filter_not_matching '^= ' <<<"${changes}" | quote || die
 	fi
 
 	rm -rf "${app_dir}/dist" || die
