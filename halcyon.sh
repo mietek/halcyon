@@ -186,10 +186,10 @@ function halcyon_deploy () {
 					return 1
 				fi
 			else
-				if ! HALCYON_NO_PREPARE_CACHE=1   \
-					HALCYON_NO_INSTALL_GHC=1  \
-					HALCYON_NO_INSTAL_CABAL=1 \
-					HALCYON_NO_CLEAN_CACHE=1  \
+				if ! HALCYON_NO_PREPARE_CACHE=1    \
+					HALCYON_NO_INSTALL_GHC=1   \
+					HALCYON_NO_INSTALL_CABAL=1 \
+					HALCYON_NO_CLEAN_CACHE=1   \
 					deploy_app "${arg}"
 				then
 					return 1
