@@ -47,6 +47,8 @@ function set_halcyon_vars () {
 
 		export HALCYON_UPDATE_CABAL="${HALCYON_UPDATE_CABAL:-0}"
 
+		export HALCYON_CONFIGURE_APP="${HALCYON_CONFIGURE_APP:-0}"
+
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 	else
 		export HALCYON_GHC_VERSION=
@@ -63,6 +65,8 @@ function set_halcyon_vars () {
 		export HALCYON_BUILD_APP=0
 
 		export HALCYON_UPDATE_CABAL=0
+
+		export HALCYON_CONFIGURE_APP=0
 
 		export HALCYON_PURGE_CACHE=0
 	fi
