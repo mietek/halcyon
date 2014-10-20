@@ -358,7 +358,7 @@ function determine_app_tag () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 
-	echo_app_tag "${ghc_tag}" "${sandbox_tag}" "${magic_hash}" "${app_label}" "${magic_hash}" || die
+	echo_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${magic_hash}" || die
 }
 
 
@@ -430,7 +430,7 @@ function install_app_2 () {
 	local install_dir
 	install_dir="${HALCYON_DIR}/app"
 
-	copy_entire_contents "${tmp_app_dir}" "${app_install_dir}" || die
+	copy_entire_contents "${tmp_app_dir}" "${install_dir}" || die
 
 	log "App layer installed:"
 	log_indent "${app_description}"
