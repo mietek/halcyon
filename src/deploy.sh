@@ -147,7 +147,7 @@ function deploy_base_package () {
 
 		log_end "${base_version} (explicit)"
 	else
-		base_version=$( detect_base_package_version ) || die
+		base_version=$( ghc_detect_base_package_version ) || die
 
 		log_end "${base_version} (implicit)"
 		log_warning 'Using implicit base package version'

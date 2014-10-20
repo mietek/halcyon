@@ -105,19 +105,7 @@ function detect_app_constraint () {
 }
 
 
-function echo_ghc_version_from_constraints () {
-	local constraints
-	expect_args constraints -- "$@"
 
-	local base_version
-	base_version=$(
-		filter_matching "^base " <<<"${constraints}" |
-		match_exactly_one |
-		sed 's/^.* //'
-	) || die
-
-	echo_ghc_version_from_base_package_version "${base_version}" || die
-}
 
 
 function filter_correct_constraints () {
