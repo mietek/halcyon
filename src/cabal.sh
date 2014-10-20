@@ -113,18 +113,19 @@ function echo_cabal_description () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
-	local cabal_id cabal_timestamp
+	local cabal_id repo_name cabal_timestamp
 	cabal_id=$( echo_cabal_id "${cabal_tag}" ) || die
+	repo_name=$( echo_cabal_remote_repo_name "${cabal_tag}" ) || die
 	cabal_timestamp=$( echo_cabal_timestamp "${cabal_tag}" ) || die
 
 	if [ -z "${cabal_timestamp}" ]; then
-		echo "${cabal_id}"
+		echo "${cabal_id} (${repo_name})"
 	else
 		local timestamp_date timestamp_time
 		timestamp_date="${cabal_timestamp:0:4}-${cabal_timestamp:4:2}-${cabal_timestamp:6:2}"
 		timestamp_time="${cabal_timestamp:8:2}:${cabal_timestamp:10:2}:${cabal_timestamp:12:2}"
 
-		echo "${cabal_id} (${timestamp_date} ${timestamp_time} UTC)"
+		echo "${cabal_id} (${repo_name} at ${timestamp_date} ${timestamp_time} UTC)"
 	fi
 }
 
