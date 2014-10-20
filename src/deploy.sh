@@ -89,23 +89,23 @@ function deploy_local_app () {
 }
 
 
-function deploy_remote_app () {
+function deploy_cloned_app () {
 	local url
 	expect_args url -- "$@"
 
 	log_delimiter
-	log 'Deploying remote app:'
+	log 'Deploying cloned app:'
 	log_indent "${url}"
 
 	local tmp_app_dir
-	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.remote-app' ) || die
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.cloned-app' ) || die
 
 	if ! git clone --depth=1 --quiet "${url}" "${tmp_app_dir}"; then
-		die 'Cannot deploy remote app'
+		die 'Cannot deploy cloned app'
 	fi
 
 	if ! deploy_layers "${tmp_app_dir}"; then
-		log_warning 'Cannot deploy remoet app'
+		log_warning 'Cannot deploy cloned app'
 		return 1
 	fi
 
@@ -170,34 +170,34 @@ function deploy_base_package () {
 }
 
 
-function deploy_package () {
+function deploy_unpacked_app () {
 	expect_vars HALCYON_DIR
 
 	local arg
 	expect_args arg -- "$@"
 
 	log_delimiter
-	log "Deploying package:"
+	log "Deploying unpacked app:"
 	log_indent "${arg}"
 
 	if !                                  \
 		HALCYON_NO_WARN_CONSTRAINTS=1 \
-		HALCYON_NO_SANDBOX=1          \
-		HALCYON_NO_APP=1              \
+		HALCYON_NO_INSTALL_SANDBOX=1  \
+		HALCYON_NO_INSTALL_APP=1      \
 		HALCYON_NO_CLEAN_CACHE=1      \
 		deploy_layers '/dev/null'
 	then
-		log_warning 'Cannot deploy package'
+		log_warning 'Cannot deploy unpacked app'
 		return 1
 	fi
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 	local tmp_app_dir
-	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.package' ) || die
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.unpacked_app' ) || die
 
 	mkdir -p "${tmp_app_dir}" || die
 
-	log_begin 'Determining package version...'
+	log_begin 'Determining unpacked app version...'
 	local label
 	if ! label=$(
 		cabal_do "${tmp_app_dir}" unpack "${arg}" |
@@ -206,7 +206,7 @@ function deploy_package () {
 			sed 's:^Unpacking to \(.*\)/$:\1:'
 	); then
 		log_end '(unknown)'
-		log_warning 'Cannot deploy package'
+		log_warning 'Cannot deploy unpacked app'
 		return 1
 	fi
 	local name version
@@ -216,8 +216,8 @@ function deploy_package () {
 		log_end "${version} (explicit)"
 	else
 		log_end "${version} (implicit)"
-		log_warning "Using newest available ${name} package version"
-		log_warning 'Expected package name with explicit version'
+		log_warning "Using newest available version of ${name}"
+		log_warning 'Expected app name with explicit version'
 	fi
 
 	if !                                  \
@@ -227,7 +227,7 @@ function deploy_package () {
 		HALCYON_NO_CABAL=1            \
 		deploy_layers "${tmp_app_dir}/${label}"
 	then
-		log_warning 'Cannot deploy package'
+		log_warning 'Cannot deploy unpacked app'
 		return 1
 	fi
 
@@ -250,13 +250,13 @@ function deploy_app () {
 	'file://'*);&
 	'http://'*);&
 	'git://'*)
-		deploy_remote_app "${arg}" || return 1
+		deploy_cloned_app "${arg}" || return 1
 		;;
 	*)
 		if [ -d "${arg}" ]; then
 			deploy_local_app "${arg%/}" || return 1
 		else
-			deploy_package "${arg}" || return 1
+			deploy_unpacked_app "${arg}" || return 1
 		fi
 	esac
 }
