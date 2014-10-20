@@ -161,11 +161,13 @@ function halcyon_deploy () {
 	done
 
 	if ! (( ${#args[@]} )); then
-		deploy_local_app '.' || return 1
-
+		if ! deploy_local_app '.'; then
+			return 1
+		fi
 	elif (( ${#args[@]} == 1 )); then
-		deploy_app "${args[0]}" || return 1
-
+		if ! deploy_app "${args[0]}"; then
+			return 1
+		fi
 	else
 		local index
 		index=0
@@ -174,21 +176,28 @@ function halcyon_deploy () {
 			log
 
 			if (( index == 1 )); then
-				HALCYON_NO_CLEAN_CACHE=1 \
-					deploy_app "${arg}" || return 1
-
+				if ! HALCYON_NO_CLEAN_CACHE=1 \
+					deploy_app "${arg}"
+				then
+					return 1
+				fi
 			elif (( index == ${#args[@]} )); then
-				HALCYON_NO_PREPARE_CACHE=1 \
-				HALCYON_NO_INSTALL_GHC=1   \
-				HALCYON_NO_INSTALL_CABAL=1 \
-					deploy_app "${arg}" || return 1
-
+				if ! HALCYON_NO_PREPARE_CACHE=1    \
+					HALCYON_NO_INSTALL_GHC=1   \
+					HALCYON_NO_INSTALL_CABAL=1 \
+					deploy_app "${arg}"
+				then
+					return 1
+				fi
 			else
-				HALCYON_NO_PREPARE_CACHE=1 \
-				HALCYON_NO_INSTALL_GHC=1   \
-				HALCYON_NO_INSTAL_CABAL=1  \
-				HALCYON_NO_CLEAN_CACHE=1 \
-					deploy_app "${arg}" || return 1
+				if ! HALCYON_NO_PREPARE_CACHE=1   \
+					HALCYON_NO_INSTALL_GHC=1  \
+					HALCYON_NO_INSTAL_CABAL=1 \
+					HALCYON_NO_CLEAN_CACHE=1  \
+					deploy_app "${arg}"
+				then
+					return 1
+				fi
 			fi
 		done
 	fi

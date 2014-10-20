@@ -5,10 +5,10 @@ function prepare_cache () {
 	expect_args tmp_cache_dir -- "$@"
 
 	if (( HALCYON_PURGE_CACHE )); then
-		log 'Purging cache'
-
 		rm -rf "${HALCYON_CACHE_DIR}"
 		mkdir -p "${HALCYON_CACHE_DIR}"
+
+		log 'Purging cache'
 		return 0
 	fi
 
@@ -49,7 +49,5 @@ function clean_cache () {
 		compare_recursively "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" |
 			filter_not_matching '^= ' |
 			quote || die
-
-		rm -rf "${tmp_cache_dir}" || die
 	fi
 }
