@@ -414,7 +414,7 @@ function install_app_1 () {
 	# NOTE: We extend PATH to avoid confusing the user with a spurious Cabal warning, such as:
 	# "Warning: The directory /tmp/halcyon.../bin is not in the system search path."
 
-	PATH="${tmp_app_dir}/${install_dir}/bin:${PATH}" \
+	PATH="${tmp_app_dir}${install_dir}/bin:${PATH}" \
 		cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${tmp_app_dir}" || die
 }
 
@@ -430,11 +430,7 @@ function install_app_2 () {
 	app_tag=$( <"${app_dir}/.halcyon-tag" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
-	# TODO: change the install dir
-	local install_dir
-	install_dir="${HALCYON_DIR}/app"
-
-	copy_entire_contents "${tmp_app_dir}" "${install_dir}" || die
+	copy_entire_contents "${tmp_app_dir}" '/' || die
 
 	log "App layer installed:"
 	log_indent "${app_description}"
