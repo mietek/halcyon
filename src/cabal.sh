@@ -366,7 +366,7 @@ function match_updated_cabal_archive () {
 
 
 function build_cabal () {
-	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL HALCYON_QUIET
+	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_CABAL
 	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	# NOTE: There is no way to prevent Cabal for creating ${HOME}/.cabal/setup-exe-cache.
@@ -448,7 +448,7 @@ EOF
 	if ! (
 		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
 		cd "${tmp_build_dir}/cabal-install-${cabal_version}" &&
-		quote_quietly "${HALCYON_QUIET}" ./bootstrap.sh --no-doc
+		./bootstrap.sh --no-doc |& quote
 	); then
 		die 'Failed to bootstrap Cabal'
 	fi
@@ -863,9 +863,7 @@ function cabal_freeze_actual_constraints () {
 
 
 function cabal_update () {
-	expect_vars HALCYON_QUIET
-
-	quote_quietly "${HALCYON_QUIET}" cabal_do '.' update || die
+	cabal_do '.' update |& quote || die
 }
 
 
@@ -883,14 +881,12 @@ function cabal_list_newest_package_version () {
 
 
 function cabal_create_sandbox () {
-	expect_vars HALCYON_QUIET
-
 	local sandbox_dir
 	expect_args sandbox_dir -- "$@"
 	expect_no_existing "${sandbox_dir}"
 
 	mkdir -p "${sandbox_dir}" || die
-	quote_quietly "${HALCYON_QUIET}" cabal_do "${sandbox_dir}" sandbox init --sandbox '.' || die
+	cabal_do "${sandbox_dir}" sandbox init --sandbox '.' |& quote || die
 }
 
 
@@ -905,44 +901,36 @@ function cabal_create_sandbox () {
 
 
 function cabal_install_deps () {
-	expect_vars HALCYON_QUIET
-
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 	shift 2
 
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only "$@" || die
+	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only "$@" |& quote || die
 }
 
 
 function cabal_configure_app () {
-	expect_vars HALCYON_QUIET
-
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 	shift 2
 
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure "$@" || die
+	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure "$@" |& quote || die
 }
 
 
 function cabal_build_app () {
-	expect_vars HALCYON_QUIET
-
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 	shift 2
 
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build "$@" || die
+	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build "$@" |& quote || die
 }
 
 
 function cabal_copy_app () {
-	expect_vars HALCYON_QUIET
-
 	local sandbox_dir app_dir
 	expect_args sandbox_dir app_dir -- "$@"
 	shift 2
 
-	quote_quietly "${HALCYON_QUIET}" sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy "$@" || die
+	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy "$@" |& quote || die
 }

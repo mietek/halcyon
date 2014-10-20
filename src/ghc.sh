@@ -283,7 +283,7 @@ function prepare_ghc_libs () {
 
 
 function build_ghc () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_GHC HALCYON_QUIET
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_FORCE_BUILD_ALL HALCYON_FORCE_BUILD_GHC
 	expect_no_existing "${HALCYON_DIR}/ghc"
 
 	local ghc_tag app_dir
@@ -325,8 +325,8 @@ function build_ghc () {
 
 	if ! (
 		cd "${tmp_build_dir}/ghc-${ghc_version}" &&
-		quote_quietly "${HALCYON_QUIET}" ./configure --prefix="${HALCYON_DIR}/ghc" &&
-		quote_quietly "${HALCYON_QUIET}" make install
+		./configure --prefix="${HALCYON_DIR}/ghc" |& quote &&
+		make install |& quote
 	); then
 		die 'Failed to install GHC'
 	fi
