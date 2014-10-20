@@ -75,92 +75,167 @@ function deploy_local_app () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	deploy_layers "${app_dir}" || return 1
+	local name
+	name=$( echo_dir_name "${app_dir}" ) || die
+
+	log_delimiter
+	log 'Deploying local app:'
+	log_indent "${name}"
+
+	if ! deploy_layers "${app_dir}"; then
+		log_warning 'Cannot deploy local app'
+		return 1
+	fi
+}
+
+
+function deploy_remote_app () {
+	local url
+	expect_args url -- "$@"
+
+	log_delimiter
+	log 'Deploying remote app:'
+	log_indent "${url}"
+
+	local tmp_app_dir
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.remote-app' ) || die
+
+	if ! git clone --depth=1 --quiet "${url}" "${tmp_app_dir}"; then
+		die 'Cannot deploy remote app'
+	fi
+
+	if ! deploy_layers "${tmp_app_dir}"; then
+		log_warning 'Cannot deploy remoet app'
+		return 1
+	fi
+
+	rm -rf "${tmp_app_dir}" || die
 }
 
 
 function deploy_base_package () {
 	expect_vars HALCYON_DIR
 
-	local name_or_label
-	expect_args name_or_label -- "$@"
+	local arg
+	expect_args arg -- "$@"
 
-	HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_CABAL=1 HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
-		deploy_layers '/dev/null' || return 1
+	log_delimiter
+	log 'Deploying base package:'
+	log_indent "${arg}"
+
+	if !                                  \
+		HALCYON_NO_WARN_CONSTRAINTS=1 \
+		HALCYON_NO_CABAL=1            \
+		HALCYON_NO_SANDBOX=1          \
+		HALCYON_NO_APP=1              \
+		HALCYON_NO_CLEAN_CACHE=1      \
+		deploy_layers '/dev/null'
+	then
+		log_warning 'Cannot deploy base package'
+		return 1
+	fi
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local base_version tmp_app_dir
-	base_version=''
-	if [ "${name_or_label}" == 'base' ]; then
-		base_version=$( detect_base_package_version ) || die
+	log
+	log_begin 'Determining base package version...'
+	local base_version
+	if [ "${arg}" != 'base' ]; then
+		base_version="${arg#base-}"
+		log_end "${base_version} (explicit)"
 	else
-		base_version="${name_or_label#base-}"
+		base_version=$( detect_base_package_version ) || die
+		log_end "${base_version} (implicit)"
+		log_warning 'Using implicit base package version'
+		log_warning 'Expected base package name with explicit version'
 	fi
-	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.fake-base' ) || die
+
+	local tmp_app_dir
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.base-package' ) || die
 
 	mkdir -p "${tmp_app_dir}" || die
 	echo_fake_base_package "${base_version}" >"${tmp_app_dir}/halcyon-fake-base.cabal" || die
 
-	HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_APP=1 \
-		deploy_layers "${tmp_app_dir}" || return 1
+	if !                                   \
+		HALCYON_NO_WARN_CONSTRAINTS=1  \
+		HALCYON_NO_PREPARE_CACHE=1     \
+		HALCYON_NO_GHC=1               \
+		HALCYON_NO_APP=1               \
+		deploy_layers "${tmp_app_dir}"
+	then
+		log_warning 'Cannot deploy base package'
+		return 1
+	fi
 
 	rm -rf "${tmp_app_dir}" || die
 }
 
 
-function deploy_remote_app () {
+function deploy_package () {
 	expect_vars HALCYON_DIR
 
 	local arg
 	expect_args arg -- "$@"
 
-	local tmp_remote_dir
-	tmp_remote_dir=$( echo_tmp_dir_name 'halcyon.remote' ) || die
+	log_delimiter
+	log "Deploying package:"
+	log_indent "${arg}"
 
-	mkdir -p "${tmp_remote_dir}" || die
+	if !                                  \
+		HALCYON_NO_WARN_CONSTRAINTS=1 \
+		HALCYON_NO_SANDBOX=1          \
+		HALCYON_NO_APP=1              \
+		HALCYON_NO_CLEAN_CACHE=1      \
+		deploy_layers '/dev/null'
+	then
+		log_warning 'Cannot deploy package'
+		return 1
+	fi
+	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	case "${arg}" in
-	'https://'*);&
-	'ssh://'*);&
-	'git@'*);&
-	'file://'*);&
-	'http://'*);&
-	'git://'*)
-		if ! git clone --depth=1 "${arg}" "${tmp_remote_dir}"; then
-			die "Cannot install ${arg}"
-		fi
-		deploy_layers "${tmp_remote_dir}" || return 1
-		;;
-	*)
-		HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_SANDBOX=1 HALCYON_NO_APP=1 HALCYON_NO_CLEAN_CACHE=1 \
-			deploy_layers '/dev/null' || return 1
-		expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
+	local tmp_app_dir
+	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.package' ) || die
 
-		local label
-		if ! label=$(
-			cabal_do "${tmp_remote_dir}" unpack "${arg}" |
-				filter_last |
-				match_exactly_one |
-				sed 's:^Unpacking to \(.*\)/$:\1:'
-		); then
-			die "Cannot install ${arg}"
-		fi
+	mkdir -p "${tmp_app_dir}" || die
 
-		if [ "${label}" != "${arg}" ]; then
-			log
-			log_warning "Using newest available version of ${arg}"
-			log_warning 'Expected package name with explicit version'
-		fi
+	log_begin 'Determining package version...'
+	local label
+	if ! label=$(
+		cabal_do "${tmp_app_dir}" unpack "${arg}" |
+			filter_last |
+			match_exactly_one |
+			sed 's:^Unpacking to \(.*\)/$:\1:'
+	); then
+		log_end '(unknown)'
+		log_warning 'Cannot deploy package'
+		return 1
+	fi
+	local name version
+	name="${label%-*}"
+	version="${label##*-}"
+	if [ "${label}" = "${arg}" ]; then
+		log_end "${version} (explicit)"
+	else
+		log_end "${version} (implicit)"
+		log_warning "Using newest available ${name} package version"
+		log_warning 'Expected package name with explicit version'
+	fi
 
-		HALCYON_NO_WARN_CONSTRAINTS=1 HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
-			deploy_layers "${tmp_remote_dir}/${label}" || return 1
-	esac
+	if !                                  \
+		HALCYON_NO_WARN_CONSTRAINTS=1 \
+		HALCYON_NO_PREPARE_CACHE=1    \
+		HALCYON_NO_GHC=1              \
+		HALCYON_NO_CABAL=1            \
+		deploy_layers "${tmp_app_dir}/${label}"
+	then
+		log_warning 'Cannot deploy package'
+		return 1
+	fi
 
-	rm -rf "${tmp_remote_dir}" || die
+	rm -rf "${tmp_app_dir}" || die
 }
 
 
-function deploy_some_app () {
+function deploy_app () {
 	local arg
 	expect_args arg -- "$@"
 
@@ -169,11 +244,19 @@ function deploy_some_app () {
 	'base-'[0-9]*)
 		deploy_base_package "${arg}" || return 1
 		;;
+	'https://'*);&
+	'ssh://'*);&
+	'git@'*);&
+	'file://'*);&
+	'http://'*);&
+	'git://'*)
+		deploy_remote_app "${arg}" || return 1
+		;;
 	*)
 		if [ -d "${arg}" ]; then
 			deploy_local_app "${arg%/}" || return 1
 		else
-			deploy_remote_app "${arg}" || return 1
+			deploy_package "${arg}" || return 1
 		fi
 	esac
 }

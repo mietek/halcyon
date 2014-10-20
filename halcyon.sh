@@ -212,23 +212,21 @@ function halcyon_deploy () {
 	if ! (( ${#args[@]} )); then
 		deploy_local_app '.' || return 1
 	elif (( ${#args[@]} == 1 )); then
-		deploy_some_app "${args[0]}" || return 1
+		deploy_app "${args[0]}" || return 1
 	else
 		local index
 		index=0
 		for arg in "${args[@]}"; do
 			log
-			log_delimiter
-			log
 			if ! (( index )); then
 				HALCYON_NO_CLEAN_CACHE=1 \
-					deploy_some_app "${arg}" || return 1
+					deploy_app "${arg}" || return 1
 			elif (( index == ${#args[@]} - 1 )); then
 				HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 \
-					deploy_some_app "${arg}" || return 1
+					deploy_app "${arg}" || return 1
 			else
 				HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_CLEAN_CACHE=1 \
-					deploy_some_app "${arg}" || return 1
+					deploy_app "${arg}" || return 1
 			fi
 			index=$(( index + 1 ))
 		done
