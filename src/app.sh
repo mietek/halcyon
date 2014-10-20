@@ -368,7 +368,7 @@ function install_app_1 () {
 
 	local app_dir tmp_app_dir
 	expect_args app_dir tmp_app_dir -- "$@"
-	expect_existing "${app_dir}" "${tmp_app_dir}"
+	expect_existing "${app_dir}"
 
 	local app_tag
 	app_tag=$( determine_app_tag "${app_dir}" ) || die
