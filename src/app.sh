@@ -530,7 +530,7 @@ function install_app_2 () {
 		app_install_dir=$( <"${app_dir}/.halcyon-magic/app-install-dir" ) || die
 	fi
 
-	cp -R "${tmp_install_dir}/." "${app_install_dir}" || die
+	copy_entire_contents "${tmp_install_dir}" "${app_install_dir}" || die
 
 	if [ -f "${app_dir}/.halcyon-magic/app-postinstall-hook" ]; then
 		log 'Running app post-install hook'
