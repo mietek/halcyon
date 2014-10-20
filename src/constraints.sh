@@ -1,8 +1,3 @@
-function hash_constraints () {
-	openssl sha1 | sed 's/^.* //'
-}
-
-
 function echo_constraints () {
 	awk 'BEGIN { printf "constraints:"; separator = " " }
 		!/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
@@ -14,8 +9,8 @@ function echo_constraints_difference () {
 	expect_args old_constraints new_constraints -- "$@"
 
 	local old_constraints_hash new_constraints_hash
-	old_constraints_hash=$( hash_constraints <<<"${old_constraints}" ) || die
-	new_constraints_hash=$( hash_constraints <<<"${new_constraints}" ) || die
+	old_constraints_hash=$( do_hash <<<"${old_constraints}" ) || die
+	new_constraints_hash=$( do_hash <<<"${new_constraints}" ) || die
 
 	local tmp_old_config tmp_new_config
 	tmp_old_config=$( echo_tmp_file_name 'halcyon.old-config' ) || die

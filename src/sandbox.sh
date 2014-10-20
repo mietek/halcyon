@@ -233,7 +233,7 @@ function validate_sandbox_config () {
 	expect_args sandbox_constraints_hash -- "$@"
 
 	local candidate_constraints_hash
-	candidate_constraints_hash=$( read_constraints | hash_constraints ) || die
+	candidate_constraints_hash=$( read_constraints | do_hash ) || die
 
 	if [ "${candidate_constraints_hash}" != "${sandbox_constraints_hash}" ]; then
 		return 1
@@ -246,7 +246,7 @@ function validate_sandbox_config_short () {
 	expect_args sandbox_constraints_hash_short -- "$@"
 
 	local candidate_constraints_hash
-	candidate_constraints_hash=$( read_constraints | hash_constraints ) || die
+	candidate_constraints_hash=$( read_constraints | do_hash ) || die
 
 	if [ "${candidate_constraints_hash:0:7}" != "${sandbox_constraints_hash_short}" ]; then
 		return 1
@@ -372,7 +372,7 @@ function build_sandbox () {
 
 	local actual_constraints actual_constraints_hash
 	actual_constraints=$( cabal_freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${app_dir}" ) || die
-	actual_constraints_hash=$( hash_constraints <<<"${actual_constraints}" ) || die
+	actual_constraints_hash=$( do_hash <<<"${actual_constraints}" ) || die
 
 	if [ "${actual_constraints_hash}" != "${sandbox_constraints_hash}" ]; then
 		log_warning 'Unexpected constraints difference'
@@ -592,10 +592,7 @@ function match_sandbox_tag () {
 			fi
 
 			local constraints_hash app_label tag description
-			constraints_hash=$(
-				read_constraints <"${HALCYON_CACHE_DIR}/${partial_config}" |
-				hash_constraints
-			) || die
+			constraints_hash=$( read_constraints <"${HALCYON_CACHE_DIR}/${partial_config}" | do_hash ) || die
 			app_label=$( echo_sandbox_config_app_label "${partial_config}" ) || die
 			tag=$( make_matched_sandbox_tag "${sandbox_tag}" "${constraints_hash}" "${app_label}" ) || die
 			description=$( echo_sandbox_description "${tag}" ) || die
@@ -748,7 +745,7 @@ function determine_sandbox_constraints_hash () {
 	log_begin 'Determining sandbox constraints hash...'
 
 	local sandbox_constraints_hash
-	sandbox_constraints_hash=$( hash_constraints <<<"${sandbox_constraints}" ) || die
+	sandbox_constraints_hash=$( do_hash <<<"${sandbox_constraints}" ) || die
 
 	log_end "${sandbox_constraints_hash:0:7}"
 
