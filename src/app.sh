@@ -370,6 +370,10 @@ function install_app_1 () {
 	expect_args app_dir tmp_app_dir -- "$@"
 	expect_existing "${app_dir}"
 
+	# TODO: change the install dir
+	local install_dir
+	install_dir="${HALCYON_DIR}/app"
+
 	local app_tag
 	app_tag=$( determine_app_tag "${app_dir}" ) || die
 
@@ -386,10 +390,6 @@ function install_app_1 () {
 		fi
 
 		log 'Configuring app'
-
-		# TODO: change the install dir
-		local install_dir
-		install_dir="${HALCYON_DIR}/app"
 
 		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${install_dir}" || die
 	else
@@ -411,7 +411,11 @@ function install_app_1 () {
 
 	log 'Installing app'
 
-	cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${tmp_app_dir}" || die
+	# NOTE: We extend PATH to avoid confusing the user with a spurious Cabal warning, such as:
+	# "Warning: The directory /tmp/halcyon.../bin is not in the system search path."
+
+	PATH="${tmp_app_dir}/${install_dir}/bin:${PATH}" \
+		cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${tmp_app_dir}" || die
 }
 
 
