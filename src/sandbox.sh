@@ -635,13 +635,14 @@ function score_partially_matched_sandbox_constraints () {
 function match_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
-	local ghc_tag sandbox_tag
-	expect_args ghc_tag sandbox_tag -- "$@"
+	local sandbox_tag
+	expect_args sandbox_tag -- "$@"
 
 	log 'Locating matched sandbox layers'
 
-	local os constraints_prefix part_pattern full_pattern constraints_name
+	local os ghc_tag constraints_prefix part_pattern full_pattern constraints_name
 	os=$( echo_sandbox_os "${sandbox_tag}" ) || die
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	constraints_prefix=$( echo_sandbox_constraints_name_prefix "${sandbox_tag}" ) || die
 	part_pattern=$( echo_partially_matched_sandbox_constraints_name_pattern "${sandbox_tag}" ) || die
 	full_pattern=$( echo_fully_matched_sandbox_constraints_name_pattern "${sandbox_tag}" ) || die
@@ -841,7 +842,7 @@ function install_sandbox () {
 	fi
 
 	local match_result
-	if ! (( HALCYON_BUILD_SANDBOX )) && match_result=$( match_sandbox "${ghc_tag}" "${sandbox_tag}" ); then
+	if ! (( HALCYON_BUILD_SANDBOX )) && match_result=$( match_sandbox "${sandbox_tag}" ); then
 		local match_class match_tag
 		match_class="${match_result%% *}"
 		matched_tag="${match_result#* }"
