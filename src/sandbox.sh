@@ -527,7 +527,7 @@ function activate_sandbox () {
 
 
 function determine_sandbox_tag () {
-	expect_vars HALCYON_DIR HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_WARN_IMPLICIT
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local sources_dir
@@ -547,7 +547,7 @@ function determine_sandbox_tag () {
 		constraints_hash=$( do_hash <<<"${constraints}" ) || die
 
 		log_end "${constraints_hash:0:7}"
-		if ! (( HALCYON_NO_WARN_IMPLICIT )); then
+		if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
 			log_warning 'Using newest available versions of all packages'
 			log_warning 'Expected cabal.config with explicit constraints'
 			log

@@ -24,16 +24,15 @@ function deploy_layers () {
 	saved_sandbox=$( echo_tmp_dir_name 'halcyon.deploy_layers.sandbox' ) || die
 	saved_app=$( echo_tmp_dir_name 'halcyon.deploy_layers.app' ) || die
 
-	if ! (( HALCYON_NO_PREPARE_CACHE )); then
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
 		prepare_cache || die
 	fi
-
-	if ! (( HALCYON_NO_INSTALL_GHC )); then
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_GHC )); then
 		log
 		install_ghc "${sources_dir}" || return 1
 	fi
-	if ! (( HALCYON_NO_INSTALL_CABAL )); then
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_CABAL )); then
 		log
 		install_cabal "${sources_dir}" || return 1
 	fi
@@ -66,12 +65,13 @@ function deploy_layers () {
 			mv "${saved_app}" "${HALCYON_DIR}/app" || die
 		fi
 	fi
+
 	if [ -d "${HALCYON_TMP_SLUG_DIR}" ]; then
 		copy_entire_contents "${HALCYON_TMP_SLUG_DIR}" '/' || die
 		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 	fi
 
-	if ! (( HALCYON_NO_CLEAN_CACHE )); then
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
 		log
 		clean_cache || die
 	fi

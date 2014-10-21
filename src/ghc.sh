@@ -447,7 +447,7 @@ function activate_ghc () {
 
 
 function determine_ghc_tag () {
-	expect_vars HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_RECURSIVE HALCYON_NO_WARN_IMPLICIT
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
@@ -469,7 +469,7 @@ function determine_ghc_tag () {
 		ghc_version=$( echo_default_ghc_version ) || die
 
 		log_end "${ghc_version} (default)"
-		if ! (( HALCYON_NO_WARN_IMPLICIT )); then
+		if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
 			log_warning 'Using newest available version of GHC'
 			log_warning 'Expected cabal.config with explicit constraints'
 		fi
