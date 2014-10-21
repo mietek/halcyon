@@ -369,7 +369,7 @@ function build_cabal () {
 
 	if [ -f "${sources_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
 		log 'Running Cabal pre-build hook'
-		( "${sources_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/cabal-prebuild-hook" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" ) |& quote || die
 	fi
 
 	log 'Bootstrapping Cabal'
@@ -413,7 +413,7 @@ EOF
 
 	if [ -f "${sources_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
 		log 'Running Cabal post-build hook'
-		( "${sources_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/cabal-postbuild-hook" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" ) |& quote || die
 	fi
 
 	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'cabal-*' |

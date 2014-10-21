@@ -273,7 +273,7 @@ function build_ghc () {
 
 	if [ -f "${sources_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
 		log 'Running GHC pre-build hook'
-		( "${sources_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" ) |& quote || die
 	fi
 
 	log 'Installing GHC'
@@ -288,7 +288,7 @@ function build_ghc () {
 
 	if [ -f "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
 		log 'Running GHC post-build hook'
-		( "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" ) |& quote || die
 	fi
 
 	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'ghc-*' |

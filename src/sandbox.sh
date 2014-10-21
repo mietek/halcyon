@@ -364,8 +364,7 @@ function build_sandbox () {
 	fi
 	expect_existing "${sources_dir}"
 
-	local ghc_tag constraints_name
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	local constraints_name
 	constraints_name=$( echo_sandbox_constraints_name "${sandbox_tag}" ) || die
 	expect_existing "${HALCYON_CACHE_DIR}/${constraints_name}"
 
@@ -382,7 +381,7 @@ function build_sandbox () {
 
 	if [ -f "${sources_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'
-		( "${sources_dir}/.halcyon-magic/sandbox-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/sandbox-prebuild-hook" "${sandbox_tag}" "${must_create}" ) |& quote || die
 	fi
 
 	log 'Building sandbox'
@@ -392,7 +391,7 @@ function build_sandbox () {
 
 	if [ -f "${sources_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
-		( "${sources_dir}/.halcyon-magic/sandbox-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/sandbox-postbuild-hook" "${sandbox_tag}" "${must_create}" ) |& quote || die
 	fi
 
 	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'sandbox-*' |
