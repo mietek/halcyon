@@ -12,6 +12,7 @@ function set_halcyon_vars () {
 		export HALCYON_PUBLIC="${HALCYON_PUBLIC:-0}"
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
+		export HALCYON_TOOL="${HALCYON_TOOL:-0}"
 
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"

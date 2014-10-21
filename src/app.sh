@@ -1,8 +1,8 @@
 function echo_app_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_tag sandbox_tag app_label app_magic_hash sources_hash
-	expect_args ghc_tag sandbox_tag app_label app_magic_hash sources_hash -- "$@"
+	local ghc_tag sandbox_tag app_label app_magic_hash sources_hash slug_dir
+	expect_args ghc_tag sandbox_tag app_label app_magic_hash sources_hash slug_dir -- "$@"
 
 	local os ghc_version ghc_magic_hash constraints_hash sandbox_magic_hash
 	os=$( detect_os ) || die
@@ -11,7 +11,7 @@ function echo_app_tag () {
 	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_magic_hash=$( echo_sandbox_magic_hash "${sandbox_tag}" ) || die
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_magic_hash}\t${constraints_hash}\t${sandbox_magic_hash}\t${app_label}\t${app_magic_hash}\t${sources_hash}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_magic_hash}\t${constraints_hash}\t${sandbox_magic_hash}\t${app_label}\t${app_magic_hash}\t${sources_hash}\t${slug_dir}"
 }
 
 
@@ -21,7 +21,7 @@ function echo_valid_app_tag_pattern () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	echo "${app_tag%$'\t'*}"$'\t'".*"
+	echo -e "${app_tag%$'\t'*$'\t'*}"$'\t'".*"$'\t'".*"
 }
 
 
@@ -54,6 +54,14 @@ function echo_app_sources_hash () {
 	expect_args app_tag -- "$@"
 
 	awk -F$'\t' '{ print $9 }' <<<"${app_tag}"
+}
+
+
+function echo_app_slug_dir () {
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	awk -F$'\t' '{ print $10 }' <<<"${app_tag}"
 }
 
 
@@ -196,6 +204,19 @@ function validate_app_tag () {
 }
 
 
+function validate_app_magic () {
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	local magic_hash candidate_hash
+	magic_hash=$( echo_app_magic_hash "${app_tag}" ) || die
+	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/app/.halcyon-magic" -name 'app-*' ) || die
+	if [ "${candidate_hash}" != "${magic_hash}" ]; then
+		return 1
+	fi
+}
+
+
 function validate_app_sources () {
 	local app_tag sources_dir
 	expect_args app_tag sources_dir -- "$@"
@@ -209,14 +230,20 @@ function validate_app_sources () {
 }
 
 
-function validate_app_magic () {
+function validate_app_slug_dir () {
+	expect_vars HALCYON_DIR HALCYON_TOOL
+
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local magic_hash candidate_hash
-	magic_hash=$( echo_app_magic_hash "${app_tag}" ) || die
-	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/app/.halcyon-magic" -name 'app-*' ) || die
-	if [ "${candidate_hash}" != "${magic_hash}" ]; then
+	local slug_dir candidate_dir
+	if (( HALCYON_TOOL )); then
+		slug_dir="${HALCYON_DIR}/sandbox"
+	else
+		slug_dir="${HALCYON_DIR}/slug"
+	fi
+	candidate_dir=$( echo_app_slug_dir "${app_tag}" ) || die
+	if [ "${candidate_dir}" != "${slug_dir}" ]; then
 		return 1
 	fi
 }
@@ -234,6 +261,9 @@ function build_app () {
 	fi
 	expect_existing "${sources_dir}"
 
+	local slug_dir
+	slug_dir=$( echo_app_slug_dir "${app_tag}" ) || die
+
 	log 'Starting to build app layer'
 
 	if (( must_copy )); then
@@ -245,8 +275,7 @@ function build_app () {
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'
 
-		# TODO: Make the slug dir configurable.
-		cabal_configure_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --prefix="${HALCYON_DIR}/slug" || die
+		cabal_configure_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --prefix="${slug_dir}" || die
 	fi
 
 	# TODO: Deploy runtime dependencies here.
@@ -341,18 +370,16 @@ function restore_app () {
 
 
 function determine_app_tag () {
+	expect_vars HALCYON_DIR HALCYON_TOOL
+
 	local sources_dir
 	expect_args sources_dir -- "$@"
 
-	log_begin 'Determining app sources hash...          '
+	log_begin 'Determining app label...                 '
 
-	local sources_hash
-	sources_hash=$( hash_spaceless_recursively "${sources_dir}" ) || die
-	if [ -z "${sources_hash}" ]; then
-		log_end '(none)'
-		die 'Cannot install app layer'
-	fi
-	log_end "${sources_hash:0:7}"
+	local app_label
+	app_label=$( detect_app_label "${sources_dir}" ) || die
+	log_end "${app_label}"
 
 	log_begin 'Determining app magic hash...            '
 
@@ -364,11 +391,24 @@ function determine_app_tag () {
 		log_end "${magic_hash:0:7}"
 	fi
 
-	log_begin 'Determining app label...                 '
+	log_begin 'Determining app sources hash...          '
 
-	local app_label
-	app_label=$( detect_app_label "${sources_dir}" ) || die
-	log_end "${app_label}"
+	local sources_hash
+	sources_hash=$( hash_spaceless_recursively "${sources_dir}" ) || die
+	if [ -z "${sources_hash}" ]; then
+		log_end '(none)'
+		die 'Cannot install app layer'
+	fi
+	log_end "${sources_hash:0:7}"
+
+	log_begin 'Determining app slug dir...              '
+	local slug_dir
+	if (( HALCYON_TOOL )); then
+		slug_dir="${HALCYON_DIR}/sandbox"
+	else
+		slug_dir="${HALCYON_DIR}/slug"
+	fi
+	log_end "${slug_dir}"
 
 	local ghc_tag sandbox_tag app_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
@@ -480,7 +520,7 @@ function install_app () {
 	if ! (( HALCYON_BUILD_APP )) && restore_app "${app_tag}"; then
 		local restored_tag
 		restored_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
-		if validate_app_sources "${restored_tag}" "${sources_dir}"; then
+		if validate_app_sources "${restored_tag}" "${sources_dir}" && validate_app_slug_dir "${restored_tag}"; then
 			activate_app || die
 			return 0
 		fi
@@ -493,6 +533,9 @@ function install_app () {
 		local must_copy must_configure
 		must_copy=0
 		must_configure=$( prepare_app_files "${sources_dir}" ) || die
+		if ! validate_app_slug_dir "${restored_tag}"; then
+			must_configure=1
+		fi
 		build_app "${app_tag}" "${must_copy}" "${must_configure}" "${sources_dir}" || die
 		archive_app || die
 		activate_app || die

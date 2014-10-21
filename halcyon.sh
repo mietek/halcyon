@@ -68,6 +68,8 @@ function halcyon_deploy () {
 
 		'--recursive')
 			export HALCYON_RECURSIVE=1;;
+		'--tool')
+			export HALCYON_TOOL=1;;
 
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
