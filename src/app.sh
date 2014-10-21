@@ -231,13 +231,13 @@ function validate_app_sources () {
 
 
 function validate_app_slug_dir () {
-	expect_vars HALCYON_DIR HALCYON_TOOL
+	expect_vars HALCYON_DIR HALCYON_AS_BUILD_TOOL
 
 	local app_tag
 	expect_args app_tag -- "$@"
 
 	local slug_dir candidate_dir
-	if (( HALCYON_TOOL )); then
+	if (( HALCYON_AS_BUILD_TOOL )); then
 		slug_dir="${HALCYON_DIR}/sandbox"
 	else
 		slug_dir="${HALCYON_DIR}/slug"
@@ -370,7 +370,7 @@ function restore_app () {
 
 
 function determine_app_tag () {
-	expect_vars HALCYON_DIR HALCYON_TOOL
+	expect_vars HALCYON_DIR HALCYON_AS_BUILD_TOOL
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
@@ -403,7 +403,7 @@ function determine_app_tag () {
 
 	log_begin 'Determining app slug dir...              '
 	local slug_dir
-	if (( HALCYON_TOOL )); then
+	if (( HALCYON_AS_BUILD_TOOL )); then
 		slug_dir="${HALCYON_DIR}/sandbox"
 	else
 		slug_dir="${HALCYON_DIR}/slug"
