@@ -1,8 +1,5 @@
 function prepare_cache () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE
-
-	local tmp_cache_dir
-	expect_args tmp_cache_dir -- "$@"
+	expect_vars HALCYON_CACHE_DIR HALCYON_TMP_CACHE_DIR HALCYON_PURGE_CACHE
 
 	if (( HALCYON_PURGE_CACHE )); then
 		rm -rf "${HALCYON_CACHE_DIR}"
@@ -25,7 +22,7 @@ function prepare_cache () {
 	); then
 		log_indent '(empty)'
 	else
-		copy_dotless_contents "${HALCYON_CACHE_DIR}" "${tmp_cache_dir}" || die
+		copy_dotless_contents "${HALCYON_CACHE_DIR}" "${HALCYON_TMP_CACHE_DIR}" || die
 
 		quote <<<"${files}"
 	fi
@@ -35,11 +32,8 @@ function prepare_cache () {
 
 
 function clean_cache () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_TMP_CACHE_DIR
 	expect_existing "${HALCYON_CACHE_DIR}/.halcyon-mark"
-
-	local tmp_cache_dir
-	expect_args tmp_cache_dir -- "$@"
 
 	local mark_time
 	mark_time=$( echo_file_modification_time "${HALCYON_CACHE_DIR}/.halcyon-mark" ) || die
@@ -60,13 +54,14 @@ function clean_cache () {
 
 	local changes
 	if ! changes=$(
-		compare_recursively "${tmp_cache_dir}" "${HALCYON_CACHE_DIR}" |
+		compare_recursively "${HALCYON_TMP_CACHE_DIR}" "${HALCYON_CACHE_DIR}" |
 		filter_not_matching '^= ' |
 		match_at_least_one
 	); then
 		log_indent '(none)'
-		return 0
+	else
+		quote <<<"${changes}"
 	fi
 
-	quote <<<"${changes}"
+	rm -rf "${HALCYON_TMP_CACHE_DIR}" || die
 }

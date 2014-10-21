@@ -362,20 +362,21 @@ function determine_app_tag () {
 }
 
 
-function install_app_1 () {
+function install_app () {
 	expect_vars HALCYON_DIR HALCYON_BUILD_APP HALCYON_NO_BUILD
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local app_dir tmp_app_dir
-	expect_args app_dir tmp_app_dir -- "$@"
+	local app_dir
+	expect_args app_dir -- "$@"
 	expect_existing "${app_dir}"
 
-	# TODO: change the install dir
-	local install_dir
-	install_dir="${HALCYON_DIR}/app"
+	# TODO: change the deploy dir
+	local deploy_dir
+	deploy_dir="${HALCYON_DIR}/app"
 
-	local app_tag
+	local app_tag app_description
 	app_tag=$( determine_app_tag "${app_dir}" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
 
 	local restored_app
 	restored_app=0
@@ -391,7 +392,7 @@ function install_app_1 () {
 
 		log 'Configuring app'
 
-		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${install_dir}" || die
+		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${deploy_dir}" || die
 	else
 		log 'Using restored app configuration'
 	fi
@@ -412,25 +413,10 @@ function install_app_1 () {
 	log 'Installing app'
 
 	# NOTE: We extend PATH to avoid confusing the user with a spurious Cabal warning, such as:
-	# "Warning: The directory /tmp/halcyon.../bin is not in the system search path."
+	# "Warning: The directory .../bin is not in the system search path."
 
-	PATH="${tmp_app_dir}${install_dir}/bin:${PATH}" \
-		cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${tmp_app_dir}" || die
-}
-
-
-function install_app_2 () {
-	expect_vars HALCYON_DIR
-
-	local app_dir tmp_app_dir
-	expect_args app_dir tmp_app_dir -- "$@"
-	expect_existing "${app_dir}/.halcyon-tag" "${tmp_app_dir}"
-
-	local app_tag app_description
-	app_tag=$( <"${app_dir}/.halcyon-tag" ) || die
-	app_description=$( echo_app_description "${app_tag}" ) || die
-
-	copy_entire_contents "${tmp_app_dir}" '/' || die
+	PATH="${HALCYON_TMP_DEPLOY_DIR}${deploy_dir}/bin:${PATH}" \
+		cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${HALCYON_TMP_DEPLOY_DIR}" || die
 
 	log "App layer installed:"
 	log_indent "${app_description}"

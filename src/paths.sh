@@ -3,7 +3,9 @@ function set_halcyon_paths () {
 		export HALCYON_INTERNAL_PATHS=1
 
 		export HALCYON_DIR="${HALCYON_DIR:-/app/.halcyon}"
-		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon/cache}"
+		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/cache/halcyon}"
+		export HALCYON_TMP_CACHE_DIR="${HALCYON_TMP_CACHE_DIR:-/tmp/halcyon.cache}"
+		export HALCYON_TMP_DEPLOY_DIR="${HALCYON_TMP_DEPLY_DIR:-/tmp/halcyon.deploy}"
 
 		export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
 		export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
