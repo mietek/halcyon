@@ -38,6 +38,16 @@ function echo_cabal_tag () {
 }
 
 
+function echo_valid_cabal_tag_pattern () {
+	expect_vars HALCYON_DIR
+
+	local cabal_tag
+	expect_args cabal_tag -- "$@"
+
+	echo -e "${cabal_tag%$'\t'*}"$'\t'".*"
+}
+
+
 function echo_cabal_os () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
@@ -282,28 +292,12 @@ function validate_updated_cabal_tag () {
 		return 1
 	fi
 
-	local candidate_tag
-	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-
-	local os cabal_version remote_repo magic_hash
-	os=$( echo_cabal_os "${cabal_tag}" ) || die
-	cabal_version=$( echo_cabal_version "${cabal_tag}" ) || die
-	remote_repo=$( echo_cabal_remote_repo "${cabal_tag}" ) || die
-	magic_hash=$( echo_cabal_magic_hash "${cabal_tag}" ) || die
-
-	local candidate_os candidate_dir candidate_version candidate_repo candidate_hash
-	candidate_os=$( echo_cabal_os "${candidate_tag}" ) || die
-	candidate_dir=$( echo_cabal_halcyon_dir "${candidate_tag}" ) || die
-	candidate_version=$( echo_cabal_version "${candidate_tag}" ) || die
-	candidate_repo=$( echo_cabal_remote_repo "${candidate_tag}" ) || die
-	candidate_hash=$( echo_cabal_magic_hash "${candidate_tag}" ) || die
-
-	if [ "${candidate_os}" != "${os}" ] ||
-		[ "${candidate_dir}" != "${HALCYON_DIR}" ] ||
-		[ "${candidate_version}" != "${cabal_version}" ] ||
-		[ "${candidate_repo}" != "${remote_repo}" ] ||
-		[ "${candidate_hash}" != "${magic_hash}" ]
-	then
+	local valid_pattern candidate_tag
+	valid_pattern=$( echo_valid_cabal_tag_pattern "${cabal_tag}" ) || die
+	if ! candidate_tag=$(
+		filter_matching "^${valid_pattern}$" <"${HALCYON_DIR}/cabal/.halcyon-tag" |
+		match_exactly_one
+	); then
 		return 1
 	fi
 
