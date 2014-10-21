@@ -217,7 +217,21 @@ function detect_sandbox_constraints () {
 }
 
 
-function derive_matched_sandbox_tag () {
+function derive_fully_matched_sandbox_tag () {
+	expect_vars HALCYON_DIR
+
+	local ghc_tag sandbox_tag matched_label
+	expect_args ghc_tag sandbox_tag matched_label -- "$@"
+
+	local constraints_hash magic_hash
+	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
+	magic_hash=$( echo_sandbox_magic_hash "${sandbox_tag}" ) || die
+
+	echo_sandbox_tag "${ghc_tag}" "${constraints_hash}" "${magic_hash}" "${matched_label}"
+}
+
+
+function derive_partially_matched_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
 	local ghc_tag sandbox_tag matched_hash matched_label
@@ -231,12 +245,17 @@ function derive_matched_sandbox_tag () {
 
 
 function validate_sandbox_tag () {
+	expect_vars HALCYON_DIR
+
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local candidate_tag
-	candidate_tag=$( match_exactly_one ) || die
+	if ! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ]; then
+		return 1
+	fi
 
+	local candidate_tag
+	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	if [ "${candidate_tag}" != "${sandbox_tag}" ]; then
 		return 1
 	fi
@@ -244,59 +263,55 @@ function validate_sandbox_tag () {
 
 
 function validate_sandbox_constraints () {
-	local constraints_hash
-	expect_args constraints_hash -- "$@"
+	expect_vars HALCYON_DIR
 
-	local candidate_hash
-	candidate_hash=$( read_sandbox_constraints | do_hash ) || die
+	local sandbox_tag
+	expect_args sandbox_tag -- "$@"
 
+	local constraints_hash candidate_hash
+	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
+	candidate_hash=$( read_sandbox_constraints <"${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints" | do_hash ) || die
 	if [ "${candidate_hash}" != "${constraints_hash}" ]; then
 		return 1
 	fi
 }
 
 
-function validate_sandbox_constraints_name_with_short_hash () {
-	local short_constraints_hash
-	expect_args short_constraints_hash -- "$@"
+function validate_fully_matched_sandbox_constraints () {
+	local sandbox_tag constraints_file
+	expect_args sandbox_tag constraints_file -- "$@"
 
-	local candidate_hash
-	candidate_hash=$( read_sandbox_constraints | do_hash ) || die
+	local constraints_hash candidate_hash
+	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
+	candidate_hash=$( read_sandbox_constraints <"${constraints_file}" | do_hash ) || die
+	if [ "${candidate_hash}" != "${constraints_hash}" ]; then
+		return 1
+	fi
+}
 
-	if [ "${candidate_hash:0:7}" != "${short_constraints_hash}" ]; then
+
+function validate_partially_matched_sandbox_constraints () {
+	local constraints_file
+	expect_args constraints_file -- "$@"
+
+	local file_name short_hash candidate_hash
+	file_name=$( basename "${constraints_file}" ) || die
+	short_hash=$( echo_short_hash_from_sandbox_constraints_name "${file_name}" ) || die
+	candidate_hash=$( read_sandbox_constraints <"${constraints_file}" | do_hash ) || die
+	if [ "${candidate_hash:0:7}" != "${short_hash}" ]; then
 		return 1
 	fi
 }
 
 
 function validate_sandbox_magic () {
-	local magic_hash app_dir
-	expect_args magic_hash app_dir -- "$@"
-
-	local candidate_hash
-	candidate_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
-
-	if [ "${candidate_hash}" != "${magic_hash}" ]; then
-		return 1
-	fi
-}
-
-
-function validate_sandbox () {
-	expect_vars HALCYON_DIR
-
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
-	local constraints_hash magic_hash
-	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
+	local magic_hash candidate_hash
 	magic_hash=$( echo_sandbox_magic_hash "${sandbox_tag}" ) || die
-
-	if ! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ] ||
-		! validate_sandbox_tag "${sandbox_tag}" <"${HALCYON_DIR}/sandbox/.halcyon-tag" ||
-		! validate_sandbox_constraints "${constraints_hash}" <"${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints" ||
-		! validate_sandbox_magic "${magic_hash}" "${HALCYON_DIR}/sandbox"
-	then
+	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/sandbox/.halcyon-magic" -name 'sandbox-*' ) || die
+	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
 }
@@ -460,7 +475,10 @@ function restore_sandbox () {
 	os=$( echo_sandbox_os "${sandbox_tag}" ) || die
 	sandbox_archive=$( echo_sandbox_archive_name "${sandbox_tag}" ) || die
 
-	if validate_sandbox "${sandbox_tag}"; then
+	if validate_sandbox_tag "${sandbox_tag}" &&
+		validate_sandbox_constraints "${sandbox_tag}" &&
+		validate_sandbox_magic "${sandbox_tag}"
+	then
 		touch -c "${HALCYON_CACHE_DIR}/${sandbox_archive}" || true
 		log 'Using existing sandbox layer'
 		return 0
@@ -471,17 +489,20 @@ function restore_sandbox () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
-		! validate_sandbox "${sandbox_tag}"
+		! validate_sandbox_tag "${sandbox_tag}" ||
+		! validate_sandbox_constraints "${sandbox_tag}" ||
+		! validate_sandbox_magic "${sandbox_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
-
 		if ! download_layer "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
 			log 'Cannot download sandbox layer archive'
 			return 1
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
-			! validate_sandbox "${sandbox_tag}"
+			! validate_sandbox_tag "${sandbox_tag}" ||
+			! validate_sandbox_constraints "${sandbox_tag}" ||
+			! validate_sandbox_magic "${sandbox_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 			log_warning 'Cannot extract sandbox layer archive'
@@ -665,15 +686,12 @@ function match_sandbox () {
 		filter_matching "^${full_pattern}$" <<<"${constraints_names}" |
 		match_at_least_one
 	); then
-		local constraints_hash
-		constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
-
 		log 'Examining fully matched sandbox layers'
 
 		local full_name
 		while read -r full_name; do
 			if ! [ -f "${HALCYON_CACHE_DIR}/${full_name}" ] ||
-				! validate_sandbox_constraints "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${full_name}"
+				! validate_fully_matched_sandbox_constraints "${sandbox_tag}" "${HALCYON_CACHE_DIR}/${full_name}"
 			then
 				rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
 				if ! download_layer "${os}" "${full_name}" "${HALCYON_CACHE_DIR}"; then
@@ -681,7 +699,7 @@ function match_sandbox () {
 					continue
 				fi
 
-				if ! validate_sandbox_constraints "${constraints_hash}" <"${HALCYON_CACHE_DIR}/${full_name}"; then
+				if ! validate_fully_matched_sandbox_constraints "${sandbox_tag}" "${HALCYON_CACHE_DIR}/${full_name}"; then
 					rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
 					log_warning 'Cannot validate fully matched sandbox layer constraints'
 					continue
@@ -692,7 +710,7 @@ function match_sandbox () {
 
 			local full_label full_tag
 			full_label=$( echo_label_from_sandbox_constraints_name "${full_name}" ) || die
-			full_tag=$( derive_matched_sandbox_tag "${ghc_tag}" "${sandbox_tag}" "${constraints_hash}" "${full_label}" ) || die
+			full_tag=$( derive_fully_matched_sandbox_tag "${ghc_tag}" "${sandbox_tag}" "${full_label}" ) || die
 
 			echo "full ${full_tag}"
 			return 0
@@ -716,11 +734,8 @@ function match_sandbox () {
 
 	local part_name
 	while read -r part_name; do
-		local short_constraints_hash
-		short_constraints_hash=$( echo_short_hash_from_sandbox_constraints_name "${part_name}" ) || die
-
 		if ! [ -f "${HALCYON_CACHE_DIR}/${part_name}" ] ||
-			! validate_sandbox_constraints_name_with_short_hash "${short_constraints_hash}" <"${HALCYON_CACHE_DIR}/${part_name}"
+			! validate_partially_matched_sandbox_constraints "${HALCYON_CACHE_DIR}/${part_name}"
 		then
 			rm -f "${HALCYON_CACHE_DIR}/${part_name}" || die
 			if ! download_layer "${os}" "${part_name}" "${HALCYON_CACHE_DIR}"; then
@@ -728,7 +743,7 @@ function match_sandbox () {
 				continue
 			fi
 
-			if ! validate_sandbox_constraints_name_with_short_hash "${short_constraints_hash}" <"${HALCYON_CACHE_DIR}/${part_name}"; then
+			if ! validate_partially_matched_sandbox_constraints "${HALCYON_CACHE_DIR}/${part_name}"; then
 				rm -f "${HALCYON_CACHE_DIR}/${part_name}" || die
 				log_warning 'Cannot validate partially matched sandbox layer constraints'
 				continue
@@ -751,7 +766,7 @@ function match_sandbox () {
 			local part_hash part_label part_tag part_description
 			part_hash=$( read_sandbox_constraints <"${HALCYON_CACHE_DIR}/${part_name}" | do_hash ) || die
 			part_label=$( echo_label_from_sandbox_constraints_name "${part_name}" ) || die
-			part_tag=$( derive_matched_sandbox_tag "${ghc_tag}" "${sandbox_tag}" "${part_hash}" "${part_label}" ) || die
+			part_tag=$( derive_partially_matched_sandbox_tag "${ghc_tag}" "${sandbox_tag}" "${part_hash}" "${part_label}" ) || die
 			part_description=$( echo_sandbox_description "${part_tag}" ) || die
 
 			local score

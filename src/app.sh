@@ -159,12 +159,17 @@ function detect_app_label () {
 
 
 function validate_app_tag () {
+	expect_vars HALCYON_DIR
+
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local candidate_tag
-	candidate_tag=$( match_exactly_one ) || die
+	if ! [ -f "${HALCYON_DIR}/app/.halcyon-tag" ]; then
+		return 1
+	fi
 
+	local candidate_tag
+	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	if [ "${candidate_tag}" != "${app_tag}" ]; then
 		return 1
 	fi
@@ -172,12 +177,11 @@ function validate_app_tag () {
 
 
 function validate_app_magic () {
-	local magic_hash app_dir
-	expect_args magic_hash app_dir -- "$@"
+	local magic_hash
+	expect_args magic_hash -- "$@"
 
 	local candidate_hash
-	candidate_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'app-*' ) || die
-
+	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/app/.halcyon-magic" -name 'app-*' ) || die
 	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
@@ -185,18 +189,12 @@ function validate_app_magic () {
 
 
 function validate_app () {
-	expect_vars HALCYON_DIR
-
-	local app_tag app_dir
-	expect_args app_tag app_dir -- "$@"
+	local app_tag
+	expect_args app_tag -- "$@"
 
 	local magic_hash
 	magic_hash=$( echo_app_magic_hash "${app_tag}" ) || die
-
-	if ! [ -f "${app_dir}/.halcyon-tag" ] ||
-		! validate_app_tag "${app_tag}" <"${app_dir}/.halcyon-tag" ||
-		! validate_app_magic "${magic_hash}" "${app_dir}"
-	then
+	if ! validate_app_tag "${app_tag}" || ! validate_app_magic "${magic_hash}"; then
 		return 1
 	fi
 }

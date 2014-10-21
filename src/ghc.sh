@@ -148,12 +148,17 @@ function echo_ghc_archive_name () {
 
 
 function validate_ghc_tag () {
+	expect_vars HALCYON_DIR
+
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local candidate_tag
-	candidate_tag=$( match_exactly_one ) || die
+	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ]; then
+		return 1
+	fi
 
+	local candidate_tag
+	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	if [ "${candidate_tag}" != "${ghc_tag}" ]; then
 		return 1
 	fi
@@ -161,31 +166,13 @@ function validate_ghc_tag () {
 
 
 function validate_ghc_magic () {
-	local magic_hash app_dir
-	expect_args magic_hash app_dir -- "$@"
-
-	local candidate_hash
-	candidate_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' ) || die
-
-	if [ "${candidate_hash}" != "${magic_hash}" ]; then
-		return 1
-	fi
-}
-
-
-function validate_ghc () {
-	expect_vars HALCYON_DIR
-
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	local magic_hash
+	local magic_hash candidate_hash
 	magic_hash=$( echo_ghc_magic_hash "${ghc_tag}" ) || die
-
-	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
-		! validate_ghc_tag "${ghc_tag}" <"${HALCYON_DIR}/ghc/.halcyon-tag" ||
-		! validate_ghc_magic "${magic_hash}" "${HALCYON_DIR}/ghc"
-	then
+	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/ghc/.halcyon-magic" -name 'ghc-*' ) || die
+	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
 }
@@ -410,7 +397,9 @@ function restore_ghc () {
 	os=$( echo_ghc_os "${ghc_tag}" ) || die
 	ghc_archive=$( echo_ghc_archive_name "${ghc_tag}" ) || die
 
-	if validate_ghc "${ghc_tag}"; then
+	if validate_ghc_tag "${ghc_tag}" &&
+		validate_ghc_magic "${ghc_tag}"
+	then
 		touch -c "${HALCYON_CACHE_DIR}/${ghc_archive}" || true
 		log 'Using existing GHC layer'
 		return 0
@@ -421,7 +410,8 @@ function restore_ghc () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
-		! validate_ghc "${ghc_tag}"
+		! validate_ghc_tag "${ghc_tag}" ||
+		! validate_ghc_magic "${ghc_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 		if ! download_layer "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
@@ -430,7 +420,8 @@ function restore_ghc () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
-			! validate_ghc "${ghc_tag}"
+			! validate_ghc_tag "${ghc_tag}" ||
+			! validate_ghc_magic "${ghc_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
 			log_warning 'Cannot extract GHC layer archive'
