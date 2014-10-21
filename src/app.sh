@@ -76,29 +76,29 @@ function echo_app_archive_name () {
 
 
 function detect_app_package_description () {
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
+	local sources_dir
+	expect_args sources_dir -- "$@"
+	expect_existing "${sources_dir}"
 
 	local package_file
 	if ! package_file=$(
-		find_spaceless_recursively "${app_dir}" -maxdepth 1 -name '*.cabal' |
+		find_spaceless_recursively "${sources_dir}" -maxdepth 1 -name '*.cabal' |
 		match_exactly_one
 	); then
 		die 'Expected exactly one app package description'
 	fi
 
-	cat "${app_dir}/${package_file}"
+	cat "${sources_dir}/${package_file}"
 }
 
 
 function detect_app_name () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	local app_name
 	if ! app_name=$(
-		detect_app_package_description "${app_dir}" |
+		detect_app_package_description "${sources_dir}" |
 		awk '/^ *[Nn]ame:/ { print $2 }' |
 		tr -d '\r' |
 		match_exactly_one
@@ -111,12 +111,12 @@ function detect_app_name () {
 
 
 function detect_app_version () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	local app_version
 	if ! app_version=$(
-		detect_app_package_description "${app_dir}" |
+		detect_app_package_description "${sources_dir}" |
 		awk '/^ *[Vv]ersion:/ { print $2 }' |
 		tr -d '\r' |
 		match_exactly_one
@@ -129,12 +129,12 @@ function detect_app_version () {
 
 
 function detect_app_executable () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	local app_executable
 	if ! app_executable=$(
-		detect_app_package_description "${app_dir}" |
+		detect_app_package_description "${sources_dir}" |
 		awk '/^ *[Ee]xecutable / { print $2 }' |
 		tr -d '\r' |
 		match_exactly_one
@@ -147,12 +147,12 @@ function detect_app_executable () {
 
 
 function detect_app_label () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	local app_name app_version
-	app_name=$( detect_app_name "${app_dir}" | sed 's/^halcyon-fake-//' ) || die
-	app_version=$( detect_app_version "${app_dir}" ) || die
+	app_name=$( detect_app_name "${sources_dir}" | sed 's/^halcyon-fake-//' ) || die
+	app_version=$( detect_app_version "${sources_dir}" ) || die
 
 	echo "${app_name}-${app_version}"
 }
@@ -204,8 +204,8 @@ function build_app () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local app_dir app_tag
-	expect_args app_dir app_tag -- "$@"
+	local app_tag sources_dir
+	expect_args app_tag sources_dir -- "$@"
 
 	local ghc_tag sandbox_tag
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
@@ -215,18 +215,18 @@ function build_app () {
 
 	# TODO: insert run-time deps here
 
-	if [ -f "${app_dir}/.halcyon-magic/app-prebuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/app-prebuild-hook" ]; then
 		log 'Running app pre-build hook'
-		( "${app_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${sources_dir}" ) |& quote || die
 	fi
 
 	log 'Building app'
 
 	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
 
-	if [ -f "${app_dir}/.halcyon-magic/app-postbuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/app-postbuild-hook" ]; then
 		log 'Running app post-build hook'
-		( "${app_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${sources_dir}" ) |& quote || die
 	fi
 
 	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
@@ -335,13 +335,13 @@ function restore_app () {
 
 
 function determine_app_tag () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	log_begin 'Determining app magic hash...            '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'app-*' ) || die
+	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'app-*' ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else
@@ -351,7 +351,7 @@ function determine_app_tag () {
 	log_begin 'Determining app label...                 '
 
 	local app_label
-	app_label=$( detect_app_label "${app_dir}" ) || die
+	app_label=$( detect_app_label "${sources_dir}" ) || die
 
 	log_end "${app_label}"
 

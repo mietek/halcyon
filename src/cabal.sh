@@ -341,8 +341,8 @@ function build_cabal () {
 	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/.halcyon-tag"
 	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
 
-	local cabal_tag app_dir
-	expect_args cabal_tag app_dir -- "$@"
+	local cabal_tag sources_dir
+	expect_args cabal_tag sources_dir -- "$@"
 
 	local ghc_tag ghc_version cabal_version original_url original_archive tmp_cabal_dir
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
@@ -367,9 +367,9 @@ function build_cabal () {
 		touch -c "${HALCYON_CACHE_DIR}/${original_archive}" || true
 	fi
 
-	if [ -f "${app_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
 		log 'Running Cabal pre-build hook'
-		( "${app_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/cabal-prebuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" "${sources_dir}" ) |& quote || die
 	fi
 
 	log 'Bootstrapping Cabal'
@@ -411,16 +411,16 @@ EOF
 	mv "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
 	echo_cabal_config "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
-	if [ -f "${app_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
 		log 'Running Cabal post-build hook'
-		( "${app_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/cabal-postbuild-hook" "${ghc_tag}" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" "${sources_dir}" ) |& quote || die
 	fi
 
-	if find_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'cabal-*' |
+	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'cabal-*' |
 		match_at_least_one >'/dev/null'
 	then
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
-		cp "${app_dir}/.halcyon-magic/cabal-"* "${HALCYON_DIR}/cabal/.halcyon-magic" || die
+		cp "${sources_dir}/.halcyon-magic/cabal-"* "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	fi
 
 	echo "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
@@ -707,8 +707,8 @@ function deactivate_cabal () {
 
 
 function determine_cabal_tag () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	log_begin 'Determining Cabal version...             '
 
@@ -739,7 +739,7 @@ function determine_cabal_tag () {
 	log_begin 'Determining Cabal magic hash...          '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'cabal-*' ) || die
+	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'cabal-*' ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else
@@ -753,11 +753,11 @@ function determine_cabal_tag () {
 function install_cabal () {
 	expect_vars HALCYON_BUILD_CABAL HALCYON_UPDATE_CABAL HALCYON_NO_BUILD
 
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	local cabal_tag
-	cabal_tag=$( determine_cabal_tag "${app_dir}" ) || die
+	cabal_tag=$( determine_cabal_tag "${sources_dir}" ) || die
 
 	if ! (( HALCYON_BUILD_CABAL )) && ! (( HALCYON_UPDATE_CABAL )) && restore_updated_cabal "${cabal_tag}"; then
 		activate_cabal || die
@@ -777,7 +777,7 @@ function install_cabal () {
 	fi
 
 	deactivate_cabal || die
-	build_cabal "${cabal_tag}" "${app_dir}" || die
+	build_cabal "${cabal_tag}" "${sources_dir}" || die
 	archive_cabal || die
 	update_cabal || die
 	archive_cabal || die
@@ -840,24 +840,24 @@ function read_constraints_from_cabal_dry_freeze () {
 
 
 function cabal_freeze_implicit_constraints () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
-	cabal_do "${app_dir}" --no-require-sandbox freeze --dry-run |
+	cabal_do "${sources_dir}" --no-require-sandbox freeze --dry-run |
 		read_constraints_from_cabal_dry_freeze |
 		filter_valid_sandbox_constraints |
-		filter_nonself_sandbox_constraints "${app_dir}" || die
+		filter_nonself_sandbox_constraints "${sources_dir}" || die
 }
 
 
 function cabal_freeze_actual_constraints () {
-	local sandbox_dir app_dir
-	expect_args sandbox_dir app_dir -- "$@"
+	local sandbox_dir sources_dir
+	expect_args sandbox_dir sources_dir -- "$@"
 
-	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" freeze --dry-run |
+	sandboxed_cabal_do "${sandbox_dir}" "${sources_dir}" freeze --dry-run |
 		read_constraints_from_cabal_dry_freeze |
 		filter_valid_sandbox_constraints |
-		filter_nonself_sandbox_constraints "${app_dir}" || die
+		filter_nonself_sandbox_constraints "${sources_dir}" || die
 }
 
 
@@ -890,8 +890,8 @@ function cabal_create_sandbox () {
 
 
 function cabal_install_deps () {
-	local sandbox_dir app_dir
-	expect_args sandbox_dir app_dir -- "$@"
+	local sandbox_dir sources_dir
+	expect_args sandbox_dir sources_dir -- "$@"
 	shift 2
 
 	# NOTE: Listing executable-only packages in build-tools causes Cabal to
@@ -903,32 +903,32 @@ function cabal_install_deps () {
 	# installed.
 	# https://github.com/haskell/cabal/issues/779
 
-	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" install --dependencies-only "$@" |& quote || die
+	sandboxed_cabal_do "${sandbox_dir}" "${sources_dir}" install --dependencies-only "$@" |& quote || die
 }
 
 
 function cabal_configure_app () {
-	local sandbox_dir app_dir
-	expect_args sandbox_dir app_dir -- "$@"
+	local sandbox_dir sources_dir
+	expect_args sandbox_dir sources_dir -- "$@"
 	shift 2
 
-	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" configure "$@" |& quote || die
+	sandboxed_cabal_do "${sandbox_dir}" "${sources_dir}" configure "$@" |& quote || die
 }
 
 
 function cabal_build_app () {
-	local sandbox_dir app_dir
-	expect_args sandbox_dir app_dir -- "$@"
+	local sandbox_dir sources_dir
+	expect_args sandbox_dir sources_dir -- "$@"
 	shift 2
 
-	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" build "$@" |& quote || die
+	sandboxed_cabal_do "${sandbox_dir}" "${sources_dir}" build "$@" |& quote || die
 }
 
 
 function cabal_copy_app () {
-	local sandbox_dir app_dir
-	expect_args sandbox_dir app_dir -- "$@"
+	local sandbox_dir sources_dir
+	expect_args sandbox_dir sources_dir -- "$@"
 	shift 2
 
-	sandboxed_cabal_do "${sandbox_dir}" "${app_dir}" copy "$@" |& quote || die
+	sandboxed_cabal_do "${sandbox_dir}" "${sources_dir}" copy "$@" |& quote || die
 }

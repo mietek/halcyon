@@ -247,8 +247,8 @@ function build_ghc () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 	expect_no_existing "${HALCYON_DIR}/ghc"
 
-	local ghc_tag app_dir
-	expect_args ghc_tag app_dir -- "$@"
+	local ghc_tag sources_dir
+	expect_args ghc_tag sources_dir -- "$@"
 
 	local ghc_version original_url original_archive tmp_ghc_dir
 	ghc_version=$( echo_ghc_version "${ghc_tag}" ) || die
@@ -271,9 +271,9 @@ function build_ghc () {
 		touch -c "${HALCYON_CACHE_DIR}/${original_archive}" || true
 	fi
 
-	if [ -f "${app_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
 		log 'Running GHC pre-build hook'
-		( "${app_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" "${sources_dir}" ) |& quote || die
 	fi
 
 	log 'Installing GHC'
@@ -286,16 +286,16 @@ function build_ghc () {
 		die 'Failed to install GHC'
 	fi
 
-	if [ -f "${app_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
 		log 'Running GHC post-build hook'
-		( "${app_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" "${sources_dir}" ) |& quote || die
 	fi
 
-	if find_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' |
+	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'ghc-*' |
 		match_at_least_one >'/dev/null'
 	then
 		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
-		cp "${app_dir}/.halcyon-magic/ghc-"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
+		cp "${sources_dir}/.halcyon-magic/ghc-"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	fi
 
 	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
@@ -456,8 +456,8 @@ function deactivate_ghc () {
 function determine_ghc_tag () {
 	expect_vars HALCYON_NO_WARN_IMPLICIT
 
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	log_begin 'Determining GHC version...               '
 
@@ -466,9 +466,9 @@ function determine_ghc_tag () {
 		ghc_version="${HALCYON_GHC_VERSION}"
 
 		log_end "${ghc_version}"
-	elif [ -f "${app_dir}/cabal.config" ]; then
+	elif [ -f "${sources_dir}/cabal.config" ]; then
 		local constraints
-		constraints=$( detect_sandbox_constraints "${app_dir}" ) || die
+		constraints=$( detect_sandbox_constraints "${sources_dir}" ) || die
 		ghc_version=$( echo_ghc_version_from_constraints "${constraints}" ) || die
 
 		log_end "${ghc_version} (constraints)"
@@ -485,7 +485,7 @@ function determine_ghc_tag () {
 	log_begin 'Determining GHC magic hash...            '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' ) || die
+	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'ghc-*' ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else
@@ -499,11 +499,11 @@ function determine_ghc_tag () {
 function install_ghc () {
 	expect_vars HALCYON_DIR HALCYON_BUILD_GHC HALCYON_NO_BUILD
 
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	local ghc_tag
-	ghc_tag=$( determine_ghc_tag "${app_dir}" ) || die
+	ghc_tag=$( determine_ghc_tag "${sources_dir}" ) || die
 
 	if ! (( HALCYON_BUILD_GHC )) && restore_ghc "${ghc_tag}"; then
 		activate_ghc || die
@@ -516,7 +516,7 @@ function install_ghc () {
 	fi
 
 	deactivate_ghc || die
-	build_ghc "${ghc_tag}" "${app_dir}" || die
+	build_ghc "${ghc_tag}" "${sources_dir}" || die
 	strip_ghc || die
 	archive_ghc || die
 	activate_ghc || die

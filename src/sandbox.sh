@@ -192,28 +192,28 @@ function filter_valid_sandbox_constraints () {
 
 
 function filter_nonself_sandbox_constraints () {
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
 	# NOTE: An application should not be its own dependency.
 	# https://github.com/haskell/cabal/issues/1908
 
 	local app_name app_version
-	app_name=$( detect_app_name "${app_dir}" ) || die
-	app_version=$( detect_app_version "${app_dir}" ) || die
+	app_name=$( detect_app_name "${sources_dir}" ) || die
+	app_version=$( detect_app_version "${sources_dir}" ) || die
 
 	filter_not_matching "^${app_name} ${app_version}$" || die
 }
 
 
 function detect_sandbox_constraints () {
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}/cabal.config"
+	local sources_dir
+	expect_args sources_dir -- "$@"
+	expect_existing "${sources_dir}/cabal.config"
 
-	read_sandbox_constraints <"${app_dir}/cabal.config" |
+	read_sandbox_constraints <"${sources_dir}/cabal.config" |
 		filter_valid_sandbox_constraints |
-		filter_nonself_sandbox_constraints "${app_dir}" || die
+		filter_nonself_sandbox_constraints "${sources_dir}" || die
 }
 
 
@@ -321,15 +321,15 @@ function verify_sandbox_constraints () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local sandbox_tag app_dir
-	expect_args sandbox_tag app_dir -- "$@"
+	local sandbox_tag sources_dir
+	expect_args sandbox_tag sources_dir -- "$@"
 
 	# NOTE: Frozen constraints should never differ before and after installation.
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1
 
 	local actual_constraints actual_constraints_hash constraints_hash
-	actual_constraints=$( cabal_freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${app_dir}" ) || die
+	actual_constraints=$( cabal_freeze_actual_constraints "${HALCYON_DIR}/sandbox" "${sources_dir}" ) || die
 	actual_constraints_hash=$( do_hash <<<"${actual_constraints}" ) || die
 	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
 
@@ -355,14 +355,14 @@ function verify_sandbox_constraints () {
 function build_sandbox () {
 	expect_vars HALCYON_DIR
 
-	local sandbox_tag create_sandbox app_dir
-	expect_args sandbox_tag create_sandbox app_dir -- "$@"
+	local sandbox_tag create_sandbox sources_dir
+	expect_args sandbox_tag create_sandbox sources_dir -- "$@"
 	if (( create_sandbox )); then
 		expect_no_existing "${HALCYON_DIR}/sandbox"
 	else
 		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints"
 	fi
-	expect_existing "${app_dir}"
+	expect_existing "${sources_dir}"
 
 	local ghc_tag constraints_name
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
@@ -380,26 +380,26 @@ function build_sandbox () {
 
 	# TODO: insert build-time deps here
 
-	if [ -f "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'
-		( "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/sandbox-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" ) |& quote || die
 	fi
 
 	log 'Building sandbox'
 
-	cabal_install_deps "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+	cabal_install_deps "${HALCYON_DIR}/sandbox" "${sources_dir}" || die
 	cp "${HALCYON_CACHE_DIR}/${constraints_name}" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints" || die
 
-	if [ -f "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
+	if [ -f "${sources_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
-		( "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${app_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/sandbox-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" ) |& quote || die
 	fi
 
-	if find_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' |
+	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'sandbox-*' |
 		match_at_least_one >'/dev/null'
 	then
 		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
-		cp "${app_dir}/.halcyon-magic/sandbox-"* "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
+		cp "${sources_dir}/.halcyon-magic/sandbox-"* "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	fi
 
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
@@ -408,7 +408,7 @@ function build_sandbox () {
 	sandbox_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
 	log "Finished building sandbox layer, ${sandbox_size}"
 
-	verify_sandbox_constraints "${sandbox_tag}" "${app_dir}" || die
+	verify_sandbox_constraints "${sandbox_tag}" "${sources_dir}" || die
 }
 
 
@@ -518,20 +518,20 @@ function activate_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
+	local sources_dir
+	expect_args sources_dir -- "$@"
+	expect_existing "${sources_dir}"
 
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
-		die "Expected no foreign ${app_dir}/cabal.sandbox.config"
+	if [ -e "${sources_dir}/cabal.sandbox.config" ] && ! [ -h "${sources_dir}/cabal.sandbox.config" ]; then
+		die "Expected no foreign ${sources_dir}/cabal.sandbox.config"
 	fi
 
-	rm -f "${app_dir}/cabal.sandbox.config" || die
-	ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${app_dir}/cabal.sandbox.config" || die
+	rm -f "${sources_dir}/cabal.sandbox.config" || die
+	ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${sources_dir}/cabal.sandbox.config" || die
 
 	log 'Sandbox layer installed:'
 	log_indent "${sandbox_description}"
@@ -541,14 +541,14 @@ function activate_sandbox () {
 function deactivate_sandbox () {
 	expect_vars HALCYON_DIR
 
-	local app_dir
-	expect_args app_dir -- "$@"
+	local sources_dir
+	expect_args sources_dir -- "$@"
 
-	if [ -e "${app_dir}/cabal.sandbox.config" ] && ! [ -h "${app_dir}/cabal.sandbox.config" ]; then
-		die "Expected no foreign ${app_dir}/cabal.sandbox.config"
+	if [ -e "${sources_dir}/cabal.sandbox.config" ] && ! [ -h "${sources_dir}/cabal.sandbox.config" ]; then
+		die "Expected no foreign ${sources_dir}/cabal.sandbox.config"
 	fi
 
-	rm -rf "${HALCYON_DIR}/sandbox" "${app_dir}/cabal.sandbox.config" || die
+	rm -rf "${HALCYON_DIR}/sandbox" "${sources_dir}/cabal.sandbox.config" || die
 }
 
 
@@ -556,20 +556,20 @@ function determine_sandbox_tag () {
 	expect_vars HALCYON_DIR HALCYON_NO_WARN_IMPLICIT
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
+	local sources_dir
+	expect_args sources_dir -- "$@"
+	expect_existing "${sources_dir}"
 
 	log_begin 'Determining sandbox constraints hash...  '
 
 	local constraints constraints_hash
-	if [ -f "${app_dir}/cabal.config" ]; then
-		constraints=$( detect_sandbox_constraints "${app_dir}" ) || die
+	if [ -f "${sources_dir}/cabal.config" ]; then
+		constraints=$( detect_sandbox_constraints "${sources_dir}" ) || die
 		constraints_hash=$( do_hash <<<"${constraints}" ) || die
 
 		log_end "${constraints_hash:0:7}"
 	else
-		constraints=$( cabal_freeze_implicit_constraints "${app_dir}" ) || die
+		constraints=$( cabal_freeze_implicit_constraints "${sources_dir}" ) || die
 		constraints_hash=$( do_hash <<<"${constraints}" ) || die
 
 		log_end "${constraints_hash:0:7}"
@@ -585,7 +585,7 @@ function determine_sandbox_tag () {
 	log_begin 'Determining sandbox magic hash...        '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
+	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else
@@ -595,8 +595,7 @@ function determine_sandbox_tag () {
 	log_begin 'Determining sandbox label...             '
 
 	local sandbox_label
-	sandbox_label=$( detect_app_label "${app_dir}" ) || die
-
+	sandbox_label=$( detect_app_label "${sources_dir}" ) || die
 	log_end "${sandbox_label}"
 
 	local ghc_tag sandbox_tag constraints_name
@@ -798,8 +797,8 @@ function match_sandbox () {
 function install_matched_sandbox () {
 	expect_vars HALCYON_DIR HALCYON_NO_BUILD
 
-	local sandbox_tag matched_tag app_dir
-	expect_args sandbox_tag matched_tag app_dir -- "$@"
+	local sandbox_tag matched_tag sources_dir
+	expect_args sandbox_tag matched_tag sources_dir -- "$@"
 
 	if ! restore_sandbox "${matched_tag}"; then
 		return 1
@@ -818,7 +817,7 @@ function install_matched_sandbox () {
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 		archive_sandbox || die
-		activate_sandbox "${app_dir}" || die
+		activate_sandbox "${sources_dir}" || die
 		return 0
 	fi
 
@@ -830,26 +829,26 @@ function install_matched_sandbox () {
 	log 'Using partially matched sandbox layer:   ' "${matched_description}"
 
 	local create_sandbox=1
-	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${app_dir}" || die
+	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
-	activate_sandbox "${app_dir}" || die
+	activate_sandbox "${sources_dir}" || die
 }
 
 
 function install_sandbox () {
 	expect_vars HALCYON_BUILD_SANDBOX HALCYON_NO_BUILD
 
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
+	local sources_dir
+	expect_args sources_dir -- "$@"
+	expect_existing "${sources_dir}"
 
 	local sandbox_tag sandbox_description
-	sandbox_tag=$( determine_sandbox_tag "${app_dir}" ) || die
+	sandbox_tag=$( determine_sandbox_tag "${sources_dir}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if ! (( HALCYON_BUILD_SANDBOX )) && restore_sandbox "${sandbox_tag}"; then
-		activate_sandbox "${app_dir}" || die
+		activate_sandbox "${sources_dir}" || die
 		return 0
 	fi
 
@@ -861,7 +860,7 @@ function install_sandbox () {
 
 		case "${match_class}" in
 		'full')
-			if install_matched_sandbox "${sandbox_tag}" "${matched_tag}" "${app_dir}"; then
+			if install_matched_sandbox "${sandbox_tag}" "${matched_tag}" "${sources_dir}"; then
 				return 0
 			fi
 			;;
@@ -870,7 +869,7 @@ function install_sandbox () {
 				log_warning 'Cannot build sandbox layer'
 				return 1
 			fi
-			if install_matched_sandbox "${sandbox_tag}" "${matched_tag}" "${app_dir}"; then
+			if install_matched_sandbox "${sandbox_tag}" "${matched_tag}" "${sources_dir}"; then
 				return 0
 			fi
 			;;
@@ -885,9 +884,9 @@ function install_sandbox () {
 	fi
 
 	local create_sandbox=0
-	deactivate_sandbox "${app_dir}" || die
-	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${app_dir}" || die
+	deactivate_sandbox "${sources_dir}" || die
+	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
-	activate_sandbox "${app_dir}" || die
+	activate_sandbox "${sources_dir}" || die
 }
