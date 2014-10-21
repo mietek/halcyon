@@ -333,7 +333,19 @@ function validate_updated_cabal_archive_name () {
 function build_cabal () {
 	expect_vars HOME HALCYON_DIR HALCYON_CACHE_DIR
 	expect_existing "${HOME}" "${HALCYON_DIR}/ghc/.halcyon-tag"
-	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc" "${HALCYON_DIR}/cabal"
+	expect_no_existing "${HALCYON_DIR}/cabal"
+
+	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
+		die "Expected no foreign ${HOME}/.cabal/config"
+	fi
+	rm -f "${HOME}/.cabal/config" || die
+
+	# NOTE: There is no way to prevent Cabal for creating "${HOME}/.cabal/setup-exe-cache".
+	# https://github.com/haskell/cabal/issues/1242
+
+	rm -rf "${HOME}/.cabal/setup-exe-cache" || die
+	rmdir "${HOME}/.cabal" 2>'/dev/null' || true
+	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc"
 
 	local cabal_tag sources_dir
 	expect_args cabal_tag sources_dir -- "$@"
