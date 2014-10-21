@@ -446,13 +446,6 @@ function activate_ghc () {
 }
 
 
-function deactivate_ghc () {
-	expect_vars HALCYON_DIR
-
-	rm -rf "${HALCYON_DIR}/ghc" || die
-}
-
-
 function determine_ghc_tag () {
 	expect_vars HALCYON_NO_WARN_IMPLICIT
 
@@ -515,7 +508,7 @@ function install_ghc () {
 		return 1
 	fi
 
-	deactivate_ghc || die
+	rm -rf "${HALCYON_DIR}/ghc" || die
 	build_ghc "${ghc_tag}" "${sources_dir}" || die
 	strip_ghc || die
 	archive_ghc || die

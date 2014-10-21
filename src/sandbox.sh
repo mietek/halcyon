@@ -517,37 +517,12 @@ function activate_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local sources_dir
-	expect_args sources_dir -- "$@"
-	expect_existing "${sources_dir}"
-
 	local sandbox_tag sandbox_description
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	if [ -e "${sources_dir}/cabal.sandbox.config" ] && ! [ -h "${sources_dir}/cabal.sandbox.config" ]; then
-		die "Expected no foreign ${sources_dir}/cabal.sandbox.config"
-	fi
-
-	rm -f "${sources_dir}/cabal.sandbox.config" || die
-	ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${sources_dir}/cabal.sandbox.config" || die
-
 	log 'Sandbox layer installed:'
 	log_indent "${sandbox_description}"
-}
-
-
-function deactivate_sandbox () {
-	expect_vars HALCYON_DIR
-
-	local sources_dir
-	expect_args sources_dir -- "$@"
-
-	if [ -e "${sources_dir}/cabal.sandbox.config" ] && ! [ -h "${sources_dir}/cabal.sandbox.config" ]; then
-		die "Expected no foreign ${sources_dir}/cabal.sandbox.config"
-	fi
-
-	rm -rf "${HALCYON_DIR}/sandbox" "${sources_dir}/cabal.sandbox.config" || die
 }
 
 
@@ -816,7 +791,7 @@ function install_matched_sandbox () {
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 		archive_sandbox || die
-		activate_sandbox "${sources_dir}" || die
+		activate_sandbox || die
 		return 0
 	fi
 
@@ -831,7 +806,7 @@ function install_matched_sandbox () {
 	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
-	activate_sandbox "${sources_dir}" || die
+	activate_sandbox || die
 }
 
 
@@ -847,7 +822,7 @@ function install_sandbox () {
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
 	if ! (( HALCYON_BUILD_SANDBOX )) && restore_sandbox "${sandbox_tag}"; then
-		activate_sandbox "${sources_dir}" || die
+		activate_sandbox || die
 		return 0
 	fi
 
@@ -883,9 +858,9 @@ function install_sandbox () {
 	fi
 
 	local create_sandbox=0
-	deactivate_sandbox "${sources_dir}" || die
+	rm -rf "${HALCYON_DIR}/sandbox" || die
 	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
-	activate_sandbox "${sources_dir}" || die
+	activate_sandbox || die
 }

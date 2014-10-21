@@ -677,32 +677,8 @@ function activate_cabal () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
-	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-		die "Expected no foreign ${HOME}/.cabal/config"
-	fi
-
-	mkdir -p "${HOME}/.cabal" || die
-	rm -f "${HOME}/.cabal/config" || die
-	ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
-
 	log 'Cabal layer installed:'
 	log_indent "${cabal_description}"
-}
-
-
-function deactivate_cabal () {
-	expect_vars HOME HALCYON_DIR
-	expect_existing "${HOME}"
-
-	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-		die "Expected no foreign ${HOME}/.cabal/config"
-	fi
-
-	# NOTE: There is no way to prevent Cabal for creating "${HOME}/.cabal/setup-exe-cache".
-	# https://github.com/haskell/cabal/issues/1242
-
-	rm -rf "${HALCYON_DIR}/cabal" "${HOME}/.cabal/config" "${HOME}/.cabal/setup-exe-cache" || die
-	rmdir "${HOME}/.cabal" 2>'/dev/null' || true
 }
 
 
@@ -776,7 +752,7 @@ function install_cabal () {
 		return 1
 	fi
 
-	deactivate_cabal || die
+	rm -rf "${HALCYON_DIR}/cabal" || die
 	build_cabal "${cabal_tag}" "${sources_dir}" || die
 	archive_cabal || die
 	update_cabal || die
