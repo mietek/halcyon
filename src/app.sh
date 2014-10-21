@@ -426,7 +426,10 @@ function activate_app () {
 	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
-	cabal_copy_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --destdir="${HALCYON_TMP_SLUG_DIR}" || die
+	# NOTE: Cabal emits a spurious warning  about HALCYON_TMP_SLUG_DIR/.../bin not being in PATH,
+	# hence the decreased verbosity.
+
+	cabal_copy_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --destdir="${HALCYON_TMP_SLUG_DIR}" --verbose=0 || die
 
 	log 'App layer installed:'
 	log_indent "${app_description}"
