@@ -334,20 +334,20 @@ function verify_sandbox_constraints () {
 	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
 
 	if [ "${actual_constraints_hash}" != "${constraints_hash}" ]; then
-		local tmp_constraints_name constraints_name
-		tmp_constraints_name=$( echo_tmp_file_name 'halcyon.verify_sandbox_constraints' ) || die
+		local tmp_name constraints_name
+		tmp_name=$( echo_tmp_file_name 'halcyon.verify_sandbox_constraints' ) || die
 		constraints_name=$( echo_sandbox_constraints_name "${sandbox_tag}" ) || die
 		expect_existing "${HALCYON_CACHE_DIR}/${constraints_name}"
 
-		echo_sandbox_constraints <<<"${actual_constraints}" >"${tmp_constraints_name}" || die
+		echo_sandbox_constraints <<<"${actual_constraints}" >"${tmp_name}" || die
 
 		log_warning 'Unexpected constraints difference'
 		log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'
 		log_indent "--- ${constraints_hash:0:7}/cabal.config"
 		log_indent "+++ ${actual_constraints_hash:0:7}/cabal.config"
-		diff -u "${HALCYON_CACHE_DIR}/${constraints_name}" "${tmp_constraints_name}" | tail -n +3 |& quote || true
+		diff -u "${HALCYON_CACHE_DIR}/${constraints_name}" "${tmp_name}" | tail -n +3 |& quote || true
 
-		rm -f "${tmp_constraints_name}" || die
+		rm -f "${tmp_name}" || die
 	fi
 }
 
@@ -355,9 +355,9 @@ function verify_sandbox_constraints () {
 function build_sandbox () {
 	expect_vars HALCYON_DIR
 
-	local sandbox_tag create_sandbox sources_dir
-	expect_args sandbox_tag create_sandbox sources_dir -- "$@"
-	if (( create_sandbox )); then
+	local sandbox_tag must_create sources_dir
+	expect_args sandbox_tag must_create sources_dir -- "$@"
+	if (( must_create )); then
 		expect_no_existing "${HALCYON_DIR}/sandbox"
 	else
 		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints"
@@ -370,14 +370,14 @@ function build_sandbox () {
 
 	log 'Starting to build sandbox layer'
 
-	if (( create_sandbox )); then
+	if (( must_create )); then
 		log 'Creating sandbox'
 
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	# TODO: insert build-time deps here
+	# TODO: Deploy buildtime dependencies here.
 
 	if [ -f "${sources_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'
@@ -802,8 +802,9 @@ function install_matched_sandbox () {
 
 	log 'Using partially matched sandbox layer:   ' "${matched_description}"
 
-	local create_sandbox=1
-	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" || die
+	local must_create
+	must_create=0
+	build_sandbox "${sandbox_tag}" "${must_create}" "${sources_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox || die
@@ -857,9 +858,10 @@ function install_sandbox () {
 		return 1
 	fi
 
-	local create_sandbox=0
+	local must_create
+	must_create=1
 	rm -rf "${HALCYON_DIR}/sandbox" || die
-	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${sources_dir}" || die
+	build_sandbox "${sandbox_tag}" "${must_create}" "${sources_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox || die

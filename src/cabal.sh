@@ -785,11 +785,11 @@ function sandboxed_cabal_do () {
 	# NOTE: Specifying a cabal.sandbox.config file should not change where Cabal looks for a cabal.config file.
 	# https://github.com/haskell/cabal/issues/1915
 
-	local tmp_foreign_config
-	tmp_foreign_config=
+	local saved_config
+	saved_config=
 	if [ -f "${sandbox_dir}/cabal.config" ]; then
-		tmp_foreign_config=$( echo_tmp_file_name 'halcyon.sandboxed_cabal_do' ) || die
-		mv "${sandbox_dir}/cabal.config" "${tmp_foreign_config}" || die
+		saved_config=$( echo_tmp_file_name 'halcyon.sandboxed_cabal_do' ) || die
+		mv "${sandbox_dir}/cabal.config" "${saved_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
 		cp "${work_dir}/cabal.config" "${sandbox_dir}/cabal.config" || die
@@ -802,8 +802,8 @@ function sandboxed_cabal_do () {
 	fi
 
 	rm -f "${sandbox_dir}/cabal.config" || die
-	if [ -n "${tmp_foreign_config}" ]; then
-		mv "${tmp_foreign_config}" "${sandbox_dir}/cabal.config" || die
+	if [ -n "${saved_config}" ]; then
+		mv "${saved_config}" "${sandbox_dir}/cabal.config" || die
 	fi
 
 	return "${status}"

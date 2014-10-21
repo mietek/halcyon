@@ -52,15 +52,15 @@ function clean_cache () {
 
 	log 'Examining cache changes'
 
-	local changes
-	if ! changes=$(
+	local changed_files
+	if ! changed_files=$(
 		compare_recursively "${HALCYON_TMP_CACHE_DIR}" "${HALCYON_CACHE_DIR}" |
 		filter_not_matching '^= ' |
 		match_at_least_one
 	); then
 		log_indent '(none)'
 	else
-		quote <<<"${changes}"
+		quote <<<"${changed_files}"
 	fi
 
 	rm -rf "${HALCYON_TMP_CACHE_DIR}" || die
