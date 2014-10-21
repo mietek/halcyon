@@ -1,8 +1,8 @@
 function echo_app_tag () {
 	expect_vars HALCYON_DIR
 
-	local ghc_tag sandbox_tag sources_hash app_magic_hash app_label
-	expect_args ghc_tag sandbox_tag sources_hash app_magic_hash app_label -- "$@"
+	local ghc_tag sandbox_tag app_label app_magic_hash sources_hash
+	expect_args ghc_tag sandbox_tag app_label app_magic_hash sources_hash -- "$@"
 
 	local os ghc_version ghc_magic_hash constraints_hash sandbox_magic_hash
 	os=$( detect_os ) || die
@@ -11,7 +11,17 @@ function echo_app_tag () {
 	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
 	sandbox_magic_hash=$( echo_sandbox_magic_hash "${sandbox_tag}" ) || die
 
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_magic_hash}\t${constraints_hash}\t${sandbox_magic_hash}\t${sources_hash}\t${app_magic_hash}\t${app_label}"
+	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${ghc_magic_hash}\t${constraints_hash}\t${sandbox_magic_hash}\t${app_label}\t${app_magic_hash}\t${sources_hash}"
+}
+
+
+function echo_valid_app_tag_pattern () {
+	expect_vars HALCYON_DIR
+
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	echo "${app_tag%$'\t'*}"$'\t'".*"
 }
 
 
@@ -23,7 +33,7 @@ function echo_app_os () {
 }
 
 
-function echo_app_sources_hash () {
+function echo_app_label () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
@@ -39,7 +49,7 @@ function echo_app_magic_hash () {
 }
 
 
-function echo_app_label () {
+function echo_app_sources_hash () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
@@ -51,11 +61,11 @@ function echo_app_id () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local sources_hash magic_hash
-	sources_hash=$( echo_app_sources_hash "${app_tag}" ) || die
+	local app_label magic_hash
+	app_label=$( echo_app_label "${app_tag}" ) || die
 	magic_hash=$( echo_app_magic_hash "${app_tag}" ) || die
 
-	echo "${sources_hash:0:7}${magic_hash:+~${magic_hash:0:7}}"
+	echo "${app_label}${magic_hash:+~${magic_hash:0:7}}"
 }
 
 
@@ -63,11 +73,10 @@ function echo_app_description () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local app_id app_label
+	local app_id
 	app_id=$( echo_app_id "${app_tag}" ) || die
-	app_label=$( echo_app_label "${app_tag}" ) || die
 
-	echo "${app_id} (${app_label})"
+	echo "${app_id}"
 }
 
 
@@ -75,13 +84,12 @@ function echo_app_archive_name () {
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local ghc_id sandbox_id app_id app_label
+	local ghc_id sandbox_id app_id
 	ghc_id=$( echo_ghc_id "${app_tag}" ) || die
 	sandbox_id=$( echo_sandbox_id "${app_tag}" ) || die
 	app_id=$( echo_app_id "${app_tag}" ) || die
-	app_label=$( echo_app_label "${app_tag}" ) || die
 
-	echo "halcyon-app-ghc-${ghc_id}-${sandbox_id}-${app_id}-${app_label}.tar.gz"
+	echo "halcyon-app-ghc-${ghc_id}-${sandbox_id}-${app_id}.tar.gz"
 }
 
 
@@ -178,9 +186,11 @@ function validate_app_tag () {
 		return 1
 	fi
 
-	local candidate_tag
-	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	if [ "${candidate_tag}" != "${app_tag}" ]; then
+	local valid_pattern
+	valid_pattern=$( echo_valid_app_tag_pattern "${app_tag}" ) || die
+	if ! filter_matching "^${valid_pattern}$" <"${HALCYON_DIR}/app/.halcyon-tag" |
+		match_exactly_one >'/dev/null'
+	then
 		return 1
 	fi
 }
@@ -364,7 +374,7 @@ function determine_app_tag () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 
-	echo_app_tag "${ghc_tag}" "${sandbox_tag}" "${sources_hash}" "${magic_hash}" "${app_label}" || die
+	echo_app_tag "${ghc_tag}" "${sandbox_tag}" "${app_label}" "${magic_hash}" "${sources_hash}" "${slug_dir}" || die
 }
 
 
