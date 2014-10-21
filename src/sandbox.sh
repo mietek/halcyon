@@ -685,7 +685,8 @@ function match_sandbox () {
 			full_label=$( echo_label_from_sandbox_constraints_name "${full_name}" ) || die
 			full_tag=$( derive_fully_matched_sandbox_tag "${ghc_tag}" "${sandbox_tag}" "${full_label}" ) || die
 
-			echo "full ${full_tag}"
+			# NOTE: The 1 means there was a full match.
+			echo "1 ${full_tag}"
 			return 0
 		done <<<"${full_names}"
 
@@ -762,9 +763,10 @@ function match_sandbox () {
 		return 1
 	fi
 
+	# NOTE: The 0 means there was a partial match.
 	filter_last <<<"${scores}" |
 		match_exactly_one |
-		sed 's/^.* /part /'
+		sed 's/^.* /0 /'
 }
 
 
@@ -829,28 +831,24 @@ function install_sandbox () {
 
 	local match_result
 	if ! (( HALCYON_BUILD_SANDBOX )) && match_result=$( match_sandbox "${sandbox_tag}" ); then
-		local match_class match_tag
-		match_class="${match_result%% *}"
+		local full_match match_tag
+		full_match="${match_result%% *}"
 		matched_tag="${match_result#* }"
 
-		case "${match_class}" in
-		'full')
+		if (( full_match )); then
 			if install_matched_sandbox "${sandbox_tag}" "${matched_tag}" "${sources_dir}"; then
 				return 0
 			fi
-			;;
-		'part')
+		else
 			if ! (( HALCYON_BUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
 				log_warning 'Cannot build sandbox layer'
 				return 1
 			fi
+
 			if install_matched_sandbox "${sandbox_tag}" "${matched_tag}" "${sources_dir}"; then
 				return 0
 			fi
-			;;
-		*)
-			die "Unexpected match class: ${match_class}"
-		esac
+		fi
 	fi
 
 	if ! (( HALCYON_BUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
