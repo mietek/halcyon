@@ -129,7 +129,10 @@ function echo_ghc_description () {
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
-	echo_ghc_id "${ghc_tag}" || die
+	local ghc_id
+	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
+
+	echo "${ghc_id}"
 }
 
 
@@ -409,7 +412,7 @@ function restore_ghc () {
 
 	if validate_ghc "${ghc_tag}"; then
 		touch -c "${HALCYON_CACHE_DIR}/${ghc_archive}" || true
-		log 'Using installed GHC layer'
+		log 'Using existing GHC layer'
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
@@ -447,7 +450,7 @@ function activate_ghc () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
-	log "GHC layer installed:"
+	log 'GHC layer installed:'
 	log_indent "${ghc_description}"
 }
 
@@ -465,7 +468,7 @@ function determine_ghc_tag () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	log_begin 'Determining GHC version...'
+	log_begin 'Determining GHC version...               '
 
 	local ghc_version
 	if has_vars HALCYON_GHC_VERSION; then
@@ -488,7 +491,7 @@ function determine_ghc_tag () {
 		fi
 	fi
 
-	log_begin 'Determining GHC magic hash...'
+	log_begin 'Determining GHC magic hash...            '
 
 	local magic_hash
 	magic_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'ghc-*' ) || die
@@ -508,9 +511,8 @@ function install_ghc () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local ghc_tag ghc_description
+	local ghc_tag
 	ghc_tag=$( determine_ghc_tag "${app_dir}" ) || die
-	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
 
 	if ! (( HALCYON_BUILD_GHC )) && restore_ghc "${ghc_tag}"; then
 		activate_ghc || die

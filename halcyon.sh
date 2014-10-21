@@ -175,24 +175,28 @@ function halcyon_deploy () {
 				then
 					return 1
 				fi
-			elif (( index == ${#args[@]} )); then
-				log
-				if ! HALCYON_NO_PREPARE_CACHE=1    \
-					HALCYON_NO_INSTALL_GHC=1   \
-					HALCYON_NO_INSTALL_CABAL=1 \
-					deploy_app "${arg}"
-				then
-					return 1
-				fi
 			else
 				log
-				if ! HALCYON_NO_PREPARE_CACHE=1    \
-					HALCYON_NO_INSTALL_GHC=1   \
-					HALCYON_NO_INSTALL_CABAL=1 \
-					HALCYON_NO_CLEAN_CACHE=1   \
-					deploy_app "${arg}"
-				then
-					return 1
+				log
+				log_delimiter
+				log
+				if (( index == ${#args[@]} )); then
+					if ! HALCYON_NO_PREPARE_CACHE=1    \
+						HALCYON_NO_INSTALL_GHC=1   \
+						HALCYON_NO_INSTALL_CABAL=1 \
+						deploy_app "${arg}"
+					then
+						return 1
+					fi
+				else
+					if ! HALCYON_NO_PREPARE_CACHE=1    \
+						HALCYON_NO_INSTALL_GHC=1   \
+						HALCYON_NO_INSTALL_CABAL=1 \
+						HALCYON_NO_CLEAN_CACHE=1   \
+						deploy_app "${arg}"
+					then
+						return 1
+					fi
 				fi
 			fi
 		done

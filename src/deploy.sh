@@ -82,7 +82,6 @@ function deploy_local_app () {
 	local name
 	name=$( echo_dir_name "${app_dir}" ) || die
 
-	log_delimiter
 	log 'Deploying local app:'
 	log_indent "${name}"
 
@@ -101,7 +100,6 @@ function deploy_cloned_app () {
 	name=$( basename "${url}" ) || die
 	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_cloned_app' ) || die
 
-	log_delimiter
 	log 'Deploying cloned app:'
 	log_indent "${name%.git}"
 
@@ -126,7 +124,6 @@ function deploy_base_package () {
 	local tmp_app_dir
 	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package' ) || die
 
-	log_delimiter
 	log 'Deploying base package:'
 	log_indent "${arg}"
 
@@ -143,7 +140,7 @@ function deploy_base_package () {
 	fi
 
 	log
-	log_begin 'Determining base package version...'
+	log_begin 'Determining base package version...      '
 
 	local base_version
 	if [ "${arg}" != 'base' ]; then
@@ -185,7 +182,6 @@ function deploy_published_app () {
 	local tmp_app_dir
 	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.deploy_published_app' ) || die
 
-	log_delimiter
 	log "Deploying published app:"
 	log_indent "${arg}"
 
@@ -201,7 +197,7 @@ function deploy_published_app () {
 	fi
 
 	log
-	log_begin 'Determining published app version...'
+	log_begin 'Determining published app version...     '
 
 	mkdir -p "${tmp_app_dir}" || die
 

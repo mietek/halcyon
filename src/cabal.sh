@@ -109,6 +109,22 @@ function echo_cabal_remote_repo_name () {
 }
 
 
+function echo_cabal_timestamp_date () {
+	local cabal_timestamp
+	expect_args cabal_timestamp -- "$@"
+
+	echo "${cabal_timestamp:0:4}-${cabal_timestamp:4:2}-${cabal_timestamp:6:2}"
+}
+
+
+function echo_cabal_timestamp_time () {
+	local cabal_timestamp
+	expect_args cabal_timestamp -- "$@"
+
+	echo "${cabal_timestamp:8:2}:${cabal_timestamp:10:2}:${cabal_timestamp:12:2}"
+}
+
+
 function echo_cabal_description () {
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
@@ -117,16 +133,16 @@ function echo_cabal_description () {
 	cabal_id=$( echo_cabal_id "${cabal_tag}" ) || die
 	repo_name=$( echo_cabal_remote_repo_name "${cabal_tag}" ) || die
 	cabal_timestamp=$( echo_cabal_timestamp "${cabal_tag}" ) || die
-
 	if [ -z "${cabal_timestamp}" ]; then
-		echo "${cabal_id} (${repo_name})"
-	else
-		local timestamp_date timestamp_time
-		timestamp_date="${cabal_timestamp:0:4}-${cabal_timestamp:4:2}-${cabal_timestamp:6:2}"
-		timestamp_time="${cabal_timestamp:8:2}:${cabal_timestamp:10:2}:${cabal_timestamp:12:2}"
-
-		echo "${cabal_id} (${repo_name} at ${timestamp_date} ${timestamp_time} UTC)"
+		echo "${cabal_id} with ${repo_name}"
+		return 0
 	fi
+
+	local timestamp_date timestamp_time
+	timestamp_date=$( echo_cabal_timestamp_date "${cabal_timestamp}" ) || die
+	timestamp_time=$( echo_cabal_timestamp_time "${cabal_timestamp}" ) || die
+
+	echo "${cabal_id} (${repo_name} ${timestamp_date} ${timestamp_time} UTC)"
 }
 
 
@@ -503,7 +519,7 @@ function restore_cabal () {
 
 	if validate_cabal "${cabal_tag}"; then
 		touch -c "${HALCYON_CACHE_DIR}/${cabal_archive}" || true
-		log 'Using installed Cabal layer'
+		log 'Using existing Cabal layer'
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
@@ -571,8 +587,16 @@ function restore_cached_updated_cabal () {
 	) || true
 
 	if validate_updated_cabal "${cabal_tag}"; then
+		local updated_tag cabal_timestamp timestamp_date timestamp_time
+		updated_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
+		cabal_timestamp=$( echo_cabal_timestamp "${updated_tag}" ) || die
+		timestamp_date=$( echo_cabal_timestamp_date "${cabal_timestamp}" ) || die
+		timestamp_time=$( echo_cabal_timestamp_time "${cabal_timestamp}" ) || die
+
+		log 'Determining Cabal timestamp...           ' "${timestamp_date} ${timestamp_time} UTC"
+
 		touch -c "${HALCYON_CACHE_DIR}/${cabal_archive}" || true
-		log 'Using installed updated Cabal layer'
+		log 'Using existing updated Cabal layer'
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
@@ -641,6 +665,12 @@ function restore_updated_cabal () {
 		return 1
 	fi
 
+	local cabal_timestamp timestamp_date timestamp_time
+	cabal_timestamp=$( echo_timestamp_from_updated_cabal_archive_name "${cabal_archive}" ) || die
+	timestamp_date=$( echo_cabal_timestamp_date "${cabal_timestamp}" ) || die
+	timestamp_time=$( echo_cabal_timestamp_time "${cabal_timestamp}" ) || die
+
+	log 'Determining Cabal timestamp...           ' "${timestamp_date} ${timestamp_time} UTC"
 	log 'Restoring updated Cabal layer'
 
 	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
@@ -675,7 +705,7 @@ function activate_cabal () {
 	rm -f "${HOME}/.cabal/config" || die
 	ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
 
-	log "Cabal layer installed:"
+	log 'Cabal layer installed:'
 	log_indent "${cabal_description}"
 }
 
@@ -700,7 +730,7 @@ function determine_cabal_tag () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	log_begin 'Determining Cabal version...'
+	log_begin 'Determining Cabal version...             '
 
 	local cabal_version
 	if has_vars HALCYON_CABAL_VERSION; then
@@ -713,7 +743,7 @@ function determine_cabal_tag () {
 		log_end "${cabal_version} (default)"
 	fi
 
-	log_begin 'Determining Cabal remote repo...'
+	log_begin 'Determining Cabal remote repo...         '
 
 	local remote_repo
 	if has_vars HALCYON_CABAL_REMOTE_REPO; then
@@ -726,7 +756,7 @@ function determine_cabal_tag () {
 		log_end "${remote_repo%%:*} (default)"
 	fi
 
-	log_begin 'Determining Cabal magic hash...'
+	log_begin 'Determining Cabal magic hash...          '
 
 	local magic_hash
 	magic_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'cabal-*' ) || die
@@ -746,9 +776,8 @@ function install_cabal () {
 	local app_dir
 	expect_args app_dir -- "$@"
 
-	local cabal_tag cabal_description
+	local cabal_tag
 	cabal_tag=$( determine_cabal_tag "${app_dir}" ) || die
-	cabal_description=$( echo_cabal_description "${cabal_tag}" ) || die
 
 	if ! (( HALCYON_BUILD_CABAL )) && ! (( HALCYON_UPDATE_CABAL )) && restore_updated_cabal "${cabal_tag}"; then
 		activate_cabal || die

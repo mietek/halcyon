@@ -341,12 +341,12 @@ function build_sandbox () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	local sandbox_tag extending_sandbox app_dir
-	expect_args sandbox_tag extending_sandbox app_dir -- "$@"
-	if (( extending_sandbox )); then
-		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints"
-	else
+	local sandbox_tag create_sandbox app_dir
+	expect_args sandbox_tag create_sandbox app_dir -- "$@"
+	if (( create_sandbox )); then
 		expect_no_existing "${HALCYON_DIR}/sandbox"
+	else
+		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints"
 	fi
 	expect_existing "${app_dir}"
 
@@ -357,7 +357,7 @@ function build_sandbox () {
 
 	log 'Starting to build sandbox layer'
 
-	if ! (( extending_sandbox )); then
+	if (( create_sandbox )); then
 		log 'Creating sandbox'
 
 		cabal_create_sandbox "${HALCYON_DIR}/sandbox" || die
@@ -368,7 +368,7 @@ function build_sandbox () {
 
 	if [ -f "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'
-		( "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" ) |& quote || die
+		( "${app_dir}/.halcyon-magic/sandbox-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${app_dir}" ) |& quote || die
 	fi
 
 	log 'Building sandbox'
@@ -378,7 +378,7 @@ function build_sandbox () {
 
 	if [ -f "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
-		( "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" ) |& quote || die
+		( "${app_dir}/.halcyon-magic/sandbox-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${create_sandbox}" "${app_dir}" ) |& quote || die
 	fi
 
 	if find_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' |
@@ -463,7 +463,7 @@ function restore_sandbox () {
 
 	if validate_sandbox "${sandbox_tag}"; then
 		touch -c "${HALCYON_CACHE_DIR}/${sandbox_archive}" || true
-		log 'Using installed sandbox layer'
+		log 'Using existing sandbox layer'
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/sandbox" || die
@@ -513,7 +513,7 @@ function activate_sandbox () {
 	rm -f "${app_dir}/cabal.sandbox.config" || die
 	ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${app_dir}/cabal.sandbox.config" || die
 
-	log "Sandbox layer installed:"
+	log 'Sandbox layer installed:'
 	log_indent "${sandbox_description}"
 }
 
@@ -540,7 +540,7 @@ function determine_sandbox_tag () {
 	expect_args app_dir -- "$@"
 	expect_existing "${app_dir}"
 
-	log_begin 'Determining sandbox constraints hash...'
+	log_begin 'Determining sandbox constraints hash...  '
 
 	local constraints constraints_hash
 	if [ -f "${app_dir}/cabal.config" ]; then
@@ -562,7 +562,7 @@ function determine_sandbox_tag () {
 		fi
 	fi
 
-	log_begin 'Determining sandbox magic hash...'
+	log_begin 'Determining sandbox magic hash...        '
 
 	local magic_hash
 	magic_hash=$( hash_spaceless_recursively "${app_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
@@ -572,7 +572,7 @@ function determine_sandbox_tag () {
 		log_end "${magic_hash:0:7}"
 	fi
 
-	log_begin 'Determining sandbox label...'
+	log_begin 'Determining sandbox label...             '
 
 	local sandbox_label
 	sandbox_label=$( detect_app_label "${app_dir}" ) || die
@@ -771,7 +771,7 @@ function match_sandbox () {
 			sort_naturally |
 			match_at_least_one
 	); then
-		log 'Cannot extend any partially matched sandbox layer'
+		log 'Cannot use any partially matched sandbox layer'
 		return 1
 	fi
 
@@ -799,8 +799,7 @@ function install_matched_sandbox () {
 	matched_description=$( echo_sandbox_description "${matched_tag}" ) || die
 
 	if [ "${matched_constraints_hash}" = "${constraints_hash}" ] && [ "${matched_magic_hash}" = "${magic_hash}" ]; then
-		log 'Using fully matched sandbox layer:'
-		log_indent "${matched_description}"
+		log 'Using fully matched sandbox layer:       ' "${matched_description}"
 
 		echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
@@ -814,11 +813,10 @@ function install_matched_sandbox () {
 		return 1
 	fi
 
-	log 'Extending partially matched sandbox layer:'
-	log_indent "${matched_description}"
+	log 'Using partially matched sandbox layer:   ' "${matched_description}"
 
-	local extending_sandbox=1
-	build_sandbox "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die
+	local create_sandbox=1
+	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${app_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die
@@ -872,9 +870,9 @@ function install_sandbox () {
 		return 1
 	fi
 
-	local extending_sandbox=0
+	local create_sandbox=0
 	deactivate_sandbox "${app_dir}" || die
-	build_sandbox "${sandbox_tag}" "${extending_sandbox}" "${app_dir}" || die
+	build_sandbox "${sandbox_tag}" "${create_sandbox}" "${app_dir}" || die
 	strip_sandbox || die
 	archive_sandbox || die
 	activate_sandbox "${app_dir}" || die

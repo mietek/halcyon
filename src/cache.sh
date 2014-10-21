@@ -11,7 +11,7 @@ function prepare_cache () {
 
 	mkdir -p "${HALCYON_CACHE_DIR}" || die
 
-	log 'Examining cache:'
+	log 'Examining cache'
 
 	local files
 	if ! files=$(
@@ -50,7 +50,7 @@ function clean_cache () {
 			fi
 		done
 
-	log 'Examining cache changes:'
+	log 'Examining cache changes'
 
 	local changes
 	if ! changes=$(
