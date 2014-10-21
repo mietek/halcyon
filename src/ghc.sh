@@ -490,7 +490,7 @@ function determine_ghc_tag () {
 
 
 function install_ghc () {
-	expect_vars HALCYON_DIR HALCYON_BUILD_GHC HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_REBUILD_GHC HALCYON_NO_BUILD
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
@@ -498,12 +498,12 @@ function install_ghc () {
 	local ghc_tag
 	ghc_tag=$( determine_ghc_tag "${sources_dir}" ) || die
 
-	if ! (( HALCYON_BUILD_GHC )) && restore_ghc "${ghc_tag}"; then
+	if ! (( HALCYON_REBUILD_GHC )) && restore_ghc "${ghc_tag}"; then
 		activate_ghc || die
 		return 0
 	fi
 
-	if ! (( HALCYON_BUILD_GHC )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_REBUILD_GHC )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build GHC layer'
 		return 1
 	fi

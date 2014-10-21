@@ -129,14 +129,14 @@ function halcyon_deploy () {
 		'--runtime-deps='*)
 			export HALCYON_RUNTIME_DEPS="${1#*=}";;
 
-		'--build-ghc')
-			export HALCYON_BUILD_GHC=1;;
-		'--build-cabal')
-			export HALCYON_BUILD_CABAL=1;;
-		'--build-sandbox')
-			export HALCYON_BUILD_SANDBOX=1;;
-		'--build-app')
-			export HALCYON_BUILD_APP=1;;
+		'--rebuild-ghc')
+			export HALCYON_REBUILD_GHC=1;;
+		'--rebuild-cabal')
+			export HALCYON_REBUILD_CABAL=1;;
+		'--rebuild-sandbox')
+			export HALCYON_REBUILD_SANDBOX=1;;
+		'--rebuild-app')
+			export HALCYON_REBUILD_APP=1;;
 
 		'--update-cabal')
 			export HALCYON_UPDATE_CABAL=1;;

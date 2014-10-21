@@ -797,7 +797,7 @@ function install_matched_sandbox () {
 		return 0
 	fi
 
-	if ! (( HALCYON_BUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_REBUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build sandbox layer'
 		return 1
 	fi
@@ -814,7 +814,7 @@ function install_matched_sandbox () {
 
 
 function install_sandbox () {
-	expect_vars HALCYON_BUILD_SANDBOX HALCYON_NO_BUILD
+	expect_vars HALCYON_REBUILD_SANDBOX HALCYON_NO_BUILD
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
@@ -824,13 +824,13 @@ function install_sandbox () {
 	sandbox_tag=$( determine_sandbox_tag "${sources_dir}" ) || die
 	sandbox_description=$( echo_sandbox_description "${sandbox_tag}" ) || die
 
-	if ! (( HALCYON_BUILD_SANDBOX )) && restore_sandbox "${sandbox_tag}"; then
+	if ! (( HALCYON_REBUILD_SANDBOX )) && restore_sandbox "${sandbox_tag}"; then
 		activate_sandbox || die
 		return 0
 	fi
 
 	local match_result
-	if ! (( HALCYON_BUILD_SANDBOX )) && match_result=$( match_sandbox "${sandbox_tag}" ); then
+	if ! (( HALCYON_REBUILD_SANDBOX )) && match_result=$( match_sandbox "${sandbox_tag}" ); then
 		local full_match match_tag
 		full_match="${match_result%% *}"
 		matched_tag="${match_result#* }"
@@ -840,7 +840,7 @@ function install_sandbox () {
 				return 0
 			fi
 		else
-			if ! (( HALCYON_BUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
+			if ! (( HALCYON_REBUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
 				log_warning 'Cannot build sandbox layer'
 				return 1
 			fi
@@ -851,7 +851,7 @@ function install_sandbox () {
 		fi
 	fi
 
-	if ! (( HALCYON_BUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_REBUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build sandbox layer'
 		return 1
 	fi

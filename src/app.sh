@@ -511,7 +511,7 @@ function prepare_app_files () {
 
 
 function install_app () {
-	expect_vars HALCYON_DIR HALCYON_BUILD_APP HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_REBUILD_APP HALCYON_NO_BUILD
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
@@ -520,7 +520,7 @@ function install_app () {
 	local app_tag
 	app_tag=$( determine_app_tag "${sources_dir}" ) || die
 
-	if ! (( HALCYON_BUILD_APP )) && restore_app "${app_tag}"; then
+	if ! (( HALCYON_REBUILD_APP )) && restore_app "${app_tag}"; then
 		local restored_tag
 		restored_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 		if validate_app_sources "${restored_tag}" "${sources_dir}" && validate_app_slug_dir "${restored_tag}"; then
@@ -545,7 +545,7 @@ function install_app () {
 		return 0
 	fi
 
-	if ! (( HALCYON_BUILD_APP )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_REBUILD_APP )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build app layer'
 		return 1
 	fi
