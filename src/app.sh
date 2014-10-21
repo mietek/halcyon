@@ -236,31 +236,22 @@ function build_app () {
 
 
 function archive_app () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
-
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}/.halcyon-tag"
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
+	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
 	local app_tag os app_archive
-	app_tag=$( <"${app_dir}/.halcyon-tag" ) || die
+	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	os=$( echo_app_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive_name "${app_tag}" ) || die
 
 	log 'Archiving app layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
-	tar_archive "${app_dir}"                      \
-		"${HALCYON_CACHE_DIR}/${app_archive}" \
-		--exclude '.halcyon'                  \
-		--exclude '.ghc'                      \
-		--exclude '.cabal'                    \
-		--exclude '.cabal-sandbox'            \
-		--exclude 'cabal.sandbox.config' || die
+	tar_archive "${HALCYON_DIR}/app" "${HALCYON_CACHE_DIR}/${app_archive}" || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${app_archive}" "${os}"; then
 		log_warning 'Cannot upload app layer archive'
 	fi
@@ -268,69 +259,44 @@ function archive_app () {
 
 
 function restore_app () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
-	local app_dir app_tag
-	expect_args app_dir app_tag -- "$@"
-	expect_existing "${app_dir}"
-	expect_no_existing "${app_dir}/.halcyon-tag"
+	local app_tag
+	expect_args app_tag -- "$@"
 
-	local os app_archive tmp_app_dir
+	local os app_archive
 	os=$( echo_app_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive_name "${app_tag}" ) || die
-	tmp_app_dir=$( echo_tmp_dir_name 'halcyon.restore_app' ) || die
+
+	if validate_app "${app_tag}"; then
+		touch -c "${HALCYON_CACHE_DIR}/${app_archive}" || true
+		log 'Using existing app layer'
+		return 0
+	fi
+	rm -rf "${HALCYON_DIR}/app" || die
 
 	log 'Restoring app layer'
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_app_dir}" ||
-		! validate_app "${app_tag}" "${tmp_app_dir}"
+		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" ||
+		! validate_app "${app_tag}"
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_app_dir}" || die
+		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" || die
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
 			log 'Cannot download app layer archive'
 			return 1
 		fi
 
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_app_dir}" ||
-			! validate_app "${app_tag}" "${tmp_app_dir}"
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" ||
+			! validate_app "${app_tag}"
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${tmp_app_dir}" || die
+			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" || die
 			log_warning 'Cannot extract app layer archive'
 			return 1
 		fi
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${app_archive}" || true
 	fi
-
-	log 'Examining app changes'
-
-	local changes
-	if ! changes=$(
-		compare_recursively "${tmp_app_dir}" "${app_dir}" |
-		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$|dist/)' |
-		match_at_least_one
-	); then
-		log_indent '(none)'
-	else
-		local nonchange
-		filter_matching '^= ' <<<"${changes}" |
-			sed 's/^= //' |
-			while read -r nonchange; do
-				cp -p "${tmp_app_dir}/${nonchange}" "${app_dir}/${nonchange}" || die
-			done
-
-		if filter_matching "^[^=] Setup.hs$" <<<"${changes}" | match_exactly_one >'/dev/null'; then
-			export HALCYON_CONFIGURE_APP=1
-		fi
-
-		filter_not_matching '^= ' <<<"${changes}" | quote || die
-	fi
-
-	rm -rf "${app_dir}/dist" || die
-	mv "${tmp_app_dir}/dist" "${app_dir}" || die
-
-	rm -rf "${tmp_app_dir}" || die
 }
 
 
