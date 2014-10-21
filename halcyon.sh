@@ -66,10 +66,8 @@ function halcyon_deploy () {
 		'--public')
 			export HALCYON_PUBLIC=1;;
 
-		'--as-buildtime-dep')
-			export HALCYON_AS_BUILDTIME_DEP=1;;
-		'--as-runtime-dep')
-			export HALCYON_AS_RUNTIME_DEP=1;;
+		'--recursive')
+			export HALCYON_RECURSIVE=1;;
 
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;

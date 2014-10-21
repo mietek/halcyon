@@ -15,13 +15,14 @@ EOF
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_TMP_DEPLOY_DIR HALCYON_AS_BUILDTIME_DEP HALCYON_AS_RUNTIME_DEP HALCYON_NO_INSTALL_GHC HALCYON_NO_INSTALL_CABAL HALCYON_NO_INSTALL_SANDBOX HALCYON_NO_INSTALL_APP HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR HALCYON_RECURSIVE HALCYON_NO_INSTALL_GHC HALCYON_NO_INSTALL_CABAL HALCYON_NO_INSTALL_SANDBOX HALCYON_NO_INSTALL_APP HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
 
-	local tmp_sandbox_dir
-	tmp_sandbox_dir=$( echo_tmp_dir_name 'halcyon.deploy_layers.sandbox' ) || die
+	local saved_sandbox saved_app
+	saved_sandbox=$( echo_tmp_dir_name 'halcyon.deploy_layers.sandbox' ) || die
+	saved_app=$( echo_tmp_dir_name 'halcyon.deploy_layers.app' ) || die
 
 	if ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
@@ -32,15 +33,17 @@ function deploy_layers () {
 		log
 		install_ghc "${sources_dir}" || return 1
 	fi
-
 	if ! (( HALCYON_NO_INSTALL_CABAL )); then
 		log
 		install_cabal "${sources_dir}" || return 1
 	fi
 
-	if (( HALCYON_AS_BUILDTIME_DEP )) || (( HALCYON_AS_RUNTIME_DEP )); then
+	if (( HALCYON_RECURSIVE )); then
 		if [ -d "${HALCYON_DIR}/sandbox}" ]; then
-			mv "${HALCYON_DIR}/sandbox" "${tmp_sandbox_dir}" || die
+			mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
+		fi
+		if [ -d "${HALCYON_DIR}/app}" ]; then
+			mv "${HALCYON_DIR}/app" "${saved_app}" || die
 		fi
 	fi
 
@@ -48,24 +51,24 @@ function deploy_layers () {
 		log
 		install_sandbox "${sources_dir}" || return 1
 	fi
-
 	if ! (( HALCYON_NO_INSTALL_APP )); then
 		log
 		install_app "${sources_dir}" || return 1
 	fi
 
-	if (( HALCYON_AS_BUILDTIME_DEP )) || (( HALCYON_AS_RUNTIME_DEP )); then
-		if [ -d "${tmp_sandbox_dir}" ]; then
+	if (( HALCYON_RECURSIVE )); then
+		if [ -d "${saved_sandbox}" ]; then
 			rm -rf "${HALCYON_DIR}/sandbox" || die
-			mv "${tmp_sandbox_dir}" "${HALCYON_DIR}" || die
+			mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
+		fi
+		if [ -d "${saved_app}" ]; then
+			rm -rf "${HALCYON_DIR}/app" || die
+			mv "${saved_app}" "${HALCYON_DIR}/app" || die
 		fi
 	fi
-
-	if ! (( HALCYON_NO_INSTALL_APP )); then
-		expect_existing "${HALCYON_TMP_DEPLOY_DIR}"
-
-		copy_entire_contents "${HALCYON_TMP_DEPLOY_DIR}" '/' || die
-		rm -rf "${HALCYON_TMP_DEPLOY_DIR}" || die
+	if [ -d "${HALCYON_TMP_SLUG_DIR}" ]; then
+		copy_entire_contents "${HALCYON_TMP_SLUG_DIR}" '/' || die
+		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 	fi
 
 	if ! (( HALCYON_NO_CLEAN_CACHE )); then
@@ -76,19 +79,24 @@ function deploy_layers () {
 
 
 function deploy_local_app () {
-	local sources_dir
-	expect_args sources_dir -- "$@"
+	local local_dir
+	expect_args local_dir -- "$@"
 
-	local name
-	name=$( echo_dir_name "${sources_dir}" ) || die
+	local name sources_dir
+	name=$( echo_dir_name "${local_dir}" ) || die
+	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_local_app' ) || die
 
 	log 'Deploying local app:'
 	log_indent "${name}"
+
+	copy_entire_contents "${local_dir}" "${sources_dir}" || die
 
 	if ! deploy_layers "${sources_dir}"; then
 		log_warning 'Cannot deploy local app'
 		return 1
 	fi
+
+	rm -rf "${sources_dir}" || die
 }
 
 
@@ -96,22 +104,22 @@ function deploy_cloned_app () {
 	local url
 	expect_args url -- "$@"
 
-	local name tmp_sources_dir
+	local name sources_dir
 	name=$( basename "${url}" ) || die
-	tmp_sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_cloned_app' ) || die
+	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_cloned_app' ) || die
 
 	log 'Deploying cloned app:'
 	log_indent "${name%.git}"
 
-	if ! git clone --depth=1 --quiet "${url}" "${tmp_sources_dir}"; then
+	if ! git clone --depth=1 --quiet "${url}" "${sources_dir}"; then
 		die 'Cannot deploy cloned app'
 	fi
-	if ! deploy_layers "${tmp_sources_dir}"; then
+	if ! deploy_layers "${sources_dir}"; then
 		log_warning 'Cannot deploy cloned app'
 		return 1
 	fi
 
-	rm -rf "${tmp_sources_dir}" || die
+	rm -rf "${sources_dir}" || die
 }
 
 
@@ -121,8 +129,8 @@ function deploy_base_package () {
 	local arg
 	expect_args arg -- "$@"
 
-	local tmp_sources_dir
-	tmp_sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package' ) || die
+	local sources_dir
+	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package' ) || die
 
 	log 'Deploying base package:'
 	log_indent "${arg}"
@@ -155,21 +163,21 @@ function deploy_base_package () {
 		log_warning 'Expected base package name with explicit version'
 	fi
 
-	mkdir -p "${tmp_sources_dir}" || die
-	echo_fake_base_package "${base_version}" >"${tmp_sources_dir}/halcyon-fake-base.cabal" || die
+	mkdir -p "${sources_dir}" || die
+	echo_fake_base_package "${base_version}" >"${sources_dir}/halcyon-fake-base.cabal" || die
 
 	if !                               \
 		HALCYON_NO_PREPARE_CACHE=1 \
 		HALCYON_NO_INSTALL_GHC=1   \
 		HALCYON_NO_INSTALL_APP=1   \
 		HALCYON_NO_WARN_IMPLICIT=1 \
-		deploy_layers "${tmp_sources_dir}"
+		deploy_layers "${sources_dir}"
 	then
 		log_warning 'Cannot deploy base package'
 		return 1
 	fi
 
-	rm -rf "${tmp_sources_dir}" || die
+	rm -rf "${sources_dir}" || die
 }
 
 
@@ -179,8 +187,8 @@ function deploy_published_app () {
 	local arg
 	expect_args arg -- "$@"
 
-	local tmp_sources_dir
-	tmp_sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_published_app' ) || die
+	local sources_dir
+	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_published_app' ) || die
 
 	log "Deploying published app:"
 	log_indent "${arg}"
@@ -199,11 +207,11 @@ function deploy_published_app () {
 	log
 	log_begin 'Determining published app version...     '
 
-	mkdir -p "${tmp_sources_dir}" || die
+	mkdir -p "${sources_dir}" || die
 
 	local label
 	if ! label=$(
-		cabal_do "${tmp_sources_dir}" unpack "${arg}" |
+		cabal_do "${sources_dir}" unpack "${arg}" |
 			filter_last |
 			match_exactly_one |
 			sed 's:^Unpacking to \(.*\)/$:\1:'
@@ -229,13 +237,13 @@ function deploy_published_app () {
 		HALCYON_NO_INSTALL_GHC=1   \
 		HALCYON_NO_INSTALL_CABAL=1 \
 		HALCYON_NO_WARN_IMPLICIT=1 \
-		deploy_layers "${tmp_sources_dir}/${label}"
+		deploy_layers "${sources_dir}/${label}"
 	then
 		log_warning 'Cannot deploy published app'
 		return 1
 	fi
 
-	rm -rf "${tmp_sources_dir}" || die
+	rm -rf "${sources_dir}" || die
 }
 
 

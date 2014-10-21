@@ -65,7 +65,7 @@ function echo_app_description () {
 
 	local app_id app_label
 	app_id=$( echo_app_id "${app_tag}" ) || die
-	app_label=$( echo_app_label "${app_tag}" ) |\ die
+	app_label=$( echo_app_label "${app_tag}" ) || die
 
 	echo "${app_id} (${app_label})"
 }
@@ -214,34 +214,48 @@ function validate_app_magic () {
 
 function build_app () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local app_tag sources_dir
-	expect_args app_tag sources_dir -- "$@"
-
-	local ghc_tag sandbox_tag
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	local app_tag must_copy must_configure sources_dir
+	expect_args app_tag must_copy must_configure sources_dir -- "$@"
+	if (( must_copy )); then
+		expect_no_existing "${HALCYON_DIR}/app"
+	else
+		expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
+	fi
+	expect_existing "${sources_dir}"
 
 	log 'Starting to build app layer'
 
-	# TODO: insert run-time deps here
+	if (( must_copy )); then
+		log 'Copying app'
+
+		copy_entire_contents "${sources_dir}" "${HALCYON_DIR}/app" || die
+	fi
+
+	if (( must_copy )) || (( must_configure )); then
+		log 'Configuring app'
+
+		# TODO: Make the slug dir configurable.
+		cabal_configure_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --prefix="${HALCYON_DIR}/slug" || die
+	fi
+
+	# TODO: Deploy runtime dependencies here.
 
 	if [ -f "${sources_dir}/.halcyon-magic/app-prebuild-hook" ]; then
 		log 'Running app pre-build hook'
-		( "${sources_dir}/.halcyon-magic/app-prebuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/app-prebuild-hook" "${app_tag}" ) |& quote || die
 	fi
 
 	log 'Building app'
 
-	cabal_build_app "${HALCYON_DIR}/sandbox" "${app_dir}" || die
+	cabal_build_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" || die
 
 	if [ -f "${sources_dir}/.halcyon-magic/app-postbuild-hook" ]; then
 		log 'Running app post-build hook'
-		( "${sources_dir}/.halcyon-magic/app-postbuild-hook" "${ghc_tag}" "${sandbox_tag}" "${app_tag}" "${sources_dir}" ) |& quote || die
+		( "${sources_dir}/.halcyon-magic/app-postbuild-hook" "${app_tag}" ) |& quote || die
 	fi
 
-	echo "${app_tag}" >"${app_dir}/.halcyon-tag" || die
+	echo "${app_tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 
 	log 'Finished building app layer'
 }
@@ -281,7 +295,7 @@ function restore_app () {
 	app_archive=$( echo_app_archive_name "${app_tag}" ) || die
 
 	if validate_app_tag "${app_tag}" &&
-		validate_app_magic "${magic_hash}"
+		validate_app_magic "${app_tag}"
 	then
 		touch -c "${HALCYON_CACHE_DIR}/${app_archive}" || true
 		log 'Using existing app layer'
@@ -294,7 +308,7 @@ function restore_app () {
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" ||
 		! validate_app_tag "${app_tag}" ||
-		! validate_app_magic "${magic_hash}"
+		! validate_app_magic "${app_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" || die
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
@@ -304,7 +318,7 @@ function restore_app () {
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" ||
 			! validate_app_tag "${app_tag}" ||
-			! validate_app_magic "${magic_hash}"
+			! validate_app_magic "${app_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" || die
 			log_warning 'Cannot extract app layer archive'
@@ -354,61 +368,137 @@ function determine_app_tag () {
 }
 
 
+function activate_app () {
+	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR
+	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
+
+	local app_tag app_description
+	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
+
+	cabal_copy_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --destdir="${HALCYON_TMP_SLUG_DIR}" || die
+
+	log 'App layer installed:'
+	log_indent "${app_description}"
+}
+
+
+function prepare_app_files () {
+	expect_vars HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
+
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	local prepare_dir
+	prepare_dir=$( echo_tmp_dir_name 'halcyon.prepare_app_files' ) || die
+
+	log 'Examining app changes'
+
+	local files
+	if ! files=$(
+		compare_recursively "${HALCYON_DIR}/app" "${sources_dir}" |
+		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$|dist/)' |
+		match_at_least_one
+	); then
+		log_indent '(none)'
+
+		# NOTE: The 0 means re-running configure is not required.
+		echo 0
+		return 0
+	fi
+
+	local changed_files
+	if ! changed_files=$(
+		filter_not_matching '^= ' <<<"${files}" |
+		match_at_least_one
+	); then
+		log_indent '(none)'
+
+		# NOTE: The 0 means re-running configure is not required.
+		echo 0
+		return 0
+	else
+		quote <<<"${changed_files}"
+	fi
+
+	copy_entire_contents "${sources_dir}" "${prepare_dir}"
+
+	# NOTE: Restoring file modification times of unchanged files is necessary to avoid needless recompilation.
+	local unchanged_files
+	if unchanged_files=$(
+		filter_matching '^= ' <<<"${files}" |
+		match_at_least_one
+	); then
+		local file
+		while read -r file; do
+			cp -p "${HALCYON_DIR}/app/${file#= }" "${prepare_dir}/${file#= }" || die
+		done <<<"${unchanged_files}"
+	fi
+
+	rm -rf "${prepare_dir}/dist" || die
+	mv "${HALCYON_DIR}/app/dist" "${prepare_dir}/dist" || die
+	mv "${HALCYON_DIR}/app/.halcyon-tag" "${prepare_dir}/.halcyon-tag" || die
+
+	rm -rf "${HALCYON_DIR}/app" || die
+	mv "${prepare_dir}" "${HALCYON_DIR}/app" || die
+
+	# NOTE: With 'build-type: Custom' packages, changing the 'Setup.hs' file requires manually re-running
+	# 'cabal configure', as Cabal does not detect the change.
+	# https://github.com/mietek/haskell-on-heroku/issues/29
+
+	if filter_matching "^. Setup.hs$" <<<"${changed_files}" |
+		match_exactly_one >'/dev/null'
+	then
+		echo 1
+	else
+		echo 0
+	fi
+}
+
+
 function install_app () {
 	expect_vars HALCYON_DIR HALCYON_BUILD_APP HALCYON_NO_BUILD
 
-	local app_dir
-	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}"
+	local sources_dir
+	expect_args sources_dir -- "$@"
+	expect_existing "${sources_dir}"
 
-	# TODO: change the install dir
-	local install_dir
-	install_dir="${HALCYON_DIR}/app"
+	local app_tag
+	app_tag=$( determine_app_tag "${sources_dir}" ) || die
 
-	local app_tag app_description
-	app_tag=$( determine_app_tag "${app_dir}" ) || die
-	app_description=$( echo_app_description "${app_tag}" ) || die
+	if ! (( HALCYON_BUILD_APP )) && restore_app "${app_tag}"; then
+		local restored_tag
+		restored_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
+		if validate_app_sources "${restored_tag}" "${sources_dir}"; then
+			activate_app || die
+			return 0
+		fi
 
-	local restored_app
-	restored_app=0
-	if ! (( HALCYON_BUILD_APP )) && restore_app "${app_dir}" "${app_tag}"; then
-		restored_app=1
-	fi
-
-	if (( HALCYON_BUILD_APP )) || (( ${HALCYON_CONFIGURE_APP:-0} )) || ! (( restored_app )); then
-		if ! (( HALCYON_BUILD_APP )) && (( HALCYON_NO_BUILD )); then
+		if (( HALCYON_NO_BUILD )); then
 			log_warning 'Cannot build app layer'
 			return 1
 		fi
 
-		log 'Configuring app'
-
-		cabal_configure_app "${HALCYON_DIR}/sandbox" "${app_dir}" --prefix="${install_dir}" || die
-	else
-		log 'Using restored app configuration'
+		local must_copy must_configure
+		must_copy=0
+		must_configure=$( prepare_app_files "${sources_dir}" ) || die
+		build_app "${app_tag}" "${must_copy}" "${must_configure}" "${sources_dir}" || die
+		archive_app || die
+		activate_app || die
+		return 0
 	fi
 
-	local built_app
-	built_app=0
-	if (( HALCYON_BUILD_APP )) || ! (( HALCYON_NO_BUILD )); then
-		build_app "${app_dir}" "${app_tag}" || die
-		archive_app "${app_dir}" || die
-		built_app=1
-	fi
-
-	if ! (( restored_app )) && ! (( built_app )); then
-		log_warning 'Cannot install app layer'
+	if ! (( HALCYON_BUILD_APP )) && (( HALCYON_NO_BUILD )); then
+		log_warning 'Cannot build app layer'
 		return 1
 	fi
 
-	log 'Installing app'
-
-	# NOTE: We extend PATH to avoid confusing the user with a spurious Cabal warning, such as:
-	# "Warning: The directory .../bin is not in the system search path."
-
-	PATH="${HALCYON_TMP_DEPLOY_DIR}${install_dir}/bin:${PATH}" \
-		cabal_copy_app "${HALCYON_DIR}/sandbox" "${app_dir}" --destdir="${HALCYON_TMP_DEPLOY_DIR}" || die
-
-	log 'App layer installed:'
-	log_indent "${app_description}"
+	local must_copy must_configure
+	must_copy=1
+	must_configure=1
+	rm -rf "${HALCYON_DIR}/app" || die
+	build_app "${app_tag}" "${must_copy}" "${must_configure}" "${sources_dir}" || die
+	archive_app || die
+	activate_app || die
 }
