@@ -673,7 +673,7 @@ function restore_updated_cabal () {
 	log 'Determining Cabal timestamp...           ' "${timestamp_date} ${timestamp_time} UTC"
 	log 'Restoring updated Cabal layer'
 
-	expect_no_existing "${HALCYON_CACHE_DIR}/${cabal_archive}"
+	rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" || die
 	if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
 		log_warning 'Cannot download updated Cabal layer archive'
 		return 1

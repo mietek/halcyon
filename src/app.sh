@@ -242,7 +242,7 @@ function archive_app () {
 
 	local app_dir
 	expect_args app_dir -- "$@"
-	expect_existing "${app_dir}/.halcyon-tag" "${app_dir}/dist"
+	expect_existing "${app_dir}/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
@@ -367,7 +367,6 @@ function determine_app_tag () {
 
 function install_app () {
 	expect_vars HALCYON_DIR HALCYON_BUILD_APP HALCYON_NO_BUILD
-	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local app_dir
 	expect_args app_dir -- "$@"

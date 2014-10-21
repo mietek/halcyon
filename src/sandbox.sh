@@ -339,7 +339,6 @@ function verify_sandbox_constraints () {
 
 function build_sandbox () {
 	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 	local sandbox_tag create_sandbox app_dir
 	expect_args sandbox_tag create_sandbox app_dir -- "$@"
