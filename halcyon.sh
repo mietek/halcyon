@@ -141,9 +141,6 @@ function halcyon_deploy () {
 		'--update-cabal')
 			export HALCYON_UPDATE_CABAL=1;;
 
-		'--configure-app')
-			export HALCYON_CONFIGURE_APP=1;;
-
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
 
