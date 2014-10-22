@@ -14,8 +14,85 @@ EOF
 }
 
 
+function prepare_helper_apps () {
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	if has_vars HALCYON_WITH_HELPER_APPS; then
+		mkdir -p "${sources_dir}/.halcyon-magic" || die
+		echo "${HALCYON_WITH_HELPER_APPS}" >"${sources_dir}/.halcyon-magic/helper-apps" || die
+	fi
+}
+
+
+function prepare_build_tools () {
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	if has_vars HALCYON_WITH_BUILD_TOOLS; then
+		mkdir -p "${sources_dir}/.halcyon-magic" || die
+		echo "${HALCYON_WITH_BUILD_TOOLS}" >"${sources_dir}/.halcyon-magic/build-tools" || die
+	fi
+}
+
+
+function deploy_helper_apps () {
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	if ! [ -f "${sources_dir}/.halcyon-magic/helper-apps" ]; then
+		return 0
+	fi
+
+	log
+	log 'Deploying helper apps'
+
+	local helper_apps
+	helper_apps=$( <"${sources_dir}/.halcyon-magic/helper-apps" ) || die
+	for helper_app in ${helper_apps}; do
+		log_indent "${helper_app}"
+	done
+
+	log
+	if ! ( deploy --recursive ${helper_apps} ) |& quote; then
+		log_warning 'Cannot deploy helper apps'
+		return 1
+	fi
+	log
+}
+
+
+function deploy_build_tools () {
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	if ! [ -f "${sources_dir}/.halcyon-magic/build-tools" ]; then
+		return 0
+	fi
+
+	log
+	log 'Deploying build tools'
+
+	local build_tools
+	build_tools=$( <"${sources_dir}/.halcyon-magic/build-tools" ) || die
+	for build_tool in ${build_tools}; do
+		log_indent "${build_tool}"
+	done
+
+	log
+	if ! ( deploy --as-build-tool --recursive ${build_tools} ) |& quote; then
+		log_warning 'Cannot deploy build tools'
+		return 1
+	fi
+	log
+}
+
+
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR HALCYON_RECURSIVE HALCYON_NO_INSTALL_GHC HALCYON_NO_INSTALL_CABAL HALCYON_NO_INSTALL_SANDBOX HALCYON_NO_INSTALL_APP HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR \
+		HALCYON_RECURSIVE \
+		HALCYON_NO_INSTALL_GHC HALCYON_NO_INSTALL_CABAL HALCYON_NO_INSTALL_SANDBOX HALCYON_NO_INSTALL_APP \
+		HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
@@ -38,16 +115,28 @@ function deploy_layers () {
 	fi
 
 	if (( HALCYON_RECURSIVE )); then
-		if [ -d "${HALCYON_DIR}/sandbox}" ]; then
+		if [ -d "${HALCYON_DIR}/sandbox" ]; then
 			mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
 		fi
-		if [ -d "${HALCYON_DIR}/app}" ]; then
+
+		if [ -d "${HALCYON_DIR}/app" ]; then
 			mv "${HALCYON_DIR}/app" "${saved_app}" || die
 		fi
 	fi
 
-	if ! (( HALCYON_NO_INSTALL_SANDBOX )); then
+	if ! (( HALCYON_NO_INSTALL_SANDBOX )) && ! (( HALCYON_NO_INSTALL_APP )); then
+		prepare_helper_apps "${sources_dir}" || die
+		deploy_helper_apps "${sources_dir}" || return 1
+	fi
+
+	if [ -f "${sources_dir}/.halcyon-magic/helper-hook" ]; then
 		log
+		log 'Running helper hook'
+		( "${sources_dir}/.halcyon-magic/helper-hook" ) |& quote || die
+	fi
+
+	if ! (( HALCYON_NO_INSTALL_SANDBOX )); then
+		prepare_build_tools "${sources_dir}" || die
 		install_sandbox "${sources_dir}" || return 1
 	fi
 	if ! (( HALCYON_NO_INSTALL_APP )); then
@@ -66,14 +155,14 @@ function deploy_layers () {
 		fi
 	fi
 
-	if [ -d "${HALCYON_TMP_SLUG_DIR}" ]; then
-		copy_entire_contents "${HALCYON_TMP_SLUG_DIR}" '/' || die
-		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
-	fi
-
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
 		log
 		clean_cache || die
+	fi
+
+	if [ -d "${HALCYON_TMP_SLUG_DIR}" ]; then
+		copy_entire_contents "${HALCYON_TMP_SLUG_DIR}" '/' || die
+		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 	fi
 }
 
@@ -211,7 +300,7 @@ function deploy_published_app () {
 
 	local label
 	if ! label=$(
-		cabal_do "${sources_dir}" unpack "${arg}" |
+		cabal_do "${sources_dir}" unpack "${arg}" 2>'/dev/null' |
 			filter_last |
 			match_exactly_one |
 			sed 's:^Unpacking to \(.*\)/$:\1:'

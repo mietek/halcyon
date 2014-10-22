@@ -184,6 +184,21 @@ function detect_app_label () {
 }
 
 
+function hash_app_magic () {
+	local app_dir
+	expect_args app_dir -- "$@"
+
+	hash_spaceless_recursively          \
+		"${app_dir}/.halcyon-magic" \
+		\(                          \
+		-name 'helper-apps' -or     \
+		-name 'helper-hook' -or     \
+		-name 'build-tools' -or     \
+		-name 'app*'                \
+		\) || die
+}
+
+
 function validate_app_tag () {
 	expect_vars HALCYON_DIR
 
@@ -205,12 +220,14 @@ function validate_app_tag () {
 
 
 function validate_app_magic () {
+	expect_vars HALCYON_DIR
+
 	local app_tag
 	expect_args app_tag -- "$@"
 
 	local magic_hash candidate_hash
 	magic_hash=$( echo_app_magic_hash "${app_tag}" ) || die
-	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/app/.halcyon-magic" -name 'app-*' ) || die
+	candidate_hash=$( hash_app_magic "${HALCYON_DIR}/app" ) || die
 	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
@@ -277,8 +294,6 @@ function build_app () {
 
 		cabal_configure_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --prefix="${slug_dir}" || die
 	fi
-
-	# TODO: Deploy runtime dependencies here.
 
 	if [ -f "${sources_dir}/.halcyon-magic/app-prebuild-hook" ]; then
 		log 'Running app pre-build hook'
@@ -384,7 +399,7 @@ function determine_app_tag () {
 	log_begin 'Determining app magic hash...            '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'app-*' ) || die
+	magic_hash=$( hash_app_magic "${sources_dir}" ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else
@@ -401,7 +416,7 @@ function determine_app_tag () {
 	fi
 	log_end "${sources_hash:0:7}"
 
-	log_begin 'Determining app slug dir...              '
+	log_begin 'Determining app slug directory...        '
 	local slug_dir
 	if (( HALCYON_AS_BUILD_TOOL )); then
 		slug_dir="${HALCYON_DIR}/sandbox"
@@ -429,6 +444,7 @@ function activate_app () {
 	# NOTE: Cabal emits a spurious warning  about HALCYON_TMP_SLUG_DIR/.../bin not being in PATH,
 	# hence the decreased verbosity.
 
+	log 'Populating app slug directory'
 	cabal_copy_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --destdir="${HALCYON_TMP_SLUG_DIR}" --verbose=0 || die
 
 	log 'App layer installed:'

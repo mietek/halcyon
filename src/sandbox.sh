@@ -244,6 +244,48 @@ function derive_partially_matched_sandbox_tag () {
 }
 
 
+function hash_sandbox_magic () {
+	local sandbox_dir
+	expect_args sandbox_dir -- "$@"
+
+	hash_spaceless_recursively              \
+		"${sandbox_dir}/.halcyon-magic" \
+		\(                              \
+		-name 'ghc*'        -or         \
+		-name 'helper-apps' -or         \
+		-name 'helper-hook' -or         \
+		-name 'build-tools' -or         \
+		-name 'sandbox*'                \
+		\) || die
+}
+
+
+function install_sandbox_magic () {
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	local magic_hash
+	magic_hash=$( hash_sandbox_magic "${sources_dir}" ) || die
+	if [ -z "${magic_hash}" ]; then
+		return 0
+	fi
+
+	mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
+	find_spaceless_recursively              \
+		"${sources_dir}/.halcyon-magic" \
+		\(                              \
+		-name 'ghc*'        -or         \
+		-name 'helper-apps' -or         \
+		-name 'helper-hook' -or         \
+		-name 'build-tools' -or         \
+		-name 'sandbox*'                \
+		\) |
+		while read -r file; do
+			cp -p "${sources_dir}/.halcyon-magic/${file}" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
+		done
+}
+
+
 function validate_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
@@ -305,12 +347,14 @@ function validate_partially_matched_sandbox_constraints () {
 
 
 function validate_sandbox_magic () {
+	expect_vars HALCYON_DIR
+
 	local sandbox_tag
 	expect_args sandbox_tag -- "$@"
 
 	local magic_hash candidate_hash
 	magic_hash=$( echo_sandbox_magic_hash "${sandbox_tag}" ) || die
-	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/sandbox/.halcyon-magic" -name 'sandbox-*' ) || die
+	candidate_hash=$( hash_sandbox_magic "${HALCYON_DIR}/sandbox" ) || die
 	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
@@ -377,7 +421,7 @@ function build_sandbox () {
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	# TODO: Deploy buildtime dependencies here.
+	deploy_build_tools "${sources_dir}" || die
 
 	if [ -f "${sources_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'
@@ -387,20 +431,14 @@ function build_sandbox () {
 	log 'Building sandbox'
 
 	cabal_install_deps "${HALCYON_DIR}/sandbox" "${sources_dir}" || die
-	cp "${HALCYON_CACHE_DIR}/${constraints_name}" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints" || die
+	cp -p "${HALCYON_CACHE_DIR}/${constraints_name}" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints" || die
 
 	if [ -f "${sources_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
 		( "${sources_dir}/.halcyon-magic/sandbox-postbuild-hook" "${sandbox_tag}" "${must_create}" ) |& quote || die
 	fi
 
-	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'sandbox-*' |
-		match_at_least_one >'/dev/null'
-	then
-		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
-		cp "${sources_dir}/.halcyon-magic/sandbox-"* "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
-	fi
-
+	install_sandbox_magic "${sources_dir}" || die
 	echo "${sandbox_tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 	local sandbox_size
@@ -559,7 +597,7 @@ function determine_sandbox_tag () {
 	log_begin 'Determining sandbox magic hash...        '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'sandbox-*' ) || die
+	magic_hash=$( hash_sandbox_magic "${sources_dir}" ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else

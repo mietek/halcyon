@@ -78,23 +78,6 @@ function halcyon_deploy () {
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
 
-		'--no-install-ghc')
-			export HALCYON_NO_INSTALL_GHC=1;;
-		'--no-install-cabal')
-			export HALCYON_NO_INSTALL_CABAL=1;;
-		'--no-install-sandbox')
-			export HALCYON_NO_INSTALL_SANDBOX=1;;
-		'--no-install-app')
-			export HALCYON_NO_INSTALL_APP=1;;
-
-		'--no-prepare-cache')
-			export HALCYON_NO_PREPARE_CACHE=1;;
-		'--no-clean-cache')
-			export HALCYON_NO_CLEAN_CACHE=1;;
-
-		'--no-warn-implicit')
-			export HALCYON_NO_WARN_IMPLICIT=1;;
-
 	# Vars inherited once and reset:
 		'--ghc-version')
 			shift
@@ -116,18 +99,18 @@ function halcyon_deploy () {
 		'--cabal-remote-repo='*)
 			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
 
-		'--buildtime-deps')
+		'--with-helper-apps')
 			shift
-			expect_args buildtime_deps -- "$@"
-			export HALCYON_BUILDTIME_DEPS="${buildtime_deps}";;
-		'--buildtime-deps='*)
-			export HALCYON_BUILDTIME_DEPS="${1#*=}";;
-		'--runtime-deps')
+			expect_args helper_apps -- "$@"
+			export HALCYON_WITH_HELPER_APPS="${helper_apps}";;
+		'--with-helper-apps='*)
+			export HALCYON_WITH_HELPER_APPS="${1#*=}";;
+		'--with-build-tools')
 			shift
-			expect_args runtime_deps -- "$@"
-			export HALCYON_RUNTIME_DEPS="${runtime_deps}";;
-		'--runtime-deps='*)
-			export HALCYON_RUNTIME_DEPS="${1#*=}";;
+			expect_args build_tools -- "$@"
+			export HALCYON_WITH_BUILD_TOOLS="${build_tools}";;
+		'--with-build-tools='*)
+			export HALCYON_WITH_BUILD_TOOLS="${1#*=}";;
 
 		'--rebuild-ghc')
 			export HALCYON_REBUILD_GHC=1;;
@@ -143,6 +126,23 @@ function halcyon_deploy () {
 
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
+
+		'--no-install-ghc')
+			export HALCYON_NO_INSTALL_GHC=1;;
+		'--no-install-cabal')
+			export HALCYON_NO_INSTALL_CABAL=1;;
+		'--no-install-sandbox')
+			export HALCYON_NO_INSTALL_SANDBOX=1;;
+		'--no-install-app')
+			export HALCYON_NO_INSTALL_APP=1;;
+
+		'--no-prepare-cache')
+			export HALCYON_NO_PREPARE_CACHE=1;;
+		'--no-clean-cache')
+			export HALCYON_NO_CLEAN_CACHE=1;;
+
+		'--no-warn-implicit')
+			export HALCYON_NO_WARN_IMPLICIT=1;;
 
 		'-'*)
 			die "Unexpected option: $1";;
@@ -174,8 +174,6 @@ function halcyon_deploy () {
 				fi
 			else
 				log
-				log
-				log_delimiter
 				log
 				if (( index == ${#args[@]} )); then
 					if ! HALCYON_NO_PREPARE_CACHE=1    \

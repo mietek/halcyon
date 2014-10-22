@@ -147,6 +147,29 @@ function echo_ghc_archive_name () {
 }
 
 
+function hash_ghc_magic () {
+	local ghc_dir
+	expect_args ghc_dir -- "$@"
+
+	hash_spaceless_recursively "${ghc_dir}/.halcyon-magic" -name 'ghc*' || die
+}
+
+
+function install_ghc_magic () {
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	local magic_hash
+	magic_hash=$( hash_ghc_magic "${sources_dir}" ) || die
+	if [ -z "${magic_hash}" ]; then
+		return 0
+	fi
+
+	mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
+	cp -p "${sources_dir}/.halcyon-magic/ghc"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
+}
+
+
 function validate_ghc_tag () {
 	expect_vars HALCYON_DIR
 
@@ -166,12 +189,14 @@ function validate_ghc_tag () {
 
 
 function validate_ghc_magic () {
+	expect_vars HALCYON_DIR
+
 	local ghc_tag
 	expect_args ghc_tag -- "$@"
 
 	local magic_hash candidate_hash
 	magic_hash=$( echo_ghc_magic_hash "${ghc_tag}" ) || die
-	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/ghc/.halcyon-magic" -name 'ghc-*' ) || die
+	candidate_hash=$( hash_ghc_magic "${HALCYON_DIR}/ghc" ) || die
 	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
@@ -291,13 +316,7 @@ function build_ghc () {
 		( "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" ) |& quote || die
 	fi
 
-	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'ghc-*' |
-		match_at_least_one >'/dev/null'
-	then
-		mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
-		cp "${sources_dir}/.halcyon-magic/ghc-"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
-	fi
-
+	install_ghc_magic "${sources_dir}" || die
 	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
 	local ghc_size
@@ -478,7 +497,7 @@ function determine_ghc_tag () {
 	log_begin 'Determining GHC magic hash...            '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'ghc-*' ) || die
+	magic_hash=$( hash_ghc_magic "${sources_dir}" ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else

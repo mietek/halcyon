@@ -239,6 +239,29 @@ function derive_updated_cabal_tag () {
 }
 
 
+function hash_cabal_magic () {
+	local cabal_dir
+	expect_args cabal_dir -- "$@"
+
+	hash_spaceless_recursively "${cabal_dir}/.halcyon-magic" -name 'cabal*' || die
+}
+
+
+function install_cabal_magic () {
+	local sources_dir
+	expect_args sources_dir -- "$@"
+
+	local magic_hash
+	magic_hash=$( hash_cabal_magic "${sources_dir}" ) || die
+	if [ -z "${magic_hash}" ]; then
+		return 0
+	fi
+
+	mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
+	cp -p "${sources_dir}/.halcyon-magic/cabal"* "${HALCYON_DIR}/cabal/.halcyon-magic" || die
+}
+
+
 function validate_cabal_tag () {
 	expect_vars HALCYON_DIR
 
@@ -258,12 +281,14 @@ function validate_cabal_tag () {
 
 
 function validate_cabal_magic () {
+	expect_vars HALCYON_DIR
+
 	local cabal_tag
 	expect_args cabal_tag -- "$@"
 
 	local magic_hash candidate_hash
 	magic_hash=$( echo_cabal_magic_hash "${cabal_tag}" ) || die
-	candidate_hash=$( hash_spaceless_recursively "${HALCYON_DIR}/cabal/.halcyon-magic" -name 'cabal-*' ) || die
+	candidate_hash=$( hash_cabal_magic "${HALCYON_DIR}/cabal" ) || die
 	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
@@ -422,13 +447,7 @@ EOF
 		( "${sources_dir}/.halcyon-magic/cabal-postbuild-hook" "${cabal_tag}" "${tmp_cabal_dir}/cabal-install-${cabal_version}" ) |& quote || die
 	fi
 
-	if find_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'cabal-*' |
-		match_at_least_one >'/dev/null'
-	then
-		mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
-		cp "${sources_dir}/.halcyon-magic/cabal-"* "${HALCYON_DIR}/cabal/.halcyon-magic" || die
-	fi
-
+	install_cabal_magic "${sources_dir}" || die
 	echo "${cabal_tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	local cabal_size
@@ -721,7 +740,7 @@ function determine_cabal_tag () {
 	log_begin 'Determining Cabal magic hash...          '
 
 	local magic_hash
-	magic_hash=$( hash_spaceless_recursively "${sources_dir}/.halcyon-magic" -name 'cabal-*' ) || die
+	magic_hash=$( hash_cabal_magic "${sources_dir}" ) || die
 	if [ -z "${magic_hash}" ]; then
 		log_end '(none)'
 	else
@@ -798,7 +817,7 @@ function sandboxed_cabal_do () {
 		mv "${sandbox_dir}/cabal.config" "${saved_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
-		cp "${work_dir}/cabal.config" "${sandbox_dir}/cabal.config" || die
+		cp -p "${work_dir}/cabal.config" "${sandbox_dir}/cabal.config" || die
 	fi
 
 	local status
