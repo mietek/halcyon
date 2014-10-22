@@ -331,7 +331,14 @@ function archive_app () {
 	log 'Archiving app layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${app_archive}" || die
-	tar_archive "${HALCYON_DIR}/app" "${HALCYON_CACHE_DIR}/${app_archive}" || die
+	tar_archive "${HALCYON_DIR}/app"              \
+		"${HALCYON_CACHE_DIR}/${app_archive}" \
+		--exclude '.halcyon'                  \
+		--exclude '.haskell-on-heroku'        \
+		--exclude '.ghc'                      \
+		--exclude '.cabal'                    \
+		--exclude '.cabal-sandbox'            \
+		--exclude 'cabal.sandbox.config' || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${app_archive}" "${os}"; then
 		log_warning 'Cannot upload app layer archive'
 	fi
@@ -467,7 +474,8 @@ function prepare_app_files () {
 	local files
 	if ! files=$(
 		compare_recursively "${HALCYON_DIR}/app" "${sources_dir}" |
-		filter_not_matching '^. (\.halcyon/|\.halcyon-tag$|dist/)' |
+		filter_not_matching '^. (\.halcyon/|\.haskell-on-heroku/|\.ghc/|\.cabal/|\.cabal-sandbox/|cabal.sandbox.config$)' |
+		filter_not_matching '^. (\.halcyon-tag$|dist/)' |
 		match_at_least_one
 	); then
 		log_indent '(none)'
