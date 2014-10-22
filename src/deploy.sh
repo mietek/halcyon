@@ -53,12 +53,10 @@ function deploy_helper_apps () {
 		log_indent "${helper_app}"
 	done
 
-	log
 	if ! ( deploy --recursive ${helper_apps} ) |& quote; then
 		log_warning 'Cannot deploy helper apps'
 		return 1
 	fi
-	log
 }
 
 
@@ -79,12 +77,10 @@ function deploy_build_tools () {
 		log_indent "${build_tool}"
 	done
 
-	log
 	if ! ( deploy --as-build-tool --recursive ${build_tools} ) |& quote; then
 		log_warning 'Cannot deploy build tools'
 		return 1
 	fi
-	log
 }
 
 
@@ -161,7 +157,9 @@ function deploy_layers () {
 	fi
 
 	if [ -d "${HALCYON_TMP_SLUG_DIR}" ]; then
-		copy_entire_contents "${HALCYON_TMP_SLUG_DIR}" '/' || die
+		# NOTE: Cannot use -p on a read-only file system.
+
+		cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
 		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 	fi
 }
