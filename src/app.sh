@@ -101,6 +101,19 @@ function echo_app_archive_name () {
 }
 
 
+function echo_app_slug_archive_name () {
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	local ghc_id sandbox_id app_id
+	ghc_id=$( echo_ghc_id "${app_tag}" ) || die
+	sandbox_id=$( echo_sandbox_id "${app_tag}" ) || die
+	app_id=$( echo_app_id "${app_tag}" ) || die
+
+	echo "halcyon-app-slug-ghc-${ghc_id}-${sandbox_id}-${app_id}.tar.gz"
+}
+
+
 function detect_app_package_description () {
 	local sources_dir
 	expect_args sources_dir -- "$@"
@@ -257,6 +270,24 @@ function validate_app_tag_slug_dir () {
 }
 
 
+function validate_app_slug_tag () {
+	expect_vars HALCYON_TMP_SLUG_DIR
+
+	local app_tag
+	expect_args app_tag -- "$@"
+
+	if ! [ -f "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ]; then
+		return 1
+	fi
+
+	local candidate_tag
+	candidate_tag=$( match_exactly_one <"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
+	if [ "${candidate_tag}" != "${app_tag}" ]; then
+		return 1
+	fi
+}
+
+
 function build_app () {
 	expect_vars HALCYON_DIR
 
@@ -336,6 +367,29 @@ function archive_app () {
 }
 
 
+function archive_app_slug () {
+	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
+	expect_existing "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
+
+	if (( HALCYON_NO_ARCHIVE )); then
+		return 0
+	fi
+
+	local app_tag os slug_archive
+	app_tag=$( <"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
+	os=$( echo_app_os "${app_tag}" ) || die
+	slug_archive=$( echo_app_slug_archive_name "${app_tag}" ) || die
+
+	log 'Archiving app slug directory'
+
+	rm -f "${HALCYON_CACHE_DIR}/${slug_archive}" || die
+	tar_archive "${HALCYON_TMP_SLUG_DIR}" "${HALCYON_CACHE_DIR}/${slug_archive}" || die
+	if ! upload_layer "${HALCYON_CACHE_DIR}/${slug_archive}" "${os}"; then
+		log_warning 'Cannot upload app slug directory archive'
+	fi
+}
+
+
 function restore_app () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
@@ -374,6 +428,48 @@ function restore_app () {
 		fi
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${app_archive}" || true
+	fi
+}
+
+
+function restore_app_slug () {
+	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR
+
+	local app_tag sources_dir
+	expect_args app_tag sources_dir -- "$@"
+
+	local os slug_archive
+	os=$( echo_app_os "${app_tag}" ) || die
+	slug_archive=$( echo_app_slug_archive_name "${app_tag}" ) || die
+
+	if validate_app_slug_tag "${app_tag}"; then
+		touch -c "${HALCYON_CACHE_DIR}/${slug_archive}" || true
+		log 'Using existing app slug directory'
+		return 0
+	fi
+	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+
+	log 'Restoring app slug directory'
+
+	if ! [ -f "${HALCYON_CACHE_DIR}/${slug_archive}" ] ||
+		! tar_extract "${HALCYON_CACHE_DIR}/${slug_archive}" "${HALCYON_TMP_SLUG_DIR}" ||
+		! validate_app_slug_tag "${app_tag}"
+	then
+		rm -rf "${HALCYON_CACHE_DIR}/${slug_archive}" "${HALCYON_TMP_SLUG_DIR}" || die
+		if ! download_layer "${os}" "${slug_archive}" "${HALCYON_CACHE_DIR}"; then
+			log 'Cannot download app slug directory archive'
+			return 1
+		fi
+
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${slug_archive}" "${HALCYON_TMP_SLUG_DIR}" ||
+			! validate_app_slug_tag "${app_tag}"
+		then
+			rm -rf "${HALCYON_CACHE_DIR}/${slug_archive}" "${HALCYON_TMP_SLUG_DIR}" || die
+			log_warning 'Cannot extract app slug directory archive'
+			return 1
+		fi
+	else
+		touch -c "${HALCYON_CACHE_DIR}/${slug_archive}" || true
 	fi
 }
 
@@ -435,13 +531,36 @@ function activate_app () {
 	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	app_description=$( echo_app_description "${app_tag}" ) || die
 
-	# NOTE: Cabal emits a spurious warning  about HALCYON_TMP_SLUG_DIR/.../bin not being in PATH,
+	log 'Populating app slug directory'
+
+	# NOTE: Cabal emits a spurious warning about HALCYON_TMP_SLUG_DIR/.../bin not being in PATH,
 	# hence the decreased verbosity.
 
-	log 'Populating app slug directory'
 	cabal_copy_app "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" --destdir="${HALCYON_TMP_SLUG_DIR}" --verbose=0 || die
+	echo "${app_tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
+	archive_app_slug || die
 
 	log 'App layer installed:'
+	log_indent "${app_description}"
+}
+
+
+function activate_app_slug () {
+	expect_vars HALCYON_TMP_SLUG_DIR
+	expect_existing "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
+
+	local app_tag app_description
+	app_tag=$( <"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
+	app_description=$( echo_app_description "${app_tag}" ) || die
+
+	log 'Activating app slug directory'
+
+	# NOTE: Cannot use -p on a read-only file system.
+
+	cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
+	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+
+	log 'App slug installed:'
 	log_indent "${app_description}"
 }
 
@@ -524,12 +643,9 @@ function prepare_app_files () {
 function install_app () {
 	expect_vars HALCYON_DIR HALCYON_REBUILD_APP HALCYON_NO_BUILD
 
-	local sources_dir
-	expect_args sources_dir -- "$@"
+	local app_tag sources_dir
+	expect_args app_tag sources_dir -- "$@"
 	expect_existing "${sources_dir}"
-
-	local app_tag
-	app_tag=$( determine_app_tag "${sources_dir}" ) || die
 
 	if ! (( HALCYON_REBUILD_APP )) && restore_app "${app_tag}"; then
 		if fully_validate_app_tag "${app_tag}"; then

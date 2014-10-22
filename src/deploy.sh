@@ -14,7 +14,7 @@ EOF
 }
 
 
-function prepare_helper_apps () {
+function prepare_magic () {
 	local sources_dir
 	expect_args sources_dir -- "$@"
 
@@ -22,12 +22,6 @@ function prepare_helper_apps () {
 		mkdir -p "${sources_dir}/.halcyon-magic" || die
 		echo "${HALCYON_WITH_HELPER_APPS}" >"${sources_dir}/.halcyon-magic/helper-apps" || die
 	fi
-}
-
-
-function prepare_build_tools () {
-	local sources_dir
-	expect_args sources_dir -- "$@"
 
 	if has_vars HALCYON_WITH_BUILD_TOOLS; then
 		mkdir -p "${sources_dir}/.halcyon-magic" || die
@@ -81,7 +75,6 @@ function deploy_build_tools () {
 	fi
 }
 
-
 function deploy_layers () {
 	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR \
 		HALCYON_RECURSIVE \
@@ -90,36 +83,50 @@ function deploy_layers () {
 
 	local sources_dir
 	expect_args sources_dir -- "$@"
+	expect_existing "${sources_dir}"
 
 	local saved_sandbox saved_app
 	saved_sandbox=$( echo_tmp_dir_name 'halcyon.deploy_layers.sandbox' ) || die
 	saved_app=$( echo_tmp_dir_name 'halcyon.deploy_layers.app' ) || die
 
+	prepare_magic "${sources_dir}" || die
+
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
 		prepare_cache || die
 	fi
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_GHC )); then
-		log
-		install_ghc "${sources_dir}" || return 1
-	fi
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_CABAL )); then
-		log
-		install_cabal "${sources_dir}" || return 1
+
+	local app_tag
+	if ! (( HALCYON_NO_INSTALL_APP )); then
+		app_tag=$( determine_app_tag "${sources_dir}" ) || die
+
+		if ! (( HALCYON_REBUILD_APP )) && restore_app_slug "${app_tag}" "${sources_dir}"; then
+			activate_app_slug || die
+			return 0
+		fi
 	fi
 
 	if (( HALCYON_RECURSIVE )); then
 		if [ -d "${HALCYON_DIR}/sandbox" ]; then
 			mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
 		fi
-
 		if [ -d "${HALCYON_DIR}/app" ]; then
 			mv "${HALCYON_DIR}/app" "${saved_app}" || die
 		fi
 	fi
 
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_GHC )); then
+		log
+		install_ghc "${sources_dir}" || return 1
+	fi
+
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_CABAL )); then
+		log
+		install_cabal "${sources_dir}" || return 1
+	fi
+
 	if ! (( HALCYON_NO_INSTALL_SANDBOX )) && ! (( HALCYON_NO_INSTALL_APP )); then
-		prepare_helper_apps "${sources_dir}" || die
+		log
 		deploy_helper_apps "${sources_dir}" || return 1
 	fi
 
@@ -130,12 +137,13 @@ function deploy_layers () {
 	fi
 
 	if ! (( HALCYON_NO_INSTALL_SANDBOX )); then
-		prepare_build_tools "${sources_dir}" || die
+		log
 		install_sandbox "${sources_dir}" || return 1
 	fi
+
 	if ! (( HALCYON_NO_INSTALL_APP )); then
 		log
-		install_app "${sources_dir}" || return 1
+		install_app "${app_tag}" "${sources_dir}" || return 1
 	fi
 
 	if (( HALCYON_RECURSIVE )); then
@@ -154,11 +162,8 @@ function deploy_layers () {
 		clean_cache || die
 	fi
 
-	if [ -d "${HALCYON_TMP_SLUG_DIR}" ]; then
-		# NOTE: Cannot use -p on a read-only file system.
-
-		cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
-		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+	if ! (( HALCYON_NO_INSTALL_APP )); then
+		activate_app_slug || die
 	fi
 }
 
@@ -217,6 +222,8 @@ function deploy_base_package () {
 	local sources_dir
 	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package' ) || die
 
+	mkdir -p "${sources_dir}" || die
+
 	log 'Deploying base package:'
 	log_indent "${arg}"
 
@@ -226,7 +233,7 @@ function deploy_base_package () {
 		HALCYON_NO_INSTALL_APP=1     \
 		HALCYON_NO_CLEAN_CACHE=1     \
 		HALCYON_NO_WARN_IMPLICIT=1   \
-		deploy_layers '/dev/null'
+		deploy_layers "${sources_dir}"
 	then
 		log_warning 'Cannot deploy base package'
 		return 1
@@ -248,7 +255,6 @@ function deploy_base_package () {
 		log_warning 'Expected base package name with explicit version'
 	fi
 
-	mkdir -p "${sources_dir}" || die
 	echo_fake_base_package "${base_version}" >"${sources_dir}/halcyon-fake-base.cabal" || die
 
 	if !                               \
@@ -275,6 +281,8 @@ function deploy_published_app () {
 	local sources_dir
 	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_published_app' ) || die
 
+	mkdir -p "${sources_dir}" || die
+
 	log "Deploying published app:"
 	log_indent "${arg}"
 
@@ -283,7 +291,7 @@ function deploy_published_app () {
 		HALCYON_NO_INSTALL_APP=1     \
 		HALCYON_NO_CLEAN_CACHE=1     \
 		HALCYON_NO_WARN_IMPLICIT=1   \
-		deploy_layers '/dev/null'
+		deploy_layers "${sources_dir}"
 	then
 		log_warning 'Cannot deploy published app'
 		return 1
@@ -291,8 +299,6 @@ function deploy_published_app () {
 
 	log
 	log_begin 'Determining published app version...     '
-
-	mkdir -p "${sources_dir}" || die
 
 	local label
 	if ! label=$(
