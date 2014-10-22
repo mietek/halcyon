@@ -544,11 +544,6 @@ function install_app () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )); then
-			log_warning 'Cannot build app layer'
-			return 1
-		fi
-
 		local must_copy must_configure
 		must_copy=0
 		must_configure=$( prepare_app_files "${sources_dir}" ) || die
