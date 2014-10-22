@@ -199,7 +199,7 @@ function hash_app_magic () {
 }
 
 
-function validate_app_tag () {
+function partially_validate_app_tag () {
 	expect_vars HALCYON_DIR
 
 	local app_tag
@@ -219,47 +219,38 @@ function validate_app_tag () {
 }
 
 
-function validate_app_magic () {
+function fully_validate_app_tag () {
 	expect_vars HALCYON_DIR
 
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local magic_hash candidate_hash
-	magic_hash=$( echo_app_magic_hash "${app_tag}" ) || die
-	candidate_hash=$( hash_app_magic "${HALCYON_DIR}/app" ) || die
-	if [ "${candidate_hash}" != "${magic_hash}" ]; then
+	if ! [ -f "${HALCYON_DIR}/app/.halcyon-tag" ]; then
+		return 1
+	fi
+
+	local candidate_tag
+	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	if [ "${candidate_tag}" != "${app_tag}" ]; then
 		return 1
 	fi
 }
 
 
-function validate_app_sources () {
-	local app_tag sources_dir
-	expect_args app_tag sources_dir -- "$@"
-
-	local sources_hash candidate_hash
-	sources_hash=$( echo_app_sources_hash "${app_tag}" ) || die
-	candidate_hash=$( hash_spaceless_recursively "${sources_dir}" ) || die
-	if [ "${candidate_hash}" != "${sources_hash}" ]; then
-		return 1
-	fi
-}
-
-
-function validate_app_slug_dir () {
-	expect_vars HALCYON_DIR HALCYON_AS_BUILD_TOOL
+function validate_app_tag_slug_dir () {
+	expect_vars HALCYON_DIR
 
 	local app_tag
 	expect_args app_tag -- "$@"
 
-	local slug_dir candidate_dir
-	if (( HALCYON_AS_BUILD_TOOL )); then
-		slug_dir="${HALCYON_DIR}/sandbox"
-	else
-		slug_dir="${HALCYON_DIR}/slug"
+	if ! [ -f "${HALCYON_DIR}/app/.halcyon-tag" ]; then
+		return 1
 	fi
-	candidate_dir=$( echo_app_slug_dir "${app_tag}" ) || die
+
+	local slug_dir candidate_tag candidate_dir
+	slug_dir=$( echo_app_slug_dir "${app_tag}" ) || die
+	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	candidate_dir=$( echo_app_slug_dir "${candidate_tag}" ) || die
 	if [ "${candidate_dir}" != "${slug_dir}" ]; then
 		return 1
 	fi
@@ -355,9 +346,7 @@ function restore_app () {
 	os=$( echo_app_os "${app_tag}" ) || die
 	app_archive=$( echo_app_archive_name "${app_tag}" ) || die
 
-	if validate_app_tag "${app_tag}" &&
-		validate_app_magic "${app_tag}"
-	then
+	if partially_validate_app_tag "${app_tag}"; then
 		touch -c "${HALCYON_CACHE_DIR}/${app_archive}" || true
 		log 'Using existing app layer'
 		return 0
@@ -368,8 +357,7 @@ function restore_app () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${app_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" ||
-		! validate_app_tag "${app_tag}" ||
-		! validate_app_magic "${app_tag}"
+		! partially_validate_app_tag "${app_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" || die
 		if ! download_layer "${os}" "${app_archive}" "${HALCYON_CACHE_DIR}"; then
@@ -378,8 +366,7 @@ function restore_app () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" ||
-			! validate_app_tag "${app_tag}" ||
-			! validate_app_magic "${app_tag}"
+			! partially_validate_app_tag "${app_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${app_archive}" "${HALCYON_DIR}/app" || die
 			log_warning 'Cannot extract app layer archive'
@@ -545,9 +532,7 @@ function install_app () {
 	app_tag=$( determine_app_tag "${sources_dir}" ) || die
 
 	if ! (( HALCYON_REBUILD_APP )) && restore_app "${app_tag}"; then
-		local restored_tag
-		restored_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
-		if validate_app_sources "${restored_tag}" "${sources_dir}" && validate_app_slug_dir "${restored_tag}"; then
+		if fully_validate_app_tag "${app_tag}"; then
 			activate_app || die
 			return 0
 		fi
@@ -555,7 +540,7 @@ function install_app () {
 		local must_copy must_configure
 		must_copy=0
 		must_configure=$( prepare_app_files "${sources_dir}" ) || die
-		if ! validate_app_slug_dir "${restored_tag}"; then
+		if ! validate_app_tag_slug_dir "${app_tag}"; then
 			must_configure=1
 		fi
 		build_app "${app_tag}" "${must_copy}" "${must_configure}" "${sources_dir}" || die

@@ -280,21 +280,6 @@ function validate_cabal_tag () {
 }
 
 
-function validate_cabal_magic () {
-	expect_vars HALCYON_DIR
-
-	local cabal_tag
-	expect_args cabal_tag -- "$@"
-
-	local magic_hash candidate_hash
-	magic_hash=$( echo_cabal_magic_hash "${cabal_tag}" ) || die
-	candidate_hash=$( hash_cabal_magic "${HALCYON_DIR}/cabal" ) || die
-	if [ "${candidate_hash}" != "${magic_hash}" ]; then
-		return 1
-	fi
-}
-
-
 function validate_updated_cabal_timestamp () {
 	local candidate_timestamp
 	expect_args candidate_timestamp -- "$@"
@@ -514,9 +499,7 @@ function restore_cabal () {
 	os=$( echo_cabal_os "${cabal_tag}" ) || die
 	cabal_archive=$( echo_cabal_archive_name "${cabal_tag}" ) || die
 
-	if validate_cabal_tag "${cabal_tag}" &&
-		validate_cabal_magic "${cabal_tag}"
-	then
+	if validate_cabal_tag "${cabal_tag}"; then
 		touch -c "${HALCYON_CACHE_DIR}/${cabal_archive}" || true
 		log 'Using existing Cabal layer'
 		return 0
@@ -527,8 +510,7 @@ function restore_cabal () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${cabal_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
-		! validate_cabal_tag "${cabal_tag}" ||
-		! validate_cabal_magic "${cabal_tag}"
+		! validate_cabal_tag "${cabal_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		if ! download_layer "${os}" "${cabal_archive}" "${HALCYON_CACHE_DIR}"; then
@@ -537,8 +519,7 @@ function restore_cabal () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
-			! validate_cabal_tag "${cabal_tag}" ||
-			! validate_cabal_magic "${cabal_tag}"
+			! validate_cabal_tag "${cabal_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 			log_warning 'Cannot extract Cabal layer archive'
@@ -587,9 +568,7 @@ function restore_cached_updated_cabal () {
 		match_updated_cabal_archive "${cabal_tag}"
 	) || true
 
-	if validate_updated_cabal_tag "${cabal_tag}" &&
-		validate_cabal_magic "${cabal_tag}"
-	then
+	if validate_updated_cabal_tag "${cabal_tag}"; then
 		local updated_tag cabal_timestamp timestamp_date timestamp_time
 		updated_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 		cabal_timestamp=$( echo_cabal_timestamp "${updated_tag}" ) || die
@@ -609,8 +588,7 @@ function restore_cached_updated_cabal () {
 	fi
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
-		! validate_updated_cabal_tag "${cabal_tag}" ||
-		! validate_cabal_magic "${cabal_tag}"
+		! validate_updated_cabal_tag "${cabal_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		return 1
@@ -684,8 +662,7 @@ function restore_updated_cabal () {
 	fi
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" ||
-		! validate_updated_cabal_tag "${cabal_tag}" ||
-		! validate_cabal_magic "${cabal_tag}"
+		! validate_updated_cabal_tag "${cabal_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${cabal_archive}" "${HALCYON_DIR}/cabal" || die
 		log_warning 'Cannot extract updated Cabal layer archive'

@@ -304,21 +304,6 @@ function validate_sandbox_tag () {
 }
 
 
-function validate_sandbox_constraints () {
-	expect_vars HALCYON_DIR
-
-	local sandbox_tag
-	expect_args sandbox_tag -- "$@"
-
-	local constraints_hash candidate_hash
-	constraints_hash=$( echo_sandbox_constraints_hash "${sandbox_tag}" ) || die
-	candidate_hash=$( read_sandbox_constraints <"${HALCYON_DIR}/sandbox/.halcyon-sandbox.constraints" | do_hash ) || die
-	if [ "${candidate_hash}" != "${constraints_hash}" ]; then
-		return 1
-	fi
-}
-
-
 function validate_fully_matched_sandbox_constraints () {
 	local sandbox_tag constraints_file
 	expect_args sandbox_tag constraints_file -- "$@"
@@ -341,21 +326,6 @@ function validate_partially_matched_sandbox_constraints () {
 	short_hash=$( echo_short_hash_from_sandbox_constraints_name "${file_name}" ) || die
 	candidate_hash=$( read_sandbox_constraints <"${constraints_file}" | do_hash ) || die
 	if [ "${candidate_hash:0:7}" != "${short_hash}" ]; then
-		return 1
-	fi
-}
-
-
-function validate_sandbox_magic () {
-	expect_vars HALCYON_DIR
-
-	local sandbox_tag
-	expect_args sandbox_tag -- "$@"
-
-	local magic_hash candidate_hash
-	magic_hash=$( echo_sandbox_magic_hash "${sandbox_tag}" ) || die
-	candidate_hash=$( hash_sandbox_magic "${HALCYON_DIR}/sandbox" ) || die
-	if [ "${candidate_hash}" != "${magic_hash}" ]; then
 		return 1
 	fi
 }
@@ -512,10 +482,7 @@ function restore_sandbox () {
 	os=$( echo_sandbox_os "${sandbox_tag}" ) || die
 	sandbox_archive=$( echo_sandbox_archive_name "${sandbox_tag}" ) || die
 
-	if validate_sandbox_tag "${sandbox_tag}" &&
-		validate_sandbox_constraints "${sandbox_tag}" &&
-		validate_sandbox_magic "${sandbox_tag}"
-	then
+	if validate_sandbox_tag "${sandbox_tag}"; then
 		touch -c "${HALCYON_CACHE_DIR}/${sandbox_archive}" || true
 		log 'Using existing sandbox layer'
 		return 0
@@ -526,9 +493,7 @@ function restore_sandbox () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${sandbox_archive}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
-		! validate_sandbox_tag "${sandbox_tag}" ||
-		! validate_sandbox_constraints "${sandbox_tag}" ||
-		! validate_sandbox_magic "${sandbox_tag}"
+		! validate_sandbox_tag "${sandbox_tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 		if ! download_layer "${os}" "${sandbox_archive}" "${HALCYON_CACHE_DIR}"; then
@@ -537,9 +502,7 @@ function restore_sandbox () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" ||
-			! validate_sandbox_tag "${sandbox_tag}" ||
-			! validate_sandbox_constraints "${sandbox_tag}" ||
-			! validate_sandbox_magic "${sandbox_tag}"
+			! validate_sandbox_tag "${sandbox_tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${sandbox_archive}" "${HALCYON_DIR}/sandbox" || die
 			log_warning 'Cannot extract sandbox layer archive'
