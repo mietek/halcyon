@@ -170,7 +170,7 @@ function deploy_local_app () {
 	expect_args local_dir -- "$@"
 
 	local name sources_dir
-	name=$( echo_dir_name "${local_dir}" ) || die
+	name=$( detect_app_name "${local_dir}" ) || die
 	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_local_app' ) || die
 
 	log 'Deploying local app:'
