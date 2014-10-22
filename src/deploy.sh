@@ -44,7 +44,6 @@ function deploy_helper_apps () {
 		return 0
 	fi
 
-	log
 	log 'Deploying helper apps'
 
 	local helper_apps
@@ -68,7 +67,6 @@ function deploy_build_tools () {
 		return 0
 	fi
 
-	log
 	log 'Deploying build tools'
 
 	local build_tools

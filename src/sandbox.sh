@@ -535,6 +535,12 @@ function determine_sandbox_tag () {
 	expect_args sources_dir -- "$@"
 	expect_existing "${sources_dir}"
 
+	log_begin 'Determining sandbox label...             '
+
+	local sandbox_label
+	sandbox_label=$( detect_app_label "${sources_dir}" ) || die
+	log_end "${sandbox_label}"
+
 	log_begin 'Determining sandbox constraints hash...  '
 
 	local constraints constraints_hash
@@ -566,12 +572,6 @@ function determine_sandbox_tag () {
 	else
 		log_end "${magic_hash:0:7}"
 	fi
-
-	log_begin 'Determining sandbox label...             '
-
-	local sandbox_label
-	sandbox_label=$( detect_app_label "${sources_dir}" ) || die
-	log_end "${sandbox_label}"
 
 	local ghc_tag sandbox_tag constraints_name
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
