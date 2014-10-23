@@ -47,10 +47,12 @@ function deploy_layers () {
 		prepare_cache || die
 	fi
 
-	if ! (( HALCYON_NO_SANDBOX_OR_APP )) && ! (( HALCYON_NO_APP )) && ! (( HALCYON_FORCE_APP )) && restore_slug "${tag}"; then
+	if ! (( HALCYON_NO_SANDBOX_OR_APP )) && ! (( HALCYON_NO_APP )) && ! (( HALCYON_FORCE_APP )); then
 		log
-		engage_slug || die
-		return 0
+		if restore_slug "${tag}"; then
+			engage_slug || die
+			return 0
+		fi
 	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
