@@ -43,7 +43,7 @@ function format_constraint_file_name () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
 
-	echo "halcyon-constraints-${constraint_hash:0:7}-${app_label}"
+	echo "halcyon-constraints-${constraint_hash:0:7}-${app_label}.config"
 }
 
 
@@ -72,7 +72,10 @@ function map_constraint_file_name_to_app_label () {
 	local file_name
 	expect_args file_name -- "$@"
 
-	echo "${file_name#halcyon-constraints-*-}"
+	local app_label_etc
+	app_label_etc="${file_name#halcyon-constraints-*-}"
+
+	echo "${app_label_etc%.config}"
 }
 
 

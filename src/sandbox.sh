@@ -112,7 +112,7 @@ function build_sandbox_layer () {
 	if (( must_create )); then
 		expect_no_existing "${HALCYON_DIR}/sandbox"
 	else
-		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-constraints"
+		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-constraints.config"
 	fi
 	expect_existing "${source_dir}"
 
@@ -123,7 +123,7 @@ function build_sandbox_layer () {
 
 		mkdir -p "${HALCYON_DIR}/sandbox" || die
 		cabal_do "${HALCYON_DIR}/sandbox" sandbox init --sandbox '.' |& quote || die
-		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox-config" || die
+		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-apps" ]; then
@@ -147,7 +147,7 @@ function build_sandbox_layer () {
 
 	sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote || die
 
-	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-constraints" || die
+	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-constraints.config" || die
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
@@ -195,7 +195,7 @@ function strip_sandbox_layer () {
 
 function archive_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
-	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-constraints"
+	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-constraints.config"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
@@ -215,7 +215,7 @@ function archive_sandbox_layer () {
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}/ghc-${ghc_version}"; then
 		log_warning 'Cannot upload sandbox layer archive'
 	fi
-	cp -p "${HALCYON_DIR}/sandbox/.halcyon-constraints" "${HALCYON_CACHE_DIR}/${file_name}" || die
+	cp -p "${HALCYON_DIR}/sandbox/.halcyon-constraints.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${file_name}" "${os}/ghc-${ghc_version}"; then
 		log_warning 'Cannot upload sandbox layer constraints'
 	fi

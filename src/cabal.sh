@@ -307,7 +307,7 @@ EOF
 
 	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
 	mv "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
-	format_cabal_config "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-cabal-config" || die
+	format_cabal_config "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
 		log 'Running Cabal post-build hook'
@@ -651,7 +651,7 @@ function cabal_do () {
 	expect_existing "${work_dir}"
 	shift
 
-	if ! ( cd "${work_dir}" && cabal --config-file="${HALCYON_DIR}/cabal/.halcyon-cabal-config" "$@" ); then
+	if ! ( cd "${work_dir}" && cabal --config-file="${HALCYON_DIR}/cabal/.halcyon-cabal.config" "$@" ); then
 		die 'Failed to run Cabal:' "$@"
 	fi
 }
@@ -680,7 +680,7 @@ function sandboxed_cabal_do () {
 
 	local status
 	status=0
-	if ! cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_DIR}/sandbox/.halcyon-sandbox-config" "$@"; then
+	if ! cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "$@"; then
 		status=1
 	fi
 
