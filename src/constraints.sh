@@ -129,8 +129,8 @@ function validate_partial_constraint_file () {
 
 	local file_name short_hash constraints candidate_hash
 	file_name=$( basename "${constraint_file}" ) || die
-	short_hash_etc=$( "${file_name#halcyon-constraints-}" ) || die
-	short_hash=$( "${short_hash_etc%%-*}" ) || die
+	short_hash_etc="${file_name#halcyon-constraints-}"
+	short_hash="${short_hash_etc%%-*}"
 	constraints=$( read_constraints <"${constraint_file}" ) || die
 	candidate_hash=$( hash_constraints "${constraints}" ) || die
 	if [ "${candidate_hash:0:7}" != "${short_hash}" ]; then

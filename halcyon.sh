@@ -183,7 +183,7 @@ function deploy_published_app () {
 	fi
 
 	log
-	if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app "${app_label}" "${source_dir}/${label}"; then
+	if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app "${app_label}" "${source_dir}/${app_label}"; then
 		log_warning 'Cannot deploy published app'
 		return 1
 	fi
