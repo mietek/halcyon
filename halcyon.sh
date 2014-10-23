@@ -53,7 +53,7 @@ function deploy_local_app () {
 	if ! app_name=$( detect_app_name "${source_dir}" ) ||
 		! app_version=$( detect_app_version "${source_dir}" )
 	then
-		log_warning 'Cannot deploy local app'
+		log_warning 'Cannot detect app label'
 		return 1
 	fi
 
@@ -80,12 +80,16 @@ function deploy_cloned_app () {
 		return 1
 	fi
 
-	log
 	local app_name app_version
 	if ! app_name=$( detect_app_name "${source_dir}" ) ||
-		! app_version=$( detect_app_version "${source_dir}" ) ||
-		! deploy_app "${app_name}-${app_version}" "${source_dir}"
+		! app_version=$( detect_app_version "${source_dir}" )
 	then
+		log_warning 'Cannot detect app label'
+		return 1
+	fi
+
+	log
+	if ! deploy_app "${app_name}-${app_version}" "${source_dir}"; then
 		log_warning 'Cannot deploy cloned app'
 		return 1
 	fi
@@ -105,14 +109,17 @@ function deploy_base_package () {
 	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] || ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
 		log
 		if ! HALCYON_NO_SANDBOX_OR_APP=1 HALCYON_NO_CLEAN_CACHE=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app '' '/dev/null'; then
-			log_warning 'Cannot deploy GHC for base package'
+			log_warning 'Cannot deploy GHC and Cabal for base package'
 			return 1
 		fi
 	fi
 
 	local base_version
 	if [ "${thing}" = 'base' ]; then
-		base_version=$( ghc_detect_base_package_version ) || die
+		if ! base_version=$( ghc_detect_base_package_version ); then
+			log_warning 'Cannot detect base package version'
+			return 1
+		fi
 		log_warning 'Using implicit base package version'
 		log_warning 'Expected base package name with explicit version'
 	else

@@ -66,11 +66,13 @@ function map_constraints_to_ghc_version () {
 	expect_args constraints -- "$@"
 
 	local base_version
-	base_version=$(
+	if ! base_version=$(
 		filter_matching "^base " <<<"${constraints}" |
 		match_exactly_one |
 		sed 's/^.* //'
-	) || die
+	); then
+		die 'Unexpected missing base package version'
+	fi
 
 	map_base_package_version_to_ghc_version "${base_version}" || die
 }

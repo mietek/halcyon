@@ -20,6 +20,9 @@ function filter_correct_constraints () {
 	local app_name app_version
 	app_name="${app_label%-*}"
 	app_version="${app_label##*-}"
+	if [ "${app_name}" = 'base' ]; then
+		app_name='halcyon-fake-base'
+	fi
 
 	filter_not_matching "^${app_name} ${app_version}$" || die
 }

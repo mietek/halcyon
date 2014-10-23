@@ -294,13 +294,10 @@ EOF
 		die "Unexpected Cabal and GHC combination: ${cabal_version} and ${ghc_version}"
 	esac
 
-	# NOTE: PATH is extended to silence a misleading Cabal warning.
-
 	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc is specified.
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 
 	if ! (
-		export PATH="${HOME}/.cabal/bin:${PATH}" &&
 		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
 		cd "${build_dir}/cabal-install-${cabal_version}" &&
 		./bootstrap.sh --no-doc |& quote

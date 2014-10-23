@@ -123,22 +123,6 @@ function deploy_app () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 
-	if has_private_storage; then
-		if (( HALCYON_PUBLIC )); then
-			log_warning 'Cannot use both private and public storage'
-		fi
-
-		log 'Using private storage'
-	elif (( HALCYON_PUBLIC )); then
-		log 'Using public storage'
-	else
-		log_error 'Expected private or public storage'
-		log
-		help_configure_storage
-		log
-		return 1
-	fi
-
 	log 'Planning deployment'
 
 	local slug_dir source_hash constraints constraint_hash
@@ -173,7 +157,10 @@ function deploy_app () {
 		local warn_constraints
 		warn_constraints=0
 		if [ -f "${source_dir}/cabal.config" ]; then
-			constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
+			if ! constraints=$( detect_constraints "${app_label}" "${source_dir}" ); then
+				log_warning 'Cannot detect constraints'
+				return 1
+			fi
 		else
 			constraints=$( freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
 			warn_constraints=1
@@ -202,12 +189,14 @@ function deploy_app () {
 	fi
 	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
 
-	log_indent 'GHC version:                             ' "${ghc_version}"
-	if [ -n "${ghc_magic_hash}" ]; then
-		log_indent 'GHC magic hash:                          ' "${ghc_magic_hash:0:7}"
-	fi
-	if (( warn_ghc_version )) && ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
-		log_warning 'Using implicit version of GHC'
+	if ! (( HALCYON_RECURSIVE )); then
+		log_indent 'GHC version:                             ' "${ghc_version}"
+		if [ -n "${ghc_magic_hash}" ]; then
+			log_indent 'GHC magic hash:                          ' "${ghc_magic_hash:0:7}"
+		fi
+		if (( warn_ghc_version )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
+			log_warning 'Using implicit version of GHC'
+		fi
 	fi
 
 	local cabal_version cabal_magic_hash cabal_repo
@@ -223,11 +212,13 @@ function deploy_app () {
 		cabal_repo=$( get_default_cabal_repo ) || die
 	fi
 
-	log_indent 'Cabal version:                           ' "${cabal_version}"
-	if [ -n "${cabal_magic_hash}" ]; then
-		log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
+	if ! (( HALCYON_RECURSIVE )); then
+		log_indent 'Cabal version:                           ' "${cabal_version}"
+		if [ -n "${cabal_magic_hash}" ]; then
+			log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
+		fi
+		log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
 	fi
-	log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
@@ -239,6 +230,23 @@ function deploy_app () {
 	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
 	if [ -n "${app_magic_hash}" ]; then
 		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
+	fi
+
+	if ! (( HALCYON_RECURSIVE )); then
+		if has_private_storage; then
+			log_indent 'Storage:                                 ' "${HALCYON_S3_BUCKET}"
+			if (( HALCYON_PUBLIC )); then
+				log_warning 'Cannot use both private and public storage'
+			fi
+		elif (( HALCYON_PUBLIC )); then
+			log_indent 'Storage:                                 ' 'public'
+		else
+			log_error 'Expected private or public storage'
+			log
+			help_configure_storage
+			log
+			return 1
+		fi
 	fi
 
 	local tag
