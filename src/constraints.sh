@@ -249,6 +249,7 @@ function locate_partial_sandbox_layers () {
 
 	log 'Examining partially matching sandbox layers'
 
+	local -a results
 	local partial_name
 	while read -r partial_name; do
 		local partial_hash
@@ -274,11 +275,15 @@ function locate_partial_sandbox_layers () {
 		partial_label=$( map_constraint_file_name_to_app_label "${partial_name}" ) || die
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" ) || die
 
-		echo "${partial_tag}"
+		results+=( "${partial_tag}" )
 	done <<<"${partial_names}"
 
-	log 'Cannot use any partially matching sandbox layers'
-	return 1
+	if [ -z "${results[@]:+_}" ]; then
+		log 'Cannot use any partially matching sandbox layers'
+		return 1
+	fi
+
+	( IFS=$'\n' && echo -n "${results[*]:-}" )
 }
 
 
