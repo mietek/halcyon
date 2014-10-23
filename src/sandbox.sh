@@ -147,7 +147,7 @@ function build_sandbox_layer () {
 
 	sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote || die
 
-	format_constraints "${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-constraints" || die
+	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-constraints" || die
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
@@ -163,7 +163,7 @@ function build_sandbox_layer () {
 
 	local app_label actual_constraints
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	actual_constraints=$( freeze_actual_constraints "${app_label}" "${HALCYON_DIR}/sandbox" "${source_dir}" ) || die
+	actual_constraints=$( freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
 	validate_actual_constraints "${tag}" "${constraints}" "${actual_constraints}" || die
 }
 
