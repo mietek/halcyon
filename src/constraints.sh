@@ -311,10 +311,10 @@ function select_best_partial_sandbox_layer () {
 		fi
 
 		local partial_constraints partial_hash
-		partial_constraints=$( read_constraints <"${HALCYON_CACHE_DIR}/partial_name}" ) || die
+		partial_constraints=$( read_constraints <"${HALCYON_CACHE_DIR}/${partial_name}" ) || die
 		partial_hash=$( get_tag_constraint_hash "${partial_tag}" ) || die
 
-		log_begin "Scoring ${partial_hash}..."
+		log_begin "Scoring ${partial_hash:0:7}..."
 
 		local score partial_package partial_version
 		score=0
@@ -328,7 +328,7 @@ function select_best_partial_sandbox_layer () {
 				score=
 				break
 			fi
-			if "${partial_version}" != "${version}" ]; then
+			if [ "${partial_version}" != "${version}" ]; then
 				log_end '0'
 				log_indent 'Unusable package version:                ' "${partial_package}-${partial_version} ({version})"
 
