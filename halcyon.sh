@@ -57,7 +57,6 @@ function deploy_local_app () {
 		return 1
 	fi
 
-	log
 	if ! deploy_app "${app_name}-${app_version}" "${source_dir}"; then
 		log_warning 'Cannot deploy local app'
 		return 1
@@ -88,7 +87,6 @@ function deploy_cloned_app () {
 		return 1
 	fi
 
-	log
 	if ! deploy_app "${app_name}-${app_version}" "${source_dir}"; then
 		log_warning 'Cannot deploy cloned app'
 		return 1
@@ -107,7 +105,6 @@ function deploy_base_package () {
 	log 'Deploying base package'
 
 	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] || ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
-		log
 		if ! HALCYON_NO_SANDBOX_OR_APP=1 HALCYON_NO_CLEAN_CACHE=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app '' '/dev/null'; then
 			log_warning 'Cannot deploy GHC and Cabal for base package'
 			return 1
@@ -151,7 +148,6 @@ function deploy_published_app () {
 	log "Deploying published app"
 
 	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] || ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
-		log
 		if ! HALCYON_NO_SANDBOX_OR_APP=1 HALCYON_NO_CLEAN_CACHE=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app '' '/dev/null'; then
 			log_warning 'Cannot deploy GHC and Cabal for published app'
 			return 1

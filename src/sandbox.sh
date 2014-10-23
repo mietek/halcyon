@@ -116,7 +116,7 @@ function build_sandbox_layer () {
 	fi
 	expect_existing "${source_dir}"
 
-	log 'Starting to build sandbox layer'
+	log 'Building sandbox layer'
 
 	if (( must_create )); then
 		log 'Creating sandbox'
@@ -367,6 +367,5 @@ function deploy_sandbox_layer () {
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	description=$( format_sandbox_description "${sandbox_tag}" ) || die
 
-	log 'Sandbox layer deployed:'
-	log_indent "${description}"
+	log 'Sandbox layer deployed:                  ' "${description}"
 }

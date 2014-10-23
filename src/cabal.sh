@@ -250,7 +250,7 @@ function build_cabal_layer () {
 	original_name=$( basename "${original_url}" ) || die
 	build_dir=$( get_tmp_dir 'halcyon.cabal' ) || die
 
-	log 'Starting to build Cabal layer'
+	log 'Building Cabal layer'
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${original_name}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"
@@ -332,7 +332,7 @@ function update_cabal_layer () {
 	local cabal_tag
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 
-	log 'Starting to update Cabal layer'
+	log 'Updating Cabal layer'
 
 	cabal_do '.' update |& quote || die
 
@@ -515,6 +515,8 @@ function restore_cached_updated_cabal_layer () {
 		return 1
 	fi
 
+	log 'Restoring cached updated Cabal layer'
+
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
 		! validate_updated_cabal_layer "${tag}"
 	then
@@ -637,8 +639,7 @@ function deploy_cabal_layer () {
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	description=$( format_cabal_description "${cabal_tag}" ) || die
 
-	log 'Cabal layer deployed:'
-	log_indent "${description}"
+	log 'Cabal layer deployed:                    ' "${description}"
 }
 
 

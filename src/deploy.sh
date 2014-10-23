@@ -125,8 +125,6 @@ function deploy_app () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 
-	log 'Planning deployment'
-
 	local slug_dir source_hash constraints constraint_hash
 	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
 		if ! [ -d "${source_dir}" ]; then

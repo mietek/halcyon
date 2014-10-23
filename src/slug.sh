@@ -146,6 +146,5 @@ function engage_slug () {
 	cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
 	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 
-	log 'App deployed:'
-	log_indent "${description}"
+	log 'App deployed:                            ' "${description}"
 }

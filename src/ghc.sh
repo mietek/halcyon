@@ -232,7 +232,7 @@ function build_ghc_layer () {
 	original_name=$( basename "${original_url}" ) || die
 	build_dir=$( get_tmp_dir 'halcyon.ghc' ) || die
 
-	log 'Starting to build GHC layer'
+	log 'Building GHC layer'
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${original_name}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"
@@ -454,6 +454,5 @@ function deploy_ghc_layer () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	description=$( format_ghc_description "${ghc_tag}" ) || die
 
-	log 'GHC layer deployed:'
-	log_indent "${description}"
+	log 'GHC layer deployed:                      ' "${description}"
 }

@@ -124,7 +124,7 @@ function build_app_layer () {
 	fi
 	expect_existing "${source_dir}"
 
-	log 'Starting to build app layer'
+	log 'Building app layer'
 
 	if (( must_copy )); then
 		log 'Copying app'
@@ -417,6 +417,5 @@ function deploy_app_layer () {
 	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	description=$( format_app_description "${app_tag}" ) || die
 
-	log 'App layer deployed:'
-	log_indent "${description}"
+	log 'App layer deployed:                      ' "${description}"
 }
