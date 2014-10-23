@@ -1,159 +1,112 @@
-function echo_fake_base_package () {
-	local base_version
-	expect_args base_version -- "$@"
+function deploy_sandbox_apps () {
+	local source_dir
+	expect_args source_dir -- "$@"
 
-	cat <<-EOF
-		name:           halcyon-fake-base
-		version:        ${base_version}
-		build-type:     Simple
-		cabal-version:  >= 1.2
+	log 'Deploying sandbox apps'
 
-		executable halcyon-fake-base
-		  build-depends:  base == ${base_version}
-EOF
-}
-
-
-function prepare_magic () {
-	local sources_dir
-	expect_args sources_dir -- "$@"
-
-	if has_vars HALCYON_WITH_HELPER_APPS; then
-		mkdir -p "${sources_dir}/.halcyon-magic" || die
-		echo "${HALCYON_WITH_HELPER_APPS}" >"${sources_dir}/.halcyon-magic/helper-apps" || die
-	fi
-
-	if has_vars HALCYON_WITH_BUILD_TOOLS; then
-		mkdir -p "${sources_dir}/.halcyon-magic" || die
-		echo "${HALCYON_WITH_BUILD_TOOLS}" >"${sources_dir}/.halcyon-magic/build-tools" || die
-	fi
-}
-
-
-function deploy_helper_apps () {
-	local sources_dir
-	expect_args sources_dir -- "$@"
-
-	if ! [ -f "${sources_dir}/.halcyon-magic/helper-apps" ]; then
-		return 0
-	fi
-
-	log 'Deploying helper apps'
-
-	local helper_apps
-	helper_apps=$( <"${sources_dir}/.halcyon-magic/helper-apps" ) || die
-	for helper_app in ${helper_apps}; do
-		log_indent "${helper_app}"
+	local sandbox_apps sandbox_app
+	sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-apps" ) ) || die
+	for sandbox_app in "${sandbox_apps[@]}"; do
+		log_indent "${sandbox_app}"
 	done
 
-	if ! ( deploy --recursive ${helper_apps} ) |& quote; then
-		log_warning 'Cannot deploy helper apps'
+	if ! ( deploy --recursive --sandbox-app "${sandbox_apps[@]}" ) |& quote; then
+		log_warning 'Cannot deploy sandbox apps'
 		return 1
 	fi
 }
 
 
-function deploy_build_tools () {
-	local sources_dir
-	expect_args sources_dir -- "$@"
+function deploy_extra_apps () {
+	local source_dir
+	expect_args source_dir -- "$@"
 
-	if ! [ -f "${sources_dir}/.halcyon-magic/build-tools" ]; then
-		return 0
-	fi
+	log 'Deploying extra apps'
 
-	log 'Deploying build tools'
-
-	local build_tools
-	build_tools=$( <"${sources_dir}/.halcyon-magic/build-tools" ) || die
-	for build_tool in ${build_tools}; do
-		log_indent "${build_tool}"
+	local extra_apps extra_app
+	extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
+	for extra_app in "${extra_apps[@]}"; do
+		log_indent "${extra_app}"
 	done
 
-	if ! ( deploy --as-build-tool --recursive ${build_tools} ) |& quote; then
-		log_warning 'Cannot deploy build tools'
+	if ! ( deploy --recursive "${sandbox_apps[@]}" ) |& quote; then
+		log_warning 'Cannot deploy extra apps'
 		return 1
 	fi
 }
+
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR \
-		HALCYON_RECURSIVE \
-		HALCYON_NO_INSTALL_GHC HALCYON_NO_INSTALL_CABAL HALCYON_NO_INSTALL_SANDBOX HALCYON_NO_INSTALL_APP \
-		HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
 
-	local sources_dir
-	expect_args sources_dir -- "$@"
-	expect_existing "${sources_dir}"
-
-	local saved_sandbox saved_app
-	saved_sandbox=$( echo_tmp_dir_name 'halcyon.deploy_layers.sandbox' ) || die
-	saved_app=$( echo_tmp_dir_name 'halcyon.deploy_layers.app' ) || die
-
-	prepare_magic "${sources_dir}" || die
+	local tag constraints source_dir
+	expect_args tag constraints source_dir -- "$@"
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
 		prepare_cache || die
 	fi
 
-	local app_tag
-	if ! (( HALCYON_NO_INSTALL_APP )); then
-		app_tag=$( determine_app_tag "${sources_dir}" ) || die
+	if ! (( HALCYON_NO_SANDBOX_OR_APP )) && ! (( HALCYON_NO_APP )) && ! (( HALCYON_FORCE_APP )) && restore_slug "${tag}"; then
+		log
+		engage_slug || die
+		return 0
+	fi
 
-		if ! (( HALCYON_REBUILD_APP )) && restore_app_slug "${app_tag}" "${sources_dir}"; then
-			activate_app_slug || die
-			return 0
+	if ! (( HALCYON_RECURSIVE )); then
+		if ! (( HALCYON_NO_GHC )); then
+			log
+			deploy_ghc_layer "${tag}" "${source_dir}" || return 1
+		fi
+		if ! (( HALCYON_NO_CABAL )); then
+			log
+			deploy_cabal_layer "${tag}" "${source_dir}" || return 1
 		fi
 	fi
 
-	if (( HALCYON_RECURSIVE )); then
-		if [ -d "${HALCYON_DIR}/sandbox" ]; then
-			mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
+	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+		local saved_sandbox saved_app
+		saved_sandbox=$( get_tmp_dir 'halcyon.saved-sandbox' ) || die
+		saved_app=$( get_tmp_dir 'halcyon.saved-app' ) || die
+
+		if (( HALCYON_RECURSIVE )); then
+			if [ -d "${HALCYON_DIR}/sandbox" ]; then
+				mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
+			fi
+			if ! (( HALCYON_NO_APP )) && [ -d "${HALCYON_DIR}/app" ]; then
+				mv "${HALCYON_DIR}/app" "${saved_app}" || die
+			fi
 		fi
-		if [ -d "${HALCYON_DIR}/app" ]; then
-			mv "${HALCYON_DIR}/app" "${saved_app}" || die
+
+		log
+		deploy_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
+
+		if ! (( HALCYON_NO_APP )); then
+			log
+			deploy_app_layer "${tag}" "${source_dir}" || return 1
+
+			if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
+				log
+				deploy_extra_apps "${source_dir}" || return 1
+			fi
 		fi
-	fi
 
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_GHC )); then
-		log
-		install_ghc "${sources_dir}" || return 1
-	fi
-
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_INSTALL_CABAL )); then
-		log
-		install_cabal "${sources_dir}" || return 1
-	fi
-
-	if ! (( HALCYON_NO_INSTALL_SANDBOX )) && ! (( HALCYON_NO_INSTALL_APP )); then
-		log
-		deploy_helper_apps "${sources_dir}" || return 1
-	fi
-
-	if [ -f "${sources_dir}/.halcyon-magic/helper-hook" ]; then
-		log
-		log 'Running helper hook'
-		( "${sources_dir}/.halcyon-magic/helper-hook" ) |& quote || die
-	fi
-
-	if ! (( HALCYON_NO_INSTALL_SANDBOX )); then
-		log
-		install_sandbox "${sources_dir}" || return 1
-	fi
-
-	if ! (( HALCYON_NO_INSTALL_APP )); then
-		log
-		install_app "${app_tag}" "${sources_dir}" || return 1
-	fi
-
-	if (( HALCYON_RECURSIVE )); then
-		if [ -d "${saved_sandbox}" ]; then
-			rm -rf "${HALCYON_DIR}/sandbox" || die
-			mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
+		if (( HALCYON_RECURSIVE )); then
+			if [ -d "${saved_sandbox}" ]; then
+				rm -rf "${HALCYON_DIR}/sandbox" || die
+				mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
+			fi
+			if ! (( HALCYON_NO_APP )) && [ -d "${saved_app}" ]; then
+				rm -rf "${HALCYON_DIR}/app" || die
+				mv "${saved_app}" "${HALCYON_DIR}/app" || die
+			fi
 		fi
-		if [ -d "${saved_app}" ]; then
-			rm -rf "${HALCYON_DIR}/app" || die
-			mv "${saved_app}" "${HALCYON_DIR}/app" || die
+
+		if ! (( HALCYON_NO_APP )); then
+			log
+			build_slug || die
+			archive_slug || die
+			engage_slug || die
 		fi
 	fi
 
@@ -161,213 +114,143 @@ function deploy_layers () {
 		log
 		clean_cache || die
 	fi
-
-	if ! (( HALCYON_NO_INSTALL_APP )); then
-		activate_app_slug || die
-	fi
-}
-
-
-function deploy_local_app () {
-	local local_dir
-	expect_args local_dir -- "$@"
-
-	local name sources_dir
-	name=$( detect_app_name "${local_dir}" ) || die
-	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_local_app' ) || die
-
-	log 'Deploying local app:'
-	log_indent "${name}"
-
-	copy_entire_contents "${local_dir}" "${sources_dir}" || die
-
-	if ! deploy_layers "${sources_dir}"; then
-		log_warning 'Cannot deploy local app'
-		return 1
-	fi
-
-	rm -rf "${sources_dir}" || die
-}
-
-
-function deploy_cloned_app () {
-	local url
-	expect_args url -- "$@"
-
-	local name sources_dir
-	name=$( basename "${url}" ) || die
-	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_cloned_app' ) || die
-
-	log 'Deploying cloned app:'
-	log_indent "${name%.git}"
-
-	if ! git clone --depth=1 --quiet "${url}" "${sources_dir}"; then
-		die 'Cannot deploy cloned app'
-	fi
-	if ! deploy_layers "${sources_dir}"; then
-		log_warning 'Cannot deploy cloned app'
-		return 1
-	fi
-
-	rm -rf "${sources_dir}" || die
-}
-
-
-function deploy_base_package () {
-	expect_vars HALCYON_DIR
-
-	local arg
-	expect_args arg -- "$@"
-
-	local sources_dir
-	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_base_package' ) || die
-
-	mkdir -p "${sources_dir}" || die
-
-	log 'Deploying base package:'
-	log_indent "${arg}"
-
-	if !                                 \
-		HALCYON_NO_INSTALL_CABAL=1   \
-		HALCYON_NO_INSTALL_SANDBOX=1 \
-		HALCYON_NO_INSTALL_APP=1     \
-		HALCYON_NO_CLEAN_CACHE=1     \
-		HALCYON_NO_WARN_IMPLICIT=1   \
-		deploy_layers "${sources_dir}"
-	then
-		log_warning 'Cannot deploy base package'
-		return 1
-	fi
-
-	log
-	log_begin 'Determining base package version...      '
-
-	local base_version
-	if [ "${arg}" != 'base' ]; then
-		base_version="${arg#base-}"
-
-		log_end "${base_version} (explicit)"
-	else
-		base_version=$( ghc_detect_base_package_version ) || die
-
-		log_end "${base_version} (implicit)"
-		log_warning 'Using implicit base package version'
-		log_warning 'Expected base package name with explicit version'
-	fi
-
-	echo_fake_base_package "${base_version}" >"${sources_dir}/halcyon-fake-base.cabal" || die
-
-	if !                               \
-		HALCYON_NO_PREPARE_CACHE=1 \
-		HALCYON_NO_INSTALL_GHC=1   \
-		HALCYON_NO_INSTALL_APP=1   \
-		HALCYON_NO_WARN_IMPLICIT=1 \
-		deploy_layers "${sources_dir}"
-	then
-		log_warning 'Cannot deploy base package'
-		return 1
-	fi
-
-	rm -rf "${sources_dir}" || die
-}
-
-
-function deploy_published_app () {
-	expect_vars HALCYON_DIR
-
-	local arg
-	expect_args arg -- "$@"
-
-	local sources_dir
-	sources_dir=$( echo_tmp_dir_name 'halcyon.deploy_published_app' ) || die
-
-	mkdir -p "${sources_dir}" || die
-
-	log "Deploying published app:"
-	log_indent "${arg}"
-
-	if !                                 \
-		HALCYON_NO_INSTALL_SANDBOX=1 \
-		HALCYON_NO_INSTALL_APP=1     \
-		HALCYON_NO_CLEAN_CACHE=1     \
-		HALCYON_NO_WARN_IMPLICIT=1   \
-		deploy_layers "${sources_dir}"
-	then
-		log_warning 'Cannot deploy published app'
-		return 1
-	fi
-
-	log
-	log_begin 'Determining published app version...     '
-
-	local label
-	if ! label=$(
-		cabal_do "${sources_dir}" unpack "${arg}" 2>'/dev/null' |
-			filter_last |
-			match_exactly_one |
-			sed 's:^Unpacking to \(.*\)/$:\1:'
-	); then
-		log_end '(unknown)'
-		log_warning 'Cannot deploy published app'
-		return 1
-	fi
-
-	local name version
-	name="${label%-*}"
-	version="${label##*-}"
-	if [ "${label}" = "${arg}" ]; then
-		log_end "${version} (explicit)"
-	else
-		log_end "${version} (implicit)"
-		log_warning "Using newest available version of ${name}"
-		log_warning 'Expected app name with explicit version'
-	fi
-
-	if !                               \
-		HALCYON_NO_PREPARE_CACHE=1 \
-		HALCYON_NO_INSTALL_GHC=1   \
-		HALCYON_NO_INSTALL_CABAL=1 \
-		HALCYON_NO_WARN_IMPLICIT=1 \
-		deploy_layers "${sources_dir}/${label}"
-	then
-		log_warning 'Cannot deploy published app'
-		return 1
-	fi
-
-	rm -rf "${sources_dir}" || die
 }
 
 
 function deploy_app () {
-	local arg
-	expect_args arg -- "$@"
+	expect_vars HALCYON_PUBLIC HALCYON_SANDBOX_APP HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
 
-	case "${arg}" in
-	'base');&
-	'base-'[0-9]*)
-		if ! deploy_base_package "${arg}"; then
-			return 1
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	if has_private_storage; then
+		if (( HALCYON_PUBLIC )); then
+			log_warning 'Cannot use both private and public storage'
 		fi
-		;;
-	'https://'*);&
-	'ssh://'*);&
-	'git@'*);&
-	'file://'*);&
-	'http://'*);&
-	'git://'*)
-		if ! deploy_cloned_app "${arg}"; then
-			return 1
+
+		log 'Using private storage'
+	elif (( HALCYON_PUBLIC )); then
+		log 'Using public storage'
+	else
+		log_error 'Expected private or public storage'
+		log
+		help_configure_storage
+		log
+		return 1
+	fi
+
+	log 'Planning deployment'
+
+	local slug_dir source_hash constraints constraint_hash
+	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+		if ! [ -d "${source_dir}" ]; then
+			die 'Expected existing source directory'
 		fi
-		;;
-	*)
-		if [ -d "${arg}" ]; then
-			if ! deploy_local_app "${arg%/}"; then
-				return 1
+
+		if has_vars HALCYON_SANDBOX_APPS; then
+			mkdir -p "${source_dir}/.halcyon-magic" || die
+			echo "${HALCYON_SANDBOX_APPS}" >"${source_dir}/.halcyon-magic/sandbox-apps" || die
+		fi
+		if ! (( HALCYON_NO_APP )) && has_vars HALCYON_EXTRA_APPS; then
+			mkdir -p "${source_dir}/.halcyon-magic" || die
+			echo "${HALCYON_EXTRA_APPS}" >"${source_dir}/.halcyon-magic/extra-apps" || die
+		fi
+
+		log_indent 'App label:                               ' "${app_label}"
+
+		if ! (( HALCYON_NO_APP )); then
+			if ! (( HALCYON_SANDBOX_APP )); then
+				slug_dir="${HALCYON_DIR}/slug"
+			else
+				slug_dir="${HALCYON_DIR}/sandbox"
 			fi
+			source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
+
+			log_indent 'Slug directory:                          ' "${slug_dir}"
+			log_indent 'Source hash:                             ' "${source_hash:0:7}"
+		fi
+
+		local warn_constraints
+		warn_constraints=0
+		if [ -f "${source_dir}/cabal.config" ]; then
+			constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 		else
-			if ! deploy_published_app "${arg}"; then
-				return 1
-			fi
+			constraints=$( freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
+			warn_constraints=1
 		fi
-	esac
+		constraint_hash=$( hash_constraints "${constraints}" ) || die
+
+		log_indent 'Constraint hash:                         ' "${constraint_hash:0:7}"
+		if (( warn_constraints )) && ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
+			log_warning 'Using implicit constraints'
+			log_warning 'Expected cabal.config with explicit constraints'
+			log
+			help_add_explicit_constraints "${constraints}"
+			log
+		fi
+	fi
+
+	local ghc_version ghc_magic_hash warn_ghc_version
+	warn_ghc_version=0
+	if has_vars HALCYON_GHC_VERSION; then
+		ghc_version="${HALCYON_GHC_VERSION}"
+	elif ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
+	else
+		ghc_version=$( get_default_ghc_version ) || die
+		warn_ghc_version=1
+	fi
+	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+
+	log_indent 'GHC version:                             ' "${ghc_version}"
+	if [ -n "${ghc_magic_hash}" ]; then
+		log_indent 'GHC magic hash:                          ' "${ghc_magic_hash:0:7}"
+	fi
+	if (( warn_ghc_version )) && ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
+		log_warning 'Using implicit version of GHC'
+	fi
+
+	local cabal_version cabal_magic_hash cabal_repo
+	if has_vars HALCYON_CABAL_VERSION; then
+		cabal_version="${HALCYON_CABAL_VERSION}"
+	else
+		cabal_version=$( get_default_cabal_version ) || die
+	fi
+	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+	if has_vars HALCYON_CABAL_REPO; then
+		cabal_repo="${HALCYON_CABAL_REPO}"
+	else
+		cabal_repo=$( get_default_cabal_repo ) || die
+	fi
+
+	log_indent 'Cabal version:                           ' "${cabal_version}"
+	if [ -n "${cabal_magic_hash}" ]; then
+		log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
+	fi
+	log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
+
+	local sandbox_magic_hash
+	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
+	if [ -n "${sandbox_magic_hash}" ]; then
+		log_indent 'Sandbox magic hash:                      ' "${sandbox_magic_hash:0:7}"
+	fi
+
+	local app_magic_hash
+	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
+	if [ -n "${app_magic_hash}" ]; then
+		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
+	fi
+
+	local tag
+	tag=$(
+		create_tag "${app_label}" "${slug_dir:-}" "${source_hash:-}" "${constraint_hash:-}" \
+			"${ghc_version:-}" "${ghc_magic_hash:-}" \
+			"${cabal_version:-}" "${cabal_magic_hash:-}" "${cabal_repo:-}" '' \
+			"${sandbox_magic_hash:-}" \
+			"${app_magic_hash:-}"
+	) || die
+
+	if ! deploy_layers "${tag}" "${constraints:-}" "${source_dir}"; then
+		return 1
+	fi
 }

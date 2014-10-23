@@ -1,4 +1,9 @@
-function echo_ghc_libgmp10_x86_64_original_url () {
+function get_default_ghc_version () {
+	echo '7.8.3'
+}
+
+
+function map_ghc_version_to_libgmp10_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -11,7 +16,7 @@ function echo_ghc_libgmp10_x86_64_original_url () {
 }
 
 
-function echo_ghc_libgmp3_x86_64_original_url () {
+function map_ghc_version_to_libgmp3_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -42,7 +47,7 @@ function echo_ghc_libgmp3_x86_64_original_url () {
 }
 
 
-function echo_ghc_version_from_base_package_version () {
+function map_base_package_version_to_ghc_version () {
 	local base_version
 	expect_args base_version -- "$@"
 
@@ -56,7 +61,7 @@ function echo_ghc_version_from_base_package_version () {
 }
 
 
-function echo_ghc_version_from_constraints () {
+function map_constraints_to_ghc_version () {
 	local constraints
 	expect_args constraints -- "$@"
 
@@ -67,179 +72,138 @@ function echo_ghc_version_from_constraints () {
 		sed 's/^.* //'
 	) || die
 
-	echo_ghc_version_from_base_package_version "${base_version}" || die
+	map_base_package_version_to_ghc_version "${base_version}" || die
 }
 
 
-function echo_default_ghc_version () {
-	echo '7.8.3'
+function create_ghc_tag () {
+	local ghc_version ghc_magic_hash
+	expect_args ghc_version ghc_magic_hash -- "$@"
+
+	create_tag '' '' '' '' \
+		"${ghc_version}" "${ghc_magic_hash}" \
+		'' '' '' '' \
+		'' \
+		'' || die
 }
 
 
-function echo_ghc_tag () {
-	expect_vars HALCYON_DIR
+function derive_ghc_tag () {
+	local tag
+	expect_args tag -- "$@"
 
-	local ghc_version magic_hash
-	expect_args ghc_version magic_hash -- "$@"
+	local ghc_version ghc_magic_hash
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 
-	local os
-	os=$( detect_os ) || die
-
-	echo -e "${os}\t${HALCYON_DIR}\tghc-${ghc_version}\t${magic_hash}"
+	create_ghc_tag "${ghc_version}" "${ghc_magic_hash}" || die
 }
 
 
-function echo_ghc_os () {
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
+function format_ghc_id () {
+	local tag
+	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $1 }' <<<"${ghc_tag}"
+	local ghc_version ghc_magic_hash
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
+
+	echo "${ghc_version}${ghc_magic_hash:+-${ghc_magic_hash:0:7}}"
 }
 
 
-function echo_ghc_version () {
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
+function format_ghc_description () {
+	local tag
+	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $3 }' <<<"${ghc_tag}" | sed 's/^ghc-//'
+	format_ghc_id "${tag}" || die
 }
 
 
-function echo_ghc_magic_hash () {
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
-
-	awk -F$'\t' '{ print $4 }' <<<"${ghc_tag}"
-}
-
-
-function echo_ghc_id () {
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
-
-	local ghc_version magic_hash
-	ghc_version=$( echo_ghc_version "${ghc_tag}" ) || die
-	magic_hash=$( echo_ghc_magic_hash "${ghc_tag}" ) || die
-
-	echo "${ghc_version}${magic_hash:+~${magic_hash:0:7}}"
-}
-
-
-function echo_ghc_description () {
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
+function format_ghc_archive_name () {
+	local tag
+	expect_args tag -- "$@"
 
 	local ghc_id
-	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
-
-	echo "${ghc_id}"
-}
-
-
-function echo_ghc_archive_name () {
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
-
-	local ghc_id
-	ghc_id=$( echo_ghc_id "${ghc_tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" ) || die
 
 	echo "halcyon-ghc-${ghc_id}.tar.xz"
 }
 
 
 function hash_ghc_magic () {
-	local ghc_dir
-	expect_args ghc_dir -- "$@"
+	local source_dir
+	expect_args source_dir -- "$@"
 
-	hash_spaceless_recursively "${ghc_dir}/.halcyon-magic" -name 'ghc*' || die
+	hash_spaceless_recursively "${source_dir}/.halcyon-magic" -name 'ghc*' || die
 }
 
 
-function install_ghc_magic () {
-	local sources_dir
-	expect_args sources_dir -- "$@"
+function copy_ghc_magic () {
+	local source_dir
+	expect_args source_dir -- "$@"
 
-	local magic_hash
-	magic_hash=$( hash_ghc_magic "${sources_dir}" ) || die
-	if [ -z "${magic_hash}" ]; then
+	local ghc_magic_hash
+	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+	if [ -z "${ghc_magic_hash}" ]; then
 		return 0
 	fi
 
 	mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
-	cp -p "${sources_dir}/.halcyon-magic/ghc"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
+	cp -p "${source_dir}/.halcyon-magic/ghc"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 }
 
 
-function validate_ghc_tag () {
-	expect_vars HALCYON_DIR
-
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
-
-	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ]; then
-		return 1
-	fi
-
-	local candidate_tag
-	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	if [ "${candidate_tag}" != "${ghc_tag}" ]; then
-		return 1
-	fi
-}
-
-
-function prepare_ghc () {
+function prepare_ghc_layer () {
 	expect_vars HALCYON_DIR
 	expect_no_existing "${HALCYON_DIR}/ghc/lib"
 
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
+	local tag
+	expect_args tag -- "$@"
 
 	local os os_description ghc_version libgmp_dst_name libgmp_src_file libtinfo_src_file original_url
-	os=$( echo_ghc_os "${ghc_tag}" ) || die
-	os_description=$( echo_os_description "${os}" ) || die
-	ghc_version=$( echo_ghc_version "${ghc_tag}" ) || die
+	os=$( get_tag_os "${tag}" ) || die
+	description=$( format_os_description "${os}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
 	case "${os}-ghc-${ghc_version}" in
 	'linux-ubuntu-14.04-x86_64-ghc-7.8.'*)
 		libgmp_src_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_dst_name='libgmp.so.10'
-		original_url=$( echo_ghc_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+		original_url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-14.04-x86_64-ghc-7.6.'*)
-		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no
-		# .10-flavoured binary distribution of GHC 7.6.*.  However, GHC does not
-		# use the `mpn_bdivmod` function, which is the only difference between
-		# the ABI of .3 and .10.  Hence, following Gentoo/Haskell, we symlink
-		# .10 to .3, and use the .3-flavoured binary distribution.
-		# https://github.com/gentoo-haskell/gentoo-haskell/blob/master/dev-lang/ghc/files/ghc-apply-gmp-hack
+		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured binary distribution
+		# of GHC 7.6.*. However, GHC does not use the `mpn_bdivmod` function, which is the only difference
+		# between the ABI of .3 and .10. Hence, .10 is symlinked to .3, and the .3-flavoured binary
+		# distribution is used.
 
 		libgmp_src_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_dst_name='libgmp.so.3'
-		original_url=$( echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		original_url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-7.8.'*)
 		libgmp_src_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_dst_name='libgmp.so.10'
-		original_url=$( echo_ghc_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+		original_url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-7.6.'*)
 		libgmp_src_file='/usr/lib/libgmp.so.3'
 		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_dst_name='libgmp.so.3'
-		original_url=$( echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		original_url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-10.04-x86_64-ghc-7.'[68]'.'*)
 		libgmp_src_file='/usr/lib/libgmp.so.3'
 		libtinfo_src_file='/lib/libncurses.so.5'
 		libgmp_dst_name='libgmp.so.3'
-		original_url=$( echo_ghc_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		original_url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	*)
-		die "Unexpected GHC and OS combination: ${ghc_version} and ${os_description}"
+		die "Unexpected GHC and OS combination: ${ghc_version} and ${description}"
 	esac
 	expect_existing "${libgmp_src_file}" "${libtinfo_src_file}"
 
@@ -253,72 +217,72 @@ function prepare_ghc () {
 }
 
 
-function build_ghc () {
+function build_ghc_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 	expect_no_existing "${HALCYON_DIR}/ghc"
 
-	local ghc_tag sources_dir
-	expect_args ghc_tag sources_dir -- "$@"
+	local tag source_dir
+	expect_args tag source_dir -- "$@"
 
-	local ghc_version original_url original_archive tmp_ghc_dir
-	ghc_version=$( echo_ghc_version "${ghc_tag}" ) || die
-	original_url=$( prepare_ghc "${ghc_tag}" ) || die
-	original_archive=$( basename "${original_url}" ) || die
-	tmp_ghc_dir=$( echo_tmp_dir_name 'halcyon.build_ghc' ) || die
+	local ghc_version original_url original_name build_dir
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	original_url=$( prepare_ghc_layer "${tag}" ) || die
+	original_name=$( basename "${original_url}" ) || die
+	build_dir=$( get_tmp_dir 'halcyon.ghc' ) || die
 
 	log 'Starting to build GHC layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${original_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_ghc_dir}"
+	if ! [ -f "${HALCYON_CACHE_DIR}/${original_name}" ] ||
+		! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_ghc_dir}" || die
-		transfer_original "${original_archive}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_ghc_dir}"; then
-			rm -rf "${HALCYON_CACHE_DIR}/${original_archive}" "${tmp_ghc_dir}" || die
+		rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
+		transfer_original "${original_name}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
+			rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
 			die 'Cannot extract original archive'
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${original_archive}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || true
 	fi
 
-	if [ -f "${sources_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
+	if [ -f "${source_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
 		log 'Running GHC pre-build hook'
-		( "${sources_dir}/.halcyon-magic/ghc-prebuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/ghc-prebuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" ) |& quote || die
 	fi
 
 	log 'Installing GHC'
 
 	if ! (
-		cd "${tmp_ghc_dir}/ghc-${ghc_version}" &&
+		cd "${build_dir}/ghc-${ghc_version}" &&
 		./configure --prefix="${HALCYON_DIR}/ghc" |& quote &&
 		make install |& quote
 	); then
 		die 'Failed to install GHC'
 	fi
 
-	if [ -f "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
+	if [ -f "${source_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
 		log 'Running GHC post-build hook'
-		( "${sources_dir}/.halcyon-magic/ghc-postbuild-hook" "${ghc_tag}" "${tmp_ghc_dir}/ghc-${ghc-version}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/ghc-postbuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" ) |& quote || die
 	fi
 
-	install_ghc_magic "${sources_dir}" || die
-	echo "${ghc_tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
+	copy_ghc_magic "${source_dir}" || die
+	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
-	local ghc_size
-	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Finished building GHC layer, ${ghc_size}"
+	local layer_size
+	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
+	log "Finished building GHC layer... ${layer_size}"
 
-	rm -rf "${tmp_ghc_dir}" || die
+	rm -rf "${build_dir}" || die
 }
 
 
-function strip_ghc () {
+function strip_ghc_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	local ghc_tag ghc_version
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	ghc_version=$( echo_ghc_version "${ghc_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${ghc_tag}" ) || die
 
 	log_begin "Stripping GHC layer..."
 
@@ -362,13 +326,13 @@ function strip_ghc () {
 		die "Unexpected GHC version: ${ghc_version}"
 	esac
 
-	local ghc_size
-	ghc_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log_end "${ghc_size}"
+	local layer_size
+	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
+	log_end "${layer_size}"
 }
 
 
-function archive_ghc () {
+function archive_ghc_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
@@ -376,149 +340,118 @@ function archive_ghc () {
 		return 0
 	fi
 
-	local ghc_tag os ghc_archive
+	local ghc_tag os archive_name
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	os=$( echo_ghc_os "${ghc_tag}" ) || die
-	ghc_archive=$( echo_ghc_archive_name "${ghc_tag}" ) || die
+	os=$( get_tag_os "${ghc_tag}" ) || die
+	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	log 'Archiving GHC layer'
 
-	rm -f "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
-	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${ghc_archive}" || die
-	if ! upload_layer "${HALCYON_CACHE_DIR}/${ghc_archive}" "${os}"; then
+	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}"; then
 		log_warning 'Cannot upload GHC layer archive'
 	fi
 }
 
 
-function restore_ghc () {
+function validate_ghc_layer () {
+	expect_vars HALCYON_DIR
+
+	local tag
+	expect_args tag -- "$@"
+
+	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ]; then
+		return 1
+	fi
+
+	local ghc_tag candidate_tag
+	ghc_tag=$( derive_ghc_tag "${tag}" ) || die
+	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	if [ "${candidate_tag}" != "${ghc_tag}" ]; then
+		return 1
+	fi
+}
+
+
+function restore_ghc_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
-	local ghc_tag
-	expect_args ghc_tag -- "$@"
+	local tag
+	expect_args tag -- "$@"
 
-	local os ghc_archive
-	os=$( echo_ghc_os "${ghc_tag}" ) || die
-	ghc_archive=$( echo_ghc_archive_name "${ghc_tag}" ) || die
+	local os archive_name
+	os=$( get_tag_os "${tag}" ) || die
+	archive_name=$( format_ghc_archive_name "${tag}" ) || die
 
-	if validate_ghc_tag "${ghc_tag}"; then
-		touch -c "${HALCYON_CACHE_DIR}/${ghc_archive}" || true
-		log 'Using existing GHC layer'
+	if validate_ghc_layer "${tag}"; then
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
 
 	log 'Restoring GHC layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${ghc_archive}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
-		! validate_ghc_tag "${ghc_tag}"
+	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
+		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
+		! validate_ghc_layer "${tag}"
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
-		if ! download_layer "${os}" "${ghc_archive}" "${HALCYON_CACHE_DIR}"; then
+		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" || die
+		if ! download_layer "${os}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
 			log 'Cannot download GHC layer archive'
 			return 1
 		fi
 
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" ||
-			! validate_ghc_tag "${ghc_tag}"
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
+			! validate_ghc_layer "${tag}"
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${ghc_archive}" "${HALCYON_DIR}/ghc" || die
+			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" || die
 			log_warning 'Cannot extract GHC layer archive'
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${ghc_archive}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 	fi
 }
 
 
-function activate_ghc () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
+function install_ghc_layer () {
+	expect_vars HALCYON_DIR HALCYON_FORCE_GHC HALCYON_NO_BUILD
 
-	local ghc_tag ghc_description
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	ghc_description=$( echo_ghc_description "${ghc_tag}" ) || die
+	local tag source_dir
+	expect_args tag source_dir -- "$@"
 
-	log 'GHC layer installed:'
-	log_indent "${ghc_description}"
-}
-
-
-function determine_ghc_tag () {
-	expect_vars HALCYON_RECURSIVE HALCYON_NO_WARN_IMPLICIT
-
-	local sources_dir
-	expect_args sources_dir -- "$@"
-
-	log_begin 'Determining GHC version...               '
-
-	local ghc_version
-	if has_vars HALCYON_GHC_VERSION; then
-		ghc_version="${HALCYON_GHC_VERSION}"
-
-		log_end "${ghc_version}"
-	elif [ -f "${sources_dir}/cabal.config" ]; then
-		local constraints
-		constraints=$( detect_sandbox_constraints "${sources_dir}" ) || die
-		ghc_version=$( echo_ghc_version_from_constraints "${constraints}" ) || die
-
-		log_end "${ghc_version} (constraints)"
-	else
-		ghc_version=$( echo_default_ghc_version ) || die
-
-		log_end "${ghc_version} (default)"
-		if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
-			log_warning 'Using newest available version of GHC'
-			log_warning 'Expected cabal.config with explicit constraints'
-		fi
-	fi
-
-	log_begin 'Determining GHC magic hash...            '
-
-	local magic_hash
-	magic_hash=$( hash_ghc_magic "${sources_dir}" ) || die
-	if [ -z "${magic_hash}" ]; then
-		log_end '(none)'
-	else
-		log_end "${magic_hash:0:7}"
-	fi
-
-	echo_ghc_tag "${ghc_version}" "${magic_hash}" || die
-}
-
-
-function install_ghc () {
-	expect_vars HALCYON_DIR HALCYON_REBUILD_GHC HALCYON_NO_BUILD
-
-	local sources_dir
-	expect_args sources_dir -- "$@"
-
-	local ghc_tag
-	ghc_tag=$( determine_ghc_tag "${sources_dir}" ) || die
-
-	if ! (( HALCYON_REBUILD_GHC )) && restore_ghc "${ghc_tag}"; then
-		activate_ghc || die
+	if ! (( HALCYON_FORCE_GHC )) && restore_ghc_layer "${tag}"; then
 		return 0
 	fi
 
-	if ! (( HALCYON_REBUILD_GHC )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_FORCE_GHC )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build GHC layer'
 		return 1
 	fi
 
 	rm -rf "${HALCYON_DIR}/ghc" || die
-	build_ghc "${ghc_tag}" "${sources_dir}" || die
-	strip_ghc || die
-	archive_ghc || die
-	activate_ghc || die
+	build_ghc_layer "${tag}" "${source_dir}" || die
+	strip_ghc_layer || die
+	archive_ghc_layer || die
 }
 
 
-function ghc_detect_base_package_version () {
+function deploy_ghc_layer () {
 	expect_vars HALCYON_DIR
+
+	local tag source_dir
+	expect_args tag source_dir -- "$@"
+
+	if ! install_ghc_layer "${tag}" "${source_dir}"; then
+		return 1
+	fi
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	ghc-pkg list --simple-output | awk -F- 'BEGIN { RS=" " } /base-[0-9\.]+/ { print $2 }'
+	local ghc_tag description
+	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	description=$( format_ghc_description "${ghc_tag}" ) || die
+
+	log 'GHC layer deployed:'
+	log_indent "${description}"
 }

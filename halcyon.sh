@@ -7,188 +7,249 @@ if ! [ -d "${HALCYON_TOP_DIR}/lib/bashmenot" ]; then
 fi
 
 source "${HALCYON_TOP_DIR}/lib/bashmenot/bashmenot.sh"
-source "${HALCYON_TOP_DIR}/src/paths.sh"
-source "${HALCYON_TOP_DIR}/src/vars.sh"
 source "${HALCYON_TOP_DIR}/src/deploy.sh"
-source "${HALCYON_TOP_DIR}/src/cache.sh"
-source "${HALCYON_TOP_DIR}/src/storage.sh"
+source "${HALCYON_TOP_DIR}/src/detect.sh"
 source "${HALCYON_TOP_DIR}/src/ghc.sh"
 source "${HALCYON_TOP_DIR}/src/cabal.sh"
 source "${HALCYON_TOP_DIR}/src/sandbox.sh"
+source "${HALCYON_TOP_DIR}/src/constraints.sh"
 source "${HALCYON_TOP_DIR}/src/app.sh"
+source "${HALCYON_TOP_DIR}/src/slug.sh"
+source "${HALCYON_TOP_DIR}/src/tag.sh"
+source "${HALCYON_TOP_DIR}/src/storage.sh"
+source "${HALCYON_TOP_DIR}/src/cache.sh"
+source "${HALCYON_TOP_DIR}/src/paths.sh"
+source "${HALCYON_TOP_DIR}/src/vars.sh"
 source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
+function format_fake_base_package () {
+	local base_version
+	expect_args base_version -- "$@"
+
+	cat <<-EOF
+		name:           halcyon-fake-base
+		version:        ${base_version}
+		build-type:     Simple
+		cabal-version:  >= 1.2
+
+		executable halcyon-fake-base
+		  build-depends:  base == ${base_version}
+EOF
+}
+
+
+function deploy_local_app () {
+	local local_dir
+	expect_args local_dir -- "$@"
+
+	log 'Deploying local app'
+
+	local source_dir
+	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
+	copy_entire_contents "${local_dir}" "${source_dir}" || die
+
+	local app_name app_version
+	if ! app_name=$( detect_app_name "${source_dir}" ) ||
+		! app_version=$( detect_app_version "${source_dir}" )
+	then
+		log_warning 'Cannot deploy local app'
+		return 1
+	fi
+
+	log
+	if ! deploy_app "${app_name}-${app_version}" "${source_dir}"; then
+		log_warning 'Cannot deploy local app'
+		return 1
+	fi
+
+	rm -rf "${source_dir}" || die
+}
+
+
+function deploy_cloned_app () {
+	local url
+	expect_args url -- "$@"
+
+	log 'Deploying cloned app'
+
+	local source_dir
+	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
+	if ! git clone --depth=1 --quiet "${url}" "${source_dir}"; then
+		log_warning 'Cannot locate cloned app'
+		return 1
+	fi
+
+	log
+	local app_name app_version
+	if ! app_name=$( detect_app_name "${source_dir}" ) ||
+		! app_version=$( detect_app_version "${source_dir}" ) ||
+		! deploy_app "${app_name}-${app_version}" "${source_dir}"
+	then
+		log_warning 'Cannot deploy cloned app'
+		return 1
+	fi
+
+	rm -rf "${source_dir}" || die
+}
+
+
+function deploy_base_package () {
+	expect_vars HALCYON_DIR
+
+	local thing
+	expect_args thing -- "$@"
+
+	log 'Deploying base package'
+
+	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] || ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
+		log
+		if ! HALCYON_NO_SANDBOX_OR_APP=1 HALCYON_NO_CLEAN_CACHE=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app '' '/dev/null'; then
+			log_warning 'Cannot deploy GHC for base package'
+			return 1
+		fi
+	fi
+
+	local base_version
+	if [ "${thing}" = 'base' ]; then
+		base_version=$( ghc_detect_base_package_version ) || die
+		log_warning 'Using implicit base package version'
+		log_warning 'Expected base package name with explicit version'
+	else
+		base_version="${thing#base-}"
+	fi
+
+	local source_dir
+	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
+
+	mkdir -p "${source_dir}" || die
+	format_fake_base_package "${base_version}" >"${source_dir}/halcyon-fake-base.cabal" || die
+
+	log
+	if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_APP=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app "base-${base_version}" "${source_dir}"; then
+		log_warning 'Cannot deploy base package'
+		return 1
+	fi
+
+	rm -rf "${source_dir}" || die
+}
+
+
+function deploy_published_app () {
+	expect_vars HALCYON_DIR
+
+	local thing
+	expect_args thing -- "$@"
+
+	log "Deploying published app"
+
+	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] || ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
+		log
+		if ! HALCYON_NO_SANDBOX_OR_APP=1 HALCYON_NO_CLEAN_CACHE=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app '' '/dev/null'; then
+			log_warning 'Cannot deploy GHC and Cabal for published app'
+			return 1
+		fi
+	fi
+
+	local source_dir
+	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
+
+	mkdir -p "${source_dir}" || die
+
+	local app_label
+	if ! app_label=$(
+		cabal_do "${source_dir}" unpack "${thing}" 2>'/dev/null' |
+			filter_last |
+			match_exactly_one |
+			sed 's:^Unpacking to \(.*\)/$:\1:'
+	); then
+		log_warning 'Cannot locate published app'
+		return 1
+	fi
+
+	local app_name app_version
+	app_name="${app_label%-*}"
+	app_version="${app_label##*-}"
+	if [ "${thing}" = "${app_name}" ]; then
+		log_warning "Using newest available version of ${app_name}"
+		log_warning 'Expected app label with explicit version'
+	fi
+
+	log
+	if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app "${app_label}" "${source_dir}/${label}"; then
+		log_warning 'Cannot deploy published app'
+		return 1
+	fi
+
+	rm -rf "${source_dir}" || die
+}
+
+
+function deploy_thing () {
+	local thing
+	expect_args thing -- "$@"
+
+	case "${thing}" in
+	'base');&
+	'base-'[0-9]*)
+		if ! deploy_base_package "${thing}"; then
+			return 1
+		fi
+		;;
+	'https://'*);&
+	'ssh://'*);&
+	'git@'*);&
+	'file://'*);&
+	'http://'*);&
+	'git://'*)
+		if ! deploy_cloned_app "${thing}"; then
+			return 1
+		fi
+		;;
+	*)
+		if [ -d "${thing}" ]; then
+			if ! deploy_local_app "${thing%/}"; then
+				return 1
+			fi
+		else
+			if ! deploy_published_app "${thing}"; then
+				return 1
+			fi
+		fi
+	esac
+}
+
+
 function halcyon_deploy () {
-	local -a args
-	while (( $# )); do
-		case "$1" in
-	# Paths:
-		'--halcyon-dir')
-			shift
-			expect_args halcyon_dir -- "$@"
-			export HALCYON_DIR="${halcyon_dir}";;
-		'--halcyon-dir='*)
-			export HALCYON_DIR="${1#*=}";;
-		'--cache-dir')
-			shift
-			expect_args cache_dir -- "$@"
-			export HALCYON_CACHE_DIR="${cache_dir}";;
-		'--cache-dir='*)
-			export HALCYON_CACHE_DIR="${1#*=}";;
+	local -a things
+	things=( $( handle_command_line "$@" ) ) || die
 
-	# Vars set once and inherited:
-		'--aws-access-key-id')
-			shift
-			expect_args aws_access_key_id -- "$@"
-			export HALCYON_AWS_ACCESS_KEY_ID="${aws_access_key_id}";;
-		'--aws-access-key-id='*)
-			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
-		'--aws-secret-access-key')
-			shift
-			expect_args aws_secret_access_key -- "$@"
-			export HALCYON_AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}";;
-		'--aws-secret-access-key='*)
-			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
-		'--s3-bucket')
-			shift
-			expect_args s3_bucket -- "$@"
-			export HALCYON_S3_BUCKET="${s3_bucket}";;
-		'--s3-bucket='*)
-			export HALCYON_S3_BUCKET="${1#*=}";;
-		'--s3-acl')
-			shift
-			expect_args s3_acl -- "$@"
-			export HALCYON_S3_ACL="${s3_acl}";;
-		'--s3-acl='*)
-			export HALCYON_S3_ACL="${1#*=}";;
-
-		'--public')
-			export HALCYON_PUBLIC=1;;
-
-		'--recursive')
-			export HALCYON_RECURSIVE=1;;
-		'--as-build-tool')
-			export HALCYON_AS_BUILD_TOOL=1;;
-
-		'--no-build')
-			export HALCYON_NO_BUILD=1;;
-		'--no-archive')
-			export HALCYON_NO_ARCHIVE=1;;
-		'--no-upload')
-			export HALCYON_NO_UPLOAD=1;;
-
-	# Vars inherited once and reset:
-		'--ghc-version')
-			shift
-			expect_args ghc_version -- "$@"
-			export HALCYON_GHC_VERSION="${ghc_version}";;
-		'--ghc-version='*)
-			export HALCYON_GHC_VERSION="${1#*=}";;
-
-		'--cabal-version')
-			shift
-			expect_args cabal_version -- "$@"
-			export HALCYON_CABAL_VERSION="${cabal_version}";;
-		'--cabal-version='*)
-			export HALCYON_CABAL_VERSION="${1#*=}";;
-		'--cabal-remote-repo')
-			shift
-			expect_args remote_repo -- "$@"
-			export HALCYON_CABAL_REMOTE_REPO="${remote_repo}";;
-		'--cabal-remote-repo='*)
-			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
-
-		'--with-helper-apps')
-			shift
-			expect_args helper_apps -- "$@"
-			export HALCYON_WITH_HELPER_APPS="${helper_apps}";;
-		'--with-helper-apps='*)
-			export HALCYON_WITH_HELPER_APPS="${1#*=}";;
-		'--with-build-tools')
-			shift
-			expect_args build_tools -- "$@"
-			export HALCYON_WITH_BUILD_TOOLS="${build_tools}";;
-		'--with-build-tools='*)
-			export HALCYON_WITH_BUILD_TOOLS="${1#*=}";;
-
-		'--rebuild-ghc')
-			export HALCYON_REBUILD_GHC=1;;
-		'--rebuild-cabal')
-			export HALCYON_REBUILD_CABAL=1;;
-		'--rebuild-sandbox')
-			export HALCYON_REBUILD_SANDBOX=1;;
-		'--rebuild-app')
-			export HALCYON_REBUILD_APP=1;;
-
-		'--update-cabal')
-			export HALCYON_UPDATE_CABAL=1;;
-
-		'--purge-cache')
-			export HALCYON_PURGE_CACHE=1;;
-
-		'--no-install-ghc')
-			export HALCYON_NO_INSTALL_GHC=1;;
-		'--no-install-cabal')
-			export HALCYON_NO_INSTALL_CABAL=1;;
-		'--no-install-sandbox')
-			export HALCYON_NO_INSTALL_SANDBOX=1;;
-		'--no-install-app')
-			export HALCYON_NO_INSTALL_APP=1;;
-
-		'--no-prepare-cache')
-			export HALCYON_NO_PREPARE_CACHE=1;;
-		'--no-clean-cache')
-			export HALCYON_NO_CLEAN_CACHE=1;;
-
-		'--no-warn-implicit')
-			export HALCYON_NO_WARN_IMPLICIT=1;;
-
-		'-'*)
-			die "Unexpected option: $1";;
-
-		*)
-			args+=( "$1" )
-		esac
-		shift
-	done
-
-	if ! (( ${#args[@]} )); then
+	if [ -z "${things[@]:+_}" ]; then
 		if ! deploy_local_app '.'; then
 			return 1
 		fi
-	elif (( ${#args[@]} == 1 )); then
-		if ! deploy_app "${args[0]}"; then
+	elif (( ${#things[@]} == 1 )); then
+		if ! deploy_thing "${things[0]}"; then
 			return 1
 		fi
 	else
 		local index
 		index=0
-		for arg in "${args[@]}"; do
+		for thing in "${things[@]}"; do
 			index=$(( index + 1 ))
 			if (( index == 1 )); then
-				if ! HALCYON_NO_CLEAN_CACHE=1 \
-					deploy_app "${arg}"
-				then
+				if ! HALCYON_NO_CLEAN_CACHE=1 deploy_thing "${thing}"; then
 					return 1
 				fi
 			else
 				log
 				log
-				if (( index == ${#args[@]} )); then
-					if ! HALCYON_NO_PREPARE_CACHE=1    \
-						HALCYON_NO_INSTALL_GHC=1   \
-						HALCYON_NO_INSTALL_CABAL=1 \
-						deploy_app "${arg}"
-					then
+				if (( index == ${#things[@]} )); then
+					if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 deploy_thing "${thing}"; then
 						return 1
 					fi
 				else
-					if ! HALCYON_NO_PREPARE_CACHE=1    \
-						HALCYON_NO_INSTALL_GHC=1   \
-						HALCYON_NO_INSTALL_CABAL=1 \
-						HALCYON_NO_CLEAN_CACHE=1   \
-						deploy_app "${arg}"
+					if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_CLEAN_CACHE=1 deploy_thing "${thing}"
 					then
 						return 1
 					fi
