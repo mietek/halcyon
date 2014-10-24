@@ -229,16 +229,29 @@ function deploy_app () {
 		log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
 	fi
 
-	local sandbox_magic_hash
-	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
-	if [ -n "${sandbox_magic_hash}" ]; then
-		log_indent 'Sandbox magic hash:                      ' "${sandbox_magic_hash:0:7}"
-	fi
+	local sandbox_magic_hash app_magic_hash
+	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+		sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
+		if [ -n "${sandbox_magic_hash}" ]; then
+			log_indent 'Sandbox magic hash:                      ' "${sandbox_magic_hash:0:7}"
+		fi
+		if [ -f "${source_dir}/.halcyon-magic/sandbox-apps" ]; then
+			local sandbox_apps
+			sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-apps" ) )
+			log_indent 'Sandbox apps:                            ' "${sandbox_apps[*]:-}"
+		fi
 
-	local app_magic_hash
-	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
-	if [ -n "${app_magic_hash}" ]; then
-		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
+		if ! (( HALCYON_NO_APP )); then
+			app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
+			if [ -n "${app_magic_hash}" ]; then
+				log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
+			fi
+			if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
+				local extra_apps
+				extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) )
+				log_indent 'Extra apps:                              ' "${extra_apps[*]:-}"
+			fi
+		fi
 	fi
 
 	local tag
