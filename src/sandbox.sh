@@ -97,7 +97,7 @@ function copy_sandbox_magic () {
 	fi
 
 	mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
-	find_spaceless_recursively "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*'
+	find_spaceless_recursively "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' \) |
 		while read -r file; do
 			cp -p "${source_dir}/.halcyon-magic/${file}" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		done
