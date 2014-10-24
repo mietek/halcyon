@@ -97,13 +97,13 @@ function deploy_cloned_app () {
 
 
 function deploy_base_package () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE
 
 	local thing
 	expect_args thing -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=0
+	no_prepare_cache="${HALCYON_NO_PREPARE_CACHE}"
 	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]
 	then
@@ -157,13 +157,13 @@ function deploy_base_package () {
 
 
 function deploy_published_app () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE
 
 	local thing
 	expect_args thing -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=0
+	no_prepare_cache="${HALCYON_NO_PREPARE_CACHE}"
 	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
 		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]
 	then
