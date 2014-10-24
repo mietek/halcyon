@@ -16,6 +16,29 @@ function create_app_tag () {
 }
 
 
+function detect_app_tag () {
+	expect_vars HALCYON_DIR
+
+	local tag_file
+	expect_args tag_file -- "$@"
+
+	local tag_pattern
+	tag_pattern=$(
+		create_tag '.*' '.*' \
+			'.*' '.*'    \
+			'.*' '.*'    \
+			'.*' '.*'
+	) || die
+
+	local tag
+	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
+		die 'Cannot detect app layer tag'
+	fi
+
+	echo "${tag}"
+}
+
+
 function derive_app_tag () {
 	local tag
 	expect_args tag -- "$@"
@@ -167,14 +190,16 @@ function archive_app_layer () {
 		return 0
 	fi
 
-	local app_tag os ghc_version archive_name layer_size
-	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	os=$( get_tag_os "${app_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
-	archive_name=$( format_app_archive_name "${app_tag}" ) || die
+	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/app" ) || die
 
 	log "Archiving app layer (${layer_size})"
+
+	local app_tag os ghc_version archive_name
+	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	os=$( get_tag_os "${app_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
+	archive_name=$( format_app_archive_name "${app_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/app"               \
@@ -197,14 +222,9 @@ function validate_identical_app_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_DIR}/app/.halcyon-tag" ]; then
-		return 1
-	fi
-
-	local app_tag candidate_tag
+	local app_tag
 	app_tag=$( derive_app_tag "${tag}" ) || die
-	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	if [ "${candidate_tag}" != "${app_tag}" ]; then
+	if ! detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${app_tag//./\.}"; then
 		return 1
 	fi
 }
@@ -216,15 +236,9 @@ function validate_configured_app_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_DIR}/app/.halcyon-tag" ]; then
-		return 1
-	fi
-
 	local configured_pattern
 	configured_pattern=$( derive_configured_app_tag_pattern "${tag}" ) || die
-	if ! filter_matching "^${configured_pattern}$" <"${HALCYON_DIR}/app/.halcyon-tag" |
-		match_exactly_one >'/dev/null'
-	then
+	if ! detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${configured_pattern}"; then
 		return 1
 	fi
 }
@@ -236,15 +250,9 @@ function validate_recognized_app_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_DIR}/app/.halcyon-tag" ]; then
-		return 1
-	fi
-
 	local recognized_pattern
 	recognized_pattern=$( derive_recognized_app_tag_pattern "${tag}" ) || die
-	if ! filter_matching "^${recognized_pattern}$" <"${HALCYON_DIR}/app/.halcyon-tag" |
-		match_exactly_one >'/dev/null'
-	then
+	if ! detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${recognized_pattern}"; then
 		return 1
 	fi
 }
@@ -261,7 +269,7 @@ function restore_app_layer () {
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_app_archive_name "${tag}" ) || die
 
-	if validate_identical_app_layer "${tag}"; then
+	if validate_identical_app_layer "${tag}" >'/dev/null'; then
 		log 'Using existing app layer'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
@@ -272,7 +280,7 @@ function restore_app_layer () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
-		! validate_recognized_app_layer "${tag}"
+		! validate_recognized_app_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" || die
 		if ! download_layer "${os}/ghc-${ghc_version}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
@@ -281,7 +289,7 @@ function restore_app_layer () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
-			! validate_recognized_app_layer "${tag}"
+			! validate_recognized_app_layer "${tag}" >'/dev/null'
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" || die
 			log_warning 'Cannot validate app layer archive'
@@ -373,7 +381,7 @@ function install_app_layer () {
 	expect_args tag source_dir -- "$@"
 
 	if ! (( HALCYON_REBUILD_APP )) && restore_app_layer "${tag}"; then
-		if validate_identical_app_layer "${tag}"; then
+		if validate_identical_app_layer "${tag}" >'/dev/null'; then
 			return 0
 		fi
 
@@ -383,7 +391,7 @@ function install_app_layer () {
 		local must_copy must_configure
 		must_copy=0
 		must_configure=0
-		if ! prepare_app_layer "${source_dir}" || ! validate_configured_app_layer "${tag}"; then
+		if ! prepare_app_layer "${source_dir}" || ! validate_configured_app_layer "${tag}" >'/dev/null'; then
 			must_configure=1
 		fi
 		build_app_layer "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" || die
@@ -411,14 +419,16 @@ function deploy_app_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! install_app_layer "${tag}" "${source_dir}"; then
+	local installed_tag
+	if ! install_app_layer "${tag}" "${source_dir}" ||
+		! installed_tag=$( validate_recognized_app_layer "${tag}" )
+	then
+		log 'Cannot deploy app layer'
 		return 1
 	fi
-	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
-	local app_tag description
-	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	description=$( format_app_description "${app_tag}" ) || die
+	local description
+	description=$( format_app_description "${installed_tag}" ) || die
 
 	log 'App layer deployed:                      ' "${description}"
 }

@@ -156,7 +156,7 @@ function deploy_layers () {
 	if ! (( HALCYON_ONLY_ENV )) && ! (( HALCYON_REBUILD_APP )) && ! (( HALCYON_NO_SLUG_ARCHIVE ));  then
 		log
 		if restore_slug "${tag}"; then
-			engage_slug || die
+			install_slug || die
 			return 0
 		fi
 	fi
@@ -198,7 +198,7 @@ function deploy_layers () {
 		if ! (( HALCYON_NO_SLUG_ARCHIVE )); then
 			archive_slug || die
 		fi
-		engage_slug || die
+		install_slug || die
 	fi
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then

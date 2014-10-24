@@ -37,6 +37,24 @@ function create_cabal_tag () {
 }
 
 
+function detect_cabal_tag () {
+	expect_vars HALCYON_DIR
+
+	local tag_file
+	expect_args tag_file -- "$@"
+
+	local tag_pattern
+	tag_pattern=$( create_cabal_tag '.*' '.*' '.*' '.*' ) || die
+
+	local tag
+	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
+		die 'Cannot detect Cabal layer tag'
+	fi
+
+	echo "${tag}"
+}
+
+
 function derive_bare_cabal_tag () {
 	local tag
 	expect_args tag -- "$@"
@@ -326,14 +344,12 @@ function update_cabal_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	local cabal_tag
-	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-
 	log 'Updating Cabal layer'
 
 	cabal_do '.' update |& quote || die
 
-	local update_timestamp
+	local cabal_tag update_timestamp
+	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	update_timestamp=$( format_timestamp ) || die
 	derive_updated_cabal_tag "${cabal_tag}" "${update_timestamp}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 }
@@ -347,13 +363,15 @@ function archive_cabal_layer () {
 		return 0
 	fi
 
-	local cabal_tag os archive_name layer_size
-	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	os=$( get_tag_os "${cabal_tag}" ) || die
-	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
+	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
 
 	log "Archiving Cabal layer (${layer_size})"
+
+	local cabal_tag os archive_name
+	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
+	os=$( get_tag_os "${cabal_tag}" ) || die
+	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
@@ -369,14 +387,9 @@ function validate_bare_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
-		return 1
-	fi
-
-	local bare_tag candidate_tag
+	local bare_tag
 	bare_tag=$( derive_bare_cabal_tag "${tag}" ) || die
-	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	if [ "${candidate_tag}" != "${bare_tag}" ]; then
+	if ! detect_tag "${HALCYON_DIR}/cabal/.halcyon-tag" "${bare_tag//./\.}"; then
 		return 1
 	fi
 }
@@ -400,16 +413,9 @@ function validate_updated_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
-		return 1
-	fi
-
 	local updated_pattern candidate_tag
 	updated_pattern=$( derive_updated_cabal_tag_pattern "${tag}" ) || die
-	if ! candidate_tag=$(
-		filter_matching "^${updated_pattern}$" <"${HALCYON_DIR}/cabal/.halcyon-tag" |
-		match_exactly_one
-	); then
+	if ! candidate_tag=$( detect_tag "${HALCYON_DIR}/cabal/.halcyon-tag" "${updated_pattern}" ); then
 		return 1
 	fi
 
@@ -418,6 +424,8 @@ function validate_updated_cabal_layer () {
 	if ! validate_updated_cabal_timestamp "${candidate_timestamp}"; then
 		return 1
 	fi
+
+	echo "${candidate_tag}"
 }
 
 
@@ -456,7 +464,7 @@ function restore_bare_cabal_layer () {
 	os=$( get_tag_os "${tag}" ) || die
 	bare_name=$( format_bare_cabal_archive_name "${tag}" ) || die
 
-	if validate_bare_cabal_layer "${tag}"; then
+	if validate_bare_cabal_layer "${tag}" >'/dev/null'; then
 		log 'Using existing bare Cabal layer'
 		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || true
 		return 0
@@ -467,7 +475,7 @@ function restore_bare_cabal_layer () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${bare_name}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
-		! validate_bare_cabal_layer "${tag}"
+		! validate_bare_cabal_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" || die
 		if ! download_layer "${os}" "${bare_name}" "${HALCYON_CACHE_DIR}"; then
@@ -476,7 +484,7 @@ function restore_bare_cabal_layer () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
-			! validate_bare_cabal_layer "${tag}"
+			! validate_bare_cabal_layer "${tag}" >'/dev/null'
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" || die
 			log_warning 'Cannot validate bare Cabal layer archive'
@@ -500,7 +508,7 @@ function restore_cached_updated_cabal_layer () {
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 
-	if validate_updated_cabal_layer "${tag}"; then
+	if validate_updated_cabal_layer "${tag}" >'/dev/null'; then
 		log 'Using existing updated Cabal layer'
 		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || true
 		return 0
@@ -514,7 +522,7 @@ function restore_cached_updated_cabal_layer () {
 	log 'Restoring cached updated Cabal layer'
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
-		! validate_updated_cabal_layer "${tag}"
+		! validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" || die
 		return 1
@@ -582,7 +590,7 @@ function restore_updated_cabal_layer () {
 	fi
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
-		! validate_updated_cabal_layer "${tag}"
+		! validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" || die
 		log_warning 'Cannot validate updated Cabal layer archive'
@@ -628,14 +636,16 @@ function deploy_cabal_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! install_cabal_layer "${tag}" "${source_dir}"; then
+	local installed_tag
+	if ! install_cabal_layer "${tag}" "${source_dir}" ||
+		! installed_tag=$( validate_updated_cabal_layer "${tag}" )
+	then
+		log_warning 'Cannot deploy updated Cabal layer'
 		return 1
 	fi
-	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	local cabal_tag description
-	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	description=$( format_cabal_description "${cabal_tag}" ) || die
+	local description
+	description=$( format_cabal_description "${installed_tag}" ) || die
 
 	log 'Cabal layer deployed:                    ' "${description}"
 }

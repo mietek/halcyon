@@ -90,6 +90,24 @@ function create_ghc_tag () {
 }
 
 
+function detect_ghc_tag () {
+	expect_vars HALCYON_DIR
+
+	local tag_file
+	expect_args tag_file -- "$@"
+
+	local tag_pattern
+	tag_pattern=$( create_ghc_tag '.*' '.*' ) || die
+
+	local tag
+	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
+		die 'Cannot detect GHC layer tag'
+	fi
+
+	echo "${tag}"
+}
+
+
 function derive_ghc_tag () {
 	local tag
 	expect_args tag -- "$@"
@@ -278,12 +296,14 @@ function strip_ghc_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local ghc_tag ghc_version layer_size
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	ghc_version=$( get_tag_ghc_version "${ghc_tag}" ) || die
+	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
 	log "Stripping GHC layer (${layer_size})"
+
+	local ghc_tag ghc_version
+	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
+	ghc_version=$( get_tag_ghc_version "${ghc_tag}" ) || die
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -335,13 +355,15 @@ function archive_ghc_layer () {
 		return 0
 	fi
 
-	local ghc_tag os archive_name layer_size
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	os=$( get_tag_os "${ghc_tag}" ) || die
-	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
+	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
 	log "Archiving GHC layer (${layer_size})"
+
+	local ghc_tag os archive_name
+	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag") || die
+	os=$( get_tag_os "${ghc_tag}" ) || die
+	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
@@ -357,14 +379,9 @@ function validate_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ]; then
-		return 1
-	fi
-
-	local ghc_tag candidate_tag
+	local ghc_tag
 	ghc_tag=$( derive_ghc_tag "${tag}" ) || die
-	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	if [ "${candidate_tag}" != "${ghc_tag}" ]; then
+	if ! detect_tag "${HALCYON_DIR}/ghc/.halcyon-tag" "${ghc_tag//./\.}"; then
 		return 1
 	fi
 }
@@ -380,7 +397,7 @@ function restore_ghc_layer () {
 	os=$( get_tag_os "${tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
 
-	if validate_ghc_layer "${tag}"; then
+	if validate_ghc_layer "${tag}" >'/dev/null'; then
 		log 'Using existing GHC layer'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
@@ -391,7 +408,7 @@ function restore_ghc_layer () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
-		! validate_ghc_layer "${tag}"
+		! validate_ghc_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" || die
 		if ! download_layer "${os}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
@@ -400,7 +417,7 @@ function restore_ghc_layer () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
-			! validate_ghc_layer "${tag}"
+			! validate_ghc_layer "${tag}" >'/dev/null'
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" || die
 			log_warning 'Cannot validate GHC layer archive'
@@ -435,19 +452,19 @@ function install_ghc_layer () {
 
 
 function deploy_ghc_layer () {
-	expect_vars HALCYON_DIR
-
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! install_ghc_layer "${tag}" "${source_dir}"; then
+	local installed_tag
+	if ! install_ghc_layer "${tag}" "${source_dir}" ||
+		! installed_tag=$( validate_ghc_layer "${tag}" )
+	then
+		log_warning 'Cannot deploy GHC layer'
 		return 1
 	fi
-	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local ghc_tag description
-	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	description=$( format_ghc_description "${ghc_tag}" ) || die
+	local description
+	description=$( format_ghc_description "${installed_tag}" ) || die
 
 	log 'GHC layer deployed:                      ' "${description}"
 }

@@ -14,6 +14,28 @@ function create_sandbox_tag () {
 }
 
 
+function detect_sandbox_tag () {
+	expect_vars HALCYON_DIR
+
+	local tag_file
+	expect_args tag_file -- "$@"
+
+	local tag_pattern
+	tag_pattern=$(
+		create_sandbox_tag '.*' '.*' \
+			'.*' '.*'            \
+			'.*'
+	) || die
+
+	local tag
+	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
+		die 'Cannot detect sandbox layer tag'
+	fi
+
+	echo "${tag}"
+}
+
+
 function derive_sandbox_tag () {
 	local tag
 	expect_args tag -- "$@"
@@ -25,7 +47,9 @@ function derive_sandbox_tag () {
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	create_sandbox_tag "${app_label}" "${constraint_hash}" "${ghc_version}" "${ghc_magic_hash}" "${sandbox_magic_hash}" || die
+	create_sandbox_tag "${app_label}" "${constraint_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"           \
+		"${sandbox_magic_hash}" || die
 }
 
 
@@ -38,7 +62,9 @@ function derive_matching_sandbox_tag () {
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	create_sandbox_tag "${app_label}" "${constraint_hash}" "${ghc_version}" "${ghc_magic_hash}" "${sandbox_magic_hash}" || die
+	create_sandbox_tag "${app_label}" "${constraint_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"           \
+		"${sandbox_magic_hash}" || die
 }
 
 
@@ -168,8 +194,7 @@ function strip_sandbox_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local sandbox_tag layer_size
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
 	log "Stripping sandbox layer (${layer_size})"
@@ -194,15 +219,17 @@ function archive_sandbox_layer () {
 		return 0
 	fi
 
-	local sandbox_tag os ghc_version archive_name file_name layer_size
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	local layer_size
+	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
+
+	log "Archiving sandbox layer (${layer_size})"
+
+	local sandbox_tag os ghc_version archive_name file_name
+	sandbox_tag=$( detect_sandbox_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	os=$( get_tag_os "${sandbox_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	file_name=$( format_constraint_file_name "${sandbox_tag}" ) || die
-	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-
-	log "Archiving sandbox layer (${layer_size})"
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
@@ -222,14 +249,9 @@ function validate_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_DIR}/sandbox/.halcyon-tag" ]; then
-		return 1
-	fi
-
-	local sandbox_tag candidate_tag
+	local sandbox_tag
 	sandbox_tag=$( derive_sandbox_tag "${tag}" ) || die
-	candidate_tag=$( match_exactly_one <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	if [ "${candidate_tag}" != "${sandbox_tag}" ]; then
+	if ! detect_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}"; then
 		return 1
 	fi
 }
@@ -246,7 +268,7 @@ function restore_sandbox_layer () {
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
 
-	if validate_sandbox_layer "${tag}"; then
+	if validate_sandbox_layer "${tag}" >'/dev/null'; then
 		log 'Using existing sandbox layer'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
@@ -257,7 +279,7 @@ function restore_sandbox_layer () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
-		! validate_sandbox_layer "${tag}"
+		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" || die
 		if ! download_layer "${os}/ghc-${ghc_version}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
@@ -266,7 +288,7 @@ function restore_sandbox_layer () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
-			! validate_sandbox_layer "${tag}"
+			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" || die
 			log_warning 'Cannot validate sandbox layer archive'
@@ -352,14 +374,16 @@ function deploy_sandbox_layer () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	if ! install_sandbox_layer "${tag}" "${constraints}" "${source_dir}"; then
+	local installed_tag
+	if ! install_sandbox_layer "${tag}" "${constraints}" "${source_dir}" ||
+		! installed_tag=$( validate_sandbox_layer "${tag}" )
+	then
+		log_warning 'Cannot deploy sandbox layer'
 		return 1
 	fi
-	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local sandbox_tag description
-	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	description=$( format_sandbox_description "${sandbox_tag}" ) || die
+	local description
+	description=$( format_sandbox_description "${installed_tag}" ) || die
 
 	log 'Sandbox layer deployed:                  ' "${description}"
 }

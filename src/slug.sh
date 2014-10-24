@@ -26,7 +26,7 @@ function build_slug () {
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
 	local app_tag target
-	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	target=$( get_tag_target "${app_tag}" ) || die
 
 	log 'Building slug'
@@ -48,18 +48,20 @@ function archive_slug () {
 	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
 
+	local slug_size
+	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
+
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
-	local app_tag os ghc_version archive_name slug_size
-	app_tag=$( <"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
+	log "Archiving slug (${slug_size})"
+
+	local app_tag os ghc_version archive_name
+	app_tag=$( detect_app_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
 	os=$( get_tag_os "${app_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_slug_archive_name "${app_tag}" ) || die
-	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
-
-	log "Archiving slug (${slug_size})"
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_TMP_SLUG_DIR}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
@@ -75,14 +77,9 @@ function validate_slug () {
 	local tag
 	expect_args tag -- "$@"
 
-	if ! [ -f "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ]; then
-		return 1
-	fi
-
-	local app_tag candidate_tag
+	local app_tag
 	app_tag=$( derive_app_tag "${tag}" ) || die
-	candidate_tag=$( match_exactly_one <"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
-	if [ "${candidate_tag}" != "${app_tag}" ]; then
+	if ! detect_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" "${app_tag//./\.}"; then
 		return 1
 	fi
 }
@@ -99,7 +96,7 @@ function restore_slug () {
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
 
-	if validate_slug "${tag}"; then
+	if validate_slug "${tag}" >'/dev/null'; then
 		log 'Using existing slug'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
@@ -110,7 +107,7 @@ function restore_slug () {
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
-		! validate_slug "${tag}"
+		! validate_slug "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" || die
 		if ! download_layer "${os}/ghc-${ghc_version}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
@@ -119,7 +116,7 @@ function restore_slug () {
 		fi
 
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
-			! validate_slug "${tag}"
+			! validate_slug "${tag}" >'/dev/null'
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" || die
 			log_warning 'Cannot validate slug archive'
@@ -131,12 +128,12 @@ function restore_slug () {
 }
 
 
-function engage_slug () {
+function install_slug () {
 	expect_vars HALCYON_TMP_SLUG_DIR
 	expect_existing "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
 
 	local app_tag description
-	app_tag=$( <"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
+	app_tag=$( detect_app_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
 	description=$( format_app_description "${app_tag}" ) || die
 
 	# NOTE: Cannot use -p, as it fails when / is read-only.
