@@ -109,7 +109,7 @@ function deploy_base_package () {
 	then
 		log 'Deploying default environment'
 
-		if ! HALCYON_NO_SANDBOX_OR_APP=1   \
+		if ! HALCYON_ONLY_ENV=1   \
 			HALCYON_NO_CLEAN_CACHE=1   \
 			HALCYON_NO_WARN_IMPLICIT=1 \
 				deploy_app '' '/dev/null'
@@ -144,7 +144,7 @@ function deploy_base_package () {
 	format_fake_base_package "${base_version}" >"${source_dir}/halcyon-fake-base.cabal" || die
 
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
-		HALCYON_NO_APP=1                            \
+		HALCYON_ONLY_ENV=1                          \
 		HALCYON_NO_WARN_IMPLICIT=1                  \
 			deploy_app "base-${base_version}" "${source_dir}"
 	then
@@ -169,7 +169,7 @@ function deploy_published_app () {
 	then
 		log 'Deploying default environment'
 
-		if ! HALCYON_NO_SANDBOX_OR_APP=1   \
+		if ! HALCYON_ONLY_ENV=1            \
 			HALCYON_NO_CLEAN_CACHE=1   \
 			HALCYON_NO_WARN_IMPLICIT=1 \
 				deploy_app '' '/dev/null'

@@ -592,24 +592,24 @@ function restore_updated_cabal_layer () {
 
 
 function install_cabal_layer () {
-	expect_vars HALCYON_DIR HALCYON_FORCE_CABAL HALCYON_UPDATE_CABAL HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_REBUILD_CABAL HALCYON_UPDATE_CABAL HALCYON_NO_BUILD
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_CABAL )) && ! (( HALCYON_UPDATE_CABAL )) &&
+	if ! (( HALCYON_REBUILD_CABAL )) && ! (( HALCYON_UPDATE_CABAL )) &&
 		restore_updated_cabal_layer "${tag}"
 	then
 		return 0
 	fi
 
-	if ! (( HALCYON_FORCE_CABAL )) && restore_bare_cabal_layer "${tag}"; then
+	if ! (( HALCYON_REBUILD_CABAL )) && restore_bare_cabal_layer "${tag}"; then
 		update_cabal_layer || die
 		archive_cabal_layer || die
 		return 0
 	fi
 
-	if ! (( HALCYON_FORCE_CABAL )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_REBUILD_CABAL )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build Cabal layer'
 		return 1
 	fi

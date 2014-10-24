@@ -8,7 +8,6 @@ function set_halcyon_vars () {
 		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
-
 		export HALCYON_PUBLIC_STORAGE="${HALCYON_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
@@ -23,52 +22,46 @@ function set_halcyon_vars () {
 		export HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET=1
 
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
+		export HALCYON_REBUILD_GHC="${HALCYON_REBUILD_GHC:-0}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
 		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-}"
-
-		export HALCYON_SANDBOX_APPS="${HALCYON_SANDBOX_APPS:-}"
-		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
-
-		export HALCYON_FORCE_GHC="${HALCYON_FORCE_GHC:-0}"
-		export HALCYON_FORCE_CABAL="${HALCYON_FORCE_CABAL:-0}"
-		export HALCYON_FORCE_SANDBOX="${HALCYON_FORCE_SANDBOX:-0}"
-		export HALCYON_FORCE_APP="${HALCYON_FORCE_APP:-0}"
-
+		export HALCYON_REBUILD_CABAL="${HALCYON_REBUILD_CABAL:-0}"
 		export HALCYON_UPDATE_CABAL="${HALCYON_UPDATE_CABAL:-0}"
 
-		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
+		export HALCYON_ONLY_ENV="${HALCYON_ONLY_ENV:-0}"
 
-		export HALCYON_NO_SANDBOX_OR_APP="${HALCYON_NO_SANDBOX_OR_APP:-0}"
-		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
+		export HALCYON_REBUILD_SANDBOX="${HALCYON_REBUILD_SANDBOX:-0}"
+		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
+
+		export HALCYON_REBUILD_APP="${HALCYON_REBUILD_APP:-0}"
+
+		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_NO_SLUG_ARCHIVE="${HALCYON_NO_SLUG_ARCHIVE:-0}"
 
+		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 		export HALCYON_NO_PREPARE_CACHE="${HALCYON_NO_PREPARE_CACHE:-0}"
 		export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
 
 		export HALCYON_NO_WARN_IMPLICIT="${HALCYON_NO_WARN_IMPLICIT:-0}"
 	else
 		export HALCYON_GHC_VERSION=
+		export HALCYON_REBUILD_GHC=0
 
 		export HALCYON_CABAL_VERSION=
 		export HALCYON_CABAL_REMOTE_REPO=
-
-		export HALCYON_SANDBOX_APPS=
-		export HALCYON_EXTRA_APPS=
-
-		export HALCYON_FORCE_GHC=0
-		export HALCYON_FORCE_CABAL=0
-		export HALCYON_FORCE_SANDBOX=0
-		export HALCYON_FORCE_APP=0
-
+		export HALCYON_REBUILD_CABAL=0
 		export HALCYON_UPDATE_CABAL=0
 
-		export HALCYON_PURGE_CACHE=0
+		export HALCYON_ONLY_ENV=0
 
-		export HALCYON_NO_SANDBOX_OR_APP=0
-		export HALCYON_NO_APP=0
+		export HALCYON_REBUILD_SANDBOX=0
+		export HALCYON_SANDBOX_EXTRA_APPS=
+		export HALCYON_REBUILD_APP=0
+		export HALCYON_EXTRA_APPS=
 		export HALCYON_NO_SLUG_ARCHIVE=0
 
+		export HALCYON_PURGE_CACHE=0
 		export HALCYON_NO_PREPARE_CACHE=0
 		export HALCYON_NO_CLEAN_CACHE=0
 
@@ -131,7 +124,6 @@ function handle_command_line () {
 			export HALCYON_S3_ACL="${s3_acl}";;
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
-
 		'--public-storage')
 			export HALCYON_PUBLIC_STORAGE=1;;
 
@@ -154,6 +146,8 @@ function handle_command_line () {
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
+		'--rebuild-ghc')
+			export HALCYON_REBUILD_GHC=1;;
 
 		'--cabal-version')
 			shift
@@ -167,13 +161,27 @@ function handle_command_line () {
 			export HALCYON_CABAL_REMOTE_REPO="${remote_repo}";;
 		'--cabal-remote-repo='*)
 			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
+		'--rebuild-cabal')
+			export HALCYON_REBUILD_CABAL=1;;
+		'--update-cabal')
+			export HALCYON_UPDATE_CABAL=1;;
 
-		'--sandbox-apps')
+		'--only-env')
+			export HALCYON_ONLY_ENV=1;;
+		'--env-only')
+			export HALCYON_ENV_ONLY=1;;
+
+		'--rebuild-sandbox')
+			export HALCYON_REBUILD_SANDBOX=1;;
+		'--sandbox-extra-apps')
 			shift
-			expect_args sandbox_apps -- "$@"
-			export HALCYON_SANDBOX_APPS="${sandbox_apps}";;
-		'--sandbox-apps='*)
-			export HALCYON_SANDBOX_APPS="${1#*=}";;
+			expect_args sandbox_extra_apps -- "$@"
+			export HALCYON_SANDBOX_EXTRA_APPS="${sandbox_extra_apps}";;
+		'--sandbox-extra-apps='*)
+			export HALCYON_SANDBOX_EXTRA_APPS="${1#*=}";;
+
+		'--rebuild-app')
+			export HALCYON_REBUILD_APP=1;;
 		'--extra-apps')
 			shift
 			expect_args extra_apps -- "$@"
@@ -181,28 +189,11 @@ function handle_command_line () {
 		'--extra-apps='*)
 			export HALCYON_EXTRA_APPS="${1#*=}";;
 
-		'--force-ghc')
-			export HALCYON_FORCE_GHC=1;;
-		'--force-cabal')
-			export HALCYON_FORCE_CABAL=1;;
-		'--force-sandbox')
-			export HALCYON_FORCE_SANDBOX=1;;
-		'--force-app')
-			export HALCYON_FORCE_APP=1;;
-
-		'--update-cabal')
-			export HALCYON_UPDATE_CABAL=1;;
-
-		'--purge-cache')
-			export HALCYON_PURGE_CACHE=1;;
-
-		'--no-sandbox-or-app')
-			export HALCYON_NO_SANDBOX_OR_APP=1;;
-		'--no-app')
-			export HALCYON_NO_APP=1;;
 		'--no-slug-archive')
 			export HALCYON_NO_SLUG_ARCHIVE=1;;
 
+		'--purge-cache')
+			export HALCYON_PURGE_CACHE=1;;
 		'--no-prepare-cache')
 			export HALCYON_NO_PREPARE_CACHE=1;;
 		'--no-clean-cache')

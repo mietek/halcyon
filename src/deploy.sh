@@ -1,13 +1,13 @@
-function deploy_sandbox_apps () {
+function deploy_sandbox_extra_apps () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	log 'Deploying sandbox apps'
+	log 'Deploying sandbox extra apps'
 
 	local sandbox_apps
-	sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-apps" ) ) || die
+	sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 	if ! ( deploy --recursive --target-sandbox "${sandbox_apps[@]}" ) |& quote; then
-		log_warning 'Cannot deploy sandbox apps'
+		log_warning 'Cannot deploy sandbox extra apps'
 		return 1
 	fi
 }
@@ -29,7 +29,7 @@ function deploy_extra_apps () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE HALCYON_ONLY_ENV HALCYON_NO_CLEAN_CACHE
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -39,10 +39,9 @@ function deploy_layers () {
 		prepare_cache || die
 	fi
 
-	if ! (( HALCYON_NO_SANDBOX_OR_APP )) &&
-		! (( HALCYON_NO_APP )) &&
+	if ! (( HALCYON_ONLY_ENV )) &&
 		! (( HALCYON_NO_SLUG_ARCHIVE )) &&
-		! (( HALCYON_FORCE_APP ))
+		! (( HALCYON_REBUILD_APP ))
 	then
 		log
 		if restore_slug "${tag}"; then
@@ -69,7 +68,7 @@ function deploy_layers () {
 		fi
 	fi
 
-	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+	if ! (( HALCYON_ONLY_ENV )); then
 		local saved_sandbox saved_app
 		saved_sandbox=$( get_tmp_dir 'halcyon.saved-sandbox' ) || die
 		saved_app=$( get_tmp_dir 'halcyon.saved-app' ) || die
@@ -79,7 +78,7 @@ function deploy_layers () {
 				mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
 			fi
 
-			if ! (( HALCYON_NO_APP )) && [ -d "${HALCYON_DIR}/app" ]; then
+			if [ -d "${HALCYON_DIR}/app" ]; then
 				mv "${HALCYON_DIR}/app" "${saved_app}" || die
 			fi
 		fi
@@ -87,14 +86,12 @@ function deploy_layers () {
 		log
 		deploy_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
 
-		if ! (( HALCYON_NO_APP )); then
-			log
-			deploy_app_layer "${tag}" "${source_dir}" || return 1
+		log
+		deploy_app_layer "${tag}" "${source_dir}" || return 1
 
-			if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
-				log
-				deploy_extra_apps "${source_dir}" || return 1
-			fi
+		if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
+			log
+			deploy_extra_apps "${source_dir}" || return 1
 		fi
 
 		if (( HALCYON_RECURSIVE )); then
@@ -103,20 +100,18 @@ function deploy_layers () {
 				mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
 			fi
 
-			if ! (( HALCYON_NO_APP )) && [ -d "${saved_app}" ]; then
+			if [ -d "${saved_app}" ]; then
 				rm -rf "${HALCYON_DIR}/app" || die
 				mv "${saved_app}" "${HALCYON_DIR}/app" || die
 			fi
 		fi
 
-		if ! (( HALCYON_NO_APP )); then
-			log
-			build_slug || die
-			if ! (( HALCYON_NO_SLUG_ARCHIVE )); then
-				archive_slug || die
-			fi
-			engage_slug || die
+		log
+		build_slug || die
+		if ! (( HALCYON_NO_SLUG_ARCHIVE )); then
+			archive_slug || die
 		fi
+		engage_slug || die
 	fi
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
@@ -127,7 +122,7 @@ function deploy_layers () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_PUBLIC_STORAGE HALCYON_TARGET_SANDBOX HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_PUBLIC_STORAGE HALCYON_TARGET_SANDBOX HALCYON_ONLY_ENV HALCYON_NO_WARN_IMPLICIT
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
@@ -149,32 +144,30 @@ function deploy_app () {
 
 	local slug_dir source_hash constraints constraint_hash warn_constraints
 	warn_constraints=0
-	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+	if ! (( HALCYON_ONLY_ENV )); then
 		if ! [ -d "${source_dir}" ]; then
 			die 'Expected existing source directory'
 		fi
 
-		if has_vars HALCYON_SANDBOX_APPS; then
+		if has_vars HALCYON_SANDBOX_EXTRA_APPS; then
 			mkdir -p "${source_dir}/.halcyon-magic" || die
-			echo "${HALCYON_SANDBOX_APPS}" >"${source_dir}/.halcyon-magic/sandbox-apps" || die
+			echo "${HALCYON_SANDBOX_EXTRA_APPS}" >"${source_dir}/.halcyon-magic/sandbox-extra-apps" || die
 		fi
-		if ! (( HALCYON_NO_APP )) && has_vars HALCYON_EXTRA_APPS; then
+		if has_vars HALCYON_EXTRA_APPS; then
 			mkdir -p "${source_dir}/.halcyon-magic" || die
 			echo "${HALCYON_EXTRA_APPS}" >"${source_dir}/.halcyon-magic/extra-apps" || die
 		fi
 
 		log_indent 'App label:                               ' "${app_label}"
 
-		if ! (( HALCYON_NO_APP )); then
-			if ! (( HALCYON_TARGET_SANDBOX )); then
-				slug_dir="${HALCYON_DIR}/slug"
-			else
-				slug_dir="${HALCYON_DIR}/sandbox"
-				log_indent 'Target:                                  ' 'sandbox'
-			fi
-			source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
-			log_indent 'Source hash:                             ' "${source_hash:0:7}"
+		if ! (( HALCYON_TARGET_SANDBOX )); then
+			slug_dir="${HALCYON_DIR}/slug"
+		else
+			slug_dir="${HALCYON_DIR}/sandbox"
+			log_indent 'Target:                                  ' 'sandbox'
 		fi
+		source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
+		log_indent 'Source hash:                             ' "${source_hash:0:7}"
 
 		if [ -f "${source_dir}/cabal.config" ]; then
 			if ! constraints=$( detect_constraints "${app_label}" "${source_dir}" ); then
@@ -197,7 +190,7 @@ function deploy_app () {
 	warn_ghc_version=0
 	if has_vars HALCYON_GHC_VERSION; then
 		ghc_version="${HALCYON_GHC_VERSION}"
-	elif ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+	elif ! (( HALCYON_ONLY_ENV )); then
 		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
 	else
 		ghc_version=$( get_default_ghc_version ) || die
@@ -237,27 +230,25 @@ function deploy_app () {
 	fi
 
 	local sandbox_magic_hash app_magic_hash
-	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
+	if ! (( HALCYON_ONLY_ENV )); then
 		sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
 		if [ -n "${sandbox_magic_hash}" ]; then
 			log_indent 'Sandbox magic hash:                      ' "${sandbox_magic_hash:0:7}"
 		fi
-		if [ -f "${source_dir}/.halcyon-magic/sandbox-apps" ]; then
+		if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 			local sandbox_apps
-			sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-apps" ) )
-			log_indent 'Sandbox apps:                            ' "${sandbox_apps[*]:-}"
+			sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) )
+			log_indent 'Sandbox extra apps:                      ' "${sandbox_apps[*]:-}"
 		fi
 
-		if ! (( HALCYON_NO_APP )); then
-			app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
-			if [ -n "${app_magic_hash}" ]; then
-				log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
-			fi
-			if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
-				local extra_apps
-				extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) )
-				log_indent 'Extra apps:                              ' "${extra_apps[*]:-}"
-			fi
+		app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
+		if [ -n "${app_magic_hash}" ]; then
+			log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
+		fi
+		if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
+			local extra_apps
+			extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) )
+			log_indent 'Extra apps:                              ' "${extra_apps[*]:-}"
 		fi
 	fi
 

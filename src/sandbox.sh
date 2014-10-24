@@ -126,8 +126,8 @@ function build_sandbox_layer () {
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-apps" ]; then
-		deploy_sandbox_apps "${source_dir}" || die
+	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
+		deploy_sandbox_extra_apps "${source_dir}" || die
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
@@ -314,17 +314,17 @@ function install_matching_sandbox_layer () {
 
 
 function install_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_FORCE_SANDBOX HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_REBUILD_SANDBOX HALCYON_NO_BUILD
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_SANDBOX )) && restore_sandbox_layer "${tag}"; then
+	if ! (( HALCYON_REBUILD_SANDBOX )) && restore_sandbox_layer "${tag}"; then
 		return 0
 	fi
 
 	local matching_tag
-	if ! (( HALCYON_FORCE_SANDBOX )) &&
+	if ! (( HALCYON_REBUILD_SANDBOX )) &&
 		matching_tag=$( locate_best_matching_sandbox_layer "${tag}" "${constraints}" ) &&
 		install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
 	then
@@ -332,7 +332,7 @@ function install_sandbox_layer () {
 		return 0
 	fi
 
-	if ! (( HALCYON_FORCE_SANDBOX )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_REBUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build sandbox layer'
 		return 1
 	fi
