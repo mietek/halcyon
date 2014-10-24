@@ -488,7 +488,7 @@ function restore_bare_cabal_layer () {
 			! validate_bare_cabal_layer "${tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" || die
-			log_warning 'Cannot extract bare Cabal layer archive'
+			log_warning 'Cannot validate bare Cabal layer archive'
 			return 1
 		fi
 	else
@@ -594,7 +594,7 @@ function restore_updated_cabal_layer () {
 		! validate_updated_cabal_layer "${tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" || die
-		log_warning 'Cannot extract updated Cabal layer archive'
+		log_warning 'Cannot validate updated Cabal layer archive'
 		return 1
 	fi
 }

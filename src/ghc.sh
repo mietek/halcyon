@@ -410,7 +410,7 @@ function restore_ghc_layer () {
 			! validate_ghc_layer "${tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" || die
-			log_warning 'Cannot extract GHC layer archive'
+			log_warning 'Cannot validate GHC layer archive'
 			return 1
 		fi
 	else

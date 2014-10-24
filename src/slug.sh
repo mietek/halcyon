@@ -126,7 +126,7 @@ function restore_slug () {
 			! validate_slug "${tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" || die
-			log_warning 'Cannot extract slug archive'
+			log_warning 'Cannot validate slug archive'
 			return 1
 		fi
 	else

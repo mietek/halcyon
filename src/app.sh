@@ -288,7 +288,7 @@ function restore_app_layer () {
 			! validate_recognized_app_layer "${tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" || die
-			log_warning 'Cannot extract app layer archive'
+			log_warning 'Cannot validate app layer archive'
 			return 1
 		fi
 	else

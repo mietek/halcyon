@@ -276,7 +276,7 @@ function restore_sandbox_layer () {
 			! validate_sandbox_layer "${tag}"
 		then
 			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" || die
-			log_warning 'Cannot extract sandbox layer archive'
+			log_warning 'Cannot validate sandbox layer archive'
 			return 1
 		fi
 	else
