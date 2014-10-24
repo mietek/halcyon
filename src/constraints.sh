@@ -114,6 +114,11 @@ function freeze_implicit_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 
+	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
+	# during a dry run.  Hence, if a local constraint conflicts with an installed package, Cabal
+	# will fail to resolve dependencies.
+	# https://github.com/haskell/cabal/issues/2178
+
 	cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run |
 		read_dry_frozen_constraints |
 		filter_correct_constraints "${app_label}" || die
