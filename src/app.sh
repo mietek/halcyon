@@ -157,7 +157,10 @@ function build_app_layer () {
 
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 
-	log 'Finished building app layer'
+	local layer_size
+	log_begin 'Measuring app layer...'
+	layer_size=$( measure_recursively "${HALCYON_DIR}/app" ) || die
+	log_end "${layer_size}"
 }
 
 
