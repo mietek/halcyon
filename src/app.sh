@@ -381,7 +381,8 @@ function install_app_layer () {
 			return 0
 		fi
 
-		# NOTE: HALCYON_NO_BUILD is ignored here.
+		# NOTE: HALCYON_NO_BUILD is ignored here.  If even an incremental app build is not
+		# acceptable, set HALCYON_NO_APP=1.
 
 		local must_copy must_configure
 		must_copy=0
