@@ -1,18 +1,3 @@
-function validate_env () {
-	local tag
-	expect_args tag -- "$@"
-
-	if ! validate_ghc_layer "${tag}"; then
-		log_warning 'Cannot validate GHC layer'
-		return 1
-	fi
-	if ! validate_updated_cabal_layer "${tag}"; then
-		log_warning 'Cannot validate updated Cabal layer'
-		return 1
-	fi
-}
-
-
 function save_sandbox_and_app_layers () {
 	local saved_sandbox saved_app
 	expect_args saved_sandbox saved_app -- "$@"
@@ -96,7 +81,8 @@ function deploy_layers () {
 		log
 		deploy_cabal_layer "${tag}" "${source_dir}" || return 1
 	else
-		validate_env "${tag}" || return 1
+		validate_ghc_layer "${tag}" || return 1
+		validate_updated_cabal_layer "${tag}" || return 1
 	fi
 
 	if ! (( HALCYON_ONLY_ENV )); then
@@ -134,71 +120,28 @@ function deploy_layers () {
 }
 
 
-function validate_storage () {
-	if has_private_storage; then
-		log_indent 'Storage:                                 ' "${HALCYON_S3_BUCKET}"
-		if (( HALCYON_PUBLIC_STORAGE )); then
-			log_warning 'Cannot use private and public storage together'
-		fi
-	elif (( HALCYON_PUBLIC_STORAGE )); then
-		log_indent 'Storage:                                 ' 'public'
-	else
-		log_error 'Expected private or public storage'
-		log
-		help_configure_storage
-		log
-		return 1
-	fi
-}
-
-
 function deploy_only_env () {
-	expect_vars HALCYON_NO_WARN_IMPLICIT
-
 	log 'Deploying environment'
 
-	local ghc_version
-	if has_vars HALCYON_GHC_VERSION; then
-		ghc_version="${HALCYON_GHC_VERSION}"
-	else
-		ghc_version=$( get_default_ghc_version ) || die
-	fi
-
-	local cabal_version cabal_repo
-	if has_vars HALCYON_CABAL_VERSION; then
-		cabal_version="${HALCYON_CABAL_VERSION}"
-	else
-		cabal_version=$( get_default_cabal_version ) || die
-	fi
-	if has_vars HALCYON_CABAL_REPO; then
-		cabal_repo="${HALCYON_CABAL_REPO}"
-	else
-		cabal_repo=$( get_default_cabal_repo ) || die
-	fi
-
-	log_indent 'GHC version:                             ' "${ghc_version}"
-	log_indent 'Cabal version:                           ' "${cabal_version}"
-	log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
-
-	validate_storage || return 1
-
 	local tag
-	tag=$(
-		create_tag '' ''                                 \
-			'' ''                                    \
-			"${ghc_version}" ''                      \
-			"${cabal_version}" '' "${cabal_repo}" '' \
-			'' ''
-	) || die
+	tag=$( determine_only_env_tag ) || die
+	describe_only_env_tag "${tag}" || die
+
+	describe_storage || die
 
 	HALCYON_ONLY_ENV=1 \
 		deploy_layers "${tag}" '' '/dev/null' || return 1
 }
 
 
-function prepare_magic () {
-	local source_dir
-	expect_args source_dir -- "$@"
+function deploy_app () {
+	expect_vars HALCYON_NO_WARN_IMPLICIT
+
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+	expect_existing "${source_dir}"
+
+	log 'Deploying app:                           ' "${app_label}"
 
 	if has_vars HALCYON_SANDBOX_EXTRA_APPS; then
 		mkdir -p "${source_dir}/.halcyon-magic" || die
@@ -208,88 +151,28 @@ function prepare_magic () {
 		mkdir -p "${source_dir}/.halcyon-magic" || die
 		echo "${HALCYON_EXTRA_APPS}" >"${source_dir}/.halcyon-magic/extra-apps" || die
 	fi
-}
 
-
-function deploy_app () {
-	expect_vars HALCYON_TARGET HALCYON_NO_WARN_IMPLICIT
-
-	local app_label source_dir
-	expect_args app_label source_dir -- "$@"
-	expect_existing "${source_dir}"
-
-	log 'Deploying app:                           ' "${app_label}"
-
-	local source_hash constraints constraints_hash warn_constraints
-	warn_constraints=0
-	source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
+	local constraints warn_constraints
 	if [ -f "${source_dir}/cabal.config" ]; then
 		if ! constraints=$( detect_constraints "${app_label}" "${source_dir}" ); then
-			log_warning 'Cannot detect constraints'
-			return 1
+			die 'Cannot determine explicit constraints'
 		fi
+		warn_constraints=0
 	else
-		constraints=$( freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
+		if ! constraints=$( freeze_implicit_constraints "${app_label}" "${source_dir}" ); then
+			die 'Cannot determine implicit constraints'
+		fi
 		warn_constraints=1
 	fi
-	constraint_hash=$( hash_constraints "${constraints}" ) || die
 
-	local ghc_version ghc_magic_hash
-	if has_vars HALCYON_GHC_VERSION; then
-		ghc_version="${HALCYON_GHC_VERSION}"
-	else
-		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
-	fi
-	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+	local tag
+	tag=$( determine_full_tag "${app_label}" "${constraints}" "${source_dir}" ) || die
+	describe_full_tag "${tag}" || die
 
-	local cabal_version cabal_magic_hash cabal_repo
-	if has_vars HALCYON_CABAL_VERSION; then
-		cabal_version="${HALCYON_CABAL_VERSION}"
-	else
-		cabal_version=$( get_default_cabal_version ) || die
-	fi
-	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-	if has_vars HALCYON_CABAL_REPO; then
-		cabal_repo="${HALCYON_CABAL_REPO}"
-	else
-		cabal_repo=$( get_default_cabal_repo ) || die
-	fi
-
-	local sandbox_magic_hash app_magic_hash
-	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
-	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
-
-	if [ "${HALCYON_TARGET}" != 'slug' ]; then
-		if [ "${HALCYON_TARGET}" != 'sandbox' ]; then
-			die "Unexpected target: ${HALCYON_TARGET}"
-		fi
-		log_indent 'Target:                                  ' 'sandbox'
-	fi
-	log_indent 'Source hash:                             ' "${source_hash:0:7}"
-	log_indent 'Constraint hash:                         ' "${constraint_hash:0:7}"
-
-	if ! (( HALCYON_RECURSIVE )); then
-		log_indent 'GHC version:                             ' "${ghc_version}"
-		if [ -n "${ghc_magic_hash}" ]; then
-			log_indent 'GHC magic hash:                          ' "${ghc_magic_hash:0:7}"
-		fi
-		log_indent 'Cabal version:                           ' "${cabal_version}"
-		if [ -n "${cabal_magic_hash}" ]; then
-			log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
-		fi
-		log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
-	fi
-
-	if [ -n "${sandbox_magic_hash}" ]; then
-		log_indent 'Sandbox magic hash:                      ' "${sandbox_magic_hash:0:7}"
-	fi
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 		local sandbox_apps
 		sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) )
 		log_indent 'Sandbox extra apps:                      ' "${sandbox_apps[*]:-}"
-	fi
-	if [ -n "${app_magic_hash}" ]; then
-		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
 	fi
 	if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
 		local extra_apps
@@ -297,7 +180,7 @@ function deploy_app () {
 		log_indent 'Extra apps:                              ' "${extra_apps[*]:-}"
 	fi
 
-	validate_storage || return 1
+	describe_storage || die
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )) && (( warn_constraints )); then
 		log_warning 'Using implicit constraints'
@@ -307,16 +190,7 @@ function deploy_app () {
 		log
 	fi
 
-	local tag
-	tag=$(
-		create_tag "${app_label}" "${HALCYON_TARGET}"                       \
-			"${source_hash}" "${constraint_hash}"                       \
-			"${ghc_version}" "${ghc_magic_hash}"                        \
-			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
-			"${sandbox_magic_hash}" "${app_magic_hash}"
-	) || die
-
-	deploy_layers "${tag}" "${constraints:-}" "${source_dir}" || return 1
+	deploy_layers "${tag}" "${constraints}" "${source_dir}" || return 1
 }
 
 

@@ -3,6 +3,15 @@ function has_private_storage () {
 }
 
 
+function describe_storage () {
+	if has_private_storage; then
+		log_indent 'Storage:                                 ' "${HALCYON_S3_BUCKET}"
+	else
+		log_indent 'Storage:                                 ' 'public'
+	fi
+}
+
+
 function format_public_storage_url () {
 	local object
 	expect_args object -- "$@"

@@ -24,10 +24,26 @@ source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
 function halcyon_deploy () {
-	expect_vars HALCYON_ONLY_ENV
+	expect_vars HALCYON_PUBLIC_STORAGE HALCYON_TARGET HALCYON_ONLY_ENV
 
 	export -a HALCYON_INTERNAL_ARGS
 	handle_command_line "$@" || die
+
+	if has_private_storage; then
+		if (( HALCYON_PUBLIC_STORAGE )); then
+			die 'Cannot use both private and public storage'
+		fi
+	elif ! (( HALCYON_PUBLIC_STORAGE )); then
+		log_error 'Expected private or public storage'
+		log
+		help_configure_storage
+		log
+		die
+	fi
+
+	if [ "${HALCYON_TARGET}" != 'slug' ] && [ "${HALCYON_TARGET}" != 'sandbox' ]; then
+		die "Unexpected target: ${HALCYON_TARGET}"
+	fi
 
 	if (( HALCYON_ONLY_ENV )); then
 		deploy_only_env || return 1
