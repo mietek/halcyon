@@ -80,7 +80,6 @@ function set_halcyon_vars () {
 
 
 function handle_command_line () {
-	local -a things
 	while (( $# )); do
 		case "$1" in
 		# Paths:
@@ -220,10 +219,8 @@ function handle_command_line () {
 			die "Unexpected option: $1";;
 
 		*)
-			things+=( "$1" )
+			HALCYON_INTERNAL_ARGS+=( "$1" )
 		esac
 		shift
 	done
-
-	( IFS=$'\n' && echo -n "${things[*]:-}" )
 }

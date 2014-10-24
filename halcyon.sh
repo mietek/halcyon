@@ -247,17 +247,17 @@ function deploy_thing () {
 
 
 function halcyon_deploy () {
-	local -a things
-	things=( $( handle_command_line "$@" ) ) || die
+	export -a HALCYON_INTERNAL_ARGS
+	handle_command_line "$@" || die
 
-	if [ -z "${things[@]:+_}" ]; then
+	if [ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]; then
 		deploy_local_app '.' || return 1
-	elif (( ${#things[@]} == 1 )); then
-		deploy_thing "${things[0]}" || return 1
+	elif (( ${#HALCYON_INTERNAL_ARGS[@]} == 1 )); then
+		deploy_thing "${HALCYON_INTERNAL_ARGS[0]}" || return 1
 	else
 		local index
 		index=0
-		for thing in "${things[@]}"; do
+		for thing in "${HALCYON_INTERNAL_ARGS[@]}"; do
 			index=$(( index + 1 ))
 			if (( index == 1 )); then
 				HALCYON_NO_CLEAN_CACHE=1 \
@@ -265,7 +265,7 @@ function halcyon_deploy () {
 			else
 				log
 				log
-				if (( index == ${#things[@]} )); then
+				if (( index == ${#HALCYON_INTERNAL_ARGS[@]} )); then
 					HALCYON_NO_PREPARE_CACHE=1 \
 						deploy_thing "${thing}" || return 1
 				else
