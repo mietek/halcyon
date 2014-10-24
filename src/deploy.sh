@@ -112,10 +112,25 @@ function deploy_layers () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_PUBLIC HALCYON_TARGET_SANDBOX HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_PUBLIC_STORAGE HALCYON_TARGET_SANDBOX HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
+
+	if has_private_storage; then
+		if (( HALCYON_PUBLIC_STORAGE )); then
+			log_warning 'Cannot use private and public storage together'
+			log_indent 'Storage:                                 ' 'private'
+		fi
+	elif (( HALCYON_PUBLIC_STORAGE )); then
+		log_indent 'Storage:                                 ' 'public'
+	else
+		log_error 'Expected private or public storage'
+		log
+		help_configure_storage
+		log
+		return 1
+	fi
 
 	local slug_dir source_hash constraints constraint_hash
 	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
@@ -218,21 +233,6 @@ function deploy_app () {
 	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
 	if [ -n "${app_magic_hash}" ]; then
 		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
-	fi
-
-	if has_private_storage; then
-		log_indent 'Storage:                                 ' "${HALCYON_S3_BUCKET}"
-		if (( HALCYON_PUBLIC )); then
-			log_warning 'Cannot use both private and public storage'
-		fi
-	elif (( HALCYON_PUBLIC )); then
-		log_indent 'Storage:                                 ' 'public'
-	else
-		log_error 'Expected private or public storage'
-		log
-		help_configure_storage
-		log
-		return 1
 	fi
 
 	local tag

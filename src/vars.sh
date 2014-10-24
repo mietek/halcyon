@@ -9,7 +9,7 @@ function set_halcyon_vars () {
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 
-		export HALCYON_PUBLIC="${HALCYON_PUBLIC:-0}"
+		export HALCYON_PUBLIC_STORAGE="${HALCYON_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET_SANDBOX="${HALCYON_TARGET_SANDBOX:-0}"
@@ -134,8 +134,8 @@ function handle_command_line () {
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
 
-		'--public')
-			export HALCYON_PUBLIC=1;;
+		'--public-storage')
+			export HALCYON_PUBLIC_STORAGE=1;;
 
 		'--recursive')
 			export HALCYON_RECURSIVE=1;;

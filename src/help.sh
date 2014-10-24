@@ -6,7 +6,7 @@ function help_configure_storage () {
 		$ export HALCYON_S3_BUCKET=...
 
 		To use public storage:
-		$ export HALCYON_PUBLIC=1
+		$ export HALCYON_PUBLIC_STORAGE=1
 EOF
 }
 
