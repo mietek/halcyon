@@ -138,7 +138,8 @@ function deploy_app () {
 		return 1
 	fi
 
-	local slug_dir source_hash constraints constraint_hash
+	local slug_dir source_hash constraints constraint_hash warn_constraints
+	warn_constraints=0
 	if ! (( HALCYON_NO_SANDBOX_OR_APP )); then
 		if ! [ -d "${source_dir}" ]; then
 			die 'Expected existing source directory'
@@ -162,14 +163,15 @@ function deploy_app () {
 				slug_dir="${HALCYON_DIR}/sandbox"
 				log_indent 'Target:                                  ' 'sandbox'
 			fi
+			log_indent_begin 'Source hash:                             '
 			source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
-			log_indent 'Source hash:                             ' "${source_hash:0:7}"
+			log_end "${source_hash:0:7}"
 		fi
 
-		local warn_constraints
-		warn_constraints=0
+		log_indent_begin 'Constraint hash:                         '
 		if [ -f "${source_dir}/cabal.config" ]; then
 			if ! constraints=$( detect_constraints "${app_label}" "${source_dir}" ); then
+				log_end '(unknown)'
 				log_warning 'Cannot detect constraints'
 				return 1
 			fi
@@ -178,14 +180,10 @@ function deploy_app () {
 			warn_constraints=1
 		fi
 		constraint_hash=$( hash_constraints "${constraints}" ) || die
-
-		log_indent 'Constraint hash:                         ' "${constraint_hash:0:7}"
+		log_end "${constraint_hash:0:7}"
 		if (( warn_constraints )) && ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
 			log_warning 'Using implicit constraints'
 			log_warning 'Expected cabal.config with explicit constraints'
-			log
-			help_add_explicit_constraints "${constraints}"
-			log
 		fi
 	fi
 
@@ -209,19 +207,22 @@ function deploy_app () {
 		if (( warn_ghc_version )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
 			log_warning 'Using default version of GHC'
 		fi
+	fi
 
-		local cabal_version cabal_magic_hash cabal_repo
-		if has_vars HALCYON_CABAL_VERSION; then
-			cabal_version="${HALCYON_CABAL_VERSION}"
-		else
-			cabal_version=$( get_default_cabal_version ) || die
-		fi
-		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-		if has_vars HALCYON_CABAL_REPO; then
-			cabal_repo="${HALCYON_CABAL_REPO}"
-		else
-			cabal_repo=$( get_default_cabal_repo ) || die
-		fi
+	local cabal_version cabal_magic_hash cabal_repo
+	if has_vars HALCYON_CABAL_VERSION; then
+		cabal_version="${HALCYON_CABAL_VERSION}"
+	else
+		cabal_version=$( get_default_cabal_version ) || die
+	fi
+	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+	if has_vars HALCYON_CABAL_REPO; then
+		cabal_repo="${HALCYON_CABAL_REPO}"
+	else
+		cabal_repo=$( get_default_cabal_repo ) || die
+	fi
+
+	if ! (( HALCYON_RECURSIVE )); then
 		log_indent 'Cabal version:                           ' "${cabal_version}"
 		if [ -n "${cabal_magic_hash}" ]; then
 			log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
@@ -251,6 +252,14 @@ function deploy_app () {
 				extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) )
 				log_indent 'Extra apps:                              ' "${extra_apps[*]:-}"
 			fi
+		fi
+	fi
+
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
+		if (( warn_constraints )); then
+			log
+			help_add_explicit_constraints "${constraints}"
+			log
 		fi
 	fi
 
