@@ -405,6 +405,6 @@ function validate_actual_constraints () {
 	log_warning 'Unexpected constraints difference'
 	log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'
 	log_indent "--- ${constraint_hash:0:7}/cabal.config"
-	log_indent "+++ ${actual_constraint_hash:0:7}/cabal.config"
+	log_indent "+++ ${actual_hash:0:7}/cabal.config"
 	diff -u <( echo "${constraints}" ) <( echo "${actual_constraints}" ) | tail -n +3 |& quote || true
 }
