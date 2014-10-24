@@ -11,7 +11,7 @@ function create_app_tag () {
 	create_tag "${app_label}" "${target}"         \
 		"${source_hash}" "${constraint_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}"  \
-		'' '' '' ''
+		'' '' '' ''                           \
 		"${sandbox_magic_hash}" "${app_magic_hash}" || die
 }
 

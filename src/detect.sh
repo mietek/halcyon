@@ -51,6 +51,21 @@ function detect_app_version () {
 }
 
 
+function detect_app_label () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local app_name app_version
+	if ! app_name=$( detect_app_name "${source_dir}" ) ||
+		! app_version=$( detect_app_version "${source_dir}" )
+	then
+		return 1
+	fi
+
+	echo "${app_name}-${app_label}"
+}
+
+
 function detect_app_executable () {
 	local source_dir
 	expect_args source_dir -- "$@"
