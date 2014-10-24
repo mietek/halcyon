@@ -6,10 +6,6 @@ function deploy_sandbox_apps () {
 
 	local sandbox_apps sandbox_app
 	sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-apps" ) ) || die
-	for sandbox_app in "${sandbox_apps[@]}"; do
-		log_indent "${sandbox_app}"
-	done
-
 	if ! ( deploy --recursive --target-sandbox "${sandbox_apps[@]}" ) |& quote; then
 		log_warning 'Cannot deploy sandbox apps'
 		return 1
@@ -25,10 +21,6 @@ function deploy_extra_apps () {
 
 	local extra_apps extra_app
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
-	for extra_app in "${extra_apps[@]}"; do
-		log_indent "${extra_app}"
-	done
-
 	if ! ( deploy --recursive "${sandbox_apps[@]}" ) |& quote; then
 		log_warning 'Cannot deploy extra apps'
 		return 1
@@ -196,25 +188,25 @@ function deploy_app () {
 		if (( warn_ghc_version )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
 			log_warning 'Using default version of GHC'
 		fi
-	fi
 
-	local cabal_version cabal_magic_hash cabal_repo
-	if has_vars HALCYON_CABAL_VERSION; then
-		cabal_version="${HALCYON_CABAL_VERSION}"
-	else
-		cabal_version=$( get_default_cabal_version ) || die
+		local cabal_version cabal_magic_hash cabal_repo
+		if has_vars HALCYON_CABAL_VERSION; then
+			cabal_version="${HALCYON_CABAL_VERSION}"
+		else
+			cabal_version=$( get_default_cabal_version ) || die
+		fi
+		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+		if has_vars HALCYON_CABAL_REPO; then
+			cabal_repo="${HALCYON_CABAL_REPO}"
+		else
+			cabal_repo=$( get_default_cabal_repo ) || die
+		fi
+		log_indent 'Cabal version:                           ' "${cabal_version}"
+		if [ -n "${cabal_magic_hash}" ]; then
+			log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
+		fi
+		log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
 	fi
-	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-	if has_vars HALCYON_CABAL_REPO; then
-		cabal_repo="${HALCYON_CABAL_REPO}"
-	else
-		cabal_repo=$( get_default_cabal_repo ) || die
-	fi
-	log_indent 'Cabal version:                           ' "${cabal_version}"
-	if [ -n "${cabal_magic_hash}" ]; then
-		log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
-	fi
-	log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die

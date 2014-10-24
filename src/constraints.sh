@@ -35,15 +35,38 @@ function format_constraints () {
 }
 
 
+function format_constraint_file_id () {
+	local tag
+	expect_args tag -- "$@"
+
+	local constraint_hash
+	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+
+	echo "${constraint_hash:0:7}"
+}
+
+
+function format_constraint_file_description () {
+	local tag
+	expect_args tag -- "$@"
+
+	local app_label file_id
+	app_label=$( get_tag_app_label "${tag}" ) || die
+	file_id=$( format_constraint_file_id "${tag}" ) || die
+
+	echo "${app_label}, ${file_id}"
+}
+
+
 function format_constraint_file_name () {
 	local tag
 	expect_args tag -- "$@"
 
-	local app_label constraint_hash
+	local app_label file_id
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	file_id=$( format_constraint_file_id "${tag}" ) || die
 
-	echo "halcyon-constraints-${constraint_hash:0:7}-${app_label}.config"
+	echo "halcyon-constraints-${file_id}-${app_label}.config"
 }
 
 
@@ -312,7 +335,7 @@ function select_best_partial_sandbox_layer () {
 
 		local partial_constraints description
 		partial_constraints=$( read_constraints <"${HALCYON_CACHE_DIR}/${partial_name}" ) || die
-		description=$( format_sandbox_description "${partial_tag}" ) || die
+		description=$( format_constraint_file_description "${partial_tag}" ) || die
 
 		local score partial_package partial_version
 		score=0
