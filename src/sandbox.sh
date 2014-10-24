@@ -336,17 +336,17 @@ function install_matching_sandbox_layer () {
 
 
 function install_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_REBUILD_SANDBOX HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_NO_RESTORE_SANDBOX HALCYON_NO_BUILD
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	if ! (( HALCYON_REBUILD_SANDBOX )) && restore_sandbox_layer "${tag}"; then
+	if ! (( HALCYON_NO_RESTORE_SANDBOX )) && restore_sandbox_layer "${tag}"; then
 		return 0
 	fi
 
 	local matching_tag
-	if ! (( HALCYON_REBUILD_SANDBOX )) &&
+	if ! (( HALCYON_NO_RESTORE_SANDBOX )) &&
 		matching_tag=$( locate_best_matching_sandbox_layer "${tag}" "${constraints}" ) &&
 		install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
 	then
@@ -354,7 +354,7 @@ function install_sandbox_layer () {
 		return 0
 	fi
 
-	if ! (( HALCYON_REBUILD_SANDBOX )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_NO_RESTORE_SANDBOX )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build sandbox layer'
 		return 1
 	fi

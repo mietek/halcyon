@@ -153,7 +153,7 @@ function deploy_layers () {
 		prepare_cache || die
 	fi
 
-	if ! (( HALCYON_ONLY_ENV )) && ! (( HALCYON_REBUILD_APP )) && ! (( HALCYON_NO_SLUG_ARCHIVE ));  then
+	if ! (( HALCYON_ONLY_ENV )) && ! (( HALCYON_NO_RESTORE_APP )) && ! (( HALCYON_NO_SLUG_ARCHIVE ));  then
 		log
 		if restore_slug "${tag}"; then
 			install_slug || die

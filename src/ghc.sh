@@ -430,16 +430,16 @@ function restore_ghc_layer () {
 
 
 function install_ghc_layer () {
-	expect_vars HALCYON_DIR HALCYON_REBUILD_GHC HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_NO_RESTORE_GHC HALCYON_NO_BUILD
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_REBUILD_GHC )) && restore_ghc_layer "${tag}"; then
+	if ! (( HALCYON_NO_RESTORE_GHC )) && restore_ghc_layer "${tag}"; then
 		return 0
 	fi
 
-	if ! (( HALCYON_REBUILD_GHC )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_NO_RESTORE_GHC )) && (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build GHC layer'
 		return 1
 	fi

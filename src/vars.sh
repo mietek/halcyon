@@ -22,19 +22,19 @@ function set_halcyon_vars () {
 		export HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET=1
 
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
-		export HALCYON_REBUILD_GHC="${HALCYON_REBUILD_GHC:-0}"
+		export HALCYON_NO_RESTORE_GHC="${HALCYON_NO_RESTORE_GHC:-0}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
 		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-}"
-		export HALCYON_REBUILD_CABAL="${HALCYON_REBUILD_CABAL:-0}"
 		export HALCYON_UPDATE_CABAL="${HALCYON_UPDATE_CABAL:-0}"
+		export HALCYON_NO_RESTORE_CABAL="${HALCYON_NO_RESTORE_CABAL:-0}"
 
 		export HALCYON_ONLY_ENV="${HALCYON_ONLY_ENV:-0}"
 
-		export HALCYON_REBUILD_SANDBOX="${HALCYON_REBUILD_SANDBOX:-0}"
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
+		export HALCYON_NO_RESTORE_SANDBOX="${HALCYON_NO_RESTORE_SANDBOX:-0}"
 
-		export HALCYON_REBUILD_APP="${HALCYON_REBUILD_APP:-0}"
+		export HALCYON_NO_RESTORE_APP="${HALCYON_NO_RESTORE_APP:-0}"
 
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_NO_SLUG_ARCHIVE="${HALCYON_NO_SLUG_ARCHIVE:-0}"
@@ -46,18 +46,20 @@ function set_halcyon_vars () {
 		export HALCYON_NO_WARN_IMPLICIT="${HALCYON_NO_WARN_IMPLICIT:-0}"
 	else
 		export HALCYON_GHC_VERSION=
-		export HALCYON_REBUILD_GHC=0
+		export HALCYON_NO_RESTORE_GHC=0
 
 		export HALCYON_CABAL_VERSION=
 		export HALCYON_CABAL_REMOTE_REPO=
-		export HALCYON_REBUILD_CABAL=0
 		export HALCYON_UPDATE_CABAL=0
+		export HALCYON_NO_RESTORE_CABAL=0
 
 		export HALCYON_ONLY_ENV=0
 
-		export HALCYON_REBUILD_SANDBOX=0
 		export HALCYON_SANDBOX_EXTRA_APPS=
-		export HALCYON_REBUILD_APP=0
+		export HALCYON_NO_RESTORE_SANDBOX=0
+
+		export HALCYON_NO_RESTORE_APP=0
+
 		export HALCYON_EXTRA_APPS=
 		export HALCYON_NO_SLUG_ARCHIVE=0
 
@@ -150,8 +152,8 @@ function handle_command_line () {
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
-		'--rebuild-ghc')
-			export HALCYON_REBUILD_GHC=1;;
+		'--no-restore-ghc')
+			export HALCYON_NO_RESTORE_GHC=1;;
 
 		'--cabal-version')
 			shift
@@ -165,33 +167,33 @@ function handle_command_line () {
 			export HALCYON_CABAL_REMOTE_REPO="${remote_repo}";;
 		'--cabal-remote-repo='*)
 			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
-		'--rebuild-cabal')
-			export HALCYON_REBUILD_CABAL=1;;
 		'--update-cabal')
 			export HALCYON_UPDATE_CABAL=1;;
+		'--no-restore-cabal')
+			export HALCYON_NO_RESTORE_CABAL=1;;
 
 		'--only-env')
 			export HALCYON_ONLY_ENV=1;;
 		'--env-only')
 			export HALCYON_ENV_ONLY=1;;
 
-		'--rebuild-sandbox')
-			export HALCYON_REBUILD_SANDBOX=1;;
 		'--sandbox-extra-apps')
 			shift
 			expect_args sandbox_extra_apps -- "$@"
 			export HALCYON_SANDBOX_EXTRA_APPS="${sandbox_extra_apps}";;
 		'--sandbox-extra-apps='*)
 			export HALCYON_SANDBOX_EXTRA_APPS="${1#*=}";;
+		'--no-restore-sandbox')
+			export HALCYON_NO_RESTORE_SANDBOX=1;;
 
-		'--rebuild-app')
-			export HALCYON_REBUILD_APP=1;;
 		'--extra-apps')
 			shift
 			expect_args extra_apps -- "$@"
 			export HALCYON_EXTRA_APPS="${extra_apps}";;
 		'--extra-apps='*)
 			export HALCYON_EXTRA_APPS="${1#*=}";;
+		'--no-restore-app')
+			export HALCYON_NO_RESTORE_APP=1;;
 
 		'--no-slug-archive')
 			export HALCYON_NO_SLUG_ARCHIVE=1;;
