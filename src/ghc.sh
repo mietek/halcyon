@@ -82,10 +82,10 @@ function create_ghc_tag () {
 	local ghc_version ghc_magic_hash
 	expect_args ghc_version ghc_magic_hash -- "$@"
 
-	create_tag '' '' '' '' \
+	create_tag '' '' '' ''                       \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' '' \
-		'' \
+		'' '' '' ''                          \
+		''                                   \
 		'' || die
 }
 
@@ -163,59 +163,59 @@ function prepare_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os os_description ghc_version libgmp_dst_name libgmp_src_file libtinfo_src_file original_url
+	local os os_description ghc_version libgmp_name libgmp_file libtinfo_file url
 	os=$( get_tag_os "${tag}" ) || die
 	description=$( format_os_description "${os}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
 	case "${os}-ghc-${ghc_version}" in
 	'linux-ubuntu-14.04-x86_64-ghc-7.8.'*)
-		libgmp_src_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_dst_name='libgmp.so.10'
-		original_url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
+		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp_name='libgmp.so.10'
+		url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-14.04-x86_64-ghc-7.6.'*)
-		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured binary distribution
-		# of GHC 7.6.*. However, GHC does not use the `mpn_bdivmod` function, which is the only difference
-		# between the ABI of .3 and .10. Hence, .10 is symlinked to .3, and the .3-flavoured binary
-		# distribution is used.
+		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured
+		# binary distribution of GHC 7.6.*. However, GHC does not use the `mpn_bdivmod`
+		# function, which is the only difference between the ABI of .3 and .10. Hence, .10 is
+		# symlinked to .3, and the .3-flavoured binary distribution is used.
 
-		libgmp_src_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_dst_name='libgmp.so.3'
-		original_url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
+		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp_name='libgmp.so.3'
+		url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-7.8.'*)
-		libgmp_src_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_dst_name='libgmp.so.10'
-		original_url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
+		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp_name='libgmp.so.10'
+		url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-7.6.'*)
-		libgmp_src_file='/usr/lib/libgmp.so.3'
-		libtinfo_src_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_dst_name='libgmp.so.3'
-		original_url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		libgmp_file='/usr/lib/libgmp.so.3'
+		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		libgmp_name='libgmp.so.3'
+		url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-10.04-x86_64-ghc-7.'[68]'.'*)
-		libgmp_src_file='/usr/lib/libgmp.so.3'
-		libtinfo_src_file='/lib/libncurses.so.5'
-		libgmp_dst_name='libgmp.so.3'
-		original_url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		libgmp_file='/usr/lib/libgmp.so.3'
+		libtinfo_file='/lib/libncurses.so.5'
+		libgmp_name='libgmp.so.3'
+		url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	*)
 		die "Unexpected GHC and OS combination: ${ghc_version} and ${description}"
 	esac
-	expect_existing "${libgmp_src_file}" "${libtinfo_src_file}"
+	expect_existing "${libgmp_file}" "${libtinfo_file}"
 
 	mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-	ln -s "${libtinfo_src_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
-	ln -s "${libtinfo_src_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so" || die
-	ln -s "${libgmp_src_file}" "${HALCYON_DIR}/ghc/lib/${libgmp_dst_name}" || die
-	ln -s "${libgmp_src_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
+	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
+	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so" || die
+	ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/${libgmp_name}" || die
+	ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
 
-	echo "${original_url}"
+	echo "${url}"
 }
 
 
@@ -271,8 +271,9 @@ function build_ghc_layer () {
 	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
 	local layer_size
+	log_begin 'Measuring GHC layer...'
 	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log "Finished building GHC layer... ${layer_size}"
+	log_end "${layer_size}"
 
 	rm -rf "${build_dir}" || die
 }
@@ -286,7 +287,7 @@ function strip_ghc_layer () {
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_version=$( get_tag_ghc_version "${ghc_tag}" ) || die
 
-	log_begin "Stripping GHC layer..."
+	log_begin 'Stripping GHC layer...'
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -387,6 +388,7 @@ function restore_ghc_layer () {
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}"; then
+		log 'Using existing GHC layer'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
 	fi

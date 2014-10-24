@@ -195,7 +195,7 @@ function deploy_app () {
 			log_indent 'GHC magic hash:                          ' "${ghc_magic_hash:0:7}"
 		fi
 		if (( warn_ghc_version )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
-			log_warning 'Using implicit version of GHC'
+			log_warning 'Using default version of GHC'
 		fi
 	fi
 
@@ -211,14 +211,11 @@ function deploy_app () {
 	else
 		cabal_repo=$( get_default_cabal_repo ) || die
 	fi
-
-	if ! (( HALCYON_RECURSIVE )); then
-		log_indent 'Cabal version:                           ' "${cabal_version}"
-		if [ -n "${cabal_magic_hash}" ]; then
-			log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
-		fi
-		log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
+	log_indent 'Cabal version:                           ' "${cabal_version}"
+	if [ -n "${cabal_magic_hash}" ]; then
+		log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
 	fi
+	log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
@@ -232,29 +229,27 @@ function deploy_app () {
 		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
 	fi
 
-	if ! (( HALCYON_RECURSIVE )); then
-		if has_private_storage; then
-			log_indent 'Storage:                                 ' "${HALCYON_S3_BUCKET}"
-			if (( HALCYON_PUBLIC )); then
-				log_warning 'Cannot use both private and public storage'
-			fi
-		elif (( HALCYON_PUBLIC )); then
-			log_indent 'Storage:                                 ' 'public'
-		else
-			log_error 'Expected private or public storage'
-			log
-			help_configure_storage
-			log
-			return 1
+	if has_private_storage; then
+		log_indent 'Storage:                                 ' "${HALCYON_S3_BUCKET}"
+		if (( HALCYON_PUBLIC )); then
+			log_warning 'Cannot use both private and public storage'
 		fi
+	elif (( HALCYON_PUBLIC )); then
+		log_indent 'Storage:                                 ' 'public'
+	else
+		log_error 'Expected private or public storage'
+		log
+		help_configure_storage
+		log
+		return 1
 	fi
 
 	local tag
 	tag=$(
 		create_tag "${app_label}" "${slug_dir:-}" "${source_hash:-}" "${constraint_hash:-}" \
-			"${ghc_version:-}" "${ghc_magic_hash:-}" \
-			"${cabal_version:-}" "${cabal_magic_hash:-}" "${cabal_repo:-}" '' \
-			"${sandbox_magic_hash:-}" \
+			"${ghc_version:-}" "${ghc_magic_hash:-}"                                    \
+			"${cabal_version:-}" "${cabal_magic_hash:-}" "${cabal_repo:-}" ''           \
+			"${sandbox_magic_hash:-}"                                                   \
 			"${app_magic_hash:-}"
 	) || die
 

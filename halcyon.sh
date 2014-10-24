@@ -102,14 +102,26 @@ function deploy_base_package () {
 	local thing
 	expect_args thing -- "$@"
 
-	log 'Deploying base package'
+	local no_prepare_cache
+	no_prepare_cache=0
+	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
+		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]
+	then
+		log 'Deploying default environment'
 
-	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] || ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
-		if ! HALCYON_NO_SANDBOX_OR_APP=1 HALCYON_NO_CLEAN_CACHE=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app '' '/dev/null'; then
-			log_warning 'Cannot deploy GHC and Cabal for base package'
+		if ! HALCYON_NO_SANDBOX_OR_APP=1   \
+			HALCYON_NO_CLEAN_CACHE=1   \
+			HALCYON_NO_WARN_IMPLICIT=1 \
+				deploy_app '' '/dev/null'
+		then
+			log_warning 'Cannot deploy default environment'
 			return 1
 		fi
+		log
+		no_prepare_cache=1
 	fi
+
+	log 'Deploying base package'
 
 	local base_version
 	if [ "${thing}" = 'base' ]; then
@@ -117,8 +129,10 @@ function deploy_base_package () {
 			log_warning 'Cannot detect base package version'
 			return 1
 		fi
-		log_warning 'Using implicit base package version'
-		log_warning 'Expected base package name with explicit version'
+		if ! (( HALCYON_NO_WARN_IMPLICIT )); then
+			log_warning 'Using implicit base package version'
+			log_warning 'Expected app label with explicit version'
+		fi
 	else
 		base_version="${thing#base-}"
 	fi
@@ -129,8 +143,11 @@ function deploy_base_package () {
 	mkdir -p "${source_dir}" || die
 	format_fake_base_package "${base_version}" >"${source_dir}/halcyon-fake-base.cabal" || die
 
-	log
-	if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_APP=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app "base-${base_version}" "${source_dir}"; then
+	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
+		HALCYON_NO_APP=1                            \
+		HALCYON_NO_WARN_IMPLICIT=1                  \
+			deploy_app "base-${base_version}" "${source_dir}"
+	then
 		log_warning 'Cannot deploy base package'
 		return 1
 	fi
@@ -145,26 +162,38 @@ function deploy_published_app () {
 	local thing
 	expect_args thing -- "$@"
 
-	log "Deploying published app"
+	local no_prepare_cache
+	no_prepare_cache=0
+	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] ||
+		! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]
+	then
+		log 'Deploying default environment'
 
-	if ! [ -f "${HALCYON_DIR}/ghc/.halcyon-tag" ] || ! [ -f "${HALCYON_DIR}/cabal/.halcyon-tag" ]; then
-		if ! HALCYON_NO_SANDBOX_OR_APP=1 HALCYON_NO_CLEAN_CACHE=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app '' '/dev/null'; then
-			log_warning 'Cannot deploy GHC and Cabal for published app'
+		if ! HALCYON_NO_SANDBOX_OR_APP=1   \
+			HALCYON_NO_CLEAN_CACHE=1   \
+			HALCYON_NO_WARN_IMPLICIT=1 \
+				deploy_app '' '/dev/null'
+		then
+			log_warning 'Cannot deploy default environment'
 			return 1
 		fi
+		log
+		no_prepare_cache=1
 	fi
 
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
+
+	log 'Deploying published app'
 
 	mkdir -p "${source_dir}" || die
 
 	local app_label
 	if ! app_label=$(
 		cabal_do "${source_dir}" unpack "${thing}" 2>'/dev/null' |
-			filter_last |
-			match_exactly_one |
-			sed 's:^Unpacking to \(.*\)/$:\1:'
+		filter_last |
+		match_exactly_one |
+		sed 's:^Unpacking to \(.*\)/$:\1:'
 	); then
 		log_warning 'Cannot locate published app'
 		return 1
@@ -173,13 +202,14 @@ function deploy_published_app () {
 	local app_name app_version
 	app_name="${app_label%-*}"
 	app_version="${app_label##*-}"
-	if [ "${thing}" = "${app_name}" ]; then
+	if [ "${thing}" = "${app_name}" ] && ! (( HALCYON_NO_WARN_IMPLICIT )); then
 		log_warning "Using newest available version of ${app_name}"
 		log_warning 'Expected app label with explicit version'
 	fi
 
-	log
-	if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_WARN_IMPLICIT=1 deploy_app "${app_label}" "${source_dir}/${app_label}"; then
+	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
+		deploy_app "${app_label}" "${source_dir}/${app_label}"
+	then
 		log_warning 'Cannot deploy published app'
 		return 1
 	fi
@@ -195,9 +225,7 @@ function deploy_thing () {
 	case "${thing}" in
 	'base');&
 	'base-'[0-9]*)
-		if ! deploy_base_package "${thing}"; then
-			return 1
-		fi
+		deploy_base_package "${thing}" || return 1
 		;;
 	'https://'*);&
 	'ssh://'*);&
@@ -205,19 +233,13 @@ function deploy_thing () {
 	'file://'*);&
 	'http://'*);&
 	'git://'*)
-		if ! deploy_cloned_app "${thing}"; then
-			return 1
-		fi
+		deploy_cloned_app "${thing}" || return 1
 		;;
 	*)
 		if [ -d "${thing}" ]; then
-			if ! deploy_local_app "${thing%/}"; then
-				return 1
-			fi
+			deploy_local_app "${thing%/}" || return 1
 		else
-			if ! deploy_published_app "${thing}"; then
-				return 1
-			fi
+			deploy_published_app "${thing}" || return 1
 		fi
 	esac
 }
@@ -228,34 +250,27 @@ function halcyon_deploy () {
 	things=( $( handle_command_line "$@" ) ) || die
 
 	if [ -z "${things[@]:+_}" ]; then
-		if ! deploy_local_app '.'; then
-			return 1
-		fi
+		deploy_local_app '.' || return 1
 	elif (( ${#things[@]} == 1 )); then
-		if ! deploy_thing "${things[0]}"; then
-			return 1
-		fi
+		deploy_thing "${things[0]}" || return 1
 	else
 		local index
 		index=0
 		for thing in "${things[@]}"; do
 			index=$(( index + 1 ))
 			if (( index == 1 )); then
-				if ! HALCYON_NO_CLEAN_CACHE=1 deploy_thing "${thing}"; then
-					return 1
-				fi
+				HALCYON_NO_CLEAN_CACHE=1 \
+					deploy_thing "${thing}" || return 1
 			else
 				log
 				log
 				if (( index == ${#things[@]} )); then
-					if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 deploy_thing "${thing}"; then
-						return 1
-					fi
+					HALCYON_NO_PREPARE_CACHE=1 \
+						deploy_thing "${thing}" || return 1
 				else
-					if ! HALCYON_NO_PREPARE_CACHE=1 HALCYON_NO_GHC=1 HALCYON_NO_CABAL=1 HALCYON_NO_CLEAN_CACHE=1 deploy_thing "${thing}"
-					then
-						return 1
-					fi
+					HALCYON_NO_PREPARE_CACHE=1 \
+					HALCYON_NO_CLEAN_CACHE=1   \
+						deploy_thing "${thing}" || return 1
 				fi
 			fi
 		done

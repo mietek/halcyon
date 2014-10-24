@@ -7,9 +7,11 @@ function prepare_cache () {
 		rm -rf "${HALCYON_CACHE_DIR}"
 	fi
 
-	log 'Examining cache'
+	log 'Preparing cache'
 
 	mkdir -p "${HALCYON_CACHE_DIR}" || die
+
+	log 'Examining cache contents'
 
 	local files
 	if files=$(
@@ -22,7 +24,7 @@ function prepare_cache () {
 
 		quote <<<"${files}"
 	else
-		log_indent '(empty)'
+		log_indent '(none)'
 	fi
 
 	touch "${HALCYON_CACHE_DIR}/.halcyon-mark" || die

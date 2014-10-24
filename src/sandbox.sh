@@ -1,15 +1,15 @@
 function create_sandbox_tag () {
-	local app_label constraint_hash \
-		ghc_version ghc_magic_hash \
+	local app_label constraint_hash       \
+		ghc_version ghc_magic_hash    \
 		sandbox_magic_hash
 	expect_args app_label constraint_hash \
-		ghc_version ghc_magic_hash \
+		ghc_version ghc_magic_hash    \
 		sandbox_magic_hash -- "$@"
 
 	create_tag "${app_label}" '' '' "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' '' \
-		"${sandbox_magic_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"         \
+		'' '' '' ''                                  \
+		"${sandbox_magic_hash}"                      \
 		'' || die
 }
 
@@ -62,7 +62,7 @@ function format_sandbox_description () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	sandbox_id=$( format_sandbox_id "${tag}" ) || die
 
-	echo "${sandbox_id} (${app_label})"
+	echo "${app_label}, ${sandbox_id}"
 }
 
 
@@ -97,7 +97,7 @@ function copy_sandbox_magic () {
 	fi
 
 	mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
-	find_spaceless_recursively "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' \) |
+	find_spaceless_recursively "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*'
 		while read -r file; do
 			cp -p "${source_dir}/.halcyon-magic/${file}" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 		done
@@ -137,12 +137,12 @@ function build_sandbox_layer () {
 
 	log 'Building sandbox'
 
-	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the executables to be installed,
-	# but not to install the packages.
+	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the executables
+	# to be installed, but not to install the packages.
 	# https://github.com/haskell/cabal/issues/220
 
-	# NOTE: Listing executable-only packages in build-depends causes Cabal to install the packages, and to fail to
-	# recognise the packages have been installed.
+	# NOTE: Listing executable-only packages in build-depends causes Cabal to install the packages,
+	# and to fail to recognise the packages have been installed.
 	# https://github.com/haskell/cabal/issues/779
 
 	sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote || die
@@ -158,8 +158,9 @@ function build_sandbox_layer () {
 	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 	local layer_size
+	log_begin 'Measuring sandbox layer...'
 	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-	log "Finished building sandbox layer... ${layer_size}"
+	log_end "${layer_size}"
 
 	local app_label actual_constraints
 	app_label=$( get_tag_app_label "${tag}" ) || die
@@ -175,7 +176,7 @@ function strip_sandbox_layer () {
 	local sandbox_tag
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 
-	log_begin "Stripping sandbox layer..."
+	log_begin 'Measuring sandbox layer...'
 
 	find "${HALCYON_DIR}/sandbox"       \
 			-type f        -and \
@@ -253,6 +254,7 @@ function restore_sandbox_layer () {
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}"; then
+		log 'Using existing sandbox layer'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
 	fi
@@ -313,7 +315,6 @@ function install_matching_sandbox_layer () {
 
 	local must_create
 	must_create=0
-	rm -f "${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
 	strip_sandbox_layer || die
 }

@@ -1,17 +1,17 @@
 function create_app_tag () {
-	local app_label slug_dir source_hash constraint_hash \
-		ghc_version ghc_magic_hash \
-		sandbox_magic_hash \
+	local app_label slug_dir source_hash constraint_hash       \
+		ghc_version ghc_magic_hash                         \
+		sandbox_magic_hash                                 \
 		app_magic_hash
 	expect_args app_label slug_dir source_hash constraint_hash \
-		ghc_version ghc_magic_hash \
-		sandbox_magic_hash \
+		ghc_version ghc_magic_hash                         \
+		sandbox_magic_hash                                 \
 		app_magic_hash -- "$@"
 
 	create_tag "${app_label}" "${slug_dir}" "${source_hash}" "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' '' \
-		"${sandbox_magic_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"                                  \
+		'' '' '' ''                                                           \
+		"${sandbox_magic_hash}"                                               \
 		"${app_magic_hash}" || die
 }
 
@@ -21,8 +21,8 @@ function derive_app_tag () {
 	expect_args tag -- "$@"
 
 	local app_label slug_dir source_hash constraint_hash \
-		ghc_version ghc_magic_hash \
-		sandbox_magic_hash \
+		ghc_version ghc_magic_hash                   \
+		sandbox_magic_hash                           \
 		app_magic_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	slug_dir=$( get_tag_slug_dir "${tag}" ) || die
@@ -34,8 +34,8 @@ function derive_app_tag () {
 	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
 	create_app_tag "${app_label}" "${slug_dir}" "${source_hash}" "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}" \
-		"${sandbox_magic_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"                                      \
+		"${sandbox_magic_hash}"                                                   \
 		"${app_magic_hash}" || die
 }
 
@@ -45,8 +45,8 @@ function derive_configured_app_tag_pattern () {
 	expect_args tag -- "$@"
 
 	local app_label slug_dir constraint_hash \
-		ghc_version ghc_magic_hash \
-		sandbox_magic_hash \
+		ghc_version ghc_magic_hash       \
+		sandbox_magic_hash               \
 		app_magic_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	slug_dir=$( get_tag_slug_dir "${tag}" ) || die
@@ -57,8 +57,8 @@ function derive_configured_app_tag_pattern () {
 	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
 	create_app_tag "${app_label//./\.}" "${slug_dir}" '.*' "${constraint_hash}" \
-		"${ghc_version//./\.}" "${ghc_magic_hash}" \
-		"${sandbox_magic_hash}" \
+		"${ghc_version//./\.}" "${ghc_magic_hash}"                          \
+		"${sandbox_magic_hash}"                                             \
 		"${app_magic_hash}" || die
 }
 
@@ -71,8 +71,8 @@ function derive_recognized_app_tag_pattern () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 
 	create_app_tag "${app_label}" '.*' '.*' '.*' \
-		'.*' '.*' \
-		'.*' \
+		'.*' '.*'                            \
+		'.*'                                 \
 		'.*' || die
 }
 
@@ -178,13 +178,13 @@ function archive_app_layer () {
 	log 'Archiving app layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	tar_archive "${HALCYON_DIR}/app"              \
+	tar_archive "${HALCYON_DIR}/app"               \
 		"${HALCYON_CACHE_DIR}/${archive_name}" \
-		--exclude '.halcyon'                  \
-		--exclude '.haskell-on-heroku'        \
-		--exclude '.ghc'                      \
-		--exclude '.cabal'                    \
-		--exclude '.cabal-sandbox'            \
+		--exclude '.halcyon'                   \
+		--exclude '.haskell-on-heroku'         \
+		--exclude '.ghc'                       \
+		--exclude '.cabal'                     \
+		--exclude '.cabal-sandbox'             \
 		--exclude 'cabal.sandbox.config' || die
 	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}/ghc-${ghc_version}"; then
 		log_warning 'Cannot upload app layer archive'
@@ -251,7 +251,7 @@ function validate_recognized_app_layer () {
 }
 
 
-function restore_recognized_app_layer () {
+function restore_app_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
 	local tag
@@ -262,7 +262,8 @@ function restore_recognized_app_layer () {
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_app_archive_name "${tag}" ) || die
 
-	if validate_recognized_app_layer "${tag}"; then
+	if validate_identical_app_layer "${tag}"; then
+		log 'Using existing app layer'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
 	fi
@@ -321,7 +322,8 @@ function prepare_app_layer () {
 
 	quote <<<"${changed_files}"
 
-	# NOTE: Restoring file modification times of unchanged files is necessary to avoid needless recompilation.
+	# NOTE: Restoring file modification times of unchanged files is necessary to avoid needless
+	# recompilation.
 
 	local prepare_dir
 	prepare_dir=$( get_tmp_dir 'halcyon.source' ) || die
@@ -339,7 +341,8 @@ function prepare_app_layer () {
 		done <<<"${unchanged_files}"
 	fi
 
-	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for an example.
+	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for an
+	# example.
 
 	rm -rf "${prepare_dir}/dist" || die
 	mv "${HALCYON_DIR}/app/dist" "${prepare_dir}/dist" || die
@@ -348,8 +351,8 @@ function prepare_app_layer () {
 	rm -rf "${HALCYON_DIR}/app" || die
 	mv "${prepare_dir}" "${HALCYON_DIR}/app" || die
 
-	# NOTE: With build-type: Custom, changing Setup.hs requires manually re-running configure, as Cabal fails to
-	# detect the change.
+	# NOTE: With build-type: Custom, changing Setup.hs requires manually re-running configure, as
+	# Cabal fails to detect the change.
 	# https://github.com/mietek/haskell-on-heroku/issues/29
 
 	local must_configure
@@ -370,7 +373,7 @@ function install_app_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_APP )) && restore_recognized_app_layer "${tag}"; then
+	if ! (( HALCYON_FORCE_APP )) && restore_app_layer "${tag}"; then
 		if validate_identical_app_layer "${tag}"; then
 			return 0
 		fi

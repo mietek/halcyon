@@ -29,10 +29,10 @@ function create_cabal_tag () {
 	local cabal_version cabal_magic_hash cabal_repo update_timestamp
 	expect_args cabal_version cabal_magic_hash cabal_repo update_timestamp -- "$@"
 
-	create_tag '' '' '' '' \
-		'' '' \
+	create_tag '' '' '' ''                                                                 \
+		'' ''                                                                          \
 		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${update_timestamp}" \
-		'' \
+		''                                                                             \
 		'' || die
 }
 
@@ -116,7 +116,7 @@ function format_cabal_description () {
 	timestamp_date=$( get_timestamp_date "${update_timestamp}" ) || die
 	timestamp_time=$( get_timestamp_time "${update_timestamp}" ) || die
 
-	echo "${cabal_id} (${repo_name} ${timestamp_date} ${timestamp_time} UTC)"
+	echo "${cabal_id}, ${repo_name}, ${timestamp_date} ${timestamp_time} UTC"
 }
 
 
@@ -233,7 +233,8 @@ function build_cabal_layer () {
 	fi
 	rm -f "${HOME}/.cabal/config" || die
 
-	# NOTE: Cabal sometimes creates HOME/.cabal/setup-exe-cache, and there is no way to use a different path.
+	# NOTE: Cabal sometimes creates HOME/.cabal/setup-exe-cache, and there is no way to use a
+	# different path.
 	# https://github.com/haskell/cabal/issues/1242
 
 	rm -rf "${HOME}/.cabal/setup-exe-cache" || die
@@ -318,8 +319,9 @@ EOF
 	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	local layer_size
+	log_begin 'Measuring Cabal layer...'
 	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Finished building Cabal layer... ${layer_size}"
+	log_end "${layer_size}"
 
 	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${build_dir}" || die
 }
@@ -341,8 +343,9 @@ function update_cabal_layer () {
 	derive_updated_cabal_tag "${cabal_tag}" "${update_timestamp}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	local layer_size
+	log_begin 'Measuring updated Cabal layer...'
 	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log "Finished updating Cabal layer... ${layer_size}"
+	log_end "${layer_size}"
 }
 
 
@@ -463,6 +466,7 @@ function restore_bare_cabal_layer () {
 	bare_name=$( format_bare_cabal_archive_name "${tag}" ) || die
 
 	if validate_bare_cabal_layer "${tag}"; then
+		log 'Using existing bare Cabal layer'
 		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || true
 		return 0
 	fi
@@ -506,6 +510,7 @@ function restore_cached_updated_cabal_layer () {
 	) || true
 
 	if validate_updated_cabal_layer "${tag}"; then
+		log 'Using existing updated Cabal layer'
 		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || true
 		return 0
 	fi
@@ -601,7 +606,9 @@ function install_cabal_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_CABAL )) && ! (( HALCYON_UPDATE_CABAL )) && restore_updated_cabal_layer "${tag}"; then
+	if ! (( HALCYON_FORCE_CABAL )) && ! (( HALCYON_UPDATE_CABAL )) &&
+		restore_updated_cabal_layer "${tag}"
+	then
 		return 0
 	fi
 

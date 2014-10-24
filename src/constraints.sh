@@ -310,11 +310,9 @@ function select_best_partial_sandbox_layer () {
 			continue
 		fi
 
-		local partial_constraints partial_hash
+		local partial_constraints description
 		partial_constraints=$( read_constraints <"${HALCYON_CACHE_DIR}/${partial_name}" ) || die
-		partial_hash=$( get_tag_constraint_hash "${partial_tag}" ) || die
-
-		log_begin "Scoring ${partial_hash:0:7}..."
+		description=$( format_sandbox_description "${partial_tag}" ) || die
 
 		local score partial_package partial_version
 		score=0
@@ -322,14 +320,14 @@ function select_best_partial_sandbox_layer () {
 			local version
 			version="${constraints_A[${partial_package}]:-}"
 			if [ -z "${version}" ]; then
-				log_end '0'
+				log_indent "0"$'\t'"${description}"
 				log_indent 'Unnecessary package:                     ' "${partial_package}-${partial_version}"
 
 				score=
 				break
 			fi
 			if [ "${partial_version}" != "${version}" ]; then
-				log_end '0'
+				log_indent "0"$'\t'"${description}"
 				log_indent 'Unusable package version:                ' "${partial_package}-${partial_version} ({version})"
 
 				score=
@@ -339,7 +337,7 @@ function select_best_partial_sandbox_layer () {
 			score=$(( score + 1 ))
 		done <<<"${partial_constraints}"
 		if [ -n "${score}" ]; then
-			log_end "${score}"
+			log_indent "${score}"$'\t'"${description}"
 		fi
 
 		results+=( "${score} ${partial_tag}" )
@@ -392,7 +390,8 @@ function validate_actual_constraints () {
 	local tag constraints actual_constraints
 	expect_args tag constraints actual_constraints -- "$@"
 
-	# NOTE: Cabal sometimes gives different results when freezing constraints before and after installation.
+	# NOTE: Cabal sometimes gives different results when freezing constraints before and after
+	# installation.
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1
 

@@ -43,8 +43,9 @@ function build_slug () {
 	echo "${app_tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
 
 	local slug_size
+	log_begin 'Measuring slug...'
 	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
-	log "Finished building slug... ${slug_size}"
+	log_end "${slug_size}"
 }
 
 
@@ -103,6 +104,7 @@ function restore_slug () {
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
 
 	if validate_slug "${tag}"; then
+		log 'Using existing slug'
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
 		return 0
 	fi
