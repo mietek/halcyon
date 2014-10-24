@@ -39,7 +39,11 @@ function deploy_layers () {
 		prepare_cache || die
 	fi
 
-	if ! (( HALCYON_NO_SANDBOX_OR_APP )) && ! (( HALCYON_NO_APP )) && ! (( HALCYON_FORCE_APP )); then
+	if ! (( HALCYON_NO_SANDBOX_OR_APP )) &&
+		! (( HALCYON_NO_APP )) &&
+		! (( HALCYON_NO_SLUG_ARCHIVE )) &&
+		! (( HALCYON_FORCE_APP ))
+	then
 		log
 		if restore_slug "${tag}"; then
 			engage_slug || die
@@ -99,7 +103,9 @@ function deploy_layers () {
 		if ! (( HALCYON_NO_APP )); then
 			log
 			build_slug || die
-			archive_slug || die
+			if ! (( HALCYON_NO_SLUG_ARCHIVE )); then
+				archive_slug || die
+			fi
 			engage_slug || die
 		fi
 	fi

@@ -43,6 +43,7 @@ function set_halcyon_vars () {
 		export HALCYON_NO_CABAL="${HALCYON_NO_CABAL:-0}"
 		export HALCYON_NO_SANDBOX_OR_APP="${HALCYON_NO_SANDBOX_OR_APP:-0}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
+		export HALCYON_NO_SLUG_ARCHIVE="${HALCYON_NO_SLUG_ARCHIVE:-0}"
 
 		export HALCYON_NO_PREPARE_CACHE="${HALCYON_NO_PREPARE_CACHE:-0}"
 		export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
@@ -70,6 +71,7 @@ function set_halcyon_vars () {
 		export HALCYON_NO_CABAL=0
 		export HALCYON_NO_SANDBOX_OR_APP=0
 		export HALCYON_NO_APP=0
+		export HALCYON_NO_SLUG_ARCHIVE=0
 
 		export HALCYON_NO_PREPARE_CACHE=0
 		export HALCYON_NO_CLEAN_CACHE=0
@@ -206,6 +208,8 @@ function handle_command_line () {
 			export HALCYON_NO_SANDBOX_OR_APP=1;;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
+		'--no-slug-archive')
+			export HALCYON_NO_SLUG_ARCHIVE=1;;
 
 		'--no-prepare-cache')
 			export HALCYON_NO_PREPARE_CACHE=1;;
