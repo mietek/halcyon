@@ -325,7 +325,7 @@ function select_best_partial_sandbox_layer () {
 				break
 			fi
 			if [ "${partial_version}" != "${version}" ]; then
-				log_indent "Ignoring ${description}, as ${partial_package}-${partial_version} is not {version}"
+				log_indent "Ignoring ${description}, as ${partial_package}-${partial_version} is not ${version}"
 				score=
 				break
 			fi

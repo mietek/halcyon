@@ -279,7 +279,7 @@ function restore_app_layer () {
 		! validate_recognized_app_layer "${tag}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" || die
-		if ! download_layer "${os}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
+		if ! download_layer "${os}/ghc-${ghc_version}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
 			log 'Cannot download app layer archive'
 			return 1
 		fi
