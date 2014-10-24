@@ -45,16 +45,19 @@ function halcyon_deploy () {
 		die "Unexpected target: ${HALCYON_TARGET}"
 	fi
 
+	local env_tag
+	env_tag=$( determine_env_tag ) || die
+
 	if (( HALCYON_ONLY_ENV )); then
-		deploy_only_env || return 1
+		deploy_env "${env_tag}" || return 1
 	elif [ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]; then
 		if ! detect_app_label '.'; then
-			deploy_only_env || return 1
+			deploy_env "${env_tag}" || return 1
 		else
-			deploy_local_app '.' || return 1
+			deploy_local_app "${env_tag}" '.' || return 1
 		fi
 	elif (( ${#HALCYON_INTERNAL_ARGS[@]} == 1 )); then
-		deploy_thing "${HALCYON_INTERNAL_ARGS[0]}" || return 1
+		deploy_thing "${env_tag}" "${HALCYON_INTERNAL_ARGS[0]}" || return 1
 	else
 		local index
 		index=0
@@ -62,17 +65,17 @@ function halcyon_deploy () {
 			index=$(( index + 1 ))
 			if (( index == 1 )); then
 				HALCYON_NO_CLEAN_CACHE=1 \
-					deploy_thing "${thing}" || return 1
+					deploy_thing "${env_tag}" "${thing}" || return 1
 			else
 				log
 				log
 				if (( index == ${#HALCYON_INTERNAL_ARGS[@]} )); then
 					HALCYON_NO_PREPARE_CACHE=1 \
-						deploy_thing "${thing}" || return 1
+						deploy_thing "${env_tag}" "${thing}" || return 1
 				else
 					HALCYON_NO_PREPARE_CACHE=1 \
 					HALCYON_NO_CLEAN_CACHE=1   \
-						deploy_thing "${thing}" || return 1
+						deploy_thing "${env_tag}" "${thing}" || return 1
 				fi
 			fi
 		done

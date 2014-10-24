@@ -139,7 +139,7 @@ function get_tag_app_magic_hash () {
 }
 
 
-function describe_only_env_tag () {
+function describe_env_tag () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -210,7 +210,7 @@ function describe_full_tag () {
 }
 
 
-function determine_only_env_tag () {
+function determine_env_tag () {
 	local ghc_version
 	if has_vars HALCYON_GHC_VERSION; then
 		ghc_version="${HALCYON_GHC_VERSION}"
@@ -241,8 +241,8 @@ function determine_only_env_tag () {
 function determine_full_tag () {
 	expect_vars HALCYON_TARGET
 
-	local app_label constraints source_dir
-	expect_args app_label constraints source_dir -- "$@"
+	local env_tag app_label constraints source_dir
+	expect_args env_tag app_label constraints source_dir -- "$@"
 	expect_existing "${source_dir}"
 
 	local source_hash constraints_hash
@@ -258,17 +258,9 @@ function determine_full_tag () {
 	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
 
 	local cabal_version cabal_magic_hash cabal_repo
-	if has_vars HALCYON_CABAL_VERSION; then
-		cabal_version="${HALCYON_CABAL_VERSION}"
-	else
-		cabal_version=$( get_default_cabal_version ) || die
-	fi
+	cabal_version=$( get_tag_cabal_version "${env_tag}" ) || die
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-	if has_vars HALCYON_CABAL_REPO; then
-		cabal_repo="${HALCYON_CABAL_REPO}"
-	else
-		cabal_repo=$( get_default_cabal_repo ) || die
-	fi
+	cabal_repo=$( get_tag_cabal_repo "${env_tag}" ) || die
 
 	local sandbox_magic_hash app_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die

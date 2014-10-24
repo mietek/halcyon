@@ -81,8 +81,10 @@ function deploy_layers () {
 		log
 		deploy_cabal_layer "${tag}" "${source_dir}" || return 1
 	else
-		validate_ghc_layer "${tag}" || return 1
-		validate_updated_cabal_layer "${tag}" || return 1
+		if validate_ghc_layer "${tag}" || validate_updated_cabal_layer "${tag}"; then
+			log_error 'Cannot validate environment'
+			return 1
+		fi
 	fi
 
 	if ! (( HALCYON_ONLY_ENV )); then
@@ -120,25 +122,25 @@ function deploy_layers () {
 }
 
 
-function deploy_only_env () {
+function deploy_env () {
 	log 'Deploying environment'
 
-	local tag
-	tag=$( determine_only_env_tag ) || die
-	describe_only_env_tag "${tag}" || die
+	local env_tag
+	expect_args env_tag -- "$@"
 
+	describe_env_tag "${env_tag}" || die
 	describe_storage || die
 
 	HALCYON_ONLY_ENV=1 \
-		deploy_layers "${tag}" '' '/dev/null' || return 1
+		deploy_layers "${env_tag}" '' '/dev/null' || return 1
 }
 
 
 function deploy_app () {
 	expect_vars HALCYON_NO_WARN_IMPLICIT
 
-	local app_label source_dir
-	expect_args app_label source_dir -- "$@"
+	local env_tag app_label source_dir
+	expect_args env_tag app_label source_dir -- "$@"
 	expect_existing "${source_dir}"
 
 	log 'Deploying app:                           ' "${app_label}"
@@ -166,7 +168,7 @@ function deploy_app () {
 	fi
 
 	local tag
-	tag=$( determine_full_tag "${app_label}" "${constraints}" "${source_dir}" ) || die
+	tag=$( determine_full_tag "${env_tag}" "${app_label}" "${constraints}" "${source_dir}" ) || die
 	describe_full_tag "${tag}" || die
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
@@ -195,8 +197,8 @@ function deploy_app () {
 
 
 function deploy_local_app () {
-	local local_dir
-	expect_args local_dir -- "$@"
+	local env_tag local_dir
+	expect_args env_tag local_dir -- "$@"
 
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
@@ -208,7 +210,7 @@ function deploy_local_app () {
 		return 1
 	fi
 
-	if ! deploy_app "${app_label}" "${source_dir}"; then
+	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
 		log_error 'Cannot deploy app'
 		return 1
 	fi
@@ -218,8 +220,8 @@ function deploy_local_app () {
 
 
 function deploy_cloned_app () {
-	local url
-	expect_args url -- "$@"
+	local env_tag url
+	expect_args env_tag url -- "$@"
 
 	log 'Cloning app'
 
@@ -236,7 +238,7 @@ function deploy_cloned_app () {
 		return 1
 	fi
 
-	if ! deploy_app "${app_label}" "${source_dir}"; then
+	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
 		log_error 'Cannot deploy app'
 		return 1
 	fi
@@ -245,24 +247,29 @@ function deploy_cloned_app () {
 }
 
 
-function deploy_published_app () {
+function deploy_unpacked_app () {
 	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE
 
-	local thing
-	expect_args thing -- "$@"
+	local env_tag thing
+	expect_args env_tag thing -- "$@"
 
 	local no_prepare_cache
 	no_prepare_cache="${HALCYON_NO_PREPARE_CACHE}"
-	if ! (( HALCYON_RECURSIVE )); then
-		if ! HALCYON_NO_CLEAN_CACHE=1      \
-			HALCYON_NO_WARN_IMPLICIT=1 \
-			deploy_only_env
-		then
-			log_error 'Cannot deploy environment'
+	if ! validate_ghc_layer "${env_tag}" || ! validate_updated_cabal_layer "${env_tag}"; then
+		if ! (( HALCYON_RECURSIVE )); then
+			if ! HALCYON_NO_CLEAN_CACHE=1      \
+				HALCYON_NO_WARN_IMPLICIT=1 \
+				deploy_env "${env_tag}"
+			then
+				log_error 'Cannot deploy environment'
+				return 1
+			fi
+			log
+			no_prepare_cache=1
+		else
+			log_error 'Cannot validate environment'
 			return 1
 		fi
-		log
-		no_prepare_cache=1
 	fi
 
 	log 'Unpacking app'
@@ -294,7 +301,7 @@ function deploy_published_app () {
 
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
 		HALCYON_NO_WARN_IMPLICIT=1                  \
-		deploy_app "${app_label}" "${source_dir}"
+		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
 		log_error 'Cannot deploy app'
 		return 1
@@ -305,27 +312,23 @@ function deploy_published_app () {
 
 
 function deploy_thing () {
-	local thing
-	expect_args thing -- "$@"
+	local env_tag thing
+	expect_args env_tag thing -- "$@"
 
 	case "${thing}" in
-	'base');&
-	'base-'[0-9]*)
-		deploy_base_package "${thing}" || return 1
-		;;
 	'https://'*);&
 	'ssh://'*);&
 	'git@'*);&
 	'file://'*);&
 	'http://'*);&
 	'git://'*)
-		deploy_cloned_app "${thing}" || return 1
+		deploy_cloned_app "${env_tag}" "${thing}" || return 1
 		;;
 	*)
 		if [ -d "${thing}" ]; then
-			deploy_local_app "${thing%/}" || return 1
+			deploy_local_app "${env_tag}" "${thing%/}" || return 1
 		else
-			deploy_published_app "${thing}" || return 1
+			deploy_unpacked_app "${env_tag}" "${thing}" || return 1
 		fi
 	esac
 }
