@@ -318,11 +318,6 @@ EOF
 	copy_cabal_magic "${source_dir}" || die
 	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
-	local layer_size
-	log_begin 'Measuring Cabal layer...'
-	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log_end "${layer_size}"
-
 	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${build_dir}" || die
 }
 
@@ -341,11 +336,6 @@ function update_cabal_layer () {
 	local update_timestamp
 	update_timestamp=$( format_timestamp ) || die
 	derive_updated_cabal_tag "${cabal_tag}" "${update_timestamp}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
-
-	local layer_size
-	log_begin 'Measuring updated Cabal layer...'
-	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-	log_end "${layer_size}"
 }
 
 
@@ -357,12 +347,13 @@ function archive_cabal_layer () {
 		return 0
 	fi
 
-	local cabal_tag os archive_name
+	local cabal_tag os archive_name layer_size
 	cabal_tag=$( <"${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	os=$( get_tag_os "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
 
-	log 'Archiving Cabal layer'
+	log "Archiving Cabal layer (${layer_size})"
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die

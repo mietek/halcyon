@@ -157,11 +157,6 @@ function build_sandbox_layer () {
 	copy_sandbox_magic "${source_dir}" || die
 	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
-	local layer_size
-	log_begin 'Measuring sandbox layer...'
-	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-	log_end "${layer_size}"
-
 	local app_label actual_constraints
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	actual_constraints=$( freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
@@ -173,10 +168,11 @@ function strip_sandbox_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
-	local sandbox_tag
+	local sandbox_tag layer_size
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
-	log_begin 'Measuring sandbox layer...'
+	log "Stripping sandbox layer (${layer_size})"
 
 	find "${HALCYON_DIR}/sandbox"       \
 			-type f        -and \
@@ -187,10 +183,6 @@ function strip_sandbox_layer () {
 			\)                  \
 			-print0 |
 		strip0 --strip-unneeded
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-	log_end "${layer_size}"
 }
 
 
@@ -202,14 +194,15 @@ function archive_sandbox_layer () {
 		return 0
 	fi
 
-	local sandbox_tag os ghc_version archive_name file_name
+	local sandbox_tag os ghc_version archive_name file_name layer_size
 	sandbox_tag=$( <"${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	os=$( get_tag_os "${sandbox_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	file_name=$( format_constraint_file_name "${sandbox_tag}" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
-	log 'Archiving sandbox layer'
+	log "Archiving sandbox layer (${layer_size})"
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die

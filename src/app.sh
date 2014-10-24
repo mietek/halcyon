@@ -156,11 +156,6 @@ function build_app_layer () {
 	fi
 
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
-
-	local layer_size
-	log_begin 'Measuring app layer...'
-	layer_size=$( measure_recursively "${HALCYON_DIR}/app" ) || die
-	log_end "${layer_size}"
 }
 
 
@@ -172,13 +167,14 @@ function archive_app_layer () {
 		return 0
 	fi
 
-	local app_tag os ghc_version archive_name
+	local app_tag os ghc_version archive_name layer_size
 	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	os=$( get_tag_os "${app_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_app_archive_name "${app_tag}" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/app" ) || die
 
-	log 'Archiving app layer'
+	log "Archiving app layer (${layer_size})"
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/app"               \

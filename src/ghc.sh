@@ -270,11 +270,6 @@ function build_ghc_layer () {
 	copy_ghc_magic "${source_dir}" || die
 	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
-	local layer_size
-	log_begin 'Measuring GHC layer...'
-	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log_end "${layer_size}"
-
 	rm -rf "${build_dir}" || die
 }
 
@@ -283,11 +278,12 @@ function strip_ghc_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	local ghc_tag ghc_version
+	local ghc_tag ghc_version layer_size
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	ghc_version=$( get_tag_ghc_version "${ghc_tag}" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
-	log_begin 'Stripping GHC layer...'
+	log "Stripping GHC layer (${layer_size})"
 
 	case "${ghc_version}" in
 	'7.8.'*)
@@ -328,10 +324,6 @@ function strip_ghc_layer () {
 	*)
 		die "Unexpected GHC version: ${ghc_version}"
 	esac
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-	log_end "${layer_size}"
 }
 
 
@@ -343,12 +335,13 @@ function archive_ghc_layer () {
 		return 0
 	fi
 
-	local ghc_tag os archive_name
+	local ghc_tag os archive_name layer_size
 	ghc_tag=$( <"${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
 	os=$( get_tag_os "${ghc_tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
-	log 'Archiving GHC layer'
+	log "Archiving GHC layer (${layer_size})"
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die

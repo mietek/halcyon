@@ -41,11 +41,6 @@ function build_slug () {
 	fi
 
 	echo "${app_tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
-
-	local slug_size
-	log_begin 'Measuring slug...'
-	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
-	log_end "${slug_size}"
 }
 
 
@@ -57,13 +52,14 @@ function archive_slug () {
 		return 0
 	fi
 
-	local app_tag os ghc_version archive_name
+	local app_tag os ghc_version archive_name slug_size
 	app_tag=$( <"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
 	os=$( get_tag_os "${app_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_slug_archive_name "${app_tag}" ) || die
+	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
 
-	log 'Archiving slug'
+	log "Archiving slug (${slug_size})"
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_TMP_SLUG_DIR}" "${HALCYON_CACHE_DIR}/${archive_name}" || die

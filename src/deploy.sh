@@ -172,15 +172,12 @@ function deploy_app () {
 				slug_dir="${HALCYON_DIR}/sandbox"
 				log_indent 'Target:                                  ' 'sandbox'
 			fi
-			log_indent_begin 'Source hash:                             '
 			source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
-			log_end "${source_hash:0:7}"
+			log_indent 'Source hash:                             ' "${source_hash:0:7}"
 		fi
 
-		log_indent_begin 'Constraint hash:                         '
 		if [ -f "${source_dir}/cabal.config" ]; then
 			if ! constraints=$( detect_constraints "${app_label}" "${source_dir}" ); then
-				log_end '(unknown)'
 				log_warning 'Cannot detect constraints'
 				return 1
 			fi
@@ -189,7 +186,7 @@ function deploy_app () {
 			warn_constraints=1
 		fi
 		constraint_hash=$( hash_constraints "${constraints}" ) || die
-		log_end "${constraint_hash:0:7}"
+		log_indent 'Constraint hash:                         ' "${constraint_hash:0:7}"
 		if (( warn_constraints )) && ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )); then
 			log_warning 'Using implicit constraints'
 			log_warning 'Expected cabal.config with explicit constraints'
