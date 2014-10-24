@@ -208,6 +208,7 @@ function deploy_published_app () {
 	fi
 
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
+		HALCYON_NO_WARN_IMPLICIT=1                  \
 		deploy_app "${app_label}" "${source_dir}/${app_label}"
 	then
 		log_warning 'Cannot deploy published app'
