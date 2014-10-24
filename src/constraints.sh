@@ -320,16 +320,12 @@ function select_best_partial_sandbox_layer () {
 			local version
 			version="${constraints_A[${partial_package}]:-}"
 			if [ -z "${version}" ]; then
-				log_indent "0"$'\t'"${description}"
-				log_indent 'Unnecessary package:                     ' "${partial_package}-${partial_version}"
-
+				log_indent "Ignoring ${description}, as ${partial_package}-${partial_version} is not needed"
 				score=
 				break
 			fi
 			if [ "${partial_version}" != "${version}" ]; then
-				log_indent "0"$'\t'"${description}"
-				log_indent 'Unusable package version:                ' "${partial_package}-${partial_version} ({version})"
-
+				log_indent "Ignoring ${description}, as ${partial_package}-${partial_version} is not {version}"
 				score=
 				break
 			fi
@@ -338,9 +334,8 @@ function select_best_partial_sandbox_layer () {
 		done <<<"${partial_constraints}"
 		if [ -n "${score}" ]; then
 			log_indent "${score}"$'\t'"${description}"
+			results+=( "${score} ${partial_tag}" )
 		fi
-
-		results+=( "${score} ${partial_tag}" )
 	done <<<"${partial_tags}"
 
 	local result
