@@ -29,7 +29,7 @@ function deploy_extra_apps () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_CLEAN_CACHE
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -52,13 +52,20 @@ function deploy_layers () {
 	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
-		if ! (( HALCYON_NO_GHC )); then
-			log
-			deploy_ghc_layer "${tag}" "${source_dir}" || return 1
+		log
+		deploy_ghc_layer "${tag}" "${source_dir}" || return 1
+
+		log
+		deploy_cabal_layer "${tag}" "${source_dir}" || return 1
+	else
+		if ! validate_ghc_layer "${tag}"; then
+			log_warning 'Cannot validate GHC layer'
+			return 1
 		fi
-		if ! (( HALCYON_NO_CABAL )); then
-			log
-			deploy_cabal_layer "${tag}" "${source_dir}" || return 1
+
+		if ! validate_updated_cabal_layer "${tag}"; then
+			log_warning 'Cannot validate updated Cabal layer'
+			return 1
 		fi
 	fi
 
@@ -71,6 +78,7 @@ function deploy_layers () {
 			if [ -d "${HALCYON_DIR}/sandbox" ]; then
 				mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
 			fi
+
 			if ! (( HALCYON_NO_APP )) && [ -d "${HALCYON_DIR}/app" ]; then
 				mv "${HALCYON_DIR}/app" "${saved_app}" || die
 			fi
@@ -94,6 +102,7 @@ function deploy_layers () {
 				rm -rf "${HALCYON_DIR}/sandbox" || die
 				mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
 			fi
+
 			if ! (( HALCYON_NO_APP )) && [ -d "${saved_app}" ]; then
 				rm -rf "${HALCYON_DIR}/app" || die
 				mv "${saved_app}" "${HALCYON_DIR}/app" || die
@@ -118,7 +127,7 @@ function deploy_layers () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_PUBLIC_STORAGE HALCYON_TARGET_SANDBOX HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_PUBLIC_STORAGE HALCYON_TARGET_SANDBOX HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"

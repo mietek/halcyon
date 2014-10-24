@@ -39,8 +39,6 @@ function set_halcyon_vars () {
 
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 
-		export HALCYON_NO_GHC="${HALCYON_NO_GHC:-0}"
-		export HALCYON_NO_CABAL="${HALCYON_NO_CABAL:-0}"
 		export HALCYON_NO_SANDBOX_OR_APP="${HALCYON_NO_SANDBOX_OR_APP:-0}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_SLUG_ARCHIVE="${HALCYON_NO_SLUG_ARCHIVE:-0}"
@@ -67,8 +65,6 @@ function set_halcyon_vars () {
 
 		export HALCYON_PURGE_CACHE=0
 
-		export HALCYON_NO_GHC=0
-		export HALCYON_NO_CABAL=0
 		export HALCYON_NO_SANDBOX_OR_APP=0
 		export HALCYON_NO_APP=0
 		export HALCYON_NO_SLUG_ARCHIVE=0
@@ -200,10 +196,6 @@ function handle_command_line () {
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
 
-		'--no-ghc')
-			export HALCYON_NO_GHC=1;;
-		'--no-cabal')
-			export HALCYON_NO_CABAL=1;;
 		'--no-sandbox-or-app')
 			export HALCYON_NO_SANDBOX_OR_APP=1;;
 		'--no-app')
