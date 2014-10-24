@@ -81,7 +81,7 @@ function format_app_id () {
 	local tag
 	expect_args tag -- "$@"
 
-	get_app_label "${tag}" || die
+	get_tag_app_label "${tag}" || die
 }
 
 
