@@ -6,11 +6,11 @@ function create_sandbox_tag () {
 		ghc_version ghc_magic_hash    \
 		sandbox_magic_hash -- "$@"
 
-	create_tag "${app_label}" '' '' "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"         \
-		'' '' '' ''                                  \
-		"${sandbox_magic_hash}"                      \
-		'' || die
+	create_tag "${app_label}" ''                 \
+		'' "${constraint_hash}"              \
+		"${ghc_version}" "${ghc_magic_hash}" \
+		'' '' '' ''                          \
+		"${sandbox_magic_hash}" '' || die
 }
 
 

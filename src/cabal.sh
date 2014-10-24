@@ -29,11 +29,11 @@ function create_cabal_tag () {
 	local cabal_version cabal_magic_hash cabal_repo update_timestamp
 	expect_args cabal_version cabal_magic_hash cabal_repo update_timestamp -- "$@"
 
-	create_tag '' '' '' ''                                                                 \
+	create_tag '' ''                                                                       \
+		'' ''                                                                          \
 		'' ''                                                                          \
 		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${update_timestamp}" \
-		''                                                                             \
-		'' || die
+		'' '' || die
 }
 
 

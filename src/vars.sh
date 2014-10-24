@@ -11,7 +11,7 @@ function set_halcyon_vars () {
 		export HALCYON_PUBLIC_STORAGE="${HALCYON_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
-		export HALCYON_TARGET_SANDBOX="${HALCYON_TARGET_SANDBOX:-0}"
+		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
@@ -129,8 +129,12 @@ function handle_command_line () {
 
 		'--recursive')
 			export HALCYON_RECURSIVE=1;;
-		'--target-sandbox')
-			export HALCYON_TARGET_SANDBOX=1;;
+		'--target')
+			shift
+			expect_args target -- "$@"
+			export HALCYON_TARGET="${target}";;
+		'--target='*)
+			export HALCYON_TARGET="${1#*=}";;
 
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;

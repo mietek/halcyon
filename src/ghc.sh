@@ -82,11 +82,11 @@ function create_ghc_tag () {
 	local ghc_version ghc_magic_hash
 	expect_args ghc_version ghc_magic_hash -- "$@"
 
-	create_tag '' '' '' ''                       \
+	create_tag '' ''                             \
+		'' ''                                \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' ''                          \
-		''                                   \
-		'' || die
+		'' '' || die
 }
 
 

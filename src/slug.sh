@@ -25,16 +25,16 @@ function build_slug () {
 	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
-	local app_tag slug_dir
+	local app_tag target
 	app_tag=$( <"${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	slug_dir=$( get_tag_slug_dir "${app_tag}" ) || die
+	target=$( get_tag_target "${app_tag}" ) || die
 
 	log 'Building slug'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
 	if ! (
-		export PATH="${HALCYON_TMP_SLUG_DIR}${slug_dir}:${PATH}" &&
+		export PATH="${HALCYON_TMP_SLUG_DIR}${HALCYON_DIR}/${target}:${PATH}" &&
 		sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${HALCYON_TMP_SLUG_DIR}" --verbose=0 |& quote
 	); then
 		die 'Failed to build slug'

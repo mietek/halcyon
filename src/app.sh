@@ -1,18 +1,18 @@
 function create_app_tag () {
-	local app_label slug_dir source_hash constraint_hash       \
-		ghc_version ghc_magic_hash                         \
-		sandbox_magic_hash                                 \
-		app_magic_hash
-	expect_args app_label slug_dir source_hash constraint_hash \
-		ghc_version ghc_magic_hash                         \
-		sandbox_magic_hash                                 \
-		app_magic_hash -- "$@"
+	local app_label target              \
+		source_hash constraint_hash \
+		ghc_version ghc_magic_hash  \
+		sandbox_magic_hash app_magic_hash
+	expect_args app_label target        \
+		source_hash constraint_hash \
+		ghc_version ghc_magic_hash  \
+		sandbox_magic_hash app_magic_hash -- "$@"
 
-	create_tag "${app_label}" "${slug_dir}" "${source_hash}" "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"                                  \
-		'' '' '' ''                                                           \
-		"${sandbox_magic_hash}"                                               \
-		"${app_magic_hash}" || die
+	create_tag "${app_label}" "${target}"         \
+		"${source_hash}" "${constraint_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"  \
+		'' '' '' ''
+		"${sandbox_magic_hash}" "${app_magic_hash}" || die
 }
 
 
@@ -20,12 +20,12 @@ function derive_app_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local app_label slug_dir source_hash constraint_hash \
-		ghc_version ghc_magic_hash                   \
-		sandbox_magic_hash                           \
-		app_magic_hash
+	local app_label target              \
+		source_hash constraint_hash \
+		ghc_version ghc_magic_hash  \
+		sandbox_magic_hash app_magic_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	slug_dir=$( get_tag_slug_dir "${tag}" ) || die
+	target=$( get_tag_target "${tag}" ) || die
 	source_hash=$( get_tag_source_hash "${tag}" ) || die
 	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
@@ -33,10 +33,10 @@ function derive_app_tag () {
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
-	create_app_tag "${app_label}" "${slug_dir}" "${source_hash}" "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"                                      \
-		"${sandbox_magic_hash}"                                                   \
-		"${app_magic_hash}" || die
+	create_app_tag "${app_label}" "${target}"     \
+		"${source_hash}" "${constraint_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"  \
+		"${sandbox_magic_hash}" "${app_magic_hash}" || die
 }
 
 
@@ -44,22 +44,22 @@ function derive_configured_app_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
-	local app_label slug_dir constraint_hash \
-		ghc_version ghc_magic_hash       \
-		sandbox_magic_hash               \
-		app_magic_hash
+	local app_label target             \
+		constraint_hash            \
+		ghc_version ghc_magic_hash \
+		sandbox_magic_hash app_magic_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	slug_dir=$( get_tag_slug_dir "${tag}" ) || die
+	target=$( get_tag_target "${tag}" ) || die
 	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
-	create_app_tag "${app_label//./\.}" "${slug_dir}" '.*' "${constraint_hash}" \
-		"${ghc_version//./\.}" "${ghc_magic_hash}"                          \
-		"${sandbox_magic_hash}"                                             \
-		"${app_magic_hash}" || die
+	create_app_tag "${app_label//./\.}" "${target}"    \
+		'.*' "${constraint_hash}"                  \
+		"${ghc_version//./\.}" "${ghc_magic_hash}" \
+		"${sandbox_magic_hash}" "${app_magic_hash}" || die
 }
 
 
@@ -70,10 +70,10 @@ function derive_recognized_app_tag_pattern () {
 	local app_label
 	app_label=$( get_tag_app_label "${tag}" ) || die
 
-	create_app_tag "${app_label}" '.*' '.*' '.*' \
-		'.*' '.*'                            \
-		'.*'                                 \
-		'.*' || die
+	create_app_tag "${app_label}" '.*' \
+		'.*' '.*'                  \
+		'.*' '.*'                  \
+		'.*' '.*' || die
 }
 
 
@@ -135,10 +135,10 @@ function build_app_layer () {
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'
 
-		local slug_dir
-		slug_dir=$( get_tag_slug_dir "${tag}" ) || die
+		local target
+		target=$( get_tag_target "${tag}" ) || die
 
-		sandboxed_cabal_do "${HALCYON_DIR}/app" configure --prefix="${slug_dir}" |& quote || die
+		sandboxed_cabal_do "${HALCYON_DIR}/app" configure --prefix="${HALCYON_DIR}/${target}" |& quote || die
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/app-prebuild-hook" ]; then

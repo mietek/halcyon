@@ -6,7 +6,7 @@ function deploy_sandbox_extra_apps () {
 
 	local sandbox_apps
 	sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
-	if ! ( deploy --recursive --target-sandbox "${sandbox_apps[@]}" ) |& quote; then
+	if ! ( deploy --recursive --target='sandbox' "${sandbox_apps[@]}" ) |& quote; then
 		log_warning 'Cannot deploy sandbox extra apps'
 		return 1
 	fi
