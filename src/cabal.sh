@@ -116,7 +116,7 @@ function format_cabal_description () {
 	timestamp_date=$( get_timestamp_date "${update_timestamp}" ) || die
 	timestamp_time=$( get_timestamp_time "${update_timestamp}" ) || die
 
-	echo "${cabal_id}, ${repo_name}, ${timestamp_date} ${timestamp_time} UTC"
+	echo "${cabal_id} (${repo_name} ${timestamp_date} ${timestamp_time} UTC)"
 }
 
 

@@ -54,7 +54,7 @@ function format_constraint_file_description () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	file_id=$( format_constraint_file_id "${tag}" ) || die
 
-	echo "${app_label}, ${file_id}"
+	echo "${app_label} (${file_id})"
 }
 
 
@@ -343,12 +343,12 @@ function select_best_partial_sandbox_layer () {
 			local version
 			version="${constraints_A[${partial_package}]:-}"
 			if [ -z "${version}" ]; then
-				log_indent "Ignoring ${description}, as ${partial_package}-${partial_version} is not needed"
+				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not needed"
 				score=
 				break
 			fi
 			if [ "${partial_version}" != "${version}" ]; then
-				log_indent "Ignoring ${description}, as ${partial_package}-${partial_version} is not ${version}"
+				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not ${version}"
 				score=
 				break
 			fi
