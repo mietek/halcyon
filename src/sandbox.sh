@@ -290,7 +290,7 @@ function install_matching_sandbox_layer () {
 	matching_description=$( format_sandbox_description "${matching_tag}" ) || die
 
 	if [ "${matching_hash}" = "${constraint_hash}" ]; then
-		log "Using fully matching sandbox layer, ${matching_description}"
+		log 'Using fully matching sandbox layer:      ' "${matching_description}"
 
 		if ! restore_sandbox_layer "${matching_tag}"; then
 			return 1
@@ -300,7 +300,7 @@ function install_matching_sandbox_layer () {
 		return 0
 	fi
 
-	log "Using partially matching sandbox layer, ${matching_description}"
+	log 'Using partially matching sandbox layer:  ' "${matching_description}"
 
 	if (( HALCYON_NO_BUILD )) || ! restore_sandbox_layer "${matching_tag}"; then
 		return 1
