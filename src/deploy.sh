@@ -10,7 +10,7 @@ function deploy_sandbox_apps () {
 		log_indent "${sandbox_app}"
 	done
 
-	if ! ( deploy --recursive --sandbox-app "${sandbox_apps[@]}" ) |& quote; then
+	if ! ( deploy --recursive --target-sandbox "${sandbox_apps[@]}" ) |& quote; then
 		log_warning 'Cannot deploy sandbox apps'
 		return 1
 	fi
@@ -120,7 +120,7 @@ function deploy_layers () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_PUBLIC HALCYON_SANDBOX_APP HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_PUBLIC HALCYON_TARGET_SANDBOX HALCYON_NO_GHC HALCYON_NO_CABAL HALCYON_NO_SANDBOX_OR_APP HALCYON_NO_APP HALCYON_NO_WARN_IMPLICIT
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
@@ -143,14 +143,13 @@ function deploy_app () {
 		log_indent 'App label:                               ' "${app_label}"
 
 		if ! (( HALCYON_NO_APP )); then
-			if ! (( HALCYON_SANDBOX_APP )); then
+			if ! (( HALCYON_TARGET_SANDBOX )); then
 				slug_dir="${HALCYON_DIR}/slug"
 			else
 				slug_dir="${HALCYON_DIR}/sandbox"
+				log_indent 'Target:                                  ' 'sandbox'
 			fi
 			source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
-
-			log_indent 'Slug directory:                          ' "${slug_dir}"
 			log_indent 'Source hash:                             ' "${source_hash:0:7}"
 		fi
 

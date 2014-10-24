@@ -12,7 +12,7 @@ function set_halcyon_vars () {
 		export HALCYON_PUBLIC="${HALCYON_PUBLIC:-0}"
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
-		export HALCYON_SANDBOX_APP="${HALCYON_SANDBOX_APP:-0}"
+		export HALCYON_TARGET_SANDBOX="${HALCYON_TARGET_SANDBOX:-0}"
 
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
@@ -140,8 +140,8 @@ function handle_command_line () {
 
 		'--recursive')
 			export HALCYON_RECURSIVE=1;;
-		'--sandbox-app')
-			export HALCYON_SANDBOX_APP=1;;
+		'--target-sandbox')
+			export HALCYON_TARGET_SANDBOX=1;;
 
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
