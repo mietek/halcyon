@@ -53,12 +53,12 @@ function deploy_local_app () {
 	if ! app_name=$( detect_app_name "${source_dir}" ) ||
 		! app_version=$( detect_app_version "${source_dir}" )
 	then
-		log_warning 'Cannot detect app label'
+		log_error 'Cannot detect app label'
 		return 1
 	fi
 
 	if ! deploy_app "${app_name}-${app_version}" "${source_dir}"; then
-		log_warning 'Cannot deploy local app'
+		log_error 'Cannot deploy local app'
 		return 1
 	fi
 
@@ -75,7 +75,7 @@ function deploy_cloned_app () {
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
 	if ! git clone --depth=1 --quiet "${url}" "${source_dir}"; then
-		log_warning 'Cannot locate cloned app'
+		log_error 'Cannot locate cloned app'
 		return 1
 	fi
 
@@ -83,12 +83,12 @@ function deploy_cloned_app () {
 	if ! app_name=$( detect_app_name "${source_dir}" ) ||
 		! app_version=$( detect_app_version "${source_dir}" )
 	then
-		log_warning 'Cannot detect app label'
+		log_error 'Cannot detect app label'
 		return 1
 	fi
 
 	if ! deploy_app "${app_name}-${app_version}" "${source_dir}"; then
-		log_warning 'Cannot deploy cloned app'
+		log_error 'Cannot deploy cloned app'
 		return 1
 	fi
 
@@ -114,7 +114,7 @@ function deploy_base_package () {
 			HALCYON_NO_WARN_IMPLICIT=1 \
 				deploy_app '' '/dev/null'
 		then
-			log_warning 'Cannot deploy default environment'
+			log_error 'Cannot deploy default environment'
 			return 1
 		fi
 		log
@@ -126,7 +126,7 @@ function deploy_base_package () {
 	local base_version
 	if [ "${thing}" = 'base' ]; then
 		if ! base_version=$( ghc_detect_base_package_version ); then
-			log_warning 'Cannot detect base package version'
+			log_error 'Cannot detect base package version'
 			return 1
 		fi
 		if ! (( HALCYON_NO_WARN_IMPLICIT )); then
@@ -148,7 +148,7 @@ function deploy_base_package () {
 		HALCYON_NO_WARN_IMPLICIT=1                  \
 			deploy_app "base-${base_version}" "${source_dir}"
 	then
-		log_warning 'Cannot deploy base package'
+		log_error 'Cannot deploy base package'
 		return 1
 	fi
 
@@ -174,7 +174,7 @@ function deploy_published_app () {
 			HALCYON_NO_WARN_IMPLICIT=1 \
 				deploy_app '' '/dev/null'
 		then
-			log_warning 'Cannot deploy default environment'
+			log_error 'Cannot deploy default environment'
 			return 1
 		fi
 		log
@@ -195,7 +195,7 @@ function deploy_published_app () {
 		match_exactly_one |
 		sed 's:^Unpacking to \(.*\)/$:\1:'
 	); then
-		log_warning 'Cannot locate published app'
+		log_error 'Cannot locate published app'
 		return 1
 	fi
 
@@ -211,7 +211,7 @@ function deploy_published_app () {
 		HALCYON_NO_WARN_IMPLICIT=1                  \
 		deploy_app "${app_label}" "${source_dir}/${app_label}"
 	then
-		log_warning 'Cannot deploy published app'
+		log_error 'Cannot deploy published app'
 		return 1
 	fi
 
