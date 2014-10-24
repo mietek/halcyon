@@ -110,6 +110,43 @@ function hash_constraints () {
 }
 
 
+function detect_constraints () {
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	if ! [ -f "${source_dir}/cabal.config" ]; then
+		return 1
+	fi
+
+	local constraints
+	constraints=$(
+		read_constraints <"${source_dir}/cabal.config" |
+		filter_correct_constraints "${app_label}" |
+		sort_naturally
+	) || die
+
+	local -A constraints_A
+	local base_version candidate_package candidate_version
+	base_version=
+	while read -r candidate_package candidate_version; do
+		if [ -n "${constraints_A[${candidate_package}]:+_}" ]; then
+			return 1
+		fi
+		constraints_A["${candidate_package}"]="${candidate_version}"
+
+		if [ "${candidate_package}" = 'base' ]; then
+			base_version="${candidate_version}"
+		fi
+	done <<<"${constraints}"
+
+	if [ -z "${base_version}" ]; then
+		return 1
+	fi
+
+	echo "${constraints}"
+}
+
+
 function freeze_implicit_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"

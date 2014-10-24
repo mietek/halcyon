@@ -1,3 +1,89 @@
+function detect_app_package () {
+	local source_dir
+	expect_args source_dir -- "$@"
+	expect_existing "${source_dir}"
+
+	local package_file
+	if ! package_file=$(
+		find_spaceless_recursively "${source_dir}" -maxdepth 1 -name '*.cabal' |
+		match_exactly_one
+	); then
+		return 1
+	fi
+
+	cat "${source_dir}/${package_file}"
+}
+
+
+function detect_app_name () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local app_name
+	if ! app_name=$(
+		detect_app_package "${source_dir}" |
+		awk '/^ *[Nn]ame:/ { print $2 }' |
+		tr -d '\r' |
+		match_exactly_one
+	); then
+		return 1
+	fi
+
+	echo "${app_name}"
+}
+
+
+function detect_app_version () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local app_version
+	if ! app_version=$(
+		detect_app_package "${source_dir}" |
+		awk '/^ *[Vv]ersion:/ { print $2 }' |
+		tr -d '\r' |
+		match_exactly_one
+	); then
+		return 1
+	fi
+
+	echo "${app_version}"
+}
+
+
+function detect_app_label () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local app_name app_version
+	if ! app_name=$( detect_app_name "${source_dir}" ) ||
+		! app_version=$( detect_app_version "${source_dir}" )
+	then
+		return 1
+	fi
+
+	echo "${app_name}-${app_label}"
+}
+
+
+function detect_app_executable () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local app_executable
+	if ! app_executable=$(
+		detect_app_package "${source_dir}" |
+		awk '/^ *[Ee]xecutable / { print $2 }' |
+		tr -d '\r' |
+		match_exactly_one
+	); then
+		return 1
+	fi
+
+	echo "${app_executable}"
+}
+
+
 function save_sandbox_and_app_layers () {
 	local saved_sandbox saved_app
 	expect_args saved_sandbox saved_app -- "$@"

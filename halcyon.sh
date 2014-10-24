@@ -8,7 +8,6 @@ fi
 
 source "${HALCYON_TOP_DIR}/lib/bashmenot/bashmenot.sh"
 source "${HALCYON_TOP_DIR}/src/deploy.sh"
-source "${HALCYON_TOP_DIR}/src/detect.sh"
 source "${HALCYON_TOP_DIR}/src/ghc.sh"
 source "${HALCYON_TOP_DIR}/src/cabal.sh"
 source "${HALCYON_TOP_DIR}/src/sandbox.sh"
