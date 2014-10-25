@@ -199,7 +199,7 @@ function deploy_env () {
 }
 
 
-function ensure_env () {
+function prepare_env () {
 	expect_args HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE
 
 	local env_tag
@@ -212,8 +212,8 @@ function ensure_env () {
 		! validate_updated_cabal_layer "${env_tag}" >'/dev/null'
 	then
 		if ! (( HALCYON_RECURSIVE )); then
-			if ! HALCYON_NO_CLEAN_CACHE=1      \
-				HALCYON_NO_WARN_IMPLICIT=1 \
+			if ! HALCYON_NO_CLEAN_CACHE=1         \
+				HALCYON_NO_WARN_CONSTRAINTS=1 \
 				deploy_env "${env_tag}"
 			then
 				die 'Cannot deploy environment'
@@ -230,7 +230,7 @@ function ensure_env () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_NO_WARN_CONSTRAINTS
 
 	local env_tag app_label source_dir
 	expect_args env_tag app_label source_dir -- "$@"
@@ -278,7 +278,7 @@ function deploy_app () {
 	describe_storage || die
 
 	if ! (( HALCYON_RECURSIVE )) &&
-		! (( HALCYON_NO_WARN_IMPLICIT )) &&
+		! (( HALCYON_NO_WARN_CONSTRAINTS )) &&
 		(( warn_constraints ))
 	then
 		log_warning 'Using implicit constraints'
@@ -297,7 +297,7 @@ function deploy_local_app () {
 	expect_args env_tag local_dir -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=$( ensure_env "${env_tag}" ) || die
+	no_prepare_cache=$( prepare_env "${env_tag}" ) || die
 
 	log 'Copying app'
 
@@ -324,7 +324,7 @@ function deploy_cloned_app () {
 	expect_args env_tag url -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=$( ensure_env "${env_tag}" ) || die
+	no_prepare_cache=$( prepare_env "${env_tag}" ) || die
 
 	log 'Cloning app'
 
@@ -353,7 +353,7 @@ function deploy_unpacked_app () {
 	expect_args env_tag thing -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=$( ensure_env "${env_tag}" ) || die
+	no_prepare_cache=$( prepare_env "${env_tag}" ) || die
 
 	log 'Unpacking app'
 
@@ -384,7 +384,7 @@ function deploy_unpacked_app () {
 	rm -rf "${unpack_dir}" || die
 
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
-		HALCYON_NO_WARN_IMPLICIT=1                  \
+		HALCYON_NO_WARN_CONSTRAINTS=1               \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
 		die 'Cannot deploy app'
