@@ -193,7 +193,7 @@ function strip_sandbox_layer () {
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
 
 	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
 
 	log "Stripping sandbox layer (${layer_size})"
 
@@ -216,7 +216,7 @@ function archive_sandbox_layer () {
 	! (( HALCYON_NO_ARCHIVE )) || return 0
 
 	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
+	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
 
 	log "Archiving sandbox layer (${layer_size})"
 

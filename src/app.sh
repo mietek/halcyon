@@ -24,7 +24,7 @@ function detect_app_tag () {
 
 	local tag_pattern
 	tag_pattern=$(
-		create_tag '.*' '.*' \
+		create_app_tag '.*' '.*' \
 			'.*' '.*'    \
 			'.*' '.*'    \
 			'.*' '.*'
