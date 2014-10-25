@@ -4,7 +4,6 @@ function set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED:-0} )); then
 		export HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED=1
 
-		export HALCYON_STORAGE="${HALCYON_STORAGE:-}"
 		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
 		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
@@ -105,12 +104,6 @@ function handle_command_line () {
 			export HALCYON_TMP_SLUG_DIR="${1#*=}";;
 
 		# Vars set once and inherited:
-		'--storage')
-			shift
-			expect_args storage -- "$@"
-			export HALCYON_STORAGE="${storage}";;
-		'--storage')
-			export HALCYON_STORAGE="${1#*=}";;
 		'--aws-access-key-id')
 			shift
 			expect_args aws_access_key_id -- "$@"

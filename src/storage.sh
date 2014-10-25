@@ -14,10 +14,18 @@ function format_public_storage_url () {
 }
 
 
+function validate_private_storage () {
+	[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] || return 1
+	[ -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] || return 1
+	[ -n "${HALCYON_S3_BUCKET:+_}" ] || return 1
+	[ -n "${HALCYON_S3_ACL:+_}" ] || return 1
+}
+
+
 function describe_storage () {
-	if [ "${HALCYON_STORAGE}" = 'private' ]; then
+	if validate_private_storage; then
 		log_indent 'External storage:                        ' "${HALCYON_S3_BUCKET} (private)"
-	elif [ "${HALCYON_STORAGE}" = 'public' ]; then
+	elif ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
 		local host
 		host=$( get_public_storage_host ) || die
 		log_indent 'External storage:                        ' "${host} (public)"
@@ -39,7 +47,7 @@ function transfer_original_file () {
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 	expect_no_existing "${file}"
 
-	[ "${HALCYON_STORAGE}" = 'private' ] &&
+	validate_private_storage &&
 		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" &&
 		return 0
 
@@ -69,7 +77,7 @@ function download_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	[ "${HALCYON_STORAGE}" = 'private' ] &&
+	validate_private_storage &&
 		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" &&
 		return 0
 
@@ -87,7 +95,7 @@ function upload_stored_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	[ "${HALCYON_STORAGE}" != 'private' ] && return 0
+	! validate_private_storage && return 0
 	(( HALCYON_NO_UPLOAD )) && return 0
 
 	local object file
@@ -107,7 +115,7 @@ function delete_stored_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	[ "${HALCYON_STORAGE}" != 'private' ] && return 0
+	! validate_private_storage && return 0
 	(( HALCYON_NO_UPLOAD )) && return 0
 
 	local object
@@ -123,7 +131,7 @@ function list_stored_files () {
 	local prefix
 	expect_args prefix -- "$@"
 
-	if [ "${HALCYON_STORAGE}" = 'private' ]; then
+	if validate_private_storage; then
 		local listing
 		if listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" ); then
 			if [ -n "${listing}" ]; then

@@ -28,26 +28,6 @@ function halcyon_deploy () {
 	export -a HALCYON_INTERNAL_ARGS
 	handle_command_line "$@" || die
 
-	if [ -n "${HALCYON_STORAGE}" ] &&
-		[ "${HALCYON_STORAGE}" != 'public' ] &&
-		[ "${HALCYON_STORAGE}" != 'private' ]
-	then
-		die "Unexpected storage: ${HALCYON_STORAGE}"
-	fi
-	if [ "${HALCYON_STORAGE}" = 'private' ]; then
-		if [ -z "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] ||
-			[ -z "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] ||
-			[ -z "${HALCYON_S3_BUCKET:+_}" ] ||
-			[ -z "${HALCYON_S3_ACL:+_}" ]
-		then
-			die 'Cannot use private storage'
-			log
-			help_configure_storage
-			log
-			die
-		fi
-	fi
-
 	if [ "${HALCYON_TARGET}" != 'sandbox' ] &&
 		[ "${HALCYON_TARGET}" != 'slug' ]
 	then

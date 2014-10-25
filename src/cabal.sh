@@ -532,7 +532,7 @@ function restore_updated_cabal_layer () {
 	local updated_name
 	updated_name=$( match_updated_cabal_archive_name "${tag}" <<<"${archive_names}" ) || true
 
-	if [ "${HALCYON_STORAGE}" = 'private' ] &&
+	if validate_private_storage &&
 		! (( HALCYON_NO_UPLOAD ))
 	then
 		local old_names
