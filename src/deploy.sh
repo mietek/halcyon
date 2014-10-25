@@ -73,36 +73,6 @@ function detect_app_executable () {
 }
 
 
-function deploy_sandbox_extra_apps () {
-	local source_dir
-	expect_args source_dir -- "$@"
-
-	log 'Deploying sandbox extra apps'
-
-	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
-	if ! ( deploy --recursive --target='sandbox' "${extra_apps[@]}" |& quote ); then
-		log_warning 'Cannot deploy sandbox extra apps'
-		return 1
-	fi
-}
-
-
-function deploy_extra_apps () {
-	local source_dir
-	expect_args source_dir -- "$@"
-
-	log 'Deploying extra apps'
-
-	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
-	if ! ( deploy --recursive "${extra_apps[@]}" |& quote ); then
-		log_warning 'Cannot deploy extra apps'
-		return 1
-	fi
-}
-
-
 function deploy_layers () {
 	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_ENV HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
@@ -133,7 +103,7 @@ function deploy_layers () {
 		fi
 
 		if restore_slug "${tag}"; then
-			install_slug || die
+			install_slug "${tag}" || die
 			return 0
 		fi
 
@@ -156,11 +126,6 @@ function deploy_layers () {
 		log
 		deploy_app_layer "${tag}" "${source_dir}" || return 1
 
-		if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
-			log
-			deploy_extra_apps "${source_dir}" || return 1
-		fi
-
 		if (( HALCYON_RECURSIVE )); then
 			if [ -n "${saved_sandbox}" ]; then
 				rm -rf "${HALCYON_DIR}/sandbox" || die
@@ -173,9 +138,9 @@ function deploy_layers () {
 		fi
 
 		log
-		build_slug || die
+		build_slug "${tag}" || die
 		archive_slug || die
-		install_slug || die
+		install_slug "${tag}" || die
 	fi
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
@@ -229,20 +194,46 @@ function prepare_env () {
 }
 
 
-function prepare_extra_apps () {
-	local things magic_file
-	expect_args things magic_file -- "$@"
+function deploy_extra_apps () {
+	local target source_dir
+	expect_args target source_dir -- "$@"
 
-	[ -n "${things}" ] || return 0
+	if [ "${target}" != 'sandbox' ] && [ "${target}" != 'slug' ]; then
+		die "Unexpected target: ${target}"
+	fi
+	[ -f "${source_dir}/.halcyon-magic/${target}-extra-apps" ] || return 0
+
+	log 'Deploying extra apps'
 
 	local -a extra_apps
-	extra_apps=( ${things} )
+	extra_apps=( $( <"${source_dir}/.halcyon-magic/${target}-extra-apps" ) ) || die
+	if ! ( deploy --recursive --target="${target}" "${extra_apps[@]}" |& quote ); then
+		log_warning 'Cannot deploy extra apps'
+		return 1
+	fi
+}
 
-	local work_dir magic_dir
+
+function prepare_extra_apps () {
+	local target source_dir
+	expect_args target source_dir -- "$@"
+
+	local -a extra_apps
+	case "${target}" in
+	'sandbox')
+		[ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ] || return 0
+		extra_apps=( "${HALCYON_SANDBOX_EXTRA_APPS}" )
+		;;
+	'slug')
+		[ -n "${HALCYON_SLUG_EXTRA_APPS:+_}" ] || return 0
+		extra_apps=( "${HALCYON_SLUG_EXTRA_APPS}" )
+		;;
+	*)
+		die "Unexpected target: ${target}"
+	esac
+
+	local work_dir
 	work_dir=$( get_tmp_dir 'halcyon.work' ) || die
-	magic_dir=$( dirname "${magic_file}" ) || die
-	mkdir -p "${magic_dir}" || die
-	rm -f "${magic_file}" || die
 
 	local -a app_labels
 	local extra_app
@@ -253,9 +244,10 @@ function prepare_extra_apps () {
 		app_labels+=( "${app_label}" )
 	done
 
-	rm -rf "${work_dir}" || die
+	mkdir -p "${source_dir}/.halcyon-magic" || die
+	( IFS=$'\n' && echo -n "${app_labels[*]:-}" >"${source_dir}/.halcyon-magic/${target}-extra-apps" ) || die
 
-	( IFS=$'\n' && echo -n "${app_labels[*]:-}" >"${magic_file}" ) || die
+	rm -rf "${work_dir}" || die
 }
 
 
@@ -277,12 +269,8 @@ function deploy_app () {
 		warn_constraints=1
 	fi
 
-	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
-		prepare_extra_apps "${HALCYON_SANDBOX_EXTRA_APPS}" "${source_dir}/.halcyon-magic/sandbox-extra-apps"
-	fi
-	if [ -n "${HALCYON_EXTRA_APPS:+_}" ]; then
-		prepare_extra_apps "${HALCYON_EXTRA_APPS}" "${source_dir}/.halcyon-magic/extra-apps"
-	fi
+	prepare_extra_apps 'sandbox' "${source_dir}"
+	prepare_extra_apps 'slug' "${source_dir}"
 
 	local tag
 	tag=$( create_full_tag "${env_tag}" "${app_label}" "${constraints}" "${source_dir}" ) || die
@@ -293,9 +281,9 @@ function deploy_app () {
 		extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) )
 		log_indent 'Sandbox extra apps:                      ' "${extra_apps[*]:-}"
 	fi
-	if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
-		extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) )
-		log_indent 'Extra apps:                              ' "${extra_apps[*]:-}"
+	if [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
+		extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) )
+		log_indent 'Slug extra apps:                         ' "${extra_apps[*]:-}"
 	fi
 
 	describe_storage || die
@@ -321,8 +309,6 @@ function deploy_local_app () {
 
 	local no_prepare_cache
 	no_prepare_cache=$( prepare_env "${env_tag}" ) || die
-
-	log 'Copying app'
 
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.app' ) || die

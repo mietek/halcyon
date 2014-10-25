@@ -152,9 +152,7 @@ function build_sandbox_layer () {
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
-		deploy_sandbox_extra_apps "${source_dir}" || die
-	fi
+	deploy_extra_apps 'sandbox' "${source_dir}" || die
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'

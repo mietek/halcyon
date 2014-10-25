@@ -37,8 +37,7 @@ function set_halcyon_vars () {
 
 		export HALCYON_NO_RESTORE_APP="${HALCYON_NO_RESTORE_APP:-0}"
 
-		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
-
+		export HALCYON_SLUG_EXTRA_APPS="${HALCYON_SLUG_EXTRA_APPS:-}"
 		export HALCYON_NO_RESTORE_SLUG="${HALCYON_NO_RESTORE_SLUG:-0}"
 		export HALCYON_NO_ARCHIVE_SLUG="${HALCYON_NO_ARCHIVE_SLUG:-0}"
 
@@ -63,8 +62,7 @@ function set_halcyon_vars () {
 
 		export HALCYON_NO_RESTORE_APP=0
 
-		export HALCYON_EXTRA_APPS=
-
+		export HALCYON_SLUG_EXTRA_APPS=
 		export HALCYON_NO_RESTORE_SLUG=0
 		export HALCYON_NO_ARCHIVE_SLUG=0
 
@@ -208,13 +206,18 @@ function handle_command_line () {
 		'--no-restore-app')
 			export HALCYON_NO_RESTORE_APP=1;;
 
-		'--extra-apps')
+		'--slug-extra-apps')
 			shift
-			expect_args extra_apps -- "$@"
-			export HALCYON_EXTRA_APPS="${extra_apps}";;
-		'--extra-apps='*)
-			export HALCYON_EXTRA_APPS="${1#*=}";;
-
+			expect_args slug_extra_apps -- "$@"
+			export HALCYON_SLUG_EXTRA_APPS="${slug_extra_apps}";;
+		'--slug-extra-apps='*)
+			export HALCYON_SLUG_EXTRA_APPS="${1#*=}";;
+		'--extra-slug-apps')
+			shift
+			expect_args slug_extra_apps -- "$@"
+			export HALCYON_SLUG_EXTRA_APPS="${slug_extra_apps}";;
+		'--extra-slug-apps='*)
+			export HALCYON_SLUG_EXTRA_APPS="${1#*=}";;
 		'--no-restore-slug')
 			export HALCYON_NO_RESTORE_SLUG=1;;
 		'--no-archive-slug')

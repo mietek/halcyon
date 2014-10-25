@@ -25,11 +25,22 @@ function build_slug () {
 	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
-	local app_tag target
-	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	target=$( get_tag_target "${app_tag}" ) || die
+	local tag
+	expect_args tag -- "$@"
+
+	local target
+	target=$( get_tag_target "${tag}" ) || die
 
 	log 'Building slug'
+
+	deploy_extra_apps 'slug' "${source_dir}" || die
+
+	if [ -f "${source_dir}/.halcyon-magic/slug-prebuild-hook" ]; then
+		log 'Running slug pre-build hook'
+		( "${source_dir}/.halcyon-magic/slug-prebuild-hook" "${tag}" |& quote ) || die
+	fi
+
+	log 'Copying app'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
@@ -40,7 +51,12 @@ function build_slug () {
 		die 'Cannot build slug'
 	fi
 
-	echo "${app_tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
+	if [ -f "${source_dir}/.halcyon-magic/slug-postbuild-hook" ]; then
+		log 'Running slug post-build hook'
+		( "${source_dir}/.halcyon-magic/slug-postbuild-hook" "${tag}" |& quote ) || die
+	fi
+
+	derive_app_tag "${tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" || die
 }
 
 
@@ -123,16 +139,23 @@ function restore_slug () {
 
 function install_slug () {
 	expect_vars HALCYON_TMP_SLUG_DIR
-	expect_existing "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
 
-	local app_tag description
-	app_tag=$( detect_app_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
-	description=$( format_app_description "${app_tag}" ) || die
+	local tag
+	expect_args tag -- "$@"
+
+	local installed_tag
+	if ! installed_tag=$( validate_slug "${tag}" ); then
+		log_warning 'Cannot deploy app'
+		return 1
+	fi
 
 	# NOTE: Cannot use -p, as it fails when / is read-only.
 
 	cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
 	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+
+	local description
+	description=$( format_app_description "${installed_tag}" ) || die
 
 	log 'App deployed:                            ' "${description}"
 }

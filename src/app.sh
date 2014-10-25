@@ -150,8 +150,6 @@ function build_app_layer () {
 	log 'Building app layer'
 
 	if (( must_copy )); then
-		log 'Copying app'
-
 		copy_entire_contents "${source_dir}" "${HALCYON_DIR}/app" || die
 	fi
 
