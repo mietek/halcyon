@@ -692,7 +692,8 @@ function cabal_freeze_implicit_constraints () {
 
 	if ! cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
-		filter_correct_constraints "${app_label}"
+		filter_correct_constraints "${app_label}" |
+		sort_naturally
 	then
 		quote <"${stderr}"
 		die 'Cannot freeze implicit constraints'
@@ -709,7 +710,8 @@ function cabal_freeze_actual_constraints () {
 
 	if ! sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
-		filter_correct_constraints "${app_label}"
+		filter_correct_constraints "${app_label}" |
+		sort_naturally
 	then
 		quote <"${stderr}"
 		die 'Cannot freeze actual constraints'
