@@ -151,8 +151,9 @@ function apply_slug () {
 		return 1
 	fi
 
-	# NOTE: Cannot use -p, as it fails when / is read-only.
+	# NOTE: On a Heroku dyno, / is read-only.
 
+	rm -f "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" || die
 	cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
 	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 
