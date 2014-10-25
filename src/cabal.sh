@@ -625,12 +625,10 @@ function cabal_do () {
 	expect_existing "${work_dir}"
 	shift
 
-	if ! (
+	(
 		cd "${work_dir}" &&
 		cabal --config-file="${HALCYON_DIR}/cabal/.halcyon-cabal.config" "$@"
-	); then
-		die 'Failed to run Cabal:' "$@"
-	fi
+	) || return 1
 }
 
 
@@ -669,5 +667,83 @@ function sandboxed_cabal_do () {
 		mv "${saved_config}" "${HALCYON_DIR}/sandbox/cabal.config" || die
 	fi
 
-	! (( status )) || die
+	return "${status}"
+}
+
+
+function cabal_freeze_implicit_constraints () {
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
+	# during a dry run.  Hence, if a local constraint conflicts with an installed package, Cabal
+	# will fail to resolve dependencies.
+	# https://github.com/haskell/cabal/issues/2178
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon.stderr' ) || die
+
+	if ! cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
+		read_dry_frozen_constraints |
+		filter_correct_constraints "${app_label}"
+	then
+		quote <"${stderr}"
+		return 1
+	fi
+}
+
+
+function cabal_freeze_actual_constraints () {
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon.stderr' ) || die
+
+	if ! sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
+		read_dry_frozen_constraints |
+		filter_correct_constraints "${app_label}"
+	then
+		quote <"${stderr}"
+		return 1
+	fi
+}
+
+
+function cabal_unpack_app () {
+	expect_vars HALCYON_RECURSIVE
+
+	local thing source_dir
+	expect_args thing source_dir -- "$@"
+
+	local work_dir stderr
+	work_dir=$( get_tmp_dir 'halcyon.work' ) || die
+	stderr=$( get_tmp_file 'halcyon.stderr' ) || die
+
+	mkdir -p "${work_dir}" || die
+	rm -rf "${source_dir}" || die
+
+	local app_label
+	if ! app_label=$(
+		cabal_do "${work_dir}" unpack "${thing}" 2>"${stderr}" |
+		filter_matching '^Unpacking to ' |
+		match_exactly_one |
+		sed 's:^Unpacking to \(.*\)/$:\1:'
+	); then
+		quote <"${stderr}"
+		die 'Cannot unpack app'
+	fi
+	if [ "${app_label}" != "${thing}" ]; then
+		if (( HALCYON_RECURSIVE )); then
+			log_error "Cannot use newest available version of ${thing}"
+			die 'Expected app label with explicit version'
+		fi
+		log_warning "Using newest available version of ${thing}"
+		log_warning 'Expected app label with explicit version'
+	fi
+
+	mv "${work_dir}/${app_label}" "${source_dir}" || die
+	rm -rf "${work_dir}" || die
+
+	echo "${app_label}"
 }

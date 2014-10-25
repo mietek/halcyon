@@ -183,7 +183,9 @@ function build_sandbox_layer () {
 
 	local app_label actual_constraints
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	actual_constraints=$( freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
+	if ! actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ); then
+		die 'Cannot determine actual constraints'
+	fi
 	validate_actual_constraints "${tag}" "${constraints}" "${actual_constraints}" || die
 }
 
