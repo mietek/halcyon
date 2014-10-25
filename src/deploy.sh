@@ -53,7 +53,7 @@ function detect_app_label () {
 	app_name=$( detect_app_name "${source_dir}" ) || return 1
 	app_version=$( detect_app_version "${source_dir}" ) || return 1
 
-	echo "${app_name}-${app_label}"
+	echo "${app_name}-${app_version}"
 }
 
 
