@@ -235,11 +235,11 @@ function deploy_app () {
 
 	log 'Deploying app:                           ' "${app_label}"
 
-	if has_vars HALCYON_SANDBOX_EXTRA_APPS; then
+	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
 		mkdir -p "${source_dir}/.halcyon-magic" || die
 		echo "${HALCYON_SANDBOX_EXTRA_APPS}" >"${source_dir}/.halcyon-magic/sandbox-extra-apps" || die
 	fi
-	if has_vars HALCYON_EXTRA_APPS; then
+	if [ -n "${HALCYON_EXTRA_APPS:+_}" ]; then
 		mkdir -p "${source_dir}/.halcyon-magic" || die
 		echo "${HALCYON_EXTRA_APPS}" >"${source_dir}/.halcyon-magic/extra-apps" || die
 	fi
