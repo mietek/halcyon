@@ -45,29 +45,27 @@ function build_slug () {
 
 
 function archive_slug () {
-	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
+	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_ARCHIVE_SLUG
 	expect_existing "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
+
+	! (( HALCYON_NO_ARCHIVE )) || ! (( HALCYON_NO_ARCHIVE_SLUG )) || return 0
 
 	local slug_size
 	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
 
-	if (( HALCYON_NO_ARCHIVE )); then
-		return 0
-	fi
-
 	log "Archiving slug (${slug_size})"
 
-	local app_tag os ghc_version archive_name
+	local app_tag archive_name
 	app_tag=$( detect_app_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
-	os=$( get_tag_os "${app_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_slug_archive_name "${app_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_TMP_SLUG_DIR}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}/ghc-${ghc_version}"; then
-		log_warning 'Cannot upload slug archive'
-	fi
+
+	local os ghc_version
+	os=$( get_tag_os "${app_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
+	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || die
 }
 
 
@@ -91,6 +89,10 @@ function restore_slug () {
 	local tag
 	expect_args tag -- "$@"
 
+	! (( HALCYON_NO_RESTORE_SLUG )) || return 1
+
+	log
+
 	local os ghc_version archive_name
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
@@ -109,9 +111,8 @@ function restore_slug () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
 		! validate_slug "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" || die
-		if ! download_layer "${os}/ghc-${ghc_version}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
-			log 'Cannot download slug archive'
+		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
 			return 1
 		fi
 

@@ -256,7 +256,7 @@ function build_ghc_layer () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
-		transfer_original "${original_name}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
+		transfer_original_file "${original_url}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
 			die 'Cannot extract original archive'
@@ -351,25 +351,23 @@ function archive_ghc_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	if (( HALCYON_NO_ARCHIVE )); then
-		return 0
-	fi
+	! (( HALCYON_NO_ARCHIVE )) || return 0
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
 	log "Archiving GHC layer (${layer_size})"
 
-	local ghc_tag os archive_name
+	local ghc_tag archive_name
 	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag") || die
-	os=$( get_tag_os "${ghc_tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}"; then
-		log_warning 'Cannot upload GHC layer archive'
-	fi
+
+	local os
+	os=$( get_tag_os "${ghc_tag}" ) || die
+	upload_stored_file "${os}" "${archive_name}" || die
 }
 
 
@@ -410,9 +408,8 @@ function restore_ghc_layer () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
 		! validate_ghc_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" || die
-		if ! download_layer "${os}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
-			log 'Cannot download GHC layer archive'
+		rm -rf "${HALCYON_DIR}/ghc" || die
+		if ! download_stored_file "${os}" "${archive_name}"; then
 			return 1
 		fi
 

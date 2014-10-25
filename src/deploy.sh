@@ -143,7 +143,7 @@ function deploy_extra_apps () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_ENV HALCYON_NO_RESTORE_SLUG HALCYON_NO_ARCHIVE_SLUG HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_ENV HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -157,12 +157,9 @@ function deploy_layers () {
 		rm -rf "${HALCYON_DIR}/slug" || die
 	fi
 
-	if ! (( HALCYON_ONLY_ENV )) && ! (( HALCYON_NO_RESTORE_SLUG ));  then
-		log
-		if restore_slug "${tag}"; then
-			install_slug || die
-			return 0
-		fi
+	if ! (( HALCYON_ONLY_ENV )) && restore_slug "${tag}"; then
+		install_slug || die
+		return 0
 	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
@@ -199,9 +196,7 @@ function deploy_layers () {
 
 		log
 		build_slug || die
-		if ! (( HALCYON_NO_ARCHIVE_SLUG )); then
-			archive_slug || die
-		fi
+		archive_slug || die
 		install_slug || die
 	fi
 

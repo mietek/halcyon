@@ -4,15 +4,16 @@ function set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED:-0} )); then
 		export HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED=1
 
+		export HALCYON_STORAGE="${HALCYON_STORAGE:-}"
 		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
 		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
-		export HALCYON_PUBLIC_STORAGE="${HALCYON_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 
+		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
@@ -106,6 +107,12 @@ function handle_command_line () {
 			export HALCYON_TMP_SLUG_DIR="${1#*=}";;
 
 		# Vars set once and inherited:
+		'--storage')
+			shift
+			expect_args storage -- "$@"
+			export HALCYON_STORAGE="${storage}";;
+		'--storage')
+			export HALCYON_STORAGE="${1#*=}";;
 		'--aws-access-key-id')
 			shift
 			expect_args aws_access_key_id -- "$@"
@@ -130,8 +137,6 @@ function handle_command_line () {
 			export HALCYON_S3_ACL="${s3_acl}";;
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
-		'--public-storage')
-			export HALCYON_PUBLIC_STORAGE=1;;
 
 		'--recursive')
 			export HALCYON_RECURSIVE=1;;

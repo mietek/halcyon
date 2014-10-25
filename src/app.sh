@@ -186,19 +186,15 @@ function archive_app_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
-	if (( HALCYON_NO_ARCHIVE )); then
-		return 0
-	fi
+	! (( HALCYON_NO_ARCHIVE )) || return 0
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/app" ) || die
 
 	log "Archiving app layer (${layer_size})"
 
-	local app_tag os ghc_version archive_name
+	local app_tag archive_name
 	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	os=$( get_tag_os "${app_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_app_archive_name "${app_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
@@ -210,9 +206,11 @@ function archive_app_layer () {
 		--exclude '.cabal'                     \
 		--exclude '.cabal-sandbox'             \
 		--exclude 'cabal.sandbox.config' || die
-	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}/ghc-${ghc_version}"; then
-		log_warning 'Cannot upload app layer archive'
-	fi
+
+	local os ghc_version
+	os=$( get_tag_os "${app_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
+	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || die
 }
 
 
@@ -282,9 +280,8 @@ function restore_app_layer () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
 		! validate_recognized_app_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" || die
-		if ! download_layer "${os}/ghc-${ghc_version}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
-			log 'Cannot download app layer archive'
+		rm -rf "${HALCYON_DIR}/app" || die
+		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
 			return 1
 		fi
 

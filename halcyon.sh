@@ -23,21 +23,29 @@ source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
 function halcyon_deploy () {
-	expect_vars HALCYON_PUBLIC_STORAGE HALCYON_TARGET HALCYON_ONLY_ENV
+	expect_vars HALCYON_TARGET HALCYON_ONLY_ENV
 
 	export -a HALCYON_INTERNAL_ARGS
 	handle_command_line "$@" || die
 
-	if has_private_storage; then
-		if (( HALCYON_PUBLIC_STORAGE )); then
-			die 'Cannot use both private and public storage'
+	if [ -n "${HALCYON_STORAGE}" ] &&
+		[ "${HALCYON_STORAGE}" != 'public' ] &&
+		[ "${HALCYON_STORAGE}" != 'private' ]
+	then
+		die "Unexpected storage: ${HALCYON_STORAGE}"
+	fi
+	if [ "${HALCYON_STORAGE}" = 'private' ]; then
+		if [ -z "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] ||
+			[ -z "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] ||
+			[ -z "${HALCYON_S3_BUCKET:+_}" ] ||
+			[ -z "${HALCYON_S3_ACL:+_}" ]
+		then
+			die 'Cannot use private storage'
+			log
+			help_configure_storage
+			log
+			die
 		fi
-	elif ! (( HALCYON_PUBLIC_STORAGE )); then
-		log_error 'Expected private or public storage'
-		log
-		help_configure_storage
-		log
-		die
 	fi
 
 	if [ "${HALCYON_TARGET}" != 'slug' ] && [ "${HALCYON_TARGET}" != 'sandbox' ]; then

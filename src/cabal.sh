@@ -275,7 +275,7 @@ function build_cabal_layer () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"
 	then
 		rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
-		transfer_original "${original_name}" "${original_url}" "${HALCYON_CACHE_DIR}" || die
+		transfer_original_file "${original_url}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
 			rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
 			die 'Cannot extract original archive'
@@ -359,25 +359,23 @@ function archive_cabal_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	if (( HALCYON_NO_ARCHIVE )); then
-		return 0
-	fi
+	! (( HALCYON_NO_ARCHIVE )) || return 0
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
 
 	log "Archiving Cabal layer (${layer_size})"
 
-	local cabal_tag os archive_name
+	local cabal_tag archive_name
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	os=$( get_tag_os "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}"; then
-		log_warning 'Cannot upload Cabal layer archive'
-	fi
+
+	local os
+	os=$( get_tag_os "${cabal_tag}" ) || die
+	upload_stored_file "${os}" "${archive_name}" || die
 }
 
 
@@ -477,9 +475,8 @@ function restore_bare_cabal_layer () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
 		! validate_bare_cabal_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" || die
-		if ! download_layer "${os}" "${bare_name}" "${HALCYON_CACHE_DIR}"; then
-			log 'Cannot download bare Cabal layer archive'
+		rm -rf "${HALCYON_DIR}/cabal" || die
+		if ! download_stored_file "${os}" "${bare_name}"; then
 			return 1
 		fi
 
@@ -550,7 +547,7 @@ function restore_updated_cabal_layer () {
 
 	local archive_names
 	if ! archive_names=$(
-		list_layer "${os}/${archive_prefix}" |
+		list_stored_files "${os}/${archive_prefix}" |
 		sed "s:${os}/::" |
 		match_at_least_one
 	); then
@@ -561,7 +558,7 @@ function restore_updated_cabal_layer () {
 	local updated_name
 	updated_name=$( match_updated_cabal_archive_name "${tag}" <<<"${archive_names}" ) || true
 
-	if has_private_storage; then
+	if [ "${HALCYON_STORAGE}" = 'private' ] && ! (( HALCYON_NO_UPLOAD )); then
 		local old_names
 		if old_names=$(
 			filter_not_matching "^${updated_name//./\.}$" <<<"${archive_names}" |
@@ -571,7 +568,7 @@ function restore_updated_cabal_layer () {
 
 			local old_name
 			while read -r old_name; do
-				delete_layer "${os}" "${old_name}" || true
+				delete_stored_file "${os}" "${old_name}" || true
 			done <<<"${old_names}"
 		fi
 	fi
@@ -583,9 +580,8 @@ function restore_updated_cabal_layer () {
 
 	log 'Restoring updated Cabal layer'
 
-	rm -rf "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" || die
-	if ! download_layer "${os}" "${updated_name}" "${HALCYON_CACHE_DIR}"; then
-		log_warning 'Cannot download updated Cabal layer archive'
+	rm -rf "${HALCYON_DIR}/cabal" || die
+	if ! download_stored_file "${os}" "${updated_name}"; then
 		return 1
 	fi
 

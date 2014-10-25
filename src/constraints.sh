@@ -225,7 +225,7 @@ function locate_all_matching_sandbox_layers () {
 
 	local file_names
 	if ! file_names=$(
-		list_layer "${os}/ghc-${ghc_version}/${constraint_prefix}" |
+		list_stored_files "${os}/ghc-${ghc_version}/${constraint_prefix}" |
 		sed "s:${os}/ghc-${ghc_version}/::" |
 		filter_matching "^${partial_pattern}$" |
 		filter_not_matching "^${file_name}$" |
@@ -266,9 +266,7 @@ function locate_first_full_sandbox_layer () {
 		if ! [ -f "${HALCYON_CACHE_DIR}/${full_name}" ] ||
 			! full_hash=$( validate_full_constraint_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" )
 		then
-			rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
-			if ! download_layer "${os}/ghc-${ghc_version}" "${full_name}" "${HALCYON_CACHE_DIR}"; then
-				log_warning 'Cannot download fully matching sandbox layer constraints'
+			if ! download_stored_file "${os}/ghc-${ghc_version}" "${full_name}"; then
 				continue
 			fi
 
@@ -321,9 +319,7 @@ function locate_partial_sandbox_layers () {
 		if ! [ -f "${HALCYON_CACHE_DIR}/${partial_name}" ] ||
 			! partial_hash=$( validate_partial_constraint_file "${HALCYON_CACHE_DIR}/${partial_name}" )
 		then
-			rm -f "${HALCYON_CACHE_DIR}/${partial_name}" || die
-			if ! download_layer "${os}/ghc-${ghc_version}" "${partial_name}" "${HALCYON_CACHE_DIR}"; then
-				log_warning 'Cannot download partially matching sandbox layer constraints'
+			if ! download_stored_file "${os}/ghc-${ghc_version}" "${partial_name}"; then
 				continue
 			fi
 

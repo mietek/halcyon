@@ -1,14 +1,5 @@
-function has_private_storage () {
-	has_vars HALCYON_AWS_ACCESS_KEY_ID HALCYON_AWS_SECRET_ACCESS_KEY HALCYON_S3_BUCKET HALCYON_S3_ACL
-}
-
-
-function describe_storage () {
-	if has_private_storage; then
-		log_indent 'Storage:                                 ' "${HALCYON_S3_BUCKET}"
-	else
-		log_indent 'Storage:                                 ' 'public'
-	fi
+function get_public_storage_host () {
+	echo 's3.halcyon.sh'
 }
 
 
@@ -16,127 +7,153 @@ function format_public_storage_url () {
 	local object
 	expect_args object -- "$@"
 
-	echo "http://s3.halcyon.sh/${object}"
+	local host
+	host=$( get_public_storage_host ) || die
+
+	echo "http://${host}/${object}"
 }
 
 
-function transfer_original () {
-	expect_vars HALCYON_NO_UPLOAD
+function describe_storage () {
+	if [ "${HALCYON_STORAGE}" = 'private' ]; then
+		log_indent 'External storage:                        ' "${HALCYON_S3_BUCKET} (private)"
+	elif [ "${HALCYON_STORAGE}" = 'public' ]; then
+		local host
+		host=$( get_public_storage_host ) || die
+		log_indent 'External storage:                        ' "${host} (public)"
+	else
+		log_indent 'External storage:                        ' '(none)'
+	fi
+}
 
-	local src_file_name original_url dst_dir
-	expect_args src_file_name original_url dst_dir -- "$@"
 
-	local src_object dst_file
-	src_object="original/${src_file_name}"
-	dst_file="${dst_dir}/${src_file_name}"
-	expect_no_existing "${dst_file}"
+function transfer_original_file () {
+	expect_vars HALCYON_NO_DOWNLOAD_PUBLIC HALCYON_NO_UPLOAD
 
-	if has_private_storage &&
-		s3_download "${HALCYON_S3_BUCKET}" "${src_object}" "${dst_file}"
+	local original_url
+	expect_args original_url -- "$@"
+
+	local file_name object file
+	file_name=$( basename "${original_url}" ) || die
+	object="original/${file_name}"
+	file="${HALCYON_CACHE_DIR}/${file_name}"
+	expect_no_existing "${file}"
+
+	if [ "${HALCYON_STORAGE}" = 'private' ] &&
+		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
 	then
 		return 0
 	fi
 
-	if ! curl_download "${original_url}" "${dst_file}"; then
-		die 'Cannot download original archive'
-	fi
-
-	if has_private_storage &&
-		! (( HALCYON_NO_UPLOAD )) &&
-		! s3_upload "${dst_file}" "${HALCYON_S3_BUCKET}" "${src_object}" "${HALCYON_S3_ACL}"
-	then
-		log_warning 'Cannot upload original archive'
-	fi
-}
-
-
-function download_layer () {
-	local src_prefix src_file_name dst_dir
-	expect_args src_prefix src_file_name dst_dir -- "$@"
-
-	local src_object dst_file
-	src_object="${src_prefix:+${src_prefix}/}${src_file_name}"
-	dst_file="${dst_dir}/${src_file_name}"
-	expect_no_existing "${dst_file}"
-
-	if has_private_storage; then
-		if ! s3_download "${HALCYON_S3_BUCKET}" "${src_object}" "${dst_file}"; then
-			return 1
+	if ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
+		local public_url
+		public_url=$( format_public_storage_url "${object}" ) || die
+		if curl_download "${public_url}" "${file}"; then
+			upload_stored_file 'original' "${file_name}" || die
+			return 0
 		fi
+	fi
+
+	if ! curl_download "${original_url}" "${file}"; then
+		die 'Cannot download file'
+	fi
+	upload_stored_file 'original' "${file_name}" || die
+}
+
+
+function download_stored_file () {
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_DOWNLOAD_PUBLIC
+
+	local prefix file_name
+	expect_args prefix file_name -- "$@"
+
+	local object file
+	object="${prefix:+${prefix}/}${file_name}"
+	file="${HALCYON_CACHE_DIR}/${file_name}"
+
+	if [ "${HALCYON_STORAGE}" = 'private' ] &&
+		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
+	then
 		return 0
 	fi
 
-	local src_url
-	src_url=$( format_public_storage_url "${src_object}" ) || die
-	if ! curl_download "${src_url}" "${dst_file}"; then
+	! (( HALCYON_NO_DOWNLOAD_PUBLIC )) || return 1
+
+	local public_url
+	public_url=$( format_public_storage_url "${object}" ) || die
+	if ! curl_download "${public_url}" "${file}"; then
+		log_indent 'Cannot download stored file'
 		return 1
 	fi
 }
 
 
-function upload_layer () {
+function upload_stored_file () {
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
+
+	local prefix file_name
+	expect_args prefix file_name -- "$@"
+
+	if [ "${HALCYON_STORAGE}" != 'private' ] || (( HALCYON_NO_UPLOAD )); then
+		return 0
+	fi
+
+	local object file
+	object="${prefix:+${prefix}/}${file_name}"
+	file="${HALCYON_CACHE_DIR}/${file_name}"
+	expect_existing "${file}"
+
+	if ! s3_upload "${file}" "${HALCYON_S3_BUCKET}" "${object}" "${HALCYON_S3_ACL}"; then
+		log_warning 'Cannot upload stored file'
+	fi
+}
+
+
+function delete_stored_file () {
 	expect_vars HALCYON_NO_UPLOAD
 
-	local src_file dst_prefix
-	expect_args src_file dst_prefix -- "$@"
+	local prefix file_name
+	expect_args prefix file_name -- "$@"
 
-	local src_file_name dst_object
-	src_file_name=$( basename "${src_file}" ) || die
-	dst_object="${dst_prefix:+${dst_prefix}/}${src_file_name}"
+	if [ "${HALCYON_STORAGE}" != 'private' ] || (( HALCYON_NO_UPLOAD )); then
+		return 0
+	fi
 
-	if has_private_storage &&
-		! (( HALCYON_NO_UPLOAD )) &&
-		! s3_upload "${src_file}" "${HALCYON_S3_BUCKET}" "${dst_object}" "${HALCYON_S3_ACL}"
-	then
+	local object
+	object="${prefix:+${prefix}/}${file_name}"
+	if ! s3_delete "${HALCYON_S3_BUCKET}" "${object}"; then
+		log_warning 'Cannot delete stored file'
 		return 1
 	fi
 }
 
 
-function delete_layer () {
-	local dst_prefix dst_file_name
-	expect_args dst_prefix dst_file_name -- "$@"
+function list_stored_files () {
+	local prefix
+	expect_args prefix -- "$@"
 
-	local dst_object
-	dst_object="${dst_prefix:+${dst_prefix}/}${dst_file_name}"
-
-	if has_private_storage &&
-		! (( HALCYON_NO_UPLOAD )) &&
-		! s3_delete "${HALCYON_S3_BUCKET}" "${dst_object}"
-	then
-		return 1
-	fi
-}
-
-
-function list_layer () {
-	local src_prefix
-	expect_args src_prefix -- "$@"
-
-	if has_private_storage; then
+	if [ "${HALCYON_STORAGE}" = 'private' ]; then
 		local listing
-		if ! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${src_prefix}" ); then
-			return 1
+		if listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" ); then
+			if [ -n "${listing}" ]; then
+				sort_naturally <<<"${listing}" | quote || die
+				echo "${listing}"
+			fi
+			return 0
 		fi
-		if [ -n "${listing}" ]; then
-			sort_naturally <<<"${listing}" | quote || die
-			echo "${listing}"
-		fi
-		return 0
 	fi
 
-	local src_url
-	src_url=$( format_public_storage_url "${src_prefix:+?prefix=${src_prefix}}" ) || die
+	! (( HALCYON_NO_DOWNLOAD_PUBLIC )) || return 1
 
-	log_indent_begin "Listing ${src_url}..."
+	local public_url
+	public_url=$( format_public_storage_url "${prefix:+?prefix=${prefix}}" ) || die
 
 	local listing
-	if ! listing=$( curl_do "${src_url}" -o >( read_s3_listing_xml ) ); then
+	if ! listing=$( curl_list_s3 "${public_url}" ); then
 		return 1
 	fi
 	if [ -n "${listing}" ]; then
 		sort_naturally <<<"${listing}" | quote || die
 		echo "${listing}"
 	fi
-
 }

@@ -215,31 +215,27 @@ function archive_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-constraints.config"
 
-	if (( HALCYON_NO_ARCHIVE )); then
-		return 0
-	fi
+	! (( HALCYON_NO_ARCHIVE )) || return 0
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
 
 	log "Archiving sandbox layer (${layer_size})"
 
-	local sandbox_tag os ghc_version archive_name file_name
+	local sandbox_tag archive_name file_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	os=$( get_tag_os "${sandbox_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	file_name=$( format_constraint_file_name "${sandbox_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	if ! upload_layer "${HALCYON_CACHE_DIR}/${archive_name}" "${os}/ghc-${ghc_version}"; then
-		log_warning 'Cannot upload sandbox layer archive'
-	fi
 	cp -p "${HALCYON_DIR}/sandbox/.halcyon-constraints.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
-	if ! upload_layer "${HALCYON_CACHE_DIR}/${file_name}" "${os}/ghc-${ghc_version}"; then
-		log_warning 'Cannot upload sandbox layer constraints'
-	fi
+
+	local os ghc_version
+	os=$( get_tag_os "${sandbox_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
+	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || die
+	upload_stored_file "${os}/ghc-${ghc_version}" "${file_name}" || die
 }
 
 
@@ -281,9 +277,8 @@ function restore_sandbox_layer () {
 		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" || die
-		if ! download_layer "${os}/ghc-${ghc_version}" "${archive_name}" "${HALCYON_CACHE_DIR}"; then
-			log 'Cannot download sandbox layer archive'
+		rm -rf "${HALCYON_DIR}/sandbox" || die
+		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
 			return 1
 		fi
 
