@@ -55,7 +55,7 @@ function halcyon_deploy () {
 	fi
 
 	local env_tag
-	env_tag=$( determine_env_tag ) || die
+	env_tag=$( create_env_tag ) || die
 
 	if (( HALCYON_ONLY_ENV )); then
 		deploy_env "${env_tag}" || return 1

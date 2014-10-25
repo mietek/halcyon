@@ -271,12 +271,12 @@ function deploy_app () {
 	local constraints warn_constraints
 	if [ -f "${source_dir}/cabal.config" ]; then
 		if ! constraints=$( detect_constraints "${app_label}" "${source_dir}" ); then
-			die 'Cannot determine explicit constraints'
+			die 'Cannot detect explicit constraints'
 		fi
 		warn_constraints=0
 	else
 		if ! constraints=$( cabal_freeze_implicit_constraints "${app_label}" "${source_dir}" ); then
-			die 'Cannot determine implicit constraints'
+			die 'Cannot detect implicit constraints'
 		fi
 		warn_constraints=1
 	fi
@@ -289,7 +289,7 @@ function deploy_app () {
 	fi
 
 	local tag
-	tag=$( determine_full_tag "${env_tag}" "${app_label}" "${constraints}" "${source_dir}" ) || die
+	tag=$( create_full_tag "${env_tag}" "${app_label}" "${constraints}" "${source_dir}" ) || die
 	describe_full_tag "${tag}" || die
 
 	local -a extra_apps

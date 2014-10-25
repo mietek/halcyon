@@ -154,7 +154,7 @@ function detect_tag () {
 }
 
 
-function determine_env_tag () {
+function create_env_tag () {
 	local ghc_version
 	if [ -n "${HALCYON_GHC_VERSION:+_}" ]; then
 		ghc_version="${HALCYON_GHC_VERSION}"
@@ -182,7 +182,7 @@ function determine_env_tag () {
 }
 
 
-function determine_full_tag () {
+function create_full_tag () {
 	expect_vars HALCYON_TARGET
 
 	local env_tag app_label constraints source_dir
