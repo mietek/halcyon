@@ -332,7 +332,7 @@ function select_best_partial_sandbox_layer () {
 
 
 function locate_best_matching_sandbox_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_FORCE_BUILD_SANDBOX
+	expect_vars HALCYON_ONLY_BUILD_APP
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
@@ -361,9 +361,7 @@ function locate_best_matching_sandbox_layer () {
 		return 0
 	fi
 
-	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
-		(( HALCYON_NO_BUILD ))
-	then
+	if (( HALCYON_ONLY_BUILD_APP )); then
 		return 1
 	fi
 

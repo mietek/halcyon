@@ -74,7 +74,7 @@ function detect_app_executable () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_ENV HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -97,7 +97,7 @@ function deploy_layers () {
 		fi
 	fi
 
-	if ! (( HALCYON_ONLY_ENV )); then
+	if ! (( HALCYON_ONLY_DEPLOY_ENV )); then
 		if ! (( HALCYON_RECURSIVE )); then
 			rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
 		fi
@@ -159,7 +159,7 @@ function deploy_env () {
 	describe_env_tag "${env_tag}" || die
 	describe_storage || die
 
-	HALCYON_ONLY_ENV=1 \
+	HALCYON_ONLY_DEPLOY_ENV=1 \
 		deploy_layers "${env_tag}" '' '/dev/null' || return 1
 }
 

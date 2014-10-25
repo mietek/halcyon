@@ -12,8 +12,8 @@ function set_halcyon_vars () {
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 
+		export HALCYON_ONLY_BUILD_APP="${HALCYON_ONLY_BUILD_APP:-0}"
 		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
-		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 	fi
@@ -29,7 +29,7 @@ function set_halcyon_vars () {
 		export HALCYON_UPDATE_CABAL="${HALCYON_UPDATE_CABAL:-0}"
 		export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
 
-		export HALCYON_ONLY_ENV="${HALCYON_ONLY_ENV:-0}"
+		export HALCYON_ONLY_DEPLOY_ENV="${HALCYON_ONLY_DEPLOY_ENV:-0}"
 
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
 		export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
@@ -54,7 +54,7 @@ function set_halcyon_vars () {
 		export HALCYON_UPDATE_CABAL=0
 		export HALCYON_FORCE_BUILD_CABAL=0
 
-		export HALCYON_ONLY_ENV=0
+		export HALCYON_ONLY_DEPLOY_ENV=0
 
 		export HALCYON_SANDBOX_EXTRA_APPS=
 		export HALCYON_FORCE_BUILD_SANDBOX=0
@@ -138,8 +138,10 @@ function handle_command_line () {
 		'--target='*)
 			export HALCYON_TARGET="${1#*=}";;
 
-		'--no-build')
-			export HALCYON_NO_BUILD=1;;
+		'--only-build-app')
+			export HALCYON_ONLY_BUILD_APP=1;;
+		'--no-download-public')
+			export HALCYON_NO_DOWNLOAD_PUBLIC=1;;
 		'--no-archive')
 			export HALCYON_NO_ARCHIVE=1;;
 		'--no-upload')
@@ -174,12 +176,8 @@ function handle_command_line () {
 		'--force-build-cabal')
 			export HALCYON_FORCE_BUILD_CABAL=1;;
 
-		'--only-env')
-			export HALCYON_ONLY_ENV=1;;
-		'--env-only')
-			export HALCYON_ONLY_ENV=1;;
-		'--env')
-			export HALCYON_ONLY_ENV=1;;
+		'--only-deploy-env')
+			export HALCYON_ONLY_DEPLOY_ENV=1;;
 
 		'--sandbox-extra-apps')
 			shift

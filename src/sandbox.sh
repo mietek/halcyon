@@ -293,7 +293,7 @@ function restore_sandbox_layer () {
 
 
 function install_matching_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR
 
 	local tag constraints matching_tag source_dir
 	expect_args tag constraints matching_tag source_dir -- "$@"
@@ -314,7 +314,6 @@ function install_matching_sandbox_layer () {
 
 	log 'Using partially matching sandbox layer:  ' "${matching_description}"
 
-	! (( HALCYON_NO_BUILD )) || return 1
 	restore_sandbox_layer "${matching_tag}" || return 1
 
 	local must_create
@@ -325,7 +324,7 @@ function install_matching_sandbox_layer () {
 
 
 function install_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_BUILD HALCYON_FORCE_BUILD_SANDBOX
+	expect_vars HALCYON_DIR HALCYON_ONLY_BUILD_APP HALCYON_FORCE_BUILD_SANDBOX
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -343,7 +342,7 @@ function install_sandbox_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )); then
+		if (( HALCYON_ONLY_BUILD_APP )); then
 			log_warning 'Cannot build sandbox layer'
 			return 1
 		fi

@@ -570,7 +570,7 @@ function restore_updated_cabal_layer () {
 
 
 function install_cabal_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_BUILD HALCYON_FORCE_BUILD_CABAL HALCYON_UPDATE_CABAL
+	expect_vars HALCYON_DIR HALCYON_ONLY_BUILD_APP HALCYON_FORCE_BUILD_CABAL HALCYON_UPDATE_CABAL
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -588,7 +588,7 @@ function install_cabal_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )); then
+		if (( HALCYON_ONLY_BUILD_APP )); then
 			log_warning 'Cannot build Cabal layer'
 			return 1
 		fi
