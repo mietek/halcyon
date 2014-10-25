@@ -149,9 +149,7 @@ function list_stored_files () {
 	public_url=$( format_public_storage_url "${prefix:+?prefix=${prefix}}" ) || die
 
 	local listing
-	if ! listing=$( curl_list_s3 "${public_url}" ); then
-		return 1
-	fi
+	listing=$( curl_list_s3 "${public_url}" ) || return 1
 	if [ -n "${listing}" ]; then
 		sort_naturally <<<"${listing}" | quote || die
 		echo "${listing}"

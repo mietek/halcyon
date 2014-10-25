@@ -222,9 +222,7 @@ function validate_identical_app_layer () {
 
 	local app_tag
 	app_tag=$( derive_app_tag "${tag}" ) || die
-	if ! detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${app_tag//./\.}"; then
-		return 1
-	fi
+	detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${app_tag//./\.}" || return 1
 }
 
 
@@ -236,9 +234,7 @@ function validate_configured_app_layer () {
 
 	local configured_pattern
 	configured_pattern=$( derive_configured_app_tag_pattern "${tag}" ) || die
-	if ! detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${configured_pattern}"; then
-		return 1
-	fi
+	detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${configured_pattern}" || return 1
 }
 
 
@@ -250,9 +246,7 @@ function validate_recognized_app_layer () {
 
 	local recognized_pattern
 	recognized_pattern=$( derive_recognized_app_tag_pattern "${tag}" ) || die
-	if ! detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${recognized_pattern}"; then
-		return 1
-	fi
+	detect_tag "${HALCYON_DIR}/app/.halcyon-tag" "${recognized_pattern}" || return 1
 }
 
 

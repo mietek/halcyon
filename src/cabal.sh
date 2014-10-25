@@ -383,9 +383,7 @@ function validate_bare_cabal_layer () {
 
 	local bare_tag
 	bare_tag=$( derive_bare_cabal_tag "${tag}" ) || die
-	if ! detect_tag "${HALCYON_DIR}/cabal/.halcyon-tag" "${bare_tag//./\.}"; then
-		return 1
-	fi
+	detect_tag "${HALCYON_DIR}/cabal/.halcyon-tag" "${bare_tag//./\.}" || return 1
 }
 
 
@@ -395,9 +393,7 @@ function validate_updated_cabal_timestamp () {
 
 	local yesterday_timestamp
 	yesterday_timestamp=$( format_timestamp -d yesterday ) || die
-	if [[ "${candidate_timestamp}" < "${yesterday_timestamp}" ]]; then
-		return 1
-	fi
+	[[ "${candidate_timestamp}" > "${yesterday_timestamp}" ]] || return 1
 }
 
 
@@ -409,15 +405,11 @@ function validate_updated_cabal_layer () {
 
 	local updated_pattern candidate_tag
 	updated_pattern=$( derive_updated_cabal_tag_pattern "${tag}" ) || die
-	if ! candidate_tag=$( detect_tag "${HALCYON_DIR}/cabal/.halcyon-tag" "${updated_pattern}" ); then
-		return 1
-	fi
+	candidate_tag=$( detect_tag "${HALCYON_DIR}/cabal/.halcyon-tag" "${updated_pattern}" ) || return 1
 
 	local candidate_timestamp
 	candidate_timestamp=$( get_tag_update_timestamp "${candidate_tag}" ) || die
-	if ! validate_updated_cabal_timestamp "${candidate_timestamp}"; then
-		return 1
-	fi
+	validate_updated_cabal_timestamp "${candidate_timestamp}" || return 1
 
 	echo "${candidate_tag}"
 }
@@ -429,20 +421,16 @@ function match_updated_cabal_archive_name () {
 
 	local updated_pattern candidate_name
 	updated_pattern=$( format_updated_cabal_archive_name_pattern "${tag}" ) || die
-	if ! candidate_name=$(
+	candidate_name=$(
 		filter_matching "^${updated_pattern}$" |
 		sort_naturally |
 		filter_last |
 		match_exactly_one
-	); then
-		return 1
-	fi
+	) || return 1
 
 	local candidate_timestamp
 	candidate_timestamp=$( map_updated_cabal_archive_name_to_timestamp "${candidate_name}" ) || die
-	if ! validate_updated_cabal_timestamp "${candidate_timestamp}"; then
-		return 1
-	fi
+	validate_updated_cabal_timestamp "${candidate_timestamp}" || return 1
 
 	echo "${candidate_name}"
 }
@@ -503,9 +491,7 @@ function restore_cached_updated_cabal_layer () {
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
-	if [ -z "${updated_name}" ]; then
-		return 1
-	fi
+	[ -n "${updated_name}" ] || return 1
 
 	log 'Restoring cached updated Cabal layer'
 

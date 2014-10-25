@@ -375,9 +375,7 @@ function validate_ghc_layer () {
 
 	local ghc_tag
 	ghc_tag=$( derive_ghc_tag "${tag}" ) || die
-	if ! detect_tag "${HALCYON_DIR}/ghc/.halcyon-tag" "${ghc_tag//./\.}"; then
-		return 1
-	fi
+	detect_tag "${HALCYON_DIR}/ghc/.halcyon-tag" "${ghc_tag//./\.}" || return 1
 }
 
 

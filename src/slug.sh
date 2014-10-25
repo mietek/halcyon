@@ -77,9 +77,7 @@ function validate_slug () {
 
 	local app_tag
 	app_tag=$( derive_app_tag "${tag}" ) || die
-	if ! detect_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" "${app_tag//./\.}"; then
-		return 1
-	fi
+	detect_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" "${app_tag//./\.}" || return 1
 }
 
 

@@ -247,9 +247,7 @@ function validate_sandbox_layer () {
 
 	local sandbox_tag
 	sandbox_tag=$( derive_sandbox_tag "${tag}" ) || die
-	if ! detect_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}"; then
-		return 1
-	fi
+	detect_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}" || return 1
 }
 
 
@@ -304,9 +302,7 @@ function install_matching_sandbox_layer () {
 	if [ "${matching_hash}" = "${constraint_hash}" ]; then
 		log 'Using fully matching sandbox layer:      ' "${matching_description}"
 
-		if ! restore_sandbox_layer "${matching_tag}"; then
-			return 1
-		fi
+		restore_sandbox_layer "${matching_tag}" || return 1
 
 		derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 		return 0
@@ -314,9 +310,8 @@ function install_matching_sandbox_layer () {
 
 	log 'Using partially matching sandbox layer:  ' "${matching_description}"
 
-	if (( HALCYON_NO_BUILD )) || ! restore_sandbox_layer "${matching_tag}"; then
-		return 1
-	fi
+	! (( HALCYON_NO_BUILD )) || return 1
+	restore_sandbox_layer "${matching_tag}" || return 1
 
 	local must_create
 	must_create=0

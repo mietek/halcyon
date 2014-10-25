@@ -113,10 +113,7 @@ function hash_constraints () {
 function detect_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
-
-	if ! [ -f "${source_dir}/cabal.config" ]; then
-		return 1
-	fi
+	[ -f "${source_dir}/cabal.config" ] || return 1
 
 	local constraints
 	constraints=$(
@@ -129,19 +126,13 @@ function detect_constraints () {
 	local base_version candidate_package candidate_version
 	base_version=
 	while read -r candidate_package candidate_version; do
-		if [ -n "${constraints_A[${candidate_package}]:+_}" ]; then
-			return 1
-		fi
+		[ -z "${constraints_A[${candidate_package}]:+_}" ] || return 1
 		constraints_A["${candidate_package}"]="${candidate_version}"
-
 		if [ "${candidate_package}" = 'base' ]; then
 			base_version="${candidate_version}"
 		fi
 	done <<<"${constraints}"
-
-	if [ -z "${base_version}" ]; then
-		return 1
-	fi
+	[ -n "${base_version}" ] || return 1
 
 	echo "${constraints}"
 }
@@ -183,9 +174,7 @@ function validate_full_constraint_file () {
 	local constraint_hash candidate_hash
 	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
-	if [ "${candidate_hash}" != "${constraint_hash}" ]; then
-		return 1
-	fi
+	[ "${candidate_hash}" = "${constraint_hash}" ] || return 1
 
 	echo "${candidate_hash}"
 }
@@ -204,9 +193,7 @@ function validate_partial_constraint_file () {
 	short_hash_etc="${file_name#halcyon-constraints-}"
 	short_hash="${short_hash_etc%%-*}"
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
-	if [ "${candidate_hash:0:7}" != "${short_hash}" ]; then
-		return 1
-	fi
+	[ "${candidate_hash:0:7}" = "${short_hash}" ] || return 1
 
 	echo "${candidate_hash}"
 }
@@ -414,9 +401,7 @@ function locate_best_matching_sandbox_layer () {
 	expect_args tag constraints -- "$@"
 
 	local all_names
-	if ! all_names=$( locate_all_matching_sandbox_layers "${tag}" ); then
-		return 1
-	fi
+	all_names=$( locate_all_matching_sandbox_layers "${tag}" ) || return 1
 
 	local full_tag
 	if full_tag=$( locate_first_full_sandbox_layer "${tag}" "${all_names}" ); then
