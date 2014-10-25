@@ -423,17 +423,15 @@ function install_ghc_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_BUILD_GHC )) &&
-		restore_ghc_layer "${tag}"
-	then
-		return 0
-	fi
+	if ! (( HALCYON_FORCE_BUILD_GHC )); then
+		if restore_ghc_layer "${tag}"; then
+			return 0
+		fi
 
-	if ! (( HALCYON_FORCE_BUILD_GHC )) &&
-		(( HALCYON_NO_BUILD ))
-	then
-		log_warning 'Cannot build GHC layer'
-		return 1
+		if (( HALCYON_NO_BUILD )); then
+			log_warning 'Cannot build GHC layer'
+			return 1
+		fi
 	fi
 
 	rm -rf "${HALCYON_DIR}/ghc" || die

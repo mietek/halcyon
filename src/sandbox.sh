@@ -330,26 +330,23 @@ function install_sandbox_layer () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
-		restore_sandbox_layer "${tag}"
-	then
-		return 0
-	fi
+	if ! (( HALCYON_FORCE_BUILD_SANDBOX )); then
+		if restore_sandbox_layer "${tag}"; then
+			return 0
+		fi
 
-	local matching_tag
-	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
-		matching_tag=$( locate_best_matching_sandbox_layer "${tag}" "${constraints}" ) &&
-		install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
-	then
-		archive_sandbox_layer || die
-		return 0
-	fi
+		local matching_tag
+		if matching_tag=$( locate_best_matching_sandbox_layer "${tag}" "${constraints}" ) &&
+			install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
+		then
+			archive_sandbox_layer || die
+			return 0
+		fi
 
-	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
-		(( HALCYON_NO_BUILD ))
-	then
-		log_warning 'Cannot build sandbox layer'
-		return 1
+		if (( HALCYON_NO_BUILD )); then
+			log_warning 'Cannot build sandbox layer'
+			return 1
+		fi
 	fi
 
 	local must_create

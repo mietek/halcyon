@@ -370,34 +370,32 @@ function install_app_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_BUILD_APP )) &&
-		restore_app_layer "${tag}"
-	then
-		if validate_identical_app_layer "${tag}" >'/dev/null'; then
+	if ! (( HALCYON_FORCE_BUILD_APP )); then
+		if restore_app_layer "${tag}"; then
+			if validate_identical_app_layer "${tag}" >'/dev/null'; then
+				return 0
+			fi
+
+			# NOTE: HALCYON_NO_BUILD is ignored here.  If even an incremental app build is not
+			# acceptable, set HALCYON_ONLY_ENV=1.
+
+			local must_copy must_configure
+			must_copy=0
+			must_configure=0
+			if ! prepare_app_layer "${source_dir}" ||
+				! validate_configured_app_layer "${tag}" >'/dev/null'
+			then
+				must_configure=1
+			fi
+			build_app_layer "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" || die
+			archive_app_layer || die
 			return 0
 		fi
 
-		# NOTE: HALCYON_NO_BUILD is ignored here.  If even an incremental app build is not
-		# acceptable, set HALCYON_ONLY_ENV=1.
-
-		local must_copy must_configure
-		must_copy=0
-		must_configure=0
-		if ! prepare_app_layer "${source_dir}" ||
-			! validate_configured_app_layer "${tag}" >'/dev/null'
-		then
-			must_configure=1
+		if (( HALCYON_NO_BUILD )); then
+			log_warning 'Cannot build app layer'
+			return 1
 		fi
-		build_app_layer "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" || die
-		archive_app_layer || die
-		return 0
-	fi
-
-	if ! (( HALCYON_FORCE_BUILD_APP )) &&
-		(( HALCYON_NO_BUILD ))
-	then
-		log_warning 'Cannot build app layer'
-		return 1
 	fi
 
 	local must_copy must_configure
