@@ -120,8 +120,8 @@ function deploy_layers () {
 		log
 		deploy_cabal_layer "${tag}" "${source_dir}" || return 1
 	else
-		if validate_ghc_layer "${tag}" >'/dev/null' ||
-			validate_updated_cabal_layer "${tag}" >'/dev/null'
+		if ! validate_ghc_layer "${tag}" >'/dev/null' ||
+			! validate_updated_cabal_layer "${tag}" >'/dev/null'
 		then
 			die 'Cannot reuse environment'
 		fi
