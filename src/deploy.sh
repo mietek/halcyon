@@ -199,6 +199,36 @@ function deploy_env () {
 }
 
 
+function ensure_env () {
+	expect_args HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE
+
+	local env_tag
+	expect_args env_tag -- "$@"
+
+	local no_prepare_cache
+	no_prepare_cache="${HALCYON_NO_PREPARE_CACHE}"
+
+	if ! validate_ghc_layer "${env_tag}" >'/dev/null' ||
+		! validate_updated_cabal_layer "${env_tag}" >'/dev/null'
+	then
+		if ! (( HALCYON_RECURSIVE )); then
+			if ! HALCYON_NO_CLEAN_CACHE=1      \
+				HALCYON_NO_WARN_IMPLICIT=1 \
+				deploy_env "${env_tag}"
+			then
+				die 'Cannot deploy environment'
+			fi
+			log
+			no_prepare_cache=1
+		else
+			die 'Cannot reuse environment'
+		fi
+	fi
+
+	echo "${no_prepare_cache}"
+}
+
+
 function deploy_app () {
 	expect_vars HALCYON_NO_WARN_IMPLICIT
 
@@ -266,6 +296,11 @@ function deploy_local_app () {
 	local env_tag local_dir
 	expect_args env_tag local_dir -- "$@"
 
+	local no_prepare_cache
+	no_prepare_cache=$( ensure_env "${env_tag}" ) || die
+
+	log 'Copying app'
+
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
 	copy_entire_contents "${local_dir}" "${source_dir}" || die
@@ -274,7 +309,9 @@ function deploy_local_app () {
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
 		die 'Cannot detect app label'
 	fi
-	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
+	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
+		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
+	then
 		die 'Cannot deploy app'
 	fi
 
@@ -285,6 +322,9 @@ function deploy_local_app () {
 function deploy_cloned_app () {
 	local env_tag url
 	expect_args env_tag url -- "$@"
+
+	local no_prepare_cache
+	no_prepare_cache=$( ensure_env "${env_tag}" ) || die
 
 	log 'Cloning app'
 
@@ -298,7 +338,9 @@ function deploy_cloned_app () {
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
 		die 'Cannot detect app label'
 	fi
-	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
+	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
+		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
+	then
 		die 'Cannot deploy app'
 	fi
 
@@ -307,29 +349,11 @@ function deploy_cloned_app () {
 
 
 function deploy_unpacked_app () {
-	expect_vars HALCYON_DIR HALCYON_NO_PREPARE_CACHE
-
 	local env_tag thing
 	expect_args env_tag thing -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache="${HALCYON_NO_PREPARE_CACHE}"
-	if ! validate_ghc_layer "${env_tag}" >'/dev/null' ||
-		! validate_updated_cabal_layer "${env_tag}" >'/dev/null'
-	then
-		if ! (( HALCYON_RECURSIVE )); then
-			if ! HALCYON_NO_CLEAN_CACHE=1      \
-				HALCYON_NO_WARN_IMPLICIT=1 \
-				deploy_env "${env_tag}"
-			then
-				die 'Cannot deploy environment'
-			fi
-			log
-			no_prepare_cache=1
-		else
-			die 'Cannot reuse environment'
-		fi
-	fi
+	no_prepare_cache=$( ensure_env "${env_tag}" ) || die
 
 	log 'Unpacking app'
 
