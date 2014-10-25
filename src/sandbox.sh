@@ -324,7 +324,9 @@ function install_sandbox_layer () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	! (( HALCYON_NO_RESTORE_SANDBOX )) && restore_sandbox_layer "${tag}" && return 0
+	! (( HALCYON_NO_RESTORE_SANDBOX )) &&
+		restore_sandbox_layer "${tag}" &&
+		return 0
 
 	local matching_tag
 	if ! (( HALCYON_NO_RESTORE_SANDBOX )) &&
@@ -335,7 +337,9 @@ function install_sandbox_layer () {
 		return 0
 	fi
 
-	if ! (( HALCYON_NO_RESTORE_SANDBOX )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_NO_RESTORE_SANDBOX )) &&
+		(( HALCYON_NO_BUILD ))
+	then
 		log_warning 'Cannot build sandbox layer'
 		return 1
 	fi

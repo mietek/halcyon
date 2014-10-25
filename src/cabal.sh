@@ -244,7 +244,9 @@ function build_cabal_layer () {
 	expect_existing "${HOME}"
 	expect_no_existing "${HALCYON_DIR}/cabal"
 
-	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
+	if [ -e "${HOME}/.cabal/config" ] &&
+		! [ -h "${HOME}/.cabal/config" ]
+	then
 		die "Expected no foreign ${HOME}/.cabal/config"
 	fi
 	rm -f "${HOME}/.cabal/config" || die
@@ -531,7 +533,9 @@ function restore_updated_cabal_layer () {
 	local updated_name
 	updated_name=$( match_updated_cabal_archive_name "${tag}" <<<"${archive_names}" ) || true
 
-	if [ "${HALCYON_STORAGE}" = 'private' ] && ! (( HALCYON_NO_UPLOAD )); then
+	if [ "${HALCYON_STORAGE}" = 'private' ] &&
+		! (( HALCYON_NO_UPLOAD ))
+	then
 		local old_names
 		if old_names=$(
 			filter_not_matching "^${updated_name//./\.}$" <<<"${archive_names}" |
@@ -574,13 +578,17 @@ function install_cabal_layer () {
 		restore_updated_cabal_layer "${tag}" &&
 		return 0
 
-	if ! (( HALCYON_NO_RESTORE_CABAL )) && restore_bare_cabal_layer "${tag}"; then
+	if ! (( HALCYON_NO_RESTORE_CABAL )) &&
+		restore_bare_cabal_layer "${tag}"
+	then
 		update_cabal_layer || die
 		archive_cabal_layer || die
 		return 0
 	fi
 
-	if ! (( HALCYON_NO_RESTORE_CABAL )) && (( HALCYON_NO_BUILD )); then
+	if ! (( HALCYON_NO_RESTORE_CABAL )) &&
+		(( HALCYON_NO_BUILD ))
+	then
 		log_warning 'Cannot build Cabal layer'
 		return 1
 	fi
@@ -623,7 +631,10 @@ function cabal_do () {
 	expect_existing "${work_dir}"
 	shift
 
-	if ! ( cd "${work_dir}" && cabal --config-file="${HALCYON_DIR}/cabal/.halcyon-cabal.config" "$@" ); then
+	if ! (
+		cd "${work_dir}" &&
+		cabal --config-file="${HALCYON_DIR}/cabal/.halcyon-cabal.config" "$@"
+	); then
 		die 'Failed to run Cabal:' "$@"
 	fi
 }
@@ -652,7 +663,10 @@ function sandboxed_cabal_do () {
 
 	local status
 	status=0
-	if ! cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "$@"; then
+	if (
+		! cabal_do "${work_dir}" \
+			--sandbox-config-file="${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "$@"
+	); then
 		status=1
 	fi
 

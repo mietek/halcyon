@@ -137,7 +137,9 @@ function deploy_layers () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
+	if ! (( HALCYON_RECURSIVE )) &&
+		! (( HALCYON_NO_PREPARE_CACHE ))
+	then
 		log
 		prepare_cache || die
 	fi
@@ -146,7 +148,9 @@ function deploy_layers () {
 		rm -rf "${HALCYON_DIR}/slug" || die
 	fi
 
-	if ! (( HALCYON_ONLY_ENV )) && restore_slug "${tag}"; then
+	if ! (( HALCYON_ONLY_ENV )) &&
+		restore_slug "${tag}"
+	then
 		install_slug || die
 		return 0
 	fi
@@ -157,7 +161,9 @@ function deploy_layers () {
 		log
 		deploy_cabal_layer "${tag}" "${source_dir}" || return 1
 	else
-		if validate_ghc_layer "${tag}" || validate_updated_cabal_layer "${tag}"; then
+		if validate_ghc_layer "${tag}" >'/dev/null' ||
+			validate_updated_cabal_layer "${tag}" >'/dev/null'
+		then
 			log_error 'Cannot validate environment'
 			return 1
 		fi
@@ -189,7 +195,9 @@ function deploy_layers () {
 		install_slug || die
 	fi
 
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
+	if ! (( HALCYON_RECURSIVE )) &&
+		! (( HALCYON_NO_CLEAN_CACHE ))
+	then
 		log
 		clean_cache || die
 	fi
@@ -258,7 +266,10 @@ function deploy_app () {
 
 	describe_storage || die
 
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_WARN_IMPLICIT )) && (( warn_constraints )); then
+	if ! (( HALCYON_RECURSIVE )) &&
+		! (( HALCYON_NO_WARN_IMPLICIT )) &&
+		(( warn_constraints ))
+	then
 		log_warning 'Using implicit constraints'
 		log_warning 'Expected cabal.config with explicit constraints'
 		log
@@ -329,7 +340,9 @@ function deploy_unpacked_app () {
 
 	local no_prepare_cache
 	no_prepare_cache="${HALCYON_NO_PREPARE_CACHE}"
-	if ! validate_ghc_layer "${env_tag}" || ! validate_updated_cabal_layer "${env_tag}"; then
+	if ! validate_ghc_layer "${env_tag}" >'/dev/null' ||
+		! validate_updated_cabal_layer "${env_tag}" >'/dev/null'
+	then
 		if ! (( HALCYON_RECURSIVE )); then
 			if ! HALCYON_NO_CLEAN_CACHE=1      \
 				HALCYON_NO_WARN_IMPLICIT=1 \
@@ -365,7 +378,9 @@ function deploy_unpacked_app () {
 		return 1
 	fi
 
-	if ! (( HALCYON_NO_WARN_IMPLICIT )) && [ "${thing}" != "${app_label}" ]; then
+	if ! (( HALCYON_NO_WARN_IMPLICIT )) &&
+		[ "${thing}" != "${app_label}" ]
+	then
 		log_warning "Using newest available version of ${app_label%-*}"
 		log_warning 'Expected app label with explicit version'
 	fi

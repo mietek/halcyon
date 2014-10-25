@@ -48,7 +48,9 @@ function halcyon_deploy () {
 		fi
 	fi
 
-	if [ "${HALCYON_TARGET}" != 'slug' ] && [ "${HALCYON_TARGET}" != 'sandbox' ]; then
+	if [ "${HALCYON_TARGET}" != 'slug' ] &&
+		[ "${HALCYON_TARGET}" != 'sandbox' ]
+	then
 		die "Unexpected target: ${HALCYON_TARGET}"
 	fi
 
