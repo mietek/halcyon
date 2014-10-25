@@ -226,13 +226,13 @@ function prepare_extra_apps () {
 		if [ -z "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
 			return 0
 		fi
-		extra_apps=( "${HALCYON_SANDBOX_EXTRA_APPS}" )
+		extra_apps=( ${HALCYON_SANDBOX_EXTRA_APPS} )
 		;;
 	'slug')
 		if [ -z "${HALCYON_SLUG_EXTRA_APPS:+_}" ]; then
 			return 0
 		fi
-		extra_apps=( "${HALCYON_SLUG_EXTRA_APPS}" )
+		extra_apps=( ${HALCYON_SLUG_EXTRA_APPS} )
 		;;
 	*)
 		die "Unexpected target: ${target}"
