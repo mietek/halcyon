@@ -321,7 +321,8 @@ function deploy_local_app () {
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
-		die 'Cannot deploy app'
+		log_warning 'Cannot deploy app'
+		return 1
 	fi
 
 	rm -rf "${source_dir}" || die
@@ -350,7 +351,8 @@ function deploy_cloned_app () {
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
-		die 'Cannot deploy app'
+		log_warning 'Cannot deploy app'
+		return 1
 	fi
 
 	rm -rf "${source_dir}" || die
@@ -374,7 +376,8 @@ function deploy_unpacked_app () {
 		HALCYON_NO_WARN_CONSTRAINTS=1               \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
-		die 'Cannot deploy app'
+		log_warning 'Cannot deploy app'
+		return 1
 	fi
 
 	rm -rf "${source_dir}" || die
