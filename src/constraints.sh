@@ -360,6 +360,8 @@ function locate_best_matching_sandbox_layer () {
 		return 0
 	fi
 
+	! (( HALCYON_NO_BUILD )) || return 1
+
 	local partial_tags partial_tag
 	if partial_tags=$( locate_partial_sandbox_layers "${tag}" "${constraints}" "${all_names}" ) &&
 		partial_tag=$( select_best_partial_sandbox_layer "${constraints}" "${partial_tags}" )
