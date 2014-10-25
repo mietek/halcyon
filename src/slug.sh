@@ -91,40 +91,34 @@ function restore_slug () {
 
 	! (( HALCYON_NO_RESTORE_SLUG )) || return 1
 
-	log
-
 	local os ghc_version archive_name
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
 
+	log
 	if validate_slug "${tag}" >'/dev/null'; then
 		log 'Using existing slug'
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 
 	log 'Restoring slug'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
 		! validate_slug "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
-		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
-			return 1
-		fi
-
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
+		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
 			! validate_slug "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" || die
-			log_warning 'Cannot validate slug archive'
+			rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
 }
 

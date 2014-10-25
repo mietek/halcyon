@@ -269,31 +269,26 @@ function restore_app_layer () {
 
 	if validate_identical_app_layer "${tag}" >'/dev/null'; then
 		log 'Using existing app layer'
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/app" || die
 
 	log 'Restoring app layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
 		! validate_recognized_app_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/app" || die
-		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
-			return 1
-		fi
-
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
+		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
 			! validate_recognized_app_layer "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" || die
-			log_warning 'Cannot validate app layer archive'
+			rm -rf "${HALCYON_DIR}/app" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
 }
 

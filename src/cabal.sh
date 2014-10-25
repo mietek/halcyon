@@ -271,17 +271,13 @@ function build_cabal_layer () {
 
 	log 'Building Cabal layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${original_name}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"
-	then
-		rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
 		transfer_original_file "${original_url}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
-			rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
 			die 'Cannot extract original archive'
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
@@ -464,31 +460,26 @@ function restore_bare_cabal_layer () {
 
 	if validate_bare_cabal_layer "${tag}" >'/dev/null'; then
 		log 'Using existing bare Cabal layer'
-		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
 	log 'Restoring bare Cabal layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${bare_name}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
 		! validate_bare_cabal_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/cabal" || die
-		if ! download_stored_file "${os}" "${bare_name}"; then
-			return 1
-		fi
-
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
+		if ! download_stored_file "${os}" "${bare_name}" ||
+			! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
 			! validate_bare_cabal_layer "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" || die
-			log_warning 'Cannot validate bare Cabal layer archive'
+			rm -rf "${HALCYON_DIR}/cabal" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
 	fi
 }
 
@@ -507,7 +498,7 @@ function restore_cached_updated_cabal_layer () {
 
 	if validate_updated_cabal_layer "${tag}" >'/dev/null'; then
 		log 'Using existing updated Cabal layer'
-		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
@@ -521,10 +512,10 @@ function restore_cached_updated_cabal_layer () {
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
 		! validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" || die
+		rm -rf "${HALCYON_DIR}/cabal" || die
 		return 1
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || die
 	fi
 }
 
@@ -568,7 +559,7 @@ function restore_updated_cabal_layer () {
 
 			local old_name
 			while read -r old_name; do
-				delete_stored_file "${os}" "${old_name}" || true
+				delete_stored_file "${os}" "${old_name}" || die
 			done <<<"${old_names}"
 		fi
 	fi
@@ -580,16 +571,11 @@ function restore_updated_cabal_layer () {
 
 	log 'Restoring updated Cabal layer'
 
-	rm -rf "${HALCYON_DIR}/cabal" || die
-	if ! download_stored_file "${os}" "${updated_name}"; then
-		return 1
-	fi
-
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
+	if ! download_stored_file "${os}" "${updated_name}" ||
+		! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
 		! validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" || die
-		log_warning 'Cannot validate updated Cabal layer archive'
+		rm -rf "${HALCYON_DIR}/cabal" || die
 		return 1
 	fi
 }

@@ -175,6 +175,7 @@ function freeze_actual_constraints () {
 function validate_full_constraint_file () {
 	local tag candidate_file
 	expect_args tag candidate_file -- "$@"
+	[ -f "${candidate_file}" ] || return 1
 
 	local candidate_constraints
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
@@ -193,6 +194,7 @@ function validate_full_constraint_file () {
 function validate_partial_constraint_file () {
 	local candidate_file
 	expect_args candidate_file -- "$@"
+	[ -f "${candidate_file}" ] || return 1
 
 	local candidate_constraints
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
@@ -263,20 +265,16 @@ function locate_first_full_sandbox_layer () {
 	local full_name
 	while read -r full_name; do
 		local full_hash
-		if ! [ -f "${HALCYON_CACHE_DIR}/${full_name}" ] ||
-			! full_hash=$( validate_full_constraint_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" )
-		then
-			if ! download_stored_file "${os}/ghc-${ghc_version}" "${full_name}"; then
-				continue
-			fi
-
-			if ! full_hash=$( validate_full_constraint_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" ); then
+		if ! full_hash=$( validate_full_constraint_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" ); then
+			rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
+			if ! download_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
+				! full_hash=$( validate_full_constraint_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" )
+			then
 				rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
-				log_warning 'Cannot validate fully matching sandbox layer constraints'
 				continue
 			fi
 		else
-			touch -c "${HALCYON_CACHE_DIR}/${full_name}" || true
+			touch -c "${HALCYON_CACHE_DIR}/${full_name}" || die
 		fi
 
 		local full_label full_tag
@@ -316,20 +314,16 @@ function locate_partial_sandbox_layers () {
 	local partial_name
 	while read -r partial_name; do
 		local partial_hash
-		if ! [ -f "${HALCYON_CACHE_DIR}/${partial_name}" ] ||
-			! partial_hash=$( validate_partial_constraint_file "${HALCYON_CACHE_DIR}/${partial_name}" )
-		then
-			if ! download_stored_file "${os}/ghc-${ghc_version}" "${partial_name}"; then
-				continue
-			fi
-
-			if ! partial_hash=$( validate_partial_constraint_file "${HALCYON_CACHE_DIR}/${partial_name}" ); then
+		if ! partial_hash=$( validate_partial_constraint_file "${HALCYON_CACHE_DIR}/${partial_name}" ); then
+			rm -f "${HALCYON_CACHE_DIR}/${partial_name}" || die
+			if ! download_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
+				! partial_hash=$( validate_partial_constraint_file "${HALCYON_CACHE_DIR}/${partial_name}" )
+			then
 				rm -f "${HALCYON_CACHE_DIR}/${partial_name}" || die
-				log_warning 'Cannot validate partially matching sandbox layer constraints'
 				continue
 			fi
 		else
-			touch -c "${HALCYON_CACHE_DIR}/${partial_name}" || true
+			touch -c "${HALCYON_CACHE_DIR}/${partial_name}" || die
 		fi
 
 		local partial_label partial_tag

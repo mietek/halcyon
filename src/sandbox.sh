@@ -266,31 +266,26 @@ function restore_sandbox_layer () {
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
 		log 'Using existing sandbox layer'
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 
 	log 'Restoring sandbox layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/sandbox" || die
-		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
-			return 1
-		fi
-
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
+		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
 			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" || die
-			log_warning 'Cannot validate sandbox layer archive'
+			rm -rf "${HALCYON_DIR}/sandbox" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
 }
 

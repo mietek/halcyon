@@ -252,17 +252,13 @@ function build_ghc_layer () {
 
 	log 'Building GHC layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${original_name}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"
-	then
-		rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
 		transfer_original_file "${original_url}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
-			rm -rf "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}" || die
 			die 'Cannot extract original archive'
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
@@ -397,31 +393,26 @@ function restore_ghc_layer () {
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
 		log 'Using existing GHC layer'
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/ghc" || die
 
 	log 'Restoring GHC layer'
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${archive_name}" ] ||
-		! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
 		! validate_ghc_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/ghc" || die
-		if ! download_stored_file "${os}" "${archive_name}"; then
-			return 1
-		fi
-
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
+		if ! download_stored_file "${os}" "${archive_name}" ||
+			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
 			! validate_ghc_layer "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" || die
-			log_warning 'Cannot validate GHC layer archive'
+			rm -rf "${HALCYON_DIR}/ghc" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || true
+		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
 }
 
