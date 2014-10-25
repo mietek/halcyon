@@ -261,7 +261,7 @@ function build_ghc_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
 		log 'Running GHC pre-build hook'
-		( "${source_dir}/.halcyon-magic/ghc-prebuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/ghc-prebuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" |& quote ) || die
 	fi
 
 	log 'Installing GHC'
@@ -276,7 +276,7 @@ function build_ghc_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
 		log 'Running GHC post-build hook'
-		( "${source_dir}/.halcyon-magic/ghc-postbuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/ghc-postbuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" |& quote ) || die
 	fi
 
 	copy_ghc_magic "${source_dir}" || die

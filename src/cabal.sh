@@ -282,7 +282,7 @@ function build_cabal_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
 		log 'Running Cabal pre-build hook'
-		( "${source_dir}/.halcyon-magic/cabal-prebuild-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/cabal-prebuild-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" |& quote ) || die
 	fi
 
 	log 'Bootstrapping Cabal'
@@ -326,7 +326,7 @@ EOF
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
 		log 'Running Cabal post-build hook'
-		( "${source_dir}/.halcyon-magic/cabal-postbuild-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/cabal-postbuild-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" |& quote ) || die
 	fi
 
 	copy_cabal_magic "${source_dir}" || die

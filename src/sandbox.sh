@@ -156,7 +156,7 @@ function build_sandbox_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
 		log 'Running sandbox pre-build hook'
-		( "${source_dir}/.halcyon-magic/sandbox-prebuild-hook" "${tag}" "${must_create}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/sandbox-prebuild-hook" "${tag}" "${must_create}" |& quote ) || die
 	fi
 
 	log 'Building sandbox'
@@ -175,7 +175,7 @@ function build_sandbox_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
 		log 'Running sandbox post-build hook'
-		( "${source_dir}/.halcyon-magic/sandbox-postbuild-hook" "${tag}" "${must_create}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/sandbox-postbuild-hook" "${tag}" "${must_create}" |& quote ) || die
 	fi
 
 	copy_sandbox_magic "${source_dir}" || die

@@ -166,7 +166,7 @@ function build_app_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/app-prebuild-hook" ]; then
 		log 'Running app pre-build hook'
-		( "${source_dir}/.halcyon-magic/app-prebuild-hook" "${tag}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/app-prebuild-hook" "${tag}" |& quote ) || die
 	fi
 
 	log 'Building app'
@@ -175,7 +175,7 @@ function build_app_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/app-postbuild-hook" ]; then
 		log 'Running app post-build hook'
-		( "${source_dir}/.halcyon-magic/app-postbuild-hook" "${tag}" ) |& quote || die
+		( "${source_dir}/.halcyon-magic/app-postbuild-hook" "${tag}" |& quote ) || die
 	fi
 
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
