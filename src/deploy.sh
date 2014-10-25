@@ -318,7 +318,7 @@ function deploy_local_app () {
 
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
-	copy_entire_contents "${local_dir}" "${source_dir}" || die
+	copy_app_source "${local_dir}" "${source_dir}" || die
 
 	local app_label
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
@@ -330,8 +330,6 @@ function deploy_local_app () {
 		log_warning 'Cannot deploy app'
 		return 1
 	fi
-
-	rm -rf "${source_dir}" || die
 }
 
 

@@ -135,6 +135,24 @@ function hash_app_magic () {
 }
 
 
+function copy_app_source () {
+	local source_dir work_dir
+	expect_args source_dir work_dir -- "$@"
+
+	# NOTE: On a Heroku dyno, HALCYON_DIR (/app/.halcyon) is a subdirectory of source_dir (/app),
+	# which means .halcyon must be excluded when copying source_dir to HALCYON_DIR/app.
+
+	tar_copy "${source_dir}" "${work_dir}" \
+		--exclude '.halcyon'           \
+		--exclude '.haskell-on-heroku' \
+		--exclude '.git'               \
+		--exclude '.ghc'               \
+		--exclude '.cabal'             \
+		--exclude '.cabal-sandbox'     \
+		--exclude 'cabal.sandbox.config' || die
+}
+
+
 function build_app_layer () {
 	expect_vars HALCYON_DIR
 
@@ -150,7 +168,7 @@ function build_app_layer () {
 	log 'Building app layer'
 
 	if (( must_copy )); then
-		copy_entire_contents "${source_dir}" "${HALCYON_DIR}/app" || die
+		copy_app_source "${source_dir}" "${HALCYON_DIR}/app" || die
 	fi
 
 	if (( must_copy )) || (( must_configure )); then
@@ -202,14 +220,7 @@ function archive_app_layer () {
 	archive_name=$( format_app_archive_name "${app_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	tar_archive "${HALCYON_DIR}/app"               \
-		"${HALCYON_CACHE_DIR}/${archive_name}" \
-		--exclude '.halcyon'                   \
-		--exclude '.haskell-on-heroku'         \
-		--exclude '.ghc'                       \
-		--exclude '.cabal'                     \
-		--exclude '.cabal-sandbox'             \
-		--exclude 'cabal.sandbox.config' || die
+	tar_archive "${HALCYON_DIR}/app" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 
 	local os ghc_version
 	os=$( get_tag_os "${app_tag}" ) || die
@@ -301,16 +312,19 @@ function prepare_app_layer () {
 
 	log 'Examining app changes'
 
-	local app_files
-	app_files=$(
-		compare_recursively "${HALCYON_DIR}/app" "${source_dir}" |
-		filter_not_matching '^. (\.halcyon-tag$|\.halcyon/|\.haskell-on-heroku/)' |
-		filter_not_matching '^. (\.ghc/|\.cabal/|\.cabal-sandbox/|cabal.sandbox.config$|dist/)'
+	local work_dir
+	work_dir=$( get_tmp_dir 'halcyon.source' ) || die
+	copy_app_source "${source_dir}" "${work_dir}" || die
+
+	local all_files
+	all_files=$(
+		compare_recursively "${HALCYON_DIR}/app" "${work_dir}" |
+		filter_not_matching '^. (\.halcyon-tag$|dist/)'
 	)
 
 	local changed_files
 	if ! changed_files=$(
-		filter_not_matching '^= ' <<<"${app_files}" |
+		filter_not_matching '^= ' <<<"${all_files}" |
 		match_at_least_one
 	); then
 		log_indent '(none)'
@@ -322,31 +336,26 @@ function prepare_app_layer () {
 	# NOTE: Restoring file modification times of unchanged files is necessary to avoid needless
 	# recompilation.
 
-	local prepare_dir
-	prepare_dir=$( get_tmp_dir 'halcyon.source' ) || die
-
-	copy_entire_contents "${source_dir}" "${prepare_dir}"
-
 	local unchanged_files
 	if unchanged_files=$(
-		filter_matching '^= ' <<<"${app_files}" |
+		filter_matching '^= ' <<<"${all_files}" |
 		match_at_least_one
 	); then
 		local file
 		while read -r file; do
-			cp -p "${HALCYON_DIR}/app/${file#= }" "${prepare_dir}/${file#= }" || die
+			cp -p "${HALCYON_DIR}/app/${file#= }" "${work_dir}/${file#= }" || die
 		done <<<"${unchanged_files}"
 	fi
 
 	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for an
 	# example.
 
-	rm -rf "${prepare_dir}/dist" || die
-	mv "${HALCYON_DIR}/app/dist" "${prepare_dir}/dist" || die
-	mv "${HALCYON_DIR}/app/.halcyon-tag" "${prepare_dir}/.halcyon-tag" || die
+	rm -rf "${work_dir}/dist" || die
+	mv "${HALCYON_DIR}/app/dist" "${work_dir}/dist" || die
+	mv "${HALCYON_DIR}/app/.halcyon-tag" "${work_dir}/.halcyon-tag" || die
 
 	rm -rf "${HALCYON_DIR}/app" || die
-	mv "${prepare_dir}" "${HALCYON_DIR}/app" || die
+	mv "${work_dir}" "${HALCYON_DIR}/app" || die
 
 	# NOTE: With build-type: Custom, changing Setup.hs requires manually re-running configure, as
 	# Cabal fails to detect the change.

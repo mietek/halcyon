@@ -10,17 +10,17 @@ function prepare_cache () {
 	log 'Preparing cache'
 
 	mkdir -p "${HALCYON_CACHE_DIR}" || die
+	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" || die
 
 	log 'Examining cache contents'
 
 	local files
 	if files=$(
 		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
-		filter_not_matching '.halcyon-mark' |
 		sort_naturally |
 		match_at_least_one
 	); then
-		copy_dotless_contents "${HALCYON_CACHE_DIR}" "${HALCYON_TMP_CACHE_DIR}" || die
+		tar_copy "${HALCYON_CACHE_DIR}" "${HALCYON_TMP_CACHE_DIR}" || die
 
 		quote <<<"${files}"
 	else
