@@ -118,7 +118,9 @@ function copy_sandbox_magic () {
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
-	[ -z "${sandbox_magic_hash}" ] && return 0
+	if [ -z "${sandbox_magic_hash}" ]; then
+		return 0
+	fi
 
 	mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	find_spaceless_recursively "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' \) |
@@ -215,7 +217,9 @@ function archive_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-constraints.config"
 
-	! (( HALCYON_NO_ARCHIVE )) || return 0
+	if (( HALCYON_NO_ARCHIVE )); then
+		return 0
+	fi
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
@@ -321,17 +325,19 @@ function install_matching_sandbox_layer () {
 
 
 function install_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_RESTORE_SANDBOX HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD HALCYON_FORCE_BUILD_SANDBOX
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	! (( HALCYON_NO_RESTORE_SANDBOX )) &&
-		restore_sandbox_layer "${tag}" &&
+	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
+		restore_sandbox_layer "${tag}"
+	then
 		return 0
+	fi
 
 	local matching_tag
-	if ! (( HALCYON_NO_RESTORE_SANDBOX )) &&
+	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
 		matching_tag=$( locate_best_matching_sandbox_layer "${tag}" "${constraints}" ) &&
 		install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
 	then
@@ -339,7 +345,7 @@ function install_sandbox_layer () {
 		return 0
 	fi
 
-	if ! (( HALCYON_NO_RESTORE_SANDBOX )) &&
+	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
 		(( HALCYON_NO_BUILD ))
 	then
 		log_warning 'Cannot build sandbox layer'

@@ -232,7 +232,9 @@ function copy_cabal_magic () {
 
 	local cabal_magic_hash
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-	[ -z "${cabal_magic_hash}" ] && return 0
+	if [ -z "${cabal_magic_hash}" ]; then
+		return 0
+	fi
 
 	mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	cp -p "${source_dir}/.halcyon-magic/cabal"* "${HALCYON_DIR}/cabal/.halcyon-magic" || die
@@ -357,7 +359,9 @@ function archive_cabal_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
-	! (( HALCYON_NO_ARCHIVE )) || return 0
+	if (( HALCYON_NO_ARCHIVE )); then
+		return 0
+	fi
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
@@ -518,7 +522,9 @@ function restore_updated_cabal_layer () {
 	os=$( get_tag_os "${tag}" ) || die
 	archive_prefix=$( format_updated_cabal_archive_name_prefix "${tag}" ) || die
 
-	restore_cached_updated_cabal_layer "${tag}" && return 0
+	if restore_cached_updated_cabal_layer "${tag}"; then
+		return 0
+	fi
 
 	log 'Locating updated Cabal layers'
 
@@ -532,8 +538,8 @@ function restore_updated_cabal_layer () {
 	local updated_name
 	updated_name=$( match_updated_cabal_archive_name "${tag}" <<<"${archive_names}" ) || true
 
-	if validate_private_storage &&
-		! (( HALCYON_NO_UPLOAD ))
+	if ! (( HALCYON_NO_UPLOAD )) &&
+		validate_private_storage
 	then
 		local old_names
 		if old_names=$(
@@ -564,17 +570,19 @@ function restore_updated_cabal_layer () {
 
 
 function install_cabal_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_RESTORE_CABAL HALCYON_UPDATE_CABAL HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD HALCYON_FORCE_BUILD_CABAL HALCYON_UPDATE_CABAL
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	! (( HALCYON_NO_RESTORE_CABAL )) &&
+	if ! (( HALCYON_FORCE_BUILD_CABAL )) &&
 		! (( HALCYON_UPDATE_CABAL )) &&
-		restore_updated_cabal_layer "${tag}" &&
+		restore_updated_cabal_layer "${tag}"
+	then
 		return 0
+	fi
 
-	if ! (( HALCYON_NO_RESTORE_CABAL )) &&
+	if ! (( HALCYON_FORCE_BUILD_CABAL )) &&
 		restore_bare_cabal_layer "${tag}"
 	then
 		update_cabal_layer || die
@@ -582,7 +590,7 @@ function install_cabal_layer () {
 		return 0
 	fi
 
-	if ! (( HALCYON_NO_RESTORE_CABAL )) &&
+	if ! (( HALCYON_FORCE_BUILD_CABAL )) &&
 		(( HALCYON_NO_BUILD ))
 	then
 		log_warning 'Cannot build Cabal layer'

@@ -332,6 +332,7 @@ function select_best_partial_sandbox_layer () {
 
 
 function locate_best_matching_sandbox_layer () {
+	expect_vars HALCYON_NO_BUILD HALCYON_FORCE_BUILD_SANDBOX
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
@@ -360,7 +361,11 @@ function locate_best_matching_sandbox_layer () {
 		return 0
 	fi
 
-	! (( HALCYON_NO_BUILD )) || return 1
+	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
+		(( HALCYON_NO_BUILD ))
+	then
+		return 1
+	fi
 
 	local partial_tags partial_tag
 	if partial_tags=$( locate_partial_sandbox_layers "${tag}" "${constraints}" "${all_names}" ) &&
@@ -386,7 +391,9 @@ function validate_actual_constraints () {
 	local constraint_hash actual_hash
 	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
-	[ "${actual_hash}" = "${constraint_hash}" ] && return 0
+	if [ "${actual_hash}" = "${constraint_hash}" ]; then
+		return 0
+	fi
 
 	log_warning 'Unexpected constraints difference'
 	log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'

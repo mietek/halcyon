@@ -188,7 +188,9 @@ function archive_app_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
-	! (( HALCYON_NO_ARCHIVE )) || return 0
+	if (( HALCYON_NO_ARCHIVE )); then
+		return 0
+	fi
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/app" ) || die
@@ -363,15 +365,17 @@ function prepare_app_layer () {
 
 
 function install_app_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_RESTORE_APP HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD HALCYON_FORCE_BUILD_APP
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_NO_RESTORE_APP )) &&
+	if ! (( HALCYON_FORCE_BUILD_APP )) &&
 		restore_app_layer "${tag}"
 	then
-		validate_identical_app_layer "${tag}" >'/dev/null' && return 0
+		if validate_identical_app_layer "${tag}" >'/dev/null'; then
+			return 0
+		fi
 
 		# NOTE: HALCYON_NO_BUILD is ignored here.  If even an incremental app build is not
 		# acceptable, set HALCYON_ONLY_ENV=1.
@@ -389,7 +393,7 @@ function install_app_layer () {
 		return 0
 	fi
 
-	if ! (( HALCYON_NO_RESTORE_APP )) &&
+	if ! (( HALCYON_FORCE_BUILD_APP )) &&
 		(( HALCYON_NO_BUILD ))
 	then
 		log_warning 'Cannot build app layer'

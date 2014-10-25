@@ -47,9 +47,11 @@ function transfer_original_file () {
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 	expect_no_existing "${file}"
 
-	validate_private_storage &&
-		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" &&
+	if validate_private_storage &&
+		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
+	then
 		return 0
+	fi
 
 	if ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
 		local public_url
@@ -77,9 +79,11 @@ function download_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	validate_private_storage &&
-		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" &&
+	if validate_private_storage &&
+		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
+	then
 		return 0
+	fi
 
 	! (( HALCYON_NO_DOWNLOAD_PUBLIC )) || return 1
 
@@ -95,8 +99,11 @@ function upload_stored_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	! validate_private_storage && return 0
-	(( HALCYON_NO_UPLOAD )) && return 0
+	if (( HALCYON_NO_UPLOAD )) ||
+		! validate_private_storage
+	then
+		return 0
+	fi
 
 	local object file
 	object="${prefix:+${prefix}/}${file_name}"
@@ -115,8 +122,11 @@ function delete_stored_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	! validate_private_storage && return 0
-	(( HALCYON_NO_UPLOAD )) && return 0
+	if (( HALCYON_NO_UPLOAD )) ||
+		! validate_private_storage
+	then
+		return 0
+	fi
 
 	local object
 	object="${prefix:+${prefix}/}${file_name}"

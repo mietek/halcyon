@@ -21,7 +21,7 @@ function format_slug_archive_name () {
 }
 
 
-function build_slug () {
+function install_slug () {
 	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
@@ -31,11 +31,11 @@ function build_slug () {
 	local target
 	target=$( get_tag_target "${tag}" ) || die
 
-	log 'Building slug'
+	log 'Installing slug'
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-prebuild-hook" ]; then
-		log 'Running slug pre-build hook'
-		( "${source_dir}/.halcyon-magic/slug-prebuild-hook" "${tag}" |& quote ) || die
+	if [ -f "${source_dir}/.halcyon-magic/slug-preinstall-hook" ]; then
+		log 'Running slug pre-install hook'
+		( "${source_dir}/.halcyon-magic/slug-preinstall-hook" "${tag}" |& quote ) || die
 	fi
 
 	deploy_extra_apps 'slug' "${source_dir}" || die
@@ -48,12 +48,12 @@ function build_slug () {
 		export PATH="${HALCYON_TMP_SLUG_DIR}${HALCYON_DIR}/${target}:${PATH}" &&
 		sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${HALCYON_TMP_SLUG_DIR}" --verbose=0 |& quote
 	); then
-		die 'Cannot build slug'
+		die 'Cannot install slug'
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-postbuild-hook" ]; then
-		log 'Running slug post-build hook'
-		( "${source_dir}/.halcyon-magic/slug-postbuild-hook" "${tag}" |& quote ) || die
+	if [ -f "${source_dir}/.halcyon-magic/slug-postinstall-hook" ]; then
+		log 'Running slug post-install hook'
+		( "${source_dir}/.halcyon-magic/slug-postinstall-hook" "${tag}" |& quote ) || die
 	fi
 
 	derive_app_tag "${tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" || die
@@ -64,7 +64,9 @@ function archive_slug () {
 	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_ARCHIVE_SLUG
 	expect_existing "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"
 
-	! (( HALCYON_NO_ARCHIVE )) || ! (( HALCYON_NO_ARCHIVE_SLUG )) || return 0
+	if (( HALCYON_NO_ARCHIVE )) || (( HALCYON_NO_ARCHIVE_SLUG )); then
+		return 0
+	fi
 
 	local slug_size
 	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
@@ -98,7 +100,7 @@ function validate_slug () {
 
 
 function restore_slug () {
-	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR HALCYON_NO_RESTORE_SLUG
 
 	local tag
 	expect_args tag -- "$@"
@@ -137,7 +139,7 @@ function restore_slug () {
 }
 
 
-function install_slug () {
+function apply_slug () {
 	expect_vars HALCYON_TMP_SLUG_DIR
 
 	local tag

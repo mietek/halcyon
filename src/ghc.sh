@@ -165,7 +165,9 @@ function copy_ghc_magic () {
 
 	local ghc_magic_hash
 	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
-	[ -z "${ghc_magic_hash}" ] && return 0
+	if [ -z "${ghc_magic_hash}" ]; then
+		return 0
+	fi
 
 	mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	cp -p "${source_dir}/.halcyon-magic/ghc"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
@@ -345,7 +347,9 @@ function archive_ghc_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
-	! (( HALCYON_NO_ARCHIVE )) || return 0
+	if (( HALCYON_NO_ARCHIVE )); then
+		return 0
+	fi
 
 	local layer_size
 	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
@@ -414,16 +418,18 @@ function restore_ghc_layer () {
 
 
 function install_ghc_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_RESTORE_GHC HALCYON_NO_BUILD
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD HALCYON_FORCE_BUILD_GHC
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	! (( HALCYON_NO_RESTORE_GHC )) &&
-		restore_ghc_layer "${tag}" &&
+	if ! (( HALCYON_FORCE_BUILD_GHC )) &&
+		restore_ghc_layer "${tag}"
+	then
 		return 0
+	fi
 
-	if ! (( HALCYON_NO_RESTORE_GHC )) &&
+	if ! (( HALCYON_FORCE_BUILD_GHC )) &&
 		(( HALCYON_NO_BUILD ))
 	then
 		log_warning 'Cannot build GHC layer'

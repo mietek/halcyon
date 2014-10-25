@@ -103,7 +103,7 @@ function deploy_layers () {
 		fi
 
 		if restore_slug "${tag}"; then
-			install_slug "${tag}" || die
+			apply_slug "${tag}" || die
 			return 0
 		fi
 
@@ -138,9 +138,9 @@ function deploy_layers () {
 		fi
 
 		log
-		build_slug "${tag}" || die
-		archive_slug || die
 		install_slug "${tag}" || die
+		archive_slug || die
+		apply_slug "${tag}" || die
 	fi
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
@@ -201,7 +201,9 @@ function deploy_extra_apps () {
 	if [ "${target}" != 'sandbox' ] && [ "${target}" != 'slug' ]; then
 		die "Unexpected target: ${target}"
 	fi
-	[ -f "${source_dir}/.halcyon-magic/${target}-extra-apps" ] || return 0
+	if ! [ -f "${source_dir}/.halcyon-magic/${target}-extra-apps" ]; then
+		return 0
+	fi
 
 	log 'Deploying extra apps'
 
@@ -221,11 +223,15 @@ function prepare_extra_apps () {
 	local -a extra_apps
 	case "${target}" in
 	'sandbox')
-		[ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ] || return 0
+		if [ -z "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
+			return 0
+		fi
 		extra_apps=( "${HALCYON_SANDBOX_EXTRA_APPS}" )
 		;;
 	'slug')
-		[ -n "${HALCYON_SLUG_EXTRA_APPS:+_}" ] || return 0
+		if [ -z "${HALCYON_SLUG_EXTRA_APPS:+_}" ]; then
+			return 0
+		fi
 		extra_apps=( "${HALCYON_SLUG_EXTRA_APPS}" )
 		;;
 	*)
