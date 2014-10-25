@@ -657,8 +657,8 @@ function sandboxed_cabal_do () {
 
 	local status
 	status=0
-	if (
-		! cabal_do "${work_dir}" \
+	if ! (
+		cabal_do "${work_dir}" \
 			--sandbox-config-file="${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "$@"
 	); then
 		status=1
@@ -669,5 +669,5 @@ function sandboxed_cabal_do () {
 		mv "${saved_config}" "${HALCYON_DIR}/sandbox/cabal.config" || die
 	fi
 
-	return "${status}"
+	! (( status )) || die
 }
