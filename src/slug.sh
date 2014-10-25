@@ -33,12 +33,12 @@ function build_slug () {
 
 	log 'Building slug'
 
-	deploy_extra_apps 'slug' "${source_dir}" || die
-
 	if [ -f "${source_dir}/.halcyon-magic/slug-prebuild-hook" ]; then
 		log 'Running slug pre-build hook'
 		( "${source_dir}/.halcyon-magic/slug-prebuild-hook" "${tag}" |& quote ) || die
 	fi
+
+	deploy_extra_apps 'slug' "${source_dir}" || die
 
 	log 'Copying app'
 
