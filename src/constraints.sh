@@ -239,7 +239,6 @@ function locate_first_full_sandbox_layer () {
 		return 0
 	done <<<"${full_names}"
 
-	log 'Cannot use any fully matching sandbox layers'
 	return 1
 }
 
@@ -283,11 +282,7 @@ function locate_partial_sandbox_layers () {
 
 		results+=( "${partial_tag}" )
 	done <<<"${partial_names}"
-
-	if [ -z "${results[@]:+_}" ]; then
-		log 'Cannot use any partially matching sandbox layers'
-		return 1
-	fi
+	[ -n "${results[@]:+_}" ] || return 1
 
 	( IFS=$'\n' && echo -n "${results[*]:-}" )
 }
@@ -345,16 +340,13 @@ function select_best_partial_sandbox_layer () {
 	done <<<"${partial_tags}"
 
 	local result
-	if ! result=$(
+	result=$(
 		( IFS=$'\n' && echo -n "${results[*]:-}" ) |
 		filter_not_matching '^0 ' |
 		sort_naturally |
 		filter_last |
 		match_exactly_one
-	); then
-		log 'Cannot select any partially matching sandbox layers'
-		return 1
-	fi
+	) || return 1
 
 	echo "${result#* }"
 }

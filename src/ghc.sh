@@ -253,7 +253,7 @@ function build_ghc_layer () {
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
 		transfer_original_file "${original_url}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
-			die 'Cannot extract original archive'
+			die 'Cannot install GHC'
 		fi
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die

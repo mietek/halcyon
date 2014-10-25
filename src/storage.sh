@@ -53,7 +53,7 @@ function transfer_original_file () {
 	fi
 
 	if ! curl_download "${original_url}" "${file}"; then
-		die 'Cannot download file'
+		die 'Cannot download original file'
 	fi
 	upload_stored_file 'original' "${file_name}" || die
 }

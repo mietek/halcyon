@@ -164,8 +164,7 @@ function deploy_layers () {
 		if validate_ghc_layer "${tag}" >'/dev/null' ||
 			validate_updated_cabal_layer "${tag}" >'/dev/null'
 		then
-			log_error 'Cannot validate environment'
-			return 1
+			die 'Cannot reuse environment'
 		fi
 	fi
 
@@ -291,13 +290,10 @@ function deploy_local_app () {
 
 	local app_label
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
-		log_error 'Cannot detect app label'
-		return 1
+		die 'Cannot detect app label'
 	fi
-
 	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
-		log_error 'Cannot deploy app'
-		return 1
+		die 'Cannot deploy app'
 	fi
 
 	rm -rf "${source_dir}" || die
@@ -313,19 +309,15 @@ function deploy_cloned_app () {
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.app' ) || die
 	if ! git clone --depth=1 --quiet "${url}" "${source_dir}"; then
-		log_error 'Cannot clone app'
-		return 1
+		die 'Cannot clone app'
 	fi
 
 	local app_label
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
-		log_error 'Cannot detect app label'
-		return 1
+		die 'Cannot detect app label'
 	fi
-
 	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
-		log_error 'Cannot deploy app'
-		return 1
+		die 'Cannot deploy app'
 	fi
 
 	rm -rf "${source_dir}" || die
@@ -348,14 +340,12 @@ function deploy_unpacked_app () {
 				HALCYON_NO_WARN_IMPLICIT=1 \
 				deploy_env "${env_tag}"
 			then
-				log_error 'Cannot deploy environment'
-				return 1
+				die 'Cannot deploy environment'
 			fi
 			log
 			no_prepare_cache=1
 		else
-			log_error 'Cannot validate environment'
-			return 1
+			die 'Cannot reuse environment'
 		fi
 	fi
 
@@ -374,8 +364,7 @@ function deploy_unpacked_app () {
 		match_exactly_one |
 		sed 's:^Unpacking to \(.*\)/$:\1:'
 	); then
-		log_error 'Cannot unpack app'
-		return 1
+		die 'Cannot unpack app'
 	fi
 
 	if ! (( HALCYON_NO_WARN_IMPLICIT )) &&
@@ -392,8 +381,7 @@ function deploy_unpacked_app () {
 		HALCYON_NO_WARN_IMPLICIT=1                  \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
-		log_error 'Cannot deploy app'
-		return 1
+		die 'Cannot deploy app'
 	fi
 
 	rm -rf "${source_dir}" || die
