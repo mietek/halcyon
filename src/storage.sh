@@ -77,10 +77,7 @@ function download_stored_file () {
 
 	local public_url
 	public_url=$( format_public_storage_url "${object}" ) || die
-	if ! curl_download "${public_url}" "${file}"; then
-		log_indent 'Cannot download stored file'
-		return 1
-	fi
+	curl_download "${public_url}" "${file}" || return 1
 }
 
 
@@ -132,6 +129,8 @@ function list_stored_files () {
 			if [ -n "${listing}" ]; then
 				sort_naturally <<<"${listing}" | quote || die
 				echo "${listing}"
+			else
+				log_indent '(none)'
 			fi
 			return 0
 		fi
@@ -147,5 +146,7 @@ function list_stored_files () {
 	if [ -n "${listing}" ]; then
 		sort_naturally <<<"${listing}" | quote || die
 		echo "${listing}"
+	else
+		log_indent '(none)'
 	fi
 }

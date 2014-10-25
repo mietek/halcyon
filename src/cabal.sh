@@ -521,14 +521,11 @@ function restore_updated_cabal_layer () {
 	log 'Locating updated Cabal layers'
 
 	local archive_names
-	if ! archive_names=$(
+	archive_names=$(
 		list_stored_files "${os}/${archive_prefix}" |
 		sed "s:${os}/::" |
 		match_at_least_one
-	); then
-		log 'Cannot locate any updated Cabal layer archives'
-		return 1
-	fi
+	) || return 1
 
 	local updated_name
 	updated_name=$( match_updated_cabal_archive_name "${tag}" <<<"${archive_names}" ) || true
@@ -550,10 +547,7 @@ function restore_updated_cabal_layer () {
 		fi
 	fi
 
-	if [ -z "${updated_name}" ]; then
-		log 'Cannot locate any updated Cabal layer archives'
-		return 1
-	fi
+	[ -n "${updated_name}" ] || return 1
 
 	log 'Restoring updated Cabal layer'
 

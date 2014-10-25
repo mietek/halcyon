@@ -199,36 +199,6 @@ function validate_partial_constraint_file () {
 }
 
 
-function locate_all_matching_sandbox_layers () {
-	local tag
-	expect_args tag -- "$@"
-
-	local os ghc_version file_name constraint_prefix partial_pattern
-	os=$( get_tag_os "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	file_name=$( format_constraint_file_name "${tag}" ) || die
-	constraint_prefix=$( format_constraint_file_name_prefix ) || die
-	partial_pattern=$( format_partial_constraint_file_name_pattern ) || die
-
-	log 'Locating matching sandbox layers'
-
-	local file_names
-	if ! file_names=$(
-		list_stored_files "${os}/ghc-${ghc_version}/${constraint_prefix}" |
-		sed "s:${os}/ghc-${ghc_version}/::" |
-		filter_matching "^${partial_pattern}$" |
-		filter_not_matching "^${file_name}$" |
-		sort_naturally |
-		match_at_least_one
-	); then
-		log 'Cannot locate any matching sandbox layers'
-		return 1
-	fi
-
-	echo "${file_names}"
-}
-
-
 function locate_first_full_sandbox_layer () {
 	expect_vars HALCYON_CACHE_DIR
 
@@ -239,13 +209,10 @@ function locate_first_full_sandbox_layer () {
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	full_pattern=$( format_full_constraint_file_name_pattern "${tag}" ) || die
-	if ! full_names=$(
+	full_names=$(
 		filter_matching "^${full_pattern}$" <<<"${all_names}" |
 		match_at_least_one
-	); then
-		log 'Cannot locate any fully matching sandbox layers'
-		return 1
-	fi
+	) || return 1
 
 	log 'Examining fully matching sandbox layers'
 
@@ -287,13 +254,10 @@ function locate_partial_sandbox_layers () {
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	full_pattern=$( format_full_constraint_file_name_pattern "${tag}" ) || die
-	if ! partial_names=$(
+	partial_names=$(
 		filter_not_matching "^${full_pattern}" <<<"${all_names}" |
 		match_at_least_one
-	); then
-		log 'Cannot locate any partially matching sandbox layers'
-		return 1
-	fi
+	) || return 1
 
 	log 'Examining partially matching sandbox layers'
 
@@ -400,8 +364,24 @@ function locate_best_matching_sandbox_layer () {
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
+	local os ghc_version file_name constraint_prefix partial_pattern
+	os=$( get_tag_os "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	file_name=$( format_constraint_file_name "${tag}" ) || die
+	constraint_prefix=$( format_constraint_file_name_prefix ) || die
+	partial_pattern=$( format_partial_constraint_file_name_pattern ) || die
+
+	log 'Locating matching sandbox layers'
+
 	local all_names
-	all_names=$( locate_all_matching_sandbox_layers "${tag}" ) || return 1
+	all_names=$(
+		list_stored_files "${os}/ghc-${ghc_version}/${constraint_prefix}" |
+		sed "s:${os}/ghc-${ghc_version}/::" |
+		filter_matching "^${partial_pattern}$" |
+		filter_not_matching "^${file_name}$" |
+		sort_naturally |
+		match_at_least_one
+	) || return 1
 
 	local full_tag
 	if full_tag=$( locate_first_full_sandbox_layer "${tag}" "${all_names}" ); then
