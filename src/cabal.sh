@@ -342,7 +342,9 @@ function update_cabal_layer () {
 
 	log 'Updating Cabal layer'
 
-	cabal_do '.' update |& quote || die
+	if ! cabal_do '.' update |& quote; then
+		die 'Cannot update Cabal layer'
+	fi
 
 	local cabal_tag update_timestamp
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
@@ -688,7 +690,7 @@ function cabal_freeze_implicit_constraints () {
 		filter_correct_constraints "${app_label}"
 	then
 		quote <"${stderr}"
-		return 1
+		die 'Cannot freeze implicit constraints'
 	fi
 }
 
@@ -705,7 +707,7 @@ function cabal_freeze_actual_constraints () {
 		filter_correct_constraints "${app_label}"
 	then
 		quote <"${stderr}"
-		return 1
+		die 'Cannot freeze actual constraints'
 	fi
 }
 
@@ -735,10 +737,10 @@ function cabal_unpack_app () {
 	fi
 	if [ "${app_label}" != "${thing}" ]; then
 		if (( HALCYON_RECURSIVE )); then
-			log_error "Cannot use newest available version of ${thing}"
+			log_error "Cannot use implicit version of ${thing}"
 			die 'Expected app label with explicit version'
 		fi
-		log_warning "Using newest available version of ${thing}"
+		log_warning "Using implicit version of ${thing}"
 		log_warning 'Expected app label with explicit version'
 	fi
 

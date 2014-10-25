@@ -113,7 +113,7 @@ function hash_constraints () {
 function detect_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
-	[ -f "${source_dir}/cabal.config" ] || return 1
+	expect_existing "${source_dir}/cabal.config"
 
 	local constraints
 	constraints=$(
@@ -126,13 +126,17 @@ function detect_constraints () {
 	local base_version candidate_package candidate_version
 	base_version=
 	while read -r candidate_package candidate_version; do
-		[ -z "${constraints_A[${candidate_package}]:+_}" ] || return 1
+		if [ -n "${constraints_A[${candidate_package}]:+_}" ]; then
+			die "Unexpected duplicate constraint: ${candidate_package}-${constraints_A[${candidate_package}]} and ${candidate_package}-${candidate-version}"
+		fi
 		constraints_A["${candidate_package}"]="${candidate_version}"
 		if [ "${candidate_package}" = 'base' ]; then
 			base_version="${candidate_version}"
 		fi
 	done <<<"${constraints}"
-	[ -n "${base_version}" ] || return 1
+	if [ -z "${base_version}" ]; then
+		die 'Expected base package constraint'
+	fi
 
 	echo "${constraints}"
 }

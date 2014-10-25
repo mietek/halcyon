@@ -37,7 +37,7 @@ function build_slug () {
 		export PATH="${HALCYON_TMP_SLUG_DIR}${HALCYON_DIR}/${target}:${PATH}" &&
 		sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${HALCYON_TMP_SLUG_DIR}" --verbose=0 |& quote
 	); then
-		die 'Failed to build slug'
+		die 'Cannot build slug'
 	fi
 
 	echo "${app_tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag"

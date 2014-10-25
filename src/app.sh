@@ -161,7 +161,9 @@ function build_app_layer () {
 		local target
 		target=$( get_tag_target "${tag}" ) || die
 
-		sandboxed_cabal_do "${HALCYON_DIR}/app" configure --prefix="${HALCYON_DIR}/${target}" |& quote || die
+		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure --prefix="${HALCYON_DIR}/${target}" |& quote; then
+			die 'Cannot configure app'
+		fi
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/app-prebuild-hook" ]; then
@@ -171,7 +173,9 @@ function build_app_layer () {
 
 	log 'Building app'
 
-	sandboxed_cabal_do "${HALCYON_DIR}/app" build |& quote || die
+	if ! sandboxed_cabal_do "${HALCYON_DIR}/app" build |& quote; then
+		die 'Cannot build app'
+	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/app-postbuild-hook" ]; then
 		log 'Running app post-build hook'

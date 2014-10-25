@@ -270,14 +270,10 @@ function deploy_app () {
 
 	local constraints warn_constraints
 	if [ -f "${source_dir}/cabal.config" ]; then
-		if ! constraints=$( detect_constraints "${app_label}" "${source_dir}" ); then
-			die 'Cannot detect explicit constraints'
-		fi
+		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 		warn_constraints=0
 	else
-		if ! constraints=$( cabal_freeze_implicit_constraints "${app_label}" "${source_dir}" ); then
-			die 'Cannot detect implicit constraints'
-		fi
+		constraints=$( cabal_freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
 		warn_constraints=1
 	fi
 

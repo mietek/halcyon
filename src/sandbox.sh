@@ -146,7 +146,9 @@ function build_sandbox_layer () {
 		log 'Creating sandbox'
 
 		mkdir -p "${HALCYON_DIR}/sandbox" || die
-		cabal_do "${HALCYON_DIR}/sandbox" sandbox init --sandbox '.' |& quote || die
+		if ! cabal_do "${HALCYON_DIR}/sandbox" sandbox init --sandbox '.' |& quote; then
+			die 'Cannot create sandbox'
+		fi
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
@@ -169,7 +171,9 @@ function build_sandbox_layer () {
 	# and to fail to recognise the packages have been installed.
 	# https://github.com/haskell/cabal/issues/779
 
-	sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote || die
+	if ! sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote; then
+		die 'Cannot build sandbox'
+	fi
 
 	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-constraints.config" || die
 
@@ -183,9 +187,7 @@ function build_sandbox_layer () {
 
 	local app_label actual_constraints
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	if ! actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ); then
-		die 'Cannot detect actual constraints'
-	fi
+	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
 	validate_actual_constraints "${tag}" "${constraints}" "${actual_constraints}" || die
 }
 
