@@ -73,34 +73,6 @@ function detect_app_executable () {
 }
 
 
-function save_sandbox_and_app_layers () {
-	local saved_sandbox saved_app
-	expect_args saved_sandbox saved_app -- "$@"
-
-	if [ -d "${HALCYON_DIR}/sandbox" ]; then
-		mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
-	fi
-	if [ -d "${HALCYON_DIR}/app" ]; then
-		mv "${HALCYON_DIR}/app" "${saved_app}" || die
-	fi
-}
-
-
-function reset_sandbox_and_app_layers () {
-	local saved_sandbox saved_app
-	expect_args saved_sandbox saved_app -- "$@"
-
-	if [ -d "${saved_sandbox}" ]; then
-		rm -rf "${HALCYON_DIR}/sandbox" || die
-		mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
-	fi
-	if [ -d "${saved_app}" ]; then
-		rm -rf "${HALCYON_DIR}/app" || die
-		mv "${saved_app}" "${HALCYON_DIR}/app" || die
-	fi
-}
-
-
 function deploy_sandbox_extra_apps () {
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -137,22 +109,9 @@ function deploy_layers () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	if ! (( HALCYON_RECURSIVE )) &&
-		! (( HALCYON_NO_PREPARE_CACHE ))
-	then
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
 		prepare_cache || die
-	fi
-
-	if ! (( HALCYON_RECURSIVE )); then
-		rm -rf "${HALCYON_DIR}/slug" || die
-	fi
-
-	if ! (( HALCYON_ONLY_ENV )) &&
-		restore_slug "${tag}"
-	then
-		install_slug || die
-		return 0
 	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
@@ -169,23 +128,48 @@ function deploy_layers () {
 	fi
 
 	if ! (( HALCYON_ONLY_ENV )); then
-		local saved_sandbox saved_app
-		saved_sandbox=$( get_tmp_dir 'halcyon.saved-sandbox' ) || die
-		saved_app=$( get_tmp_dir 'halcyon.saved-app' ) || die
-
-		if (( HALCYON_RECURSIVE )); then
-			save_sandbox_and_app_layers "${saved_sandbox}" "${saved_app}" || die
+		if ! (( HALCYON_RECURSIVE )); then
+			rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
 		fi
+
+		if restore_slug "${tag}"; then
+			install_slug || die
+			return 0
+		fi
+
+		local saved_sandbox saved_app
+		saved_sandbox=
+		saved_app=
+		if (( HALCYON_RECURSIVE )); then
+			if [ -d "${HALCYON_DIR}/sandbox" ]; then
+				saved_sandbox=$( get_tmp_dir 'halcyon.saved-sandbox' ) || die
+				mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
+			fi
+			if [ -d "${HALCYON_DIR}/app" ]; then
+				saved_app=$( get_tmp_dir 'halcyon.saved-app' ) || die
+				mv "${HALCYON_DIR}/app" "${saved_app}" || die
+			fi
+		fi
+
 		log
 		deploy_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
 		log
 		deploy_app_layer "${tag}" "${source_dir}" || return 1
+
 		if [ -f "${source_dir}/.halcyon-magic/extra-apps" ]; then
 			log
 			deploy_extra_apps "${source_dir}" || return 1
 		fi
+
 		if (( HALCYON_RECURSIVE )); then
-			reset_sandbox_and_app_layers "${saved_sandbox}" "${saved_app}" || die
+			if [ -n "${saved_sandbox}" ]; then
+				rm -rf "${HALCYON_DIR}/sandbox" || die
+				mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
+			fi
+			if [ -n "${saved_app}" ]; then
+				rm -rf "${HALCYON_DIR}/app" || die
+				mv "${saved_app}" "${HALCYON_DIR}/app" || die
+			fi
 		fi
 
 		log
@@ -194,9 +178,7 @@ function deploy_layers () {
 		install_slug || die
 	fi
 
-	if ! (( HALCYON_RECURSIVE )) &&
-		! (( HALCYON_NO_CLEAN_CACHE ))
-	then
+	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
 		log
 		clean_cache || die
 	fi
