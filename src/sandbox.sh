@@ -118,9 +118,7 @@ function copy_sandbox_magic () {
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
-	if [ -z "${sandbox_magic_hash}" ]; then
-		return 0
-	fi
+	[ -z "${sandbox_magic_hash}" ] && return 0
 
 	mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	find_spaceless_recursively "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' \) |
@@ -326,9 +324,7 @@ function install_sandbox_layer () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	if ! (( HALCYON_NO_RESTORE_SANDBOX )) && restore_sandbox_layer "${tag}"; then
-		return 0
-	fi
+	! (( HALCYON_NO_RESTORE_SANDBOX )) && restore_sandbox_layer "${tag}" && return 0
 
 	local matching_tag
 	if ! (( HALCYON_NO_RESTORE_SANDBOX )) &&

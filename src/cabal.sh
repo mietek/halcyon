@@ -232,9 +232,7 @@ function copy_cabal_magic () {
 
 	local cabal_magic_hash
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-	if [ -z "${cabal_magic_hash}" ]; then
-		return 0
-	fi
+	[ -z "${cabal_magic_hash}" ] && return 0
 
 	mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	cp -p "${source_dir}/.halcyon-magic/cabal"* "${HALCYON_DIR}/cabal/.halcyon-magic" || die
@@ -516,9 +514,7 @@ function restore_updated_cabal_layer () {
 	os=$( get_tag_os "${tag}" ) || die
 	archive_prefix=$( format_updated_cabal_archive_name_prefix "${tag}" ) || die
 
-	if restore_cached_updated_cabal_layer "${tag}"; then
-		return 0
-	fi
+	restore_cached_updated_cabal_layer "${tag}" && return 0
 
 	log 'Locating updated Cabal layers'
 
@@ -573,11 +569,10 @@ function install_cabal_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_NO_RESTORE_CABAL )) && ! (( HALCYON_UPDATE_CABAL )) &&
-		restore_updated_cabal_layer "${tag}"
-	then
+	! (( HALCYON_NO_RESTORE_CABAL )) &&
+		! (( HALCYON_UPDATE_CABAL )) &&
+		restore_updated_cabal_layer "${tag}" &&
 		return 0
-	fi
 
 	if ! (( HALCYON_NO_RESTORE_CABAL )) && restore_bare_cabal_layer "${tag}"; then
 		update_cabal_layer || die

@@ -367,9 +367,7 @@ function install_app_layer () {
 	expect_args tag source_dir -- "$@"
 
 	if ! (( HALCYON_NO_RESTORE_APP )) && restore_app_layer "${tag}"; then
-		if validate_identical_app_layer "${tag}" >'/dev/null'; then
-			return 0
-		fi
+		validate_identical_app_layer "${tag}" >'/dev/null' && return 0
 
 		# NOTE: HALCYON_NO_BUILD is ignored here.  If even an incremental app build is not
 		# acceptable, set HALCYON_ONLY_ENV=1.

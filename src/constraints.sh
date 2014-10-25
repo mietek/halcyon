@@ -433,9 +433,7 @@ function validate_actual_constraints () {
 	local constraint_hash actual_hash
 	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
-	if [ "${actual_hash}" = "${constraint_hash}" ]; then
-		return 0
-	fi
+	[ "${actual_hash}" = "${constraint_hash}" ] && return 0
 
 	log_warning 'Unexpected constraints difference'
 	log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'
