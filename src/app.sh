@@ -182,20 +182,17 @@ function build_app_layer () {
 		fi
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/app-prebuild-hook" ]; then
-		log 'Running app pre-build hook'
-		( "${source_dir}/.halcyon-magic/app-prebuild-hook" "${tag}" |& quote ) || die
+	if [ -f "${source_dir}/.halcyon-magic/app-build-hook" ]; then
+		log 'Running app build hook'
+		if ! ( "${source_dir}/.halcyon-magic/app-build-hook" "${tag}" |& quote ); then
+			die 'App build hook failed'
+		fi
 	fi
 
 	log 'Building app'
 
 	if ! sandboxed_cabal_do "${HALCYON_DIR}/app" build |& quote; then
 		die 'Cannot build app'
-	fi
-
-	if [ -f "${source_dir}/.halcyon-magic/app-postbuild-hook" ]; then
-		log 'Running app post-build hook'
-		( "${source_dir}/.halcyon-magic/app-postbuild-hook" "${tag}" |& quote ) || die
 	fi
 
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die

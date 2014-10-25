@@ -33,13 +33,6 @@ function install_slug () {
 
 	log 'Installing slug'
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-preinstall-hook" ]; then
-		log 'Running slug pre-install hook'
-		( "${source_dir}/.halcyon-magic/slug-preinstall-hook" "${tag}" |& quote ) || die
-	fi
-
-	deploy_extra_apps 'slug' "${source_dir}" || die
-
 	log 'Copying app'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
@@ -51,10 +44,14 @@ function install_slug () {
 		die 'Cannot install slug'
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-postinstall-hook" ]; then
-		log 'Running slug post-install hook'
-		( "${source_dir}/.halcyon-magic/slug-postinstall-hook" "${tag}" |& quote ) || die
+	if [ -f "${source_dir}/.halcyon-magic/slug-install-hook" ]; then
+		log 'Running slug install hook'
+		if ! ( "${source_dir}/.halcyon-magic/slug-install-hook" "${tag}" |& quote ); then
+			die 'Slug install hook failed'
+		fi
 	fi
+
+	deploy_extra_apps 'slug' "${source_dir}" || die
 
 	derive_app_tag "${tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" || die
 }

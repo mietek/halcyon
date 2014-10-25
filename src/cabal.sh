@@ -282,9 +282,11 @@ function build_cabal_layer () {
 		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/cabal-prebuild-hook" ]; then
-		log 'Running Cabal pre-build hook'
-		( "${source_dir}/.halcyon-magic/cabal-prebuild-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" |& quote ) || die
+	if [ -f "${source_dir}/.halcyon-magic/cabal-build-hook" ]; then
+		log 'Running Cabal build hook'
+		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" |& quote ); then
+			die 'Cabal build hook failed'
+		fi
 	fi
 
 	log 'Bootstrapping Cabal'
@@ -319,17 +321,12 @@ EOF
 		cd "${build_dir}/cabal-install-${cabal_version}" &&
 		./bootstrap.sh --no-doc |& quote
 	); then
-		die 'Failed to bootstrap Cabal'
+		die 'Bootstrapping Cabal failed'
 	fi
 
 	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
 	mv "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
 	format_cabal_config "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
-
-	if [ -f "${source_dir}/.halcyon-magic/cabal-postbuild-hook" ]; then
-		log 'Running Cabal post-build hook'
-		( "${source_dir}/.halcyon-magic/cabal-postbuild-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" |& quote ) || die
-	fi
 
 	copy_cabal_magic "${source_dir}" || die
 	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die

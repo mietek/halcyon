@@ -154,9 +154,11 @@ function build_sandbox_layer () {
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-prebuild-hook" ]; then
-		log 'Running sandbox pre-build hook'
-		( "${source_dir}/.halcyon-magic/sandbox-prebuild-hook" "${tag}" "${must_create}" |& quote ) || die
+	if [ -f "${source_dir}/.halcyon-magic/sandbox-build-hook" ]; then
+		log 'Running sandbox build hook'
+		if ! ( "${source_dir}/.halcyon-magic/sandbox-build-hook" "${tag}" "${must_create}" |& quote ); then
+			die 'Sandbox build hook failed'
+		fi
 	fi
 
 	deploy_extra_apps 'sandbox' "${source_dir}" || die
@@ -176,11 +178,6 @@ function build_sandbox_layer () {
 	fi
 
 	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-constraints.config" || die
-
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-postbuild-hook" ]; then
-		log 'Running sandbox post-build hook'
-		( "${source_dir}/.halcyon-magic/sandbox-postbuild-hook" "${tag}" "${must_create}" |& quote ) || die
-	fi
 
 	copy_sandbox_magic "${source_dir}" || die
 	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die

@@ -261,9 +261,11 @@ function build_ghc_layer () {
 		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/ghc-prebuild-hook" ]; then
-		log 'Running GHC pre-build hook'
-		( "${source_dir}/.halcyon-magic/ghc-prebuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" |& quote ) || die
+	if [ -f "${source_dir}/.halcyon-magic/ghc-build-hook" ]; then
+		log 'Running GHC build hook'
+		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" |& quote ); then
+			die 'GHC build hook failed'
+		fi
 	fi
 
 	log 'Installing GHC'
@@ -273,12 +275,7 @@ function build_ghc_layer () {
 		./configure --prefix="${HALCYON_DIR}/ghc" |& quote &&
 		make install |& quote
 	); then
-		die 'Failed to install GHC'
-	fi
-
-	if [ -f "${source_dir}/.halcyon-magic/ghc-postbuild-hook" ]; then
-		log 'Running GHC post-build hook'
-		( "${source_dir}/.halcyon-magic/ghc-postbuild-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" |& quote ) || die
+		die 'Installing GHC failed'
 	fi
 
 	copy_ghc_magic "${source_dir}" || die
