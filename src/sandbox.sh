@@ -207,13 +207,13 @@ function build_sandbox_layer () {
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-build-hook" ]; then
 		log 'Running sandbox build hook'
 		if ! ( "${source_dir}/.halcyon-magic/sandbox-build-hook" "${tag}" "${must_create}" |& quote ); then
-			die 'Sandbox build hook failed'
+			die 'Running Sandbox build hook failed'
 		fi
 	fi
 
 	deploy_extra_apps 'sandbox' "${source_dir}" || die
 
-	log 'Building sandbox'
+	log 'Compiling sandbox'
 
 	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the executables
 	# to be installed, but not to install the packages.
@@ -224,7 +224,7 @@ function build_sandbox_layer () {
 	# https://github.com/haskell/cabal/issues/779
 
 	if ! sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote; then
-		die 'Cannot build sandbox'
+		die 'Compiling sandbox failed'
 	fi
 
 	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-sandbox.cabal.config" || die
@@ -232,31 +232,22 @@ function build_sandbox_layer () {
 	copy_sandbox_magic "${source_dir}" || die
 	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
+	local compiled_size
+	compiled_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
+
+	log "Sandbox compiled (${compiled_size})"
+	log_indent_begin 'Stripping sandbox layer...'
+
+	strip_tree "${HALCYON_DIR}/sandbox" || die
+
+	local stripped_size
+	stripped_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
+	log_end "done (${stripped_size})"
+
 	local app_label actual_constraints
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
 	validate_actual_constraints "${tag}" "${constraints}" "${actual_constraints}" || die
-}
-
-
-function strip_sandbox_layer () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag"
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-
-	log "Stripping sandbox layer (${layer_size})"
-
-	find "${HALCYON_DIR}/sandbox"       \
-			-type f        -and \
-			\(                  \
-			-name '*.so'   -or  \
-			-name '*.so.*' -or  \
-			-name '*.a'         \
-			\)                  \
-			-print0 |
-		strip0 --strip-unneeded
 }
 
 
@@ -267,11 +258,6 @@ function archive_sandbox_layer () {
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/sandbox" ) || die
-
-	log "Archiving sandbox layer (${layer_size})"
 
 	local sandbox_tag archive_name file_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
@@ -366,7 +352,6 @@ function install_matching_sandbox_layer () {
 	local must_create
 	must_create=0
 	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
-	strip_sandbox_layer || die
 }
 
 
@@ -399,7 +384,6 @@ function install_sandbox_layer () {
 	must_create=1
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
-	strip_sandbox_layer || die
 	archive_sandbox_layer || die
 }
 

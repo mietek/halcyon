@@ -285,7 +285,7 @@ function build_cabal_layer () {
 	if [ -f "${source_dir}/.halcyon-magic/cabal-build-hook" ]; then
 		log 'Running Cabal build hook'
 		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote ); then
-			die 'Cabal build hook failed'
+			die 'Running Cabal build hook failed'
 		fi
 	fi
 
@@ -331,6 +331,18 @@ EOF
 	copy_cabal_magic "${source_dir}" || die
 	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
+	local bootstrapped_size
+	bootstrapped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
+
+	log "Cabal bootstrapped (${bootstrapped_size})"
+	log_indent_begin 'Stripping Cabal layer...'
+
+	strip_tree "${HALCYON_DIR}/cabal" || die
+
+	local stripped_size
+	stripped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
+	log_end "done (${stripped_size})"
+
 	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${cabal_dir}" || die
 }
 
@@ -349,6 +361,11 @@ function update_cabal_layer () {
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	update_timestamp=$( format_timestamp ) || die
 	derive_updated_cabal_tag "${cabal_tag}" "${update_timestamp}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
+
+	local updated_size
+	updated_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
+
+	log "Cabal layer updated (${updated_size})"
 }
 
 
@@ -359,11 +376,6 @@ function archive_cabal_layer () {
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/cabal" ) || die
-
-	log "Archiving Cabal layer (${layer_size})"
 
 	local cabal_tag archive_name
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die

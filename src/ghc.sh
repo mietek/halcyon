@@ -264,7 +264,7 @@ function build_ghc_layer () {
 	if [ -f "${source_dir}/.halcyon-magic/ghc-build-hook" ]; then
 		log 'Running GHC build hook'
 		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${ghc_dir}/ghc-${ghc-version}" |& quote ); then
-			die 'GHC build hook failed'
+			die 'Running GHC build hook failed'
 		fi
 	fi
 
@@ -281,62 +281,19 @@ function build_ghc_layer () {
 	copy_ghc_magic "${source_dir}" || die
 	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
+	local installed_size
+	installed_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
+
+	log "GHC installed (${installed_size})"
+	log_indent_begin 'Stripping GHC layer...'
+
+	strip_tree "${HALCYON_DIR}/ghc" || die
+
+	local stripped_size
+	stripped_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
+	log_end "done (${stripped_size})"
+
 	rm -rf "${ghc_dir}" || die
-}
-
-
-function strip_ghc_layer () {
-	expect_vars HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-
-	log "Stripping GHC layer (${layer_size})"
-
-	local ghc_tag ghc_version
-	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag" ) || die
-	ghc_version=$( get_tag_ghc_version "${ghc_tag}" ) || die
-
-	case "${ghc_version}" in
-	'7.8.'*)
-		strip --strip-unneeded                                                    \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/ghc"               \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/ghc-pkg"           \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/hsc2hs"            \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/bin/runghc"            \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/mkGmpDerivedConstants" \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/unlit" || die
-		find "${HALCYON_DIR}/ghc"           \
-				-type f        -and \
-				\(                  \
-				-name '*.so'   -or  \
-				-name '*.so.*' -or  \
-				-name '*.a'         \
-				\)                  \
-				-print0 |
-			strip0 --strip-unneeded || die
-		;;
-	'7.6.'*)
-		strip --strip-unneeded                                      \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/ghc"     \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/ghc-pkg" \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/hsc2hs"  \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/runghc"  \
-			"${HALCYON_DIR}/ghc/lib/ghc-${ghc_version}/unlit" || die
-		find "${HALCYON_DIR}/ghc"           \
-				-type f        -and \
-				\(                  \
-				-name '*.so'   -or  \
-				-name '*.so.*' -or  \
-				-name '*.a'         \
-				\)                  \
-				-print0 |
-			strip0 --strip-unneeded || die
-		;;
-	*)
-		die "Unexpected GHC version: ${ghc_version}"
-	esac
 }
 
 
@@ -347,11 +304,6 @@ function archive_ghc_layer () {
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/ghc" ) || die
-
-	log "Archiving GHC layer (${layer_size})"
 
 	local ghc_tag archive_name
 	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag") || die
@@ -433,7 +385,6 @@ function install_ghc_layer () {
 
 	rm -rf "${HALCYON_DIR}/ghc" || die
 	build_ghc_layer "${tag}" "${source_dir}" || die
-	strip_ghc_layer || die
 	archive_ghc_layer || die
 }
 

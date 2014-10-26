@@ -185,15 +185,27 @@ function build_app_layer () {
 	if [ -f "${source_dir}/.halcyon-magic/app-build-hook" ]; then
 		log 'Running app build hook'
 		if ! ( "${source_dir}/.halcyon-magic/app-build-hook" "${tag}" |& quote ); then
-			die 'App build hook failed'
+			die 'Running app build hook failed'
 		fi
 	fi
 
-	log 'Building app'
+	log 'Compiling app'
 
 	if ! sandboxed_cabal_do "${HALCYON_DIR}/app" build |& quote; then
-		die 'Cannot build app'
+		die 'Compiling app failed'
 	fi
+
+	local compiled_size
+	compiled_size=$( size_tree "${HALCYON_DIR}/app" ) || die
+
+	log "App compiled (${compiled_size})"
+	log_indent_begin 'Stripping app layer...'
+
+	strip_tree "${HALCYON_DIR}/app" || die
+
+	local stripped_size
+	stripped_size=$( size_tree "${HALCYON_DIR}/app" ) || die
+	log_end "done (${stripped_size})"
 
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 }
@@ -206,11 +218,6 @@ function archive_app_layer () {
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
-
-	local layer_size
-	layer_size=$( measure_recursively "${HALCYON_DIR}/app" ) || die
-
-	log "Archiving app layer (${layer_size})"
 
 	local app_tag archive_name
 	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die

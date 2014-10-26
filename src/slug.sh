@@ -45,13 +45,25 @@ function prepare_slug () {
 	if [ -f "${source_dir}/.halcyon-magic/slug-extra-hook" ]; then
 		log 'Running slug extra hook'
 		if ! ( "${source_dir}/.halcyon-magic/slug-extra-hook" "${tag}" |& quote ); then
-			die 'Slug extra hook failed'
+			die 'Running slug extra hook failed'
 		fi
 	fi
 
 	deploy_extra_apps 'slug' "${source_dir}" || die
 
 	derive_app_tag "${tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" || die
+
+	local prepared_size
+	prepared_size=$( size_tree "${HALCYON_TMP_SLUG_DIR}" ) || die
+
+	log "Slug prepared (${prepared_size})"
+	log_indent_begin 'Stripping slug...'
+
+	strip_tree "${HALCYON_TMP_SLUG_DIR}" || die
+
+	local stripped_size
+	stripped_size=$( size_tree "${HALCYON_TMP_SLUG_DIR}" ) || die
+	log_end "done (${stripped_size})"
 }
 
 
@@ -62,11 +74,6 @@ function archive_slug () {
 	if (( HALCYON_NO_ARCHIVE )) || (( HALCYON_NO_ARCHIVE_SLUG )); then
 		return 0
 	fi
-
-	local slug_size
-	slug_size=$( measure_recursively "${HALCYON_TMP_SLUG_DIR}" ) || die
-
-	log "Archiving slug (${slug_size})"
 
 	local app_tag archive_name
 	app_tag=$( detect_app_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" ) || die
