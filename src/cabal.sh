@@ -285,7 +285,7 @@ function build_cabal_layer () {
 	if [ -f "${source_dir}/.halcyon-magic/cabal-build-hook" ]; then
 		log 'Running Cabal build hook'
 		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote ); then
-			die 'Running Cabal build hook failed'
+			die 'Failed to run Cabal build hook'
 		fi
 	fi
 
@@ -321,7 +321,7 @@ EOF
 		cd "${cabal_dir}/cabal-install-${cabal_version}" &&
 		./bootstrap.sh --no-doc |& quote
 	); then
-		die 'Bootstrapping Cabal failed'
+		die 'Failed to bootstrap Cabal'
 	fi
 
 	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
@@ -354,7 +354,7 @@ function update_cabal_layer () {
 	log 'Updating Cabal layer'
 
 	if ! cabal_do '.' update |& quote; then
-		die 'Cannot update Cabal layer'
+		die 'Failed to update Cabal layer'
 	fi
 
 	local cabal_tag update_timestamp
@@ -712,7 +712,7 @@ function cabal_freeze_implicit_constraints () {
 		sort_naturally
 	then
 		quote <"${stderr}"
-		die 'Cannot freeze implicit constraints'
+		die 'Failed to freeze implicit constraints'
 	fi
 
 	rm -f "${stderr}" || die
@@ -732,7 +732,7 @@ function cabal_freeze_actual_constraints () {
 		sort_naturally
 	then
 		quote <"${stderr}"
-		die 'Cannot freeze actual constraints'
+		die 'Failed to freeze actual constraints'
 	fi
 
 	rm -f "${stderr}" || die
@@ -760,7 +760,7 @@ function cabal_unpack_app () {
 		sed 's:^Unpacking to \(.*\)/$:\1:'
 	); then
 		quote <"${stderr}"
-		die 'Cannot unpack app'
+		die 'Failed to unpack app'
 	fi
 	if [ "${app_label}" != "${thing}" ]; then
 		if (( HALCYON_RECURSIVE )); then

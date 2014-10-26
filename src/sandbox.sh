@@ -199,7 +199,7 @@ function build_sandbox_layer () {
 
 		mkdir -p "${HALCYON_DIR}/sandbox" || die
 		if ! cabal_do "${HALCYON_DIR}/sandbox" sandbox init --sandbox '.' |& quote; then
-			die 'Cannot create sandbox'
+			die 'Failed to create sandbox'
 		fi
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
@@ -207,7 +207,7 @@ function build_sandbox_layer () {
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-build-hook" ]; then
 		log 'Running sandbox build hook'
 		if ! ( "${source_dir}/.halcyon-magic/sandbox-build-hook" "${tag}" "${must_create}" "${source_dir}" |& quote ); then
-			die 'Running Sandbox build hook failed'
+			die 'Failed to run sandbox build hook'
 		fi
 	fi
 
@@ -226,7 +226,7 @@ function build_sandbox_layer () {
 	# https://github.com/haskell/cabal/issues/779
 
 	if ! sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote; then
-		die 'Compiling sandbox failed'
+		die 'Failed to compile sandbox'
 	fi
 
 	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-sandbox.cabal.config" || die

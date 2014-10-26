@@ -178,21 +178,21 @@ function build_app_layer () {
 		target=$( get_tag_target "${tag}" ) || die
 
 		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure --prefix="${HALCYON_DIR}/${target}" |& quote; then
-			die 'Cannot configure app'
+			die 'Failed to configure app'
 		fi
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/app-build-hook" ]; then
 		log 'Running app build hook'
 		if ! ( "${source_dir}/.halcyon-magic/app-build-hook" "${tag}" "${source_dir}" |& quote ); then
-			die 'Running app build hook failed'
+			die 'Failed to run app build hook'
 		fi
 	fi
 
 	log 'Compiling app'
 
 	if ! sandboxed_cabal_do "${HALCYON_DIR}/app" build |& quote; then
-		die 'Compiling app failed'
+		die 'Failed to compile app'
 	fi
 
 	local compiled_size

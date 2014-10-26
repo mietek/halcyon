@@ -264,7 +264,7 @@ function build_ghc_layer () {
 	if [ -f "${source_dir}/.halcyon-magic/ghc-build-hook" ]; then
 		log 'Running GHC build hook'
 		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote ); then
-			die 'Running GHC build hook failed'
+			die 'Failed to run GHC build hook'
 		fi
 	fi
 
@@ -275,7 +275,7 @@ function build_ghc_layer () {
 		./configure --prefix="${HALCYON_DIR}/ghc" |& quote &&
 		make install |& quote
 	); then
-		die 'Installing GHC failed'
+		die 'Failed to install GHC'
 	fi
 
 	copy_ghc_magic "${source_dir}" || die
