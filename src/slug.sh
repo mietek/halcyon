@@ -33,8 +33,6 @@ function install_slug () {
 
 	log 'Installing slug'
 
-	log 'Copying app'
-
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
 	if ! (
