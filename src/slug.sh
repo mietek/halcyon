@@ -56,7 +56,7 @@ function prepare_slug () {
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-extra-hook" ]; then
 		log 'Running slug extra hook'
-		if ! ( HALCYON_RECURSIVE=1 HALCYON_SLUG_DIR="${slug_dir}" "${source_dir}/.halcyon-magic/slug-extra-hook" "${tag}" "${source_dir}" "${slug_dir}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/slug-extra-hook" "${slug_dir}" "${source_dir}" "${tag}" |& quote ); then
 			log_warning 'Failed to run slug extra hook'
 			return 1
 		fi

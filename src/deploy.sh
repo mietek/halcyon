@@ -235,7 +235,7 @@ function deploy_slug_extra_apps () {
 
 	local -a extra_apps
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
-	if ! ( deploy --recursive --target='slug' --slug-dir="${slug_dir}" "${extra_apps[@]}" |& quote ); then
+	if ! ( deploy --recursive --slug-dir="${slug_dir}" "${extra_apps[@]}" |& quote ); then
 		log_warning 'Failed to deploy slug extra apps'
 		return 1
 	fi
