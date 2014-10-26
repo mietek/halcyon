@@ -49,7 +49,9 @@ function prepare_slug () {
 		fi
 	fi
 
-	deploy_extra_apps 'slug' "${source_dir}" || die
+	if ! deploy_extra_apps 'slug' "${source_dir}"; then
+		die 'Cannot prepare slug'
+	fi
 
 	derive_app_tag "${tag}" >"${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" || die
 

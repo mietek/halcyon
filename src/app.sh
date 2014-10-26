@@ -420,7 +420,7 @@ function deploy_app_layer () {
 	if ! install_app_layer "${tag}" "${source_dir}" ||
 		! installed_tag=$( validate_recognized_app_layer "${tag}" )
 	then
-		log 'Cannot deploy app layer'
+		log_warning 'Cannot deploy app layer'
 		return 1
 	fi
 

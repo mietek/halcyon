@@ -211,7 +211,9 @@ function build_sandbox_layer () {
 		fi
 	fi
 
-	deploy_extra_apps 'sandbox' "${source_dir}" || die
+	if ! deploy_extra_apps 'sandbox' "${source_dir}"; then
+		die 'Cannot build sandbox layer'
+	fi
 
 	log 'Compiling sandbox'
 
