@@ -91,12 +91,6 @@ function handle_command_line () {
 			export HALCYON_CACHE_DIR="${cache_dir}";;
 		'--cache-dir='*)
 			export HALCYON_CACHE_DIR="${1#*=}";;
-		'--tmp-cache-dir')
-			shift
-			expect_args tmp_cache_dir -- "$@"
-			export HALCYON_TMP_CACHE_DIR="${tmp_cache_dir}";;
-		'--tmp-cache-dir='*)
-			export HALCYON_TMP_CACHE_DIR="${1#*=}";;
 
 		# Vars set once and inherited:
 		'--aws-access-key-id')

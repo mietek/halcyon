@@ -79,9 +79,13 @@ function deploy_layers () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
+	local cache_dir slug_dir
+	cache_dir=$( get_tmp_dir 'halcyon.cache' ) || die
+	slug_dir=$( get_tmp_dir 'halcyon.slug' ) || die
+
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
-		prepare_cache || die
+		prepare_cache "${cache_dir}" || die
 	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
@@ -102,8 +106,6 @@ function deploy_layers () {
 			rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
 		fi
 
-		local slug_dir
-		slug_dir=$( get_tmp_dir 'halcyon.slug' ) || die
 		if ! (( HALCYON_NO_RESTORE_SLUG )); then
 			log
 			if restore_slug "${tag}" "${slug_dir}"; then
@@ -150,8 +152,10 @@ function deploy_layers () {
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
 		log
-		clean_cache || die
+		clean_cache "${cache_dir}" || die
 	fi
+
+	rm -rf "${cache_dir}" "${slug_dir}" || die
 }
 
 
