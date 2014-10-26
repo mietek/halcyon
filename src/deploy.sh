@@ -217,7 +217,7 @@ function deploy_sandbox_extra_apps () {
 	local -a extra_apps
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 	if ! ( deploy --recursive --target='sandbox' "${extra_apps[@]}" |& quote ); then
-		log_warning 'Cannot deploy sandbox extra apps'
+		log_warning 'Failed to deploy sandbox extra apps'
 		return 1
 	fi
 }
@@ -236,7 +236,7 @@ function deploy_slug_extra_apps () {
 	local -a extra_apps
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
 	if ! ( deploy --recursive --target='slug' --slug-dir="${slug_dir}" "${extra_apps[@]}" |& quote ); then
-		log_warning 'Cannot deploy slug extra apps'
+		log_warning 'Failed to deploy slug extra apps'
 		return 1
 	fi
 }
