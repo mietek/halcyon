@@ -196,7 +196,7 @@ function locate_partial_sandbox_layers () {
 	done <<<"${partial_names}"
 	[ -n "${results[@]:+_}" ] || return 1
 
-	( IFS=$'\n' && echo -n "${results[*]:-}" )
+	( IFS=$'\n' && echo "${results[*]:-}" )
 }
 
 
@@ -253,7 +253,7 @@ function select_best_partial_sandbox_layer () {
 
 	local result
 	result=$(
-		( IFS=$'\n' && echo -n "${results[*]:-}" ) |
+		( IFS=$'\n' && echo "${results[*]:-}" ) |
 		filter_not_matching '^0 ' |
 		sort_naturally |
 		filter_last |

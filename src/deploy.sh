@@ -261,7 +261,7 @@ function prepare_extra_apps () {
 	done
 
 	mkdir -p "${source_dir}/.halcyon-magic" || die
-	( IFS=$'\n' && echo -n "${app_labels[*]:-}" >"${source_dir}/.halcyon-magic/${target}-extra-apps" ) || die
+	( IFS=$'\n' && echo "${app_labels[*]:-}" >"${source_dir}/.halcyon-magic/${target}-extra-apps" ) || die
 
 	rm -rf "${work_dir}" || die
 }
