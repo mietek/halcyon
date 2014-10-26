@@ -322,7 +322,7 @@ function prepare_app_layer () {
 
 	local all_files
 	all_files=$(
-		compare_recursively "${HALCYON_DIR}/app" "${work_dir}" |
+		compare_tree "${HALCYON_DIR}/app" "${work_dir}" |
 		filter_not_matching '^. (\.halcyon-tag$|dist/)'
 	)
 

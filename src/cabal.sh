@@ -495,7 +495,8 @@ function restore_cached_updated_cabal_layer () {
 
 	local updated_name
 	updated_name=$(
-		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
+		find "${HALCYON_CACHE_DIR}" -type f 2>'/dev/null' |
+		sed "s:^${HALCYON_CACHE_DIR}/::" |
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 

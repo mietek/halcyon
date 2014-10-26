@@ -16,7 +16,8 @@ function prepare_cache () {
 
 	local files
 	if files=$(
-		find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
+		find "${HALCYON_CACHE_DIR}" -type f 2>'/dev/null' |
+		sed "s:^${HALCYON_CACHE_DIR}/::" |
 		sort_naturally |
 		match_at_least_one
 	); then
@@ -43,12 +44,12 @@ function clean_cache () {
 	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/"*".cabal.config" || die
 
 	local file
-	find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
+	find "${HALCYON_CACHE_DIR}" -type f 2>'/dev/null' |
 		while read -r file; do
 			local file_time
-			file_time=$( get_file_modification_time "${HALCYON_CACHE_DIR}/${file}" ) || die
+			file_time=$( get_file_modification_time "${file}" ) || die
 			if (( file_time < mark_time )); then
-				rm -f "${HALCYON_CACHE_DIR}/${file}" || die
+				rm -f "${file}" || die
 			fi
 		done
 
@@ -56,7 +57,7 @@ function clean_cache () {
 
 	local changed_files
 	if changed_files=$(
-		compare_recursively "${HALCYON_TMP_CACHE_DIR}" "${HALCYON_CACHE_DIR}" |
+		compare_tree "${HALCYON_TMP_CACHE_DIR}" "${HALCYON_CACHE_DIR}" |
 		filter_not_matching '^= ' |
 		match_at_least_one
 	); then

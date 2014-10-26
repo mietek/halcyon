@@ -5,11 +5,11 @@ function detect_app_package () {
 
 	local package_file
 	package_file=$(
-		find_spaceless_recursively "${source_dir}" -maxdepth 1 -name '*.cabal' |
+		find "${source_dir}" -type f -maxdepth 1 -name '*.cabal' |
 		match_exactly_one
 	) || return 1
 
-	cat "${source_dir}/${package_file}"
+	cat "${package_file}"
 }
 
 
