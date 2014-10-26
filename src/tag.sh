@@ -190,7 +190,7 @@ function create_full_tag () {
 	expect_existing "${source_dir}"
 
 	local source_hash constraints_hash
-	source_hash=$( hash_spaceless_recursively "${source_dir}" ) || die
+	source_hash=$( hash_tree "${source_dir}" ) || die
 	constraint_hash=$( hash_constraints "${constraints}" ) || die
 
 	local ghc_version ghc_magic_hash

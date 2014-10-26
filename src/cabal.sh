@@ -222,7 +222,7 @@ function hash_cabal_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_spaceless_recursively "${source_dir}/.halcyon-magic" -name 'cabal*' || die
+	hash_tree "${source_dir}/.halcyon-magic" -name 'cabal*' || die
 }
 
 

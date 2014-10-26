@@ -158,7 +158,7 @@ function hash_sandbox_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_spaceless_recursively "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' \) || die
+	hash_tree "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' \) || die
 }
 
 
