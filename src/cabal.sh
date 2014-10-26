@@ -695,6 +695,8 @@ function cabal_freeze_implicit_constraints () {
 		quote <"${stderr}"
 		die 'Cannot freeze implicit constraints'
 	fi
+
+	rm -f "${stderr}" || die
 }
 
 
@@ -713,6 +715,8 @@ function cabal_freeze_actual_constraints () {
 		quote <"${stderr}"
 		die 'Cannot freeze actual constraints'
 	fi
+
+	rm -f "${stderr}" || die
 }
 
 
@@ -751,7 +755,7 @@ function cabal_unpack_app () {
 	fi
 
 	mv "${work_dir}/${app_label}" "${source_dir}" || die
-	rm -rf "${work_dir}" || die
+	rm -rf "${work_dir}" "${stderr}" || die
 
 	echo "${app_label}"
 }
