@@ -11,6 +11,7 @@ function set_halcyon_vars () {
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
+		export HALCYON_SLUG_DIR="${HALCYON_SLUG_DIR:-}"
 
 		export HALCYON_ONLY_BUILD_APP="${HALCYON_ONLY_BUILD_APP:-0}"
 		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
@@ -96,12 +97,6 @@ function handle_command_line () {
 			export HALCYON_TMP_CACHE_DIR="${tmp_cache_dir}";;
 		'--tmp-cache-dir='*)
 			export HALCYON_TMP_CACHE_DIR="${1#*=}";;
-		'--tmp-slug-dir')
-			shift
-			expect_args tmp_slug_dir -- "$@"
-			export HALCYON_TMP_SLUG_DIR="${tmp_slug_dir}";;
-		'--tmp-cache-dir='*)
-			export HALCYON_TMP_SLUG_DIR="${1#*=}";;
 
 		# Vars set once and inherited:
 		'--aws-access-key-id')
@@ -137,6 +132,12 @@ function handle_command_line () {
 			export HALCYON_TARGET="${target}";;
 		'--target='*)
 			export HALCYON_TARGET="${1#*=}";;
+		'--slug-dir')
+			shift
+			expect_args slug_dir -- "$@"
+			export HALCYON_SLUG_DIR="${slug_dir}";;
+		'--slug-dir='*)
+			export HALCYON_SLUG_DIR="${1#*=}";;
 
 		'--only-build-app')
 			export HALCYON_ONLY_BUILD_APP=1;;

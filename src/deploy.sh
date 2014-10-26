@@ -79,9 +79,6 @@ function deploy_layers () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	local target
-	target=$( get_tag_target "${tag}" ) || die
-
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
 		prepare_cache || die
@@ -105,13 +102,13 @@ function deploy_layers () {
 			rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
 		fi
 
+		local slug_dir
+		slug_dir=$( get_tmp_dir 'halcyon.slug' ) || die
 		if ! (( HALCYON_NO_RESTORE_SLUG )); then
 			log
-			if restore_slug "${tag}"; then
-				if ! (( HALCYON_RECURSIVE )) || [ "${target}" = 'sandbox' ]; then
-					apply_slug "${tag}" || die
-					return 0
-				fi
+			if restore_slug "${tag}" "${slug_dir}"; then
+				apply_slug "${tag}" "${slug_dir}" || die
+				return 0
 			fi
 		fi
 
@@ -146,11 +143,9 @@ function deploy_layers () {
 		fi
 
 		log
-		prepare_slug "${tag}" || die
-		archive_slug || die
-		if ! (( HALCYON_RECURSIVE )) || [ "${target}" = 'sandbox' ]; then
-			apply_slug "${tag}" || die
-		fi
+		prepare_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
+		archive_slug "${slug_dir}" || die
+		apply_slug "${tag}" "${slug_dir}" || die
 	fi
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
@@ -204,23 +199,39 @@ function prepare_env () {
 }
 
 
-function deploy_extra_apps () {
-	local target source_dir
-	expect_args target source_dir -- "$@"
+function deploy_sandbox_extra_apps () {
+	local source_dir
+	expect_args source_dir -- "$@"
 
-	if [ "${target}" != 'sandbox' ] && [ "${target}" != 'slug' ]; then
-		die "Unexpected target: ${target}"
-	fi
-	if ! [ -f "${source_dir}/.halcyon-magic/${target}-extra-apps" ]; then
+	if ! [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 		return 0
 	fi
 
-	log 'Deploying extra apps'
+	log 'Deploying sandbox extra apps'
 
 	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon-magic/${target}-extra-apps" ) ) || die
-	if ! ( deploy --recursive --target="${target}" "${extra_apps[@]}" |& quote ); then
-		log_warning 'Cannot deploy extra apps'
+	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
+	if ! ( deploy --recursive --target='sandbox' "${extra_apps[@]}" |& quote ); then
+		log_warning 'Cannot deploy sandbox extra apps'
+		return 1
+	fi
+}
+
+
+function deploy_slug_extra_apps () {
+	local source_dir slug_dir
+	expect_args source_dir slug_dir -- "$@"
+
+	if ! [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
+		return 0
+	fi
+
+	log 'Deploying slug extra apps'
+
+	local -a extra_apps
+	extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
+	if ! ( deploy --recursive --target='slug' --slug-dir="${slug_dir}" "${extra_apps[@]}" |& quote ); then
+		log_warning 'Cannot deploy slug extra apps'
 		return 1
 	fi
 }
