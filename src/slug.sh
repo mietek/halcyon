@@ -21,7 +21,7 @@ function format_slug_archive_name () {
 }
 
 
-function install_slug () {
+function prepare_slug () {
 	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
@@ -31,7 +31,7 @@ function install_slug () {
 	local target
 	target=$( get_tag_target "${tag}" ) || die
 
-	log 'Installing slug'
+	log 'Preparing slug'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
@@ -39,13 +39,13 @@ function install_slug () {
 		export PATH="${HALCYON_TMP_SLUG_DIR}${HALCYON_DIR}/${target}:${PATH}" &&
 		sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${HALCYON_TMP_SLUG_DIR}" --verbose=0 |& quote
 	); then
-		die 'Cannot install slug'
+		die 'Cannot prepare slug'
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-install-hook" ]; then
-		log 'Running slug install hook'
-		if ! ( "${source_dir}/.halcyon-magic/slug-install-hook" "${tag}" |& quote ); then
-			die 'Slug install hook failed'
+	if [ -f "${source_dir}/.halcyon-magic/slug-extra-hook" ]; then
+		log 'Running slug extra hook'
+		if ! ( "${source_dir}/.halcyon-magic/slug-extra-hook" "${tag}" |& quote ); then
+			die 'Slug extra hook failed'
 		fi
 	fi
 
@@ -83,54 +83,46 @@ function archive_slug () {
 
 
 function validate_slug () {
-	expect_vars HALCYON_TMP_SLUG_DIR
-
-	local tag
-	expect_args tag -- "$@"
+	local tag slug_dir
+	expect_args tag slug_dir -- "$@"
 
 	local app_tag
 	app_tag=$( derive_app_tag "${tag}" ) || die
-	detect_tag "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" "${app_tag//./\.}" || return 1
+	detect_tag "${slug_dir}/.halcyon-tag" "${app_tag//./\.}" || return 1
 }
 
 
 function restore_slug () {
-	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR HALCYON_NO_RESTORE_SLUG
+	expect_vars HALCYON_TMP_SLUG_DIR HALCYON_CACHE_DIR
 
 	local tag
 	expect_args tag -- "$@"
 
-	! (( HALCYON_NO_RESTORE_SLUG )) || return 1
-
-	local os ghc_version archive_name
+	local os ghc_version archive_name work_dir
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
-
-	log
-	if validate_slug "${tag}" >'/dev/null'; then
-		log 'Using existing slug'
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
-		return 0
-	fi
-	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+	work_dir=$( get_tmp_dir 'halcyon.restored-slug' ) || die
 
 	log 'Restoring slug'
 
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
-		! validate_slug "${tag}" >'/dev/null'
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${work_dir}" ||
+		! validate_slug "${tag}" "${work_dir}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+		rm -rf "${work_dir}" || die
 		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
-			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_TMP_SLUG_DIR}" ||
-			! validate_slug "${tag}" >'/dev/null'
+			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${work_dir}" ||
+			! validate_slug "${tag}" "${work_dir}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
+			rm -rf "${work_dir}" || die
 			return 1
 		fi
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
+
+	cp -Rp "${work_dir}/." "${HALCYON_TMP_SLUG_DIR}" || die
+	rm -rf "${work_dir}" || die
 }
 
 
@@ -141,12 +133,14 @@ function apply_slug () {
 	expect_args tag -- "$@"
 
 	local installed_tag
-	if ! installed_tag=$( validate_slug "${tag}" ); then
-		log_warning 'Cannot deploy app'
+	if ! installed_tag=$( validate_slug "${tag}" "${HALCYON_TMP_SLUG_DIR}" ); then
+		log_warning 'Cannot apply slug'
 		return 1
 	fi
 
-	# NOTE: On a Heroku dyno, / is read-only.
+	log 'Applying slug'
+
+	# NOTE: On a Heroku dyno, / is read-only, so cp -p cannot be used.
 
 	rm -f "${HALCYON_TMP_SLUG_DIR}/.halcyon-tag" || die
 	cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die

@@ -74,10 +74,13 @@ function detect_app_executable () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_RESTORE_SLUG HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
+
+	local target
+	target=$( get_tag_target "${tag}" ) || die
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
@@ -102,9 +105,14 @@ function deploy_layers () {
 			rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
 		fi
 
-		if restore_slug "${tag}"; then
-			apply_slug "${tag}" || die
-			return 0
+		if ! (( HALCYON_NO_RESTORE_SLUG )); then
+			log
+			if restore_slug "${tag}"; then
+				if ! (( HALCYON_RECURSIVE )) || [ "${target}" = 'sandbox' ]; then
+					apply_slug "${tag}" || die
+					return 0
+				fi
+			fi
 		fi
 
 		local saved_sandbox saved_app
@@ -138,9 +146,11 @@ function deploy_layers () {
 		fi
 
 		log
-		install_slug "${tag}" || die
+		prepare_slug "${tag}" || die
 		archive_slug || die
-		apply_slug "${tag}" || die
+		if ! (( HALCYON_RECURSIVE )) || [ "${target}" = 'sandbox' ]; then
+			apply_slug "${tag}" || die
+		fi
 	fi
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
