@@ -310,7 +310,7 @@ function prepare_app_layer () {
 	log 'Examining app changes'
 
 	local work_dir
-	work_dir=$( get_tmp_dir 'halcyon.source' ) || die
+	work_dir=$( get_tmp_dir 'halcyon.changed-source' ) || die
 	copy_app_source "${source_dir}" "${work_dir}" || die
 
 	local all_files

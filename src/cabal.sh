@@ -264,18 +264,18 @@ function build_cabal_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	local ghc_version cabal_version original_url original_name build_dir
+	local ghc_version cabal_version original_url original_name cabal_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
 	original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
 	original_name=$( basename "${original_url}" ) || die
-	build_dir=$( get_tmp_dir 'halcyon.cabal' ) || die
+	cabal_dir=$( get_tmp_dir 'halcyon.cabal-source' ) || die
 
 	log 'Building Cabal layer'
 
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
 		transfer_original_file "${original_url}" || die
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
 			die 'Cannot bootstrap Cabal'
 		fi
 	else
@@ -284,7 +284,7 @@ function build_cabal_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-build-hook" ]; then
 		log 'Running Cabal build hook'
-		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${build_dir}/cabal-install-${cabal_version}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote ); then
 			die 'Cabal build hook failed'
 		fi
 	fi
@@ -296,7 +296,7 @@ function build_cabal_layer () {
 	case "${ghc_version}-${cabal_version}" in
 	'7.8.'*'-1.20.0.'*)
 		(
-			cd "${build_dir}/cabal-install-${cabal_version}" &&
+			cd "${cabal_dir}/cabal-install-${cabal_version}" &&
 			patch -s <<-EOF
 				--- a/bootstrap.sh
 				+++ b/bootstrap.sh
@@ -309,7 +309,7 @@ EOF
 		) || die
 		;;
 	*)
-		rm -rf "${build_dir}" || die
+		rm -rf "${cabal_dir}" || die
 		die "Unexpected Cabal and GHC combination: ${cabal_version} and ${ghc_version}"
 	esac
 
@@ -318,7 +318,7 @@ EOF
 
 	if ! (
 		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
-		cd "${build_dir}/cabal-install-${cabal_version}" &&
+		cd "${cabal_dir}/cabal-install-${cabal_version}" &&
 		./bootstrap.sh --no-doc |& quote
 	); then
 		die 'Bootstrapping Cabal failed'
@@ -331,7 +331,7 @@ EOF
 	copy_cabal_magic "${source_dir}" || die
 	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
-	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${build_dir}" || die
+	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${cabal_dir}" || die
 }
 
 
@@ -685,7 +685,7 @@ function cabal_freeze_implicit_constraints () {
 	# https://github.com/haskell/cabal/issues/2178
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon.stderr' ) || die
+	stderr=$( get_tmp_file 'halcyon.cabal-freeze-stderr' ) || die
 
 	if ! cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
@@ -703,7 +703,7 @@ function cabal_freeze_actual_constraints () {
 	expect_args app_label source_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon.stderr' ) || die
+	stderr=$( get_tmp_file 'halcyon.cabal-freeze-stderr' ) || die
 
 	if ! sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
@@ -723,8 +723,8 @@ function cabal_unpack_app () {
 	expect_args thing source_dir -- "$@"
 
 	local work_dir stderr
-	work_dir=$( get_tmp_dir 'halcyon.work' ) || die
-	stderr=$( get_tmp_file 'halcyon.stderr' ) || die
+	work_dir=$( get_tmp_dir 'halcyon.cabal-unpack' ) || die
+	stderr=$( get_tmp_file 'halcyon.cabal-unpack-stderr' ) || die
 
 	mkdir -p "${work_dir}" || die
 	rm -rf "${source_dir}" || die

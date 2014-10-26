@@ -244,17 +244,17 @@ function build_ghc_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	local ghc_version original_url original_name build_dir
+	local ghc_version original_url original_name ghc_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	original_url=$( prepare_ghc_layer "${tag}" ) || die
 	original_name=$( basename "${original_url}" ) || die
-	build_dir=$( get_tmp_dir 'halcyon.ghc' ) || die
+	ghc_dir=$( get_tmp_dir 'halcyon.ghc-source' ) || die
 
 	log 'Building GHC layer'
 
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
+	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${ghc_dir}"; then
 		transfer_original_file "${original_url}" || die
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${build_dir}"; then
+		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${ghc_dir}"; then
 			die 'Cannot install GHC'
 		fi
 	else
@@ -263,7 +263,7 @@ function build_ghc_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-build-hook" ]; then
 		log 'Running GHC build hook'
-		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${build_dir}/ghc-${ghc-version}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${ghc_dir}/ghc-${ghc-version}" |& quote ); then
 			die 'GHC build hook failed'
 		fi
 	fi
@@ -271,7 +271,7 @@ function build_ghc_layer () {
 	log 'Installing GHC'
 
 	if ! (
-		cd "${build_dir}/ghc-${ghc_version}" &&
+		cd "${ghc_dir}/ghc-${ghc_version}" &&
 		./configure --prefix="${HALCYON_DIR}/ghc" |& quote &&
 		make install |& quote
 	); then
@@ -281,7 +281,7 @@ function build_ghc_layer () {
 	copy_ghc_magic "${source_dir}" || die
 	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
-	rm -rf "${build_dir}" || die
+	rm -rf "${ghc_dir}" || die
 }
 
 
