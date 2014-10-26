@@ -132,6 +132,9 @@ function deploy_layers () {
 		install_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
 		log
 		install_app_layer "${tag}" "${source_dir}" || return 1
+		log
+		prepare_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
+		archive_slug "${slug_dir}" || die
 
 		if (( HALCYON_RECURSIVE )); then
 			if [ -n "${saved_sandbox}" ]; then
@@ -145,8 +148,6 @@ function deploy_layers () {
 		fi
 
 		log
-		prepare_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
-		archive_slug "${slug_dir}" || die
 		apply_slug "${tag}" "${slug_dir}" || die
 	fi
 

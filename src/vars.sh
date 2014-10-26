@@ -11,7 +11,6 @@ function set_halcyon_vars () {
 
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
-		export HALCYON_SLUG_DIR="${HALCYON_SLUG_DIR:-}"
 
 		export HALCYON_ONLY_BUILD_APP="${HALCYON_ONLY_BUILD_APP:-0}"
 		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
@@ -38,6 +37,7 @@ function set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 
 		export HALCYON_SLUG_EXTRA_APPS="${HALCYON_SLUG_EXTRA_APPS:-}"
+		export HALCYON_SLUG_DIR="${HALCYON_SLUG_DIR:-}"
 		export HALCYON_NO_RESTORE_SLUG="${HALCYON_NO_RESTORE_SLUG:-0}"
 		export HALCYON_NO_ARCHIVE_SLUG="${HALCYON_NO_ARCHIVE_SLUG:-0}"
 
@@ -63,6 +63,7 @@ function set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_APP=0
 
 		export HALCYON_SLUG_EXTRA_APPS=
+		export HALCYON_SLUG_DIR=
 		export HALCYON_NO_RESTORE_SLUG=0
 		export HALCYON_NO_ARCHIVE_SLUG=0
 
@@ -126,12 +127,6 @@ function handle_command_line () {
 			export HALCYON_TARGET="${target}";;
 		'--target='*)
 			export HALCYON_TARGET="${1#*=}";;
-		'--slug-dir')
-			shift
-			expect_args slug_dir -- "$@"
-			export HALCYON_SLUG_DIR="${slug_dir}";;
-		'--slug-dir='*)
-			export HALCYON_SLUG_DIR="${1#*=}";;
 
 		'--only-build-app')
 			export HALCYON_ONLY_BUILD_APP=1;;
@@ -204,6 +199,12 @@ function handle_command_line () {
 			export HALCYON_SLUG_EXTRA_APPS="${slug_extra_apps}";;
 		'--extra-slug-apps='*)
 			export HALCYON_SLUG_EXTRA_APPS="${1#*=}";;
+		'--slug-dir')
+			shift
+			expect_args slug_dir -- "$@"
+			export HALCYON_SLUG_DIR="${slug_dir}";;
+		'--slug-dir='*)
+			export HALCYON_SLUG_DIR="${1#*=}";;
 		'--no-restore-slug')
 			export HALCYON_NO_RESTORE_SLUG=1;;
 		'--no-archive-slug')
