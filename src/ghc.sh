@@ -263,7 +263,7 @@ function build_ghc_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-build-hook" ]; then
 		log 'Running GHC build hook'
-		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${ghc_dir}/ghc-${ghc-version}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote ); then
 			die 'Running GHC build hook failed'
 		fi
 	fi

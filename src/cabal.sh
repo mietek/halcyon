@@ -284,7 +284,7 @@ function build_cabal_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-build-hook" ]; then
 		log 'Running Cabal build hook'
-		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote ); then
 			die 'Running Cabal build hook failed'
 		fi
 	fi

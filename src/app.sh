@@ -184,7 +184,7 @@ function build_app_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/app-build-hook" ]; then
 		log 'Running app build hook'
-		if ! ( "${source_dir}/.halcyon-magic/app-build-hook" "${tag}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/app-build-hook" "${tag}" "${source_dir}" |& quote ); then
 			die 'Running app build hook failed'
 		fi
 	fi

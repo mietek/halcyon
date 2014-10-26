@@ -56,7 +56,7 @@ function prepare_slug () {
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-extra-hook" ]; then
 		log 'Running slug extra hook'
-		if ! ( "${source_dir}/.halcyon-magic/slug-extra-hook" "${tag}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/slug-extra-hook" "${tag}" "${slug_dir}" "${source_dir}" |& quote ); then
 			die 'Running slug extra hook failed'
 		fi
 	fi
