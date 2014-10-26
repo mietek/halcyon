@@ -21,6 +21,18 @@ function format_slug_archive_name () {
 }
 
 
+function format_slug_description () {
+	local tag
+	expect_args tag -- "$@"
+
+	local app_label source_hash
+	app_label=$( get_tag_app_label "${tag}" ) || die
+	source_hash=$( get_tag_source_hash "${tag}" ) || die
+
+	echo "${app_label} (${source_hash:0:7})"
+}
+
+
 function prepare_slug () {
 	expect_vars HALCYON_DIR HALCYON_TMP_SLUG_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
@@ -130,7 +142,7 @@ function restore_slug () {
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
-	description=$( format_app_description "${restored_tag}" )
+	description=$( format_slug_description "${restored_tag}" )
 
 	cp -Rp "${work_dir}/." "${HALCYON_TMP_SLUG_DIR}" || die
 	rm -rf "${work_dir}" || die
@@ -157,5 +169,6 @@ function apply_slug () {
 	cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
 	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 
-	log 'Slug applied:                            ' "${description}"
+	log
+	log 'App deployed:                            ' "${description}"
 }

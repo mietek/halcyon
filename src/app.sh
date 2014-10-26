@@ -112,11 +112,7 @@ function format_app_description () {
 	local tag
 	expect_args tag -- "$@"
 
-	local app_label source_hash
-	app_label=$( get_tag_app_label "${tag}" ) || die
-	source_hash=$( get_tag_source_hash "${tag}" ) || die
-
-	echo "${app_label} (${source_hash:0:7})"
+	get_tag_app_label "${tag}" || die
 }
 
 

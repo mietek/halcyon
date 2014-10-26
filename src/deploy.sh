@@ -348,6 +348,8 @@ function deploy_cloned_app () {
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
 		die 'Cannot detect app label'
 	fi
+
+	log
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
@@ -372,6 +374,7 @@ function deploy_unpacked_app () {
 	source_dir=$( get_tmp_dir 'halcyon.unpacked-source' ) || die
 	app_label=$( cabal_unpack_app "${thing}" "${source_dir}" ) || die
 
+	log
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
 		HALCYON_NO_WARN_IMPLICIT=1                  \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
