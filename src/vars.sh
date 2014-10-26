@@ -44,7 +44,7 @@ function set_halcyon_vars () {
 		export HALCYON_NO_PREPARE_CACHE="${HALCYON_NO_PREPARE_CACHE:-0}"
 		export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
 
-		export HALCYON_NO_WARN_CONSTRAINTS="${HALCYON_NO_WARN_CONSTRAINTS:-0}"
+		export HALCYON_NO_WARN_IMPLICIT="${HALCYON_NO_WARN_IMPLICIT:-0}"
 	else
 		export HALCYON_GHC_VERSION=
 		export HALCYON_FORCE_BUILD_GHC=0
@@ -69,7 +69,7 @@ function set_halcyon_vars () {
 		export HALCYON_NO_PREPARE_CACHE=0
 		export HALCYON_NO_CLEAN_CACHE=0
 
-		export HALCYON_NO_WARN_CONSTRAINTS=0
+		export HALCYON_NO_WARN_IMPLICIT=0
 	fi
 }
 
@@ -221,8 +221,8 @@ function handle_command_line () {
 		'--no-clean-cache')
 			export HALCYON_NO_CLEAN_CACHE=1;;
 
-		'--no-warn-constraints')
-			export HALCYON_NO_WARN_CONSTRAINTS=1;;
+		'--no-warn-implicit')
+			export HALCYON_NO_WARN_IMPLICIT=1;;
 
 		'-'*)
 			die "Unexpected option: $1";;
