@@ -311,16 +311,18 @@ function locate_best_matching_sandbox_layer () {
 
 
 function validate_actual_constraints () {
-	local tag constraints actual_constraints
-	expect_args tag constraints actual_constraints -- "$@"
+	local tag constraints source_dir
+	expect_args tag constraints source_dir -- "$@"
 
 	# NOTE: Cabal sometimes gives different results when freezing constraints before and after
 	# installation.
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1
 
-	local constraint_hash actual_hash
+	local app_label constraint_hash actual_constraints actual_hash
+	app_label=$( get_tag_app_label "${tag}" ) || die
 	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
 	if [ "${actual_hash}" = "${constraint_hash}" ]; then
 		return 0

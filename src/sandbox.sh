@@ -245,11 +245,6 @@ function build_sandbox_layer () {
 	local stripped_size
 	stripped_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
 	log_end "done (${stripped_size})"
-
-	local app_label actual_constraints
-	app_label=$( get_tag_app_label "${tag}" ) || die
-	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
-	validate_actual_constraints "${tag}" "${constraints}" "${actual_constraints}" || die
 }
 
 
@@ -404,4 +399,6 @@ function install_sandbox_layer () {
 	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
 	archive_sandbox_layer || die
 	describe_sandbox_layer "${tag}" || die
+
+	validate_actual_constraints "${tag}" "${constraints}" "${source_dir}" || die
 }
