@@ -296,13 +296,14 @@ function restore_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os ghc_version archive_name
+	local os ghc_version archive_name description
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
+	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
-		log 'Using existing sandbox layer'
+		log 'Using existing sandbox layer:            ' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
@@ -324,6 +325,8 @@ function restore_sandbox_layer () {
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
+
+	log 'Sandbox layer restored:                  ' "${description}"
 }
 
 
@@ -357,6 +360,18 @@ function install_matching_sandbox_layer () {
 }
 
 
+function describe_sandbox_layer () {
+	local tag
+	expect_args tag -- "$@"
+
+	local installed_tag description
+	installed_tag=$( validate_sandbox_layer "${tag}" ) || die
+	description=$( format_sandbox_description "${installed_tag}" ) || die
+
+	log 'Sandbox layer installed:                 ' "${description}"
+}
+
+
 function install_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_ONLY_BUILD_APP HALCYON_FORCE_BUILD_SANDBOX
 
@@ -373,6 +388,7 @@ function install_sandbox_layer () {
 			install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
 		then
 			archive_sandbox_layer || die
+			describe_sandbox_layer "${tag}" || die
 			return 0
 		fi
 
@@ -387,25 +403,5 @@ function install_sandbox_layer () {
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
 	archive_sandbox_layer || die
-}
-
-
-function deploy_sandbox_layer () {
-	expect_vars HALCYON_DIR
-
-	local tag constraints source_dir
-	expect_args tag constraints source_dir -- "$@"
-
-	local installed_tag
-	if ! install_sandbox_layer "${tag}" "${constraints}" "${source_dir}" ||
-		! installed_tag=$( validate_sandbox_layer "${tag}" )
-	then
-		log_warning 'Cannot deploy sandbox layer'
-		return 1
-	fi
-
-	local description
-	description=$( format_sandbox_description "${installed_tag}" ) || die
-
-	log 'Sandbox layer deployed:                  ' "${description}"
+	describe_sandbox_layer "${tag}" || die
 }

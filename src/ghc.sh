@@ -336,12 +336,13 @@ function restore_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os archive_name
+	local os archive_name description
 	os=$( get_tag_os "${tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
+	description=$( format_ghc_description "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
-		log 'Using existing GHC layer'
+		log 'Using existing GHC layer:                ' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
@@ -363,6 +364,20 @@ function restore_ghc_layer () {
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
+
+	log 'GHC layer restored:                      ' "${description}"
+}
+
+
+function describe_ghc_layer () {
+	local tag
+	expect_args tag -- "$@"
+
+	local installed_tag description
+	installed_tag=$( validate_ghc_layer "${tag}" ) || die
+	description=$( format_ghc_description "${installed_tag}" ) || die
+
+	log 'GHC layer installed:                     ' "${description}"
 }
 
 
@@ -386,23 +401,5 @@ function install_ghc_layer () {
 	rm -rf "${HALCYON_DIR}/ghc" || die
 	build_ghc_layer "${tag}" "${source_dir}" || die
 	archive_ghc_layer || die
-}
-
-
-function deploy_ghc_layer () {
-	local tag source_dir
-	expect_args tag source_dir -- "$@"
-
-	local installed_tag
-	if ! install_ghc_layer "${tag}" "${source_dir}" ||
-		! installed_tag=$( validate_ghc_layer "${tag}" )
-	then
-		log_warning 'Cannot deploy GHC layer'
-		return 1
-	fi
-
-	local description
-	description=$( format_ghc_description "${installed_tag}" ) || die
-
-	log 'GHC layer deployed:                      ' "${description}"
+	describe_ghc_layer "${tag}"
 }

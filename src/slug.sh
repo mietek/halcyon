@@ -115,13 +115,14 @@ function restore_slug () {
 
 	log 'Restoring slug'
 
+	local restored_tag description
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${work_dir}" ||
-		! validate_slug "${tag}" "${work_dir}" >'/dev/null'
+		! restored_tag=$( validate_slug "${tag}" "${work_dir}" )
 	then
 		rm -rf "${work_dir}" || die
 		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
 			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${work_dir}" ||
-			! validate_slug "${tag}" "${work_dir}" >'/dev/null'
+			! restored_tag=$( validate_slug "${tag}" "${work_dir}" )
 		then
 			rm -rf "${work_dir}" || die
 			return 1
@@ -129,9 +130,12 @@ function restore_slug () {
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
+	description=$( format_app_description "${restored_tag}" )
 
 	cp -Rp "${work_dir}/." "${HALCYON_TMP_SLUG_DIR}" || die
 	rm -rf "${work_dir}" || die
+
+	log 'Slug restored:                           ' "${description}"
 }
 
 
@@ -141,11 +145,9 @@ function apply_slug () {
 	local tag
 	expect_args tag -- "$@"
 
-	local installed_tag
-	if ! installed_tag=$( validate_slug "${tag}" "${HALCYON_TMP_SLUG_DIR}" ); then
-		log_warning 'Cannot apply slug'
-		return 1
-	fi
+	local installed_tag description
+	installed_tag=$( validate_slug "${tag}" "${HALCYON_TMP_SLUG_DIR}" ) || die
+	description=$( format_app_description "${installed_tag}" ) || die
 
 	log 'Applying slug'
 
@@ -155,8 +157,5 @@ function apply_slug () {
 	cp -R "${HALCYON_TMP_SLUG_DIR}/." '/' || die
 	rm -rf "${HALCYON_TMP_SLUG_DIR}" || die
 
-	local description
-	description=$( format_app_description "${installed_tag}" ) || die
-
-	log 'App deployed:                            ' "${description}"
+	log 'Slug applied:                            ' "${description}"
 }

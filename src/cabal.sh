@@ -457,18 +457,19 @@ function restore_bare_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os bare_name
+	local os bare_name description
 	os=$( get_tag_os "${tag}" ) || die
 	bare_name=$( format_bare_cabal_archive_name "${tag}" ) || die
+	description=$( format_cabal_description "${tag}" ) || die
 
 	if validate_bare_cabal_layer "${tag}" >'/dev/null'; then
-		log 'Using existing bare Cabal layer'
+		log 'Using existing Cabal layer:              ' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
-	log 'Restoring bare Cabal layer'
+	log 'Restoring Cabal layer'
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
 		! validate_bare_cabal_layer "${tag}" >'/dev/null'
@@ -484,6 +485,8 @@ function restore_bare_cabal_layer () {
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
 	fi
+
+	log 'Cabal layer restored:                    ' "${description}"
 }
 
 
@@ -500,8 +503,11 @@ function restore_cached_updated_cabal_layer () {
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 
-	if validate_updated_cabal_layer "${tag}" >'/dev/null'; then
-		log 'Using existing updated Cabal layer'
+	local restored_tag description
+	if restored_tag=$( validate_updated_cabal_layer "${tag}" ); then
+		description=$( format_cabal_description "${restored_tag}" ) || die
+
+		log 'Using existing updated Cabal layer:      ' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || die
 		return 0
 	fi
@@ -509,16 +515,19 @@ function restore_cached_updated_cabal_layer () {
 
 	[ -n "${updated_name}" ] || return 1
 
-	log 'Restoring cached updated Cabal layer'
+	log 'Restoring updated Cabal layer'
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
-		! validate_updated_cabal_layer "${tag}" >'/dev/null'
+		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
 	then
 		rm -rf "${HALCYON_DIR}/cabal" || die
 		return 1
 	else
 		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || die
 	fi
+	description=$( format_cabal_description "${restored_tag}" ) || die
+
+	log 'Updated Cabal layer restored:            ' "${description}"
 }
 
 
@@ -556,7 +565,7 @@ function restore_updated_cabal_layer () {
 			filter_not_matching "^${updated_name//./\.}$" <<<"${archive_names}" |
 			match_at_least_one
 		); then
-			log 'Cleaning Cabal layer archives'
+			log 'Cleaning updated Cabal layer archives'
 
 			local old_name
 			while read -r old_name; do
@@ -569,13 +578,29 @@ function restore_updated_cabal_layer () {
 
 	log 'Restoring updated Cabal layer'
 
+	local restored_tag description
 	if ! download_stored_file "${os}" "${updated_name}" ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
-		! validate_updated_cabal_layer "${tag}" >'/dev/null'
+		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
 	then
 		rm -rf "${HALCYON_DIR}/cabal" || die
 		return 1
 	fi
+	description=$( format_cabal_description "${restored_tag}" ) || die
+
+	log 'Updated Cabal layer restored:            ' "${description}"
+}
+
+
+function describe_cabal_layer () {
+	local tag
+	expect_args tag -- "$@"
+
+	local installed_tag description
+	installed_tag=$( validate_updated_cabal_layer "${tag}" ) || die
+	description=$( format_cabal_description "${installed_tag}" ) || die
+
+	log 'Updated Cabal layer installed:           ' "${description}"
 }
 
 
@@ -595,6 +620,7 @@ function install_cabal_layer () {
 		if restore_bare_cabal_layer "${tag}"; then
 			update_cabal_layer || die
 			archive_cabal_layer || die
+			describe_cabal_layer "${tag}" || die
 			return 0
 		fi
 
@@ -609,27 +635,7 @@ function install_cabal_layer () {
 	archive_cabal_layer || die
 	update_cabal_layer || die
 	archive_cabal_layer || die
-}
-
-
-function deploy_cabal_layer () {
-	expect_vars HALCYON_DIR
-
-	local tag source_dir
-	expect_args tag source_dir -- "$@"
-
-	local installed_tag
-	if ! install_cabal_layer "${tag}" "${source_dir}" ||
-		! installed_tag=$( validate_updated_cabal_layer "${tag}" )
-	then
-		log_warning 'Cannot deploy updated Cabal layer'
-		return 1
-	fi
-
-	local description
-	description=$( format_cabal_description "${installed_tag}" ) || die
-
-	log 'Cabal layer deployed:                    ' "${description}"
+	describe_cabal_layer "${tag}" || die
 }
 
 

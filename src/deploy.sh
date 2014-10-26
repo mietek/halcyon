@@ -89,14 +89,14 @@ function deploy_layers () {
 
 	if ! (( HALCYON_RECURSIVE )); then
 		log
-		deploy_ghc_layer "${tag}" "${source_dir}" || return 1
+		install_ghc_layer "${tag}" "${source_dir}" || return 1
 		log
-		deploy_cabal_layer "${tag}" "${source_dir}" || return 1
+		install_cabal_layer "${tag}" "${source_dir}" || return 1
 	else
 		if ! validate_ghc_layer "${tag}" >'/dev/null' ||
 			! validate_updated_cabal_layer "${tag}" >'/dev/null'
 		then
-			die 'Cannot reuse environment'
+			die 'Cannot use existing environment'
 		fi
 	fi
 
@@ -130,9 +130,9 @@ function deploy_layers () {
 		fi
 
 		log
-		deploy_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
+		install_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
 		log
-		deploy_app_layer "${tag}" "${source_dir}" || return 1
+		install_app_layer "${tag}" "${source_dir}" || return 1
 
 		if (( HALCYON_RECURSIVE )); then
 			if [ -n "${saved_sandbox}" ]; then
@@ -196,7 +196,7 @@ function prepare_env () {
 			log
 			no_prepare_cache=1
 		else
-			die 'Cannot reuse environment'
+			die 'Cannot use existing environment'
 		fi
 	fi
 
