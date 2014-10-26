@@ -237,8 +237,8 @@ function describe_env_tag () {
 
 
 function describe_full_tag () {
-	local tag
-	expect_args tag -- "$@"
+	local tag source_dir
+	expect_args tag source_dir -- "$@"
 
 	local target
 	target=$( get_tag_target "${tag}" ) || die
@@ -276,14 +276,28 @@ function describe_full_tag () {
 		log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
 	fi
 
-	local sandbox_magic_hash app_magic_hash
+	local sandbox_magic_hash
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
-	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
 	if [ -n "${sandbox_magic_hash}" ]; then
 		log_indent 'Sandbox magic hash:                      ' "${sandbox_magic_hash:0:7}"
 	fi
+	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
+		local -a sandbox_extra_apps
+		sandbox_extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) )
+		log_indent 'Sandbox extra apps:                      ' "${sandbox_extra_apps[*]:-}"
+	fi
+
+	local app_magic_hash
+	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
+
 	if [ -n "${app_magic_hash}" ]; then
 		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
+	fi
+
+	if [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
+		local -a slug_extra_apps
+		slug_extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) )
+		log_indent 'Slug extra apps:                         ' "${slug_extra_apps[*]:-}"
 	fi
 }

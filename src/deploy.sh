@@ -280,18 +280,7 @@ function deploy_app () {
 
 	local tag
 	tag=$( create_full_tag "${env_tag}" "${app_label}" "${constraints}" "${source_dir}" ) || die
-	describe_full_tag "${tag}" || die
-
-	local -a extra_apps
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
-		extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) )
-		log_indent 'Sandbox extra apps:                      ' "${extra_apps[*]:-}"
-	fi
-	if [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
-		extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) )
-		log_indent 'Slug extra apps:                         ' "${extra_apps[*]:-}"
-	fi
-
+	describe_full_tag "${tag}" "${source_dir}" || die
 	describe_storage || die
 
 	if ! (( HALCYON_RECURSIVE )) &&
