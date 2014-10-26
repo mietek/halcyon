@@ -128,7 +128,7 @@ function format_ghc_id () {
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 
-	echo "${ghc_version}${ghc_magic_hash:+-${ghc_magic_hash:0:7}}"
+	echo "${ghc_version}${ghc_magic_hash:+.${ghc_magic_hash:0:7}}"
 }
 
 

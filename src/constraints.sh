@@ -35,73 +35,6 @@ function format_constraints () {
 }
 
 
-function format_constraint_file_id () {
-	local tag
-	expect_args tag -- "$@"
-
-	local constraint_hash
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
-
-	echo "${constraint_hash:0:7}"
-}
-
-
-function format_constraint_file_description () {
-	local tag
-	expect_args tag -- "$@"
-
-	local app_label file_id
-	app_label=$( get_tag_app_label "${tag}" ) || die
-	file_id=$( format_constraint_file_id "${tag}" ) || die
-
-	echo "${app_label} (${file_id})"
-}
-
-
-function format_constraint_file_name () {
-	local tag
-	expect_args tag -- "$@"
-
-	local app_label file_id
-	app_label=$( get_tag_app_label "${tag}" ) || die
-	file_id=$( format_constraint_file_id "${tag}" ) || die
-
-	echo "halcyon-constraints-${file_id}-${app_label}.config"
-}
-
-
-function format_constraint_file_name_prefix () {
-	echo "halcyon-constraints-"
-}
-
-
-function format_full_constraint_file_name_pattern () {
-	local tag
-	expect_args tag -- "$@"
-
-	local constraint_hash
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
-
-	echo "halcyon-constraints-${constraint_hash:0:7}-.*"
-}
-
-
-function format_partial_constraint_file_name_pattern () {
-	echo "halcyon-constraints-.*-.*"
-}
-
-
-function map_constraint_file_name_to_app_label () {
-	local file_name
-	expect_args file_name -- "$@"
-
-	local app_label_etc
-	app_label_etc="${file_name#halcyon-constraints-*-}"
-
-	echo "${app_label_etc%.config}"
-}
-
-
 function hash_constraints () {
 	local constraints
 	expect_args constraints -- "$@"
@@ -187,7 +120,7 @@ function locate_first_full_sandbox_layer () {
 	local os ghc_version full_pattern all_names full_names
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	full_pattern=$( format_full_constraint_file_name_pattern "${tag}" ) || die
+	full_pattern=$( format_full_sandbox_constraint_file_name_pattern "${tag}" ) || die
 	full_names=$(
 		filter_matching "^${full_pattern}$" <<<"${all_names}" |
 		match_at_least_one
@@ -211,7 +144,7 @@ function locate_first_full_sandbox_layer () {
 		fi
 
 		local full_label full_tag
-		full_label=$( map_constraint_file_name_to_app_label "${full_name}" ) || die
+		full_label=$( map_sandbox_constraint_file_name_to_app_label "${full_name}" ) || die
 		full_tag=$( derive_matching_sandbox_tag "${tag}" "${full_label}" "${full_hash}" ) || die
 
 		echo "${full_tag}"
@@ -231,7 +164,7 @@ function locate_partial_sandbox_layers () {
 	local os ghc_version full_pattern all_names partial_names
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	full_pattern=$( format_full_constraint_file_name_pattern "${tag}" ) || die
+	full_pattern=$( format_full_sandbox_constraint_file_name_pattern "${tag}" ) || die
 	partial_names=$(
 		filter_not_matching "^${full_pattern}" <<<"${all_names}" |
 		match_at_least_one
@@ -256,7 +189,7 @@ function locate_partial_sandbox_layers () {
 		fi
 
 		local partial_label partial_tag
-		partial_label=$( map_constraint_file_name_to_app_label "${partial_name}" ) || die
+		partial_label=$( map_sandbox_constraint_file_name_to_app_label "${partial_name}" ) || die
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" ) || die
 
 		results+=( "${partial_tag}" )
@@ -285,14 +218,14 @@ function select_best_partial_sandbox_layer () {
 	local partial_tag
 	while read -r partial_tag; do
 		local partial_name
-		partial_name=$( format_constraint_file_name "${partial_tag}" ) || die
+		partial_name=$( format_sandbox_constraint_file_name "${partial_tag}" ) || die
 		if ! [ -f "${HALCYON_CACHE_DIR}/${partial_name}" ]; then
 			continue
 		fi
 
 		local partial_constraints description
 		partial_constraints=$( read_constraints <"${HALCYON_CACHE_DIR}/${partial_name}" ) || die
-		description=$( format_constraint_file_description "${partial_tag}" ) || die
+		description=$( format_sandbox_description "${partial_tag}" ) || die
 
 		local score partial_package partial_version
 		score=0
@@ -339,9 +272,9 @@ function locate_best_matching_sandbox_layer () {
 	local os ghc_version file_name constraint_prefix partial_pattern
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	file_name=$( format_constraint_file_name "${tag}" ) || die
-	constraint_prefix=$( format_constraint_file_name_prefix ) || die
-	partial_pattern=$( format_partial_constraint_file_name_pattern ) || die
+	file_name=$( format_sandbox_constraint_file_name "${tag}" ) || die
+	constraint_prefix=$( format_sandbox_constraint_file_name_prefix ) || die
+	partial_pattern=$( format_partial_sandbox_constraint_file_name_pattern "${tag}" ) || die
 
 	log 'Locating matching sandbox layers'
 

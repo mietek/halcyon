@@ -102,7 +102,7 @@ function format_cabal_id () {
 	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
 
-	echo "${cabal_version}${cabal_magic_hash:+-${cabal_magic_hash:0:7}}"
+	echo "${cabal_version}${cabal_magic_hash:+.${cabal_magic_hash:0:7}}"
 }
 
 

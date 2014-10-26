@@ -40,7 +40,7 @@ function clean_cache () {
 	local mark_time
 	mark_time=$( get_file_modification_time "${HALCYON_CACHE_DIR}/.halcyon-mark" ) || die
 
-	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/halcyon-constraints-"* || die
+	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/"*".cabal.config" || die
 
 	local file
 	find_spaceless_recursively "${HALCYON_CACHE_DIR}" |
