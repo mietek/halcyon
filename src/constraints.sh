@@ -10,6 +10,16 @@ function read_dry_frozen_constraints () {
 }
 
 
+function match_package_version () {
+	local package_name
+	expect_args package_name -- "$@"
+
+	filter_matching "^${package_name} " |
+		match_exactly_one |
+		sed 's/^.* //' || return 1
+}
+
+
 function filter_correct_constraints () {
 	local app_label
 	expect_args app_label -- "$@"
