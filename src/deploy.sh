@@ -134,7 +134,7 @@ function deploy_layers () {
 		log
 		install_app_layer "${tag}" "${source_dir}" || return 1
 		log
-		prepare_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
+		build_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
 		archive_slug "${slug_dir}" || die
 
 		if (( HALCYON_RECURSIVE )); then

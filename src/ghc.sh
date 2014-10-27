@@ -264,13 +264,13 @@ function build_ghc_layer () {
 		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/ghc-build-hook" ]; then
-		log 'Running GHC build hook'
+	if [ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]; then
+		log 'Running GHC pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/ghc-build-hook" \
+			"${source_dir}/.halcyon-magic/ghc-pre-build-hook" \
 				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
 		); then
-			die 'Failed to run GHC build hook'
+			die 'Failed to run GHC pre-build hook'
 		fi
 	fi
 
@@ -291,6 +291,17 @@ function build_ghc_layer () {
 	installed_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
 
 	log "GHC installed (${installed_size})"
+
+	if [ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]; then
+		log 'Running GHC post-build hook'
+		if ! (
+			"${source_dir}/.halcyon-magic/ghc-post-build-hook" \
+				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
+		); then
+			die 'Failed to run GHC post-build hook'
+		fi
+	fi
+
 	log_indent_begin 'Stripping GHC layer...'
 
 	strip_tree "${HALCYON_DIR}/ghc" || die
@@ -388,7 +399,7 @@ function activate_ghc_layer () {
 
 
 function install_ghc_layer () {
-	expect_vars HALCYON_DIR HALCYON_ONLY_BUILD_APP HALCYON_FORCE_BUILD_GHC
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_GHC
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -398,7 +409,7 @@ function install_ghc_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_ONLY_BUILD_APP )); then
+		if (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_warning 'Cannot build GHC layer'
 			return 1
 		fi

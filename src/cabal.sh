@@ -287,13 +287,13 @@ function build_cabal_layer () {
 		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/cabal-build-hook" ]; then
-		log 'Running Cabal build hook'
+	if [ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]; then
+		log 'Running Cabal pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/cabal-build-hook" \
+			"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
 				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
 		); then
-			die 'Failed to run Cabal build hook'
+			die 'Failed to run Cabal pre-build hook'
 		fi
 	fi
 
@@ -343,6 +343,17 @@ EOF
 	bootstrapped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
 
 	log "Cabal bootstrapped (${bootstrapped_size})"
+
+	if [ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]; then
+		log 'Running Cabal post-build hook'
+		if ! (
+			"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
+				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
+		); then
+			die 'Failed to run Cabal post-build hook'
+		fi
+	fi
+
 	log_indent_begin 'Stripping Cabal layer...'
 
 	strip_tree "${HALCYON_DIR}/cabal" || die
@@ -625,7 +636,7 @@ function activate_cabal_layer () {
 
 
 function install_cabal_layer () {
-	expect_vars HALCYON_DIR HALCYON_ONLY_BUILD_APP HALCYON_FORCE_BUILD_CABAL HALCYON_UPDATE_CABAL
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_CABAL HALCYON_UPDATE_CABAL
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -644,7 +655,7 @@ function install_cabal_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_ONLY_BUILD_APP )); then
+		if (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_warning 'Cannot build Cabal layer'
 			return 1
 		fi

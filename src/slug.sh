@@ -33,7 +33,7 @@ function format_slug_description () {
 }
 
 
-function prepare_slug () {
+function build_slug () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
@@ -43,7 +43,20 @@ function prepare_slug () {
 	local target
 	target=$( get_tag_target "${tag}" ) || die
 
-	log 'Preparing slug'
+	log 'Building slug'
+
+	if [ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]; then
+		log 'Running slug pre-build hook'
+		if ! (
+			"${source_dir}/.halcyon-magic/slug-pre-build-hook" \
+				"${tag}" "${source_dir}" "${slug_dir}" |& quote
+		); then
+			log_warning 'Failed to run slug pre-build hook'
+			return 1
+		fi
+	fi
+
+	log 'Copying app'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
@@ -51,31 +64,32 @@ function prepare_slug () {
 		export PATH="${slug_dir}${HALCYON_DIR}/${target}:${PATH}" &&
 		sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${slug_dir}" --verbose=0 |& quote
 	); then
-		die 'Failed to prepare slug'
-	fi
-
-	if [ -f "${source_dir}/.halcyon-magic/slug-prepare-hook" ]; then
-		log 'Running slug prepare hook'
-		if ! (
-			"${source_dir}/.halcyon-magic/slug-prepare-hook" \
-				"${tag}" "${source_dir}" "${slug_dir}" |& quote
-		); then
-			log_warning 'Failed to run slug prepare hook'
-			return 1
-		fi
+		die 'Failed to copy app'
 	fi
 
 	if ! deploy_slug_extra_apps "${source_dir}" "${slug_dir}"; then
-		log_warning 'Cannot prepare slug'
+		log_warning 'Cannot build slug'
 		return 1
 	fi
 
 	derive_app_tag "${tag}" >"${slug_dir}/.halcyon-tag" || die
 
-	local prepared_size
-	prepared_size=$( size_tree "${slug_dir}" ) || die
+	local copied_size
+	copied_size=$( size_tree "${slug_dir}" ) || die
 
-	log "Slug prepared (${prepared_size})"
+	log "App copied (${copied_size})"
+
+	if [ -f "${source_dir}/.halcyon-magic/slug-post-build-hook" ]; then
+		log 'Running slug post-build hook'
+		if ! (
+			"${source_dir}/.halcyon-magic/slug-post-build-hook" \
+				"${tag}" "${source_dir}" "${slug_dir}" |& quote
+		); then
+			log_warning 'Failed to run slug post-build hook'
+			return 1
+		fi
+	fi
+
 	log_indent_begin 'Stripping slug...'
 
 	strip_tree "${slug_dir}" || die

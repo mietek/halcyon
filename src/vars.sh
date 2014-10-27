@@ -12,7 +12,7 @@ function set_halcyon_vars () {
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 
-		export HALCYON_ONLY_BUILD_APP="${HALCYON_ONLY_BUILD_APP:-0}"
+		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
 		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
@@ -132,8 +132,8 @@ function handle_command_line () {
 		'--target='*)
 			export HALCYON_TARGET="${1#*=}";;
 
-		'--only-build-app')
-			export HALCYON_ONLY_BUILD_APP=1;;
+		'--no-build-dependencies')
+			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
 		'--no-download-public')
 			export HALCYON_NO_DOWNLOAD_PUBLIC=1;;
 		'--no-archive')

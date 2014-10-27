@@ -214,13 +214,13 @@ function build_sandbox_layer () {
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-build-hook" ]; then
-		log 'Running sandbox build hook'
+	if [ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]; then
+		log 'Running sandbox pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/sandbox-build-hook" \
+			"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
 				"${tag}" "${constraints}" "${source_dir}" |& quote
 		); then
-			die 'Failed to run sandbox build hook'
+			die 'Failed to run sandbox pre-build hook'
 		fi
 	fi
 
@@ -251,6 +251,17 @@ function build_sandbox_layer () {
 	compiled_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
 
 	log "Sandbox compiled (${compiled_size})"
+
+	if [ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]; then
+		log 'Running sandbox post-build hook'
+		if ! (
+			"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
+				"${tag}" "${constraints}" "${source_dir}" |& quote
+		); then
+			die 'Failed to run sandbox post-build hook'
+		fi
+	fi
+
 	log_indent_begin 'Stripping sandbox layer...'
 
 	strip_tree "${HALCYON_DIR}/sandbox" || die
@@ -382,7 +393,7 @@ function activate_sandbox_layer () {
 
 
 function install_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_ONLY_BUILD_APP HALCYON_FORCE_BUILD_SANDBOX
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_SANDBOX
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -401,7 +412,7 @@ function install_sandbox_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_ONLY_BUILD_APP )); then
+		if (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_warning 'Cannot build sandbox layer'
 			return 1
 		fi

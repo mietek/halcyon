@@ -189,13 +189,13 @@ function build_app_layer () {
 		fi
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/app-build-hook" ]; then
-		log 'Running app build hook'
+	if [ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]; then
+		log 'Running app pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/app-build-hook" \
+			"${source_dir}/.halcyon-magic/app-pre-build-hook" \
 				"${tag}" "${source_dir}" |& quote
 		); then
-			die 'Failed to run app build hook'
+			die 'Failed to run app pre-build hook'
 		fi
 	fi
 
@@ -209,6 +209,17 @@ function build_app_layer () {
 	compiled_size=$( size_tree "${HALCYON_DIR}/app" ) || die
 
 	log "App compiled (${compiled_size})"
+
+	if [ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]; then
+		log 'Running app post-build hook'
+		if ! (
+			"${source_dir}/.halcyon-magic/app-post-build-hook" \
+				"${tag}" "${source_dir}" |& quote
+		); then
+			die 'Failed to run app post-build hook'
+		fi
+	fi
+
 	log_indent_begin 'Stripping app layer...'
 
 	strip_tree "${HALCYON_DIR}/app" || die
