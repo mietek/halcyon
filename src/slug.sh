@@ -163,7 +163,7 @@ function apply_slug () {
 	installed_tag=$( validate_slug "${tag}" "${slug_dir}" ) || die
 	description=$( format_app_description "${installed_tag}" ) || die
 
-	cp -Rp "${slug_dir}${HALCYON_DIR}/." "${HALCYON_SLUG_DIR}${HALCYON_DIR}" | quote || die
+	tar_copy "${slug_dir}${HALCYON_DIR}" "${HALCYON_SLUG_DIR}${HALCYON_DIR}" || die
 
 	log 'App deployed:                            ' "${description}"
 }

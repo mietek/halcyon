@@ -255,6 +255,7 @@ function build_ghc_layer () {
 	log 'Building GHC layer'
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${ghc_dir}"; then
+		rm -rf "${ghc_dir}" || die
 		transfer_original_file "${original_url}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${ghc_dir}"; then
 			die 'Cannot install GHC'

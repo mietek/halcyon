@@ -278,6 +278,7 @@ function build_cabal_layer () {
 	log 'Building Cabal layer'
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
+		rm -rf "${cabal_dir}" || die
 		transfer_original_file "${original_url}" || die
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
 			die 'Cannot bootstrap Cabal'
