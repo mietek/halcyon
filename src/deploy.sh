@@ -243,6 +243,45 @@ function deploy_slug_extra_apps () {
 }
 
 
+function unpack_app () {
+	expect_vars HALCYON_RECURSIVE
+
+	local thing source_dir
+	expect_args thing source_dir -- "$@"
+
+	local work_dir stderr
+	work_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
+	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || die
+
+	mkdir -p "${work_dir}" || die
+	rm -rf "${source_dir}" || die
+
+	local app_label
+	if ! app_label=$(
+		cabal_do "${work_dir}" unpack "${thing}" 2>"${stderr}" |
+		filter_matching '^Unpacking to ' |
+		match_exactly_one |
+		sed 's:^Unpacking to \(.*\)/$:\1:'
+	); then
+		quote <"${stderr}"
+		die 'Failed to unpack app'
+	fi
+	if [ "${app_label}" != "${thing}" ]; then
+		if (( HALCYON_RECURSIVE )); then
+			log_error "Cannot use implicit version of ${thing}"
+			die 'Expected app label with explicit version'
+		fi
+		log_warning "Using implicit version of ${thing}"
+		log_warning 'Expected app label with explicit version'
+	fi
+
+	mv "${work_dir}/${app_label}" "${source_dir}" || die
+	rm -rf "${work_dir}" "${stderr}" || die
+
+	echo "${app_label}"
+}
+
+
 function prepare_extra_apps () {
 	local target source_dir
 	expect_args target source_dir -- "$@"
@@ -272,7 +311,7 @@ function prepare_extra_apps () {
 	local extra_app
 	for extra_app in "${extra_apps[@]}"; do
 		local app_label
-		app_label=$( cabal_unpack_app "${extra_app}" "${work_dir}" ) || die
+		app_label=$( unpack_app "${extra_app}" "${work_dir}" ) || die
 
 		app_labels+=( "${app_label}" )
 	done
@@ -298,7 +337,7 @@ function deploy_app () {
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 		warn_implicit=0
 	else
-		constraints=$( cabal_freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
+		constraints=$( freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
 		warn_implicit=1
 	fi
 
@@ -397,7 +436,7 @@ function deploy_unpacked_app () {
 
 	local source_dir app_label
 	source_dir=$( get_tmp_dir 'halcyon-unpacked-source' ) || die
-	app_label=$( cabal_unpack_app "${thing}" "${source_dir}" ) || die
+	app_label=$( unpack_app "${thing}" "${source_dir}" ) || die
 
 	log
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \

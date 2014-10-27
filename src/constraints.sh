@@ -85,6 +85,77 @@ function detect_constraints () {
 }
 
 
+function freeze_implicit_constraints () {
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
+	# during a dry run.  Hence, if a local constraint conflicts with an installed package, Cabal
+	# will fail to resolve dependencies.
+	# https://github.com/haskell/cabal/issues/2178
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
+
+	if ! cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
+		read_dry_frozen_constraints |
+		filter_correct_constraints "${app_label}" |
+		sort_naturally
+	then
+		quote <"${stderr}"
+		die 'Failed to freeze implicit constraints'
+	fi
+
+	rm -f "${stderr}" || die
+}
+
+
+function freeze_actual_constraints () {
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
+
+	if ! sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
+		read_dry_frozen_constraints |
+		filter_correct_constraints "${app_label}" |
+		sort_naturally
+	then
+		quote <"${stderr}"
+		die 'Failed to freeze actual constraints'
+	fi
+
+	rm -f "${stderr}" || die
+}
+
+
+function validate_actual_constraints () {
+	local tag constraints source_dir
+	expect_args tag constraints source_dir -- "$@"
+
+	# NOTE: Cabal sometimes gives different results when freezing constraints before and after
+	# installation.
+	# https://github.com/haskell/cabal/issues/1896
+	# https://github.com/mietek/halcyon/issues/1
+
+	local app_label constraint_hash actual_constraints actual_hash
+	app_label=$( get_tag_app_label "${tag}" ) || die
+	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	actual_constraints=$( freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
+	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
+	if [ "${actual_hash}" = "${constraint_hash}" ]; then
+		return 0
+	fi
+
+	log_warning 'Unexpected constraints difference'
+	log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'
+	log_indent "--- ${constraint_hash:0:7}/cabal.config"
+	log_indent "+++ ${actual_hash:0:7}/cabal.config"
+	diff -u <( echo "${constraints}" ) <( echo "${actual_constraints}" ) | tail -n +3 |& quote || true
+}
+
+
 function validate_full_constraint_file () {
 	local tag candidate_file
 	expect_args tag candidate_file -- "$@"
@@ -317,30 +388,4 @@ function locate_best_matching_sandbox_layer () {
 	fi
 
 	return 1
-}
-
-
-function validate_actual_constraints () {
-	local tag constraints source_dir
-	expect_args tag constraints source_dir -- "$@"
-
-	# NOTE: Cabal sometimes gives different results when freezing constraints before and after
-	# installation.
-	# https://github.com/haskell/cabal/issues/1896
-	# https://github.com/mietek/halcyon/issues/1
-
-	local app_label constraint_hash actual_constraints actual_hash
-	app_label=$( get_tag_app_label "${tag}" ) || die
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
-	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
-	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
-	if [ "${actual_hash}" = "${constraint_hash}" ]; then
-		return 0
-	fi
-
-	log_warning 'Unexpected constraints difference'
-	log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'
-	log_indent "--- ${constraint_hash:0:7}/cabal.config"
-	log_indent "+++ ${actual_hash:0:7}/cabal.config"
-	diff -u <( echo "${constraints}" ) <( echo "${actual_constraints}" ) | tail -n +3 |& quote || true
 }
