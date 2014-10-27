@@ -2,12 +2,12 @@ function create_tag () {
 	expect_vars HALCYON_DIR
 
 	local app_label target                                             \
-		source_hash constraint_hash                                \
+		source_hash constraints_hash                               \
 		ghc_version ghc_magic_hash                                 \
 		cabal_version cabal_magic_hash cabal_repo update_timestamp \
 		sandbox_magic_hash app_magic_hash
 	expect_args app_label target                                       \
-		source_hash constraint_hash                                \
+		source_hash constraints_hash                               \
 		ghc_version ghc_magic_hash                                 \
 		cabal_version cabal_magic_hash cabal_repo update_timestamp \
 		sandbox_magic_hash app_magic_hash -- "$@"
@@ -15,7 +15,7 @@ function create_tag () {
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "1\t${os}\t${HALCYON_DIR}\t${app_label}\t${target}\t${source_hash}\t${constraint_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_repo}\t${update_timestamp}\t${sandbox_magic_hash}\t${app_magic_hash}"
+	echo -e "1\t${os}\t${HALCYON_DIR}\t${app_label}\t${target}\t${source_hash}\t${constraints_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_repo}\t${update_timestamp}\t${sandbox_magic_hash}\t${app_magic_hash}"
 }
 
 
@@ -67,7 +67,7 @@ function get_tag_source_hash () {
 }
 
 
-function get_tag_constraint_hash () {
+function get_tag_constraints_hash () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -191,7 +191,7 @@ function create_full_tag () {
 
 	local source_hash constraints_hash
 	source_hash=$( hash_tree "${source_dir}" ) || die
-	constraint_hash=$( hash_constraints "${constraints}" ) || die
+	constraints_hash=$( hash_constraints "${constraints}" ) || die
 
 	local ghc_version ghc_magic_hash
 	if [ -n "${HALCYON_GHC_VERSION:+_}" ]; then
@@ -211,7 +211,7 @@ function create_full_tag () {
 	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
 
 	create_tag "${app_label}" "${HALCYON_TARGET}"                       \
-		"${source_hash}" "${constraint_hash}"                       \
+		"${source_hash}" "${constraints_hash}"                      \
 		"${ghc_version}" "${ghc_magic_hash}"                        \
 		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
 		"${sandbox_magic_hash}" "${app_magic_hash}" || die
@@ -247,12 +247,12 @@ function describe_full_tag () {
 		log_indent 'Target:                                  ' 'sandbox'
 	fi
 
-	local source_hash constraint_hash
+	local source_hash constraints_hash
 	source_hash=$( get_tag_source_hash "${tag}" ) || die
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 
 	log_indent 'Source hash:                             ' "${source_hash:0:7}"
-	log_indent 'Constraint hash:                         ' "${constraint_hash:0:7}"
+	log_indent 'Constraints hash:                        ' "${constraints_hash:0:7}"
 
 	if ! (( HALCYON_RECURSIVE )); then
 		local ghc_version ghc_magic_hash

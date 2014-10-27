@@ -141,24 +141,24 @@ function validate_actual_constraints () {
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1
 
-	local app_label constraint_hash actual_constraints actual_hash
+	local app_label constraints_hash actual_constraints actual_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	actual_constraints=$( freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
-	if [ "${actual_hash}" = "${constraint_hash}" ]; then
+	if [ "${actual_hash}" = "${constraints_hash}" ]; then
 		return 0
 	fi
 
 	log_warning 'Unexpected constraints difference'
 	log_warning 'Please report this on https://github.com/mietek/halcyon/issues/1'
-	log_indent "--- ${constraint_hash:0:7}/cabal.config"
+	log_indent "--- ${constraints_hash:0:7}/cabal.config"
 	log_indent "+++ ${actual_hash:0:7}/cabal.config"
 	diff -u <( echo "${constraints}" ) <( echo "${actual_constraints}" ) | tail -n +3 |& quote || true
 }
 
 
-function validate_full_constraint_file () {
+function validate_full_constraints_file () {
 	local tag candidate_file
 	expect_args tag candidate_file -- "$@"
 	[ -f "${candidate_file}" ] || return 1
@@ -166,16 +166,16 @@ function validate_full_constraint_file () {
 	local candidate_constraints
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
 
-	local constraint_hash candidate_hash
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	local constraints_hash candidate_hash
+	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
-	[ "${candidate_hash}" = "${constraint_hash}" ] || return 1
+	[ "${candidate_hash}" = "${constraints_hash}" ] || return 1
 
 	echo "${candidate_hash}"
 }
 
 
-function validate_partial_constraint_file () {
+function validate_partial_constraints_file () {
 	local candidate_file
 	expect_args candidate_file -- "$@"
 	[ -f "${candidate_file}" ] || return 1
@@ -203,7 +203,7 @@ function locate_first_full_sandbox_layer () {
 	local os ghc_version full_pattern all_names full_names
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	full_pattern=$( format_full_sandbox_constraint_file_name_pattern "${tag}" ) || die
+	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
 	full_names=$(
 		filter_matching "^${full_pattern}$" <<<"${all_names}" |
 		match_at_least_one
@@ -214,10 +214,10 @@ function locate_first_full_sandbox_layer () {
 	local full_name
 	while read -r full_name; do
 		local full_hash
-		if ! full_hash=$( validate_full_constraint_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" ); then
+		if ! full_hash=$( validate_full_constraints_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" ); then
 			rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
 			if ! download_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
-				! full_hash=$( validate_full_constraint_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" )
+				! full_hash=$( validate_full_constraints_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" )
 			then
 				rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
 				continue
@@ -227,7 +227,7 @@ function locate_first_full_sandbox_layer () {
 		fi
 
 		local full_label full_tag
-		full_label=$( map_sandbox_constraint_file_name_to_app_label "${full_name}" ) || die
+		full_label=$( map_sandbox_constraints_file_name_to_app_label "${full_name}" ) || die
 		full_tag=$( derive_matching_sandbox_tag "${tag}" "${full_label}" "${full_hash}" ) || die
 
 		echo "${full_tag}"
@@ -247,7 +247,7 @@ function locate_partial_sandbox_layers () {
 	local os ghc_version full_pattern all_names partial_names
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	full_pattern=$( format_full_sandbox_constraint_file_name_pattern "${tag}" ) || die
+	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
 	partial_names=$(
 		filter_not_matching "^${full_pattern}" <<<"${all_names}" |
 		match_at_least_one
@@ -261,10 +261,10 @@ function locate_partial_sandbox_layers () {
 	local partial_name
 	while read -r partial_name; do
 		local partial_hash
-		if ! partial_hash=$( validate_partial_constraint_file "${HALCYON_CACHE_DIR}/${partial_name}" ); then
+		if ! partial_hash=$( validate_partial_constraints_file "${HALCYON_CACHE_DIR}/${partial_name}" ); then
 			rm -f "${HALCYON_CACHE_DIR}/${partial_name}" || die
 			if ! download_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
-				! partial_hash=$( validate_partial_constraint_file "${HALCYON_CACHE_DIR}/${partial_name}" )
+				! partial_hash=$( validate_partial_constraints_file "${HALCYON_CACHE_DIR}/${partial_name}" )
 			then
 				rm -f "${HALCYON_CACHE_DIR}/${partial_name}" || die
 				continue
@@ -274,7 +274,7 @@ function locate_partial_sandbox_layers () {
 		fi
 
 		local partial_label partial_tag
-		partial_label=$( map_sandbox_constraint_file_name_to_app_label "${partial_name}" ) || die
+		partial_label=$( map_sandbox_constraints_file_name_to_app_label "${partial_name}" ) || die
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" ) || die
 
 		results+=( "${partial_tag}" )
@@ -307,7 +307,7 @@ function select_best_partial_sandbox_layer () {
 	local partial_tag
 	while read -r partial_tag; do
 		local partial_name
-		partial_name=$( format_sandbox_constraint_file_name "${partial_tag}" ) || die
+		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" ) || die
 		if ! [ -f "${HALCYON_CACHE_DIR}/${partial_name}" ]; then
 			continue
 		fi
@@ -361,9 +361,9 @@ function locate_best_matching_sandbox_layer () {
 	local os ghc_version file_name name_prefix partial_pattern
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	file_name=$( format_sandbox_constraint_file_name "${tag}" ) || die
-	name_prefix=$( format_sandbox_constraint_file_name_prefix ) || die
-	partial_pattern=$( format_partial_sandbox_constraint_file_name_pattern "${tag}" ) || die
+	file_name=$( format_sandbox_constraints_file_name "${tag}" ) || die
+	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
+	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" ) || die
 
 	log 'Locating matching sandbox layers'
 

@@ -1,13 +1,13 @@
 function create_sandbox_tag () {
-	local app_label constraint_hash       \
-		ghc_version ghc_magic_hash    \
+	local app_label constraints_hash       \
+		ghc_version ghc_magic_hash     \
 		sandbox_magic_hash
-	expect_args app_label constraint_hash \
-		ghc_version ghc_magic_hash    \
+	expect_args app_label constraints_hash \
+		ghc_version ghc_magic_hash     \
 		sandbox_magic_hash -- "$@"
 
 	create_tag "${app_label}" ''                 \
-		'' "${constraint_hash}"              \
+		'' "${constraints_hash}"             \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' ''                          \
 		"${sandbox_magic_hash}" '' || die
@@ -40,30 +40,30 @@ function derive_sandbox_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local app_label constraint_hash ghc_version ghc_magic_hash sandbox_magic_hash
+	local app_label constraints_hash ghc_version ghc_magic_hash sandbox_magic_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	create_sandbox_tag "${app_label}" "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"           \
+	create_sandbox_tag "${app_label}" "${constraints_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"            \
 		"${sandbox_magic_hash}" || die
 }
 
 
 function derive_matching_sandbox_tag () {
-	local tag app_label constraint_hash
-	expect_args tag app_label constraint_hash -- "$@"
+	local tag app_label constraints_hash
+	expect_args tag app_label constraints_hash -- "$@"
 
 	local ghc_version ghc_magic_hash sandbox_magic_hash
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	create_sandbox_tag "${app_label}" "${constraint_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"           \
+	create_sandbox_tag "${app_label}" "${constraints_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}"            \
 		"${sandbox_magic_hash}" || die
 }
 
@@ -72,11 +72,11 @@ function format_sandbox_id () {
 	local tag
 	expect_args tag -- "$@"
 
-	local constraint_hash sandbox_magic_hash
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
+	local constraints_hash sandbox_magic_hash
+	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	echo "${constraint_hash:0:7}${sandbox_magic_hash:+.${sandbox_magic_hash:0:7}}"
+	echo "${constraints_hash:0:7}${sandbox_magic_hash:+.${sandbox_magic_hash:0:7}}"
 }
 
 
@@ -104,7 +104,7 @@ function format_sandbox_archive_name () {
 }
 
 
-function format_sandbox_constraint_file_name () {
+function format_sandbox_constraints_file_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -116,12 +116,12 @@ function format_sandbox_constraint_file_name () {
 }
 
 
-function format_sandbox_constraint_file_name_prefix () {
+function format_sandbox_constraints_file_name_prefix () {
 	echo "halcyon-sandbox-constraints-"
 }
 
 
-function format_full_sandbox_constraint_file_name_pattern () {
+function format_full_sandbox_constraints_file_name_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -132,7 +132,7 @@ function format_full_sandbox_constraint_file_name_pattern () {
 }
 
 
-function format_partial_sandbox_constraint_file_name_pattern () {
+function format_partial_sandbox_constraints_file_name_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -143,7 +143,7 @@ function format_partial_sandbox_constraint_file_name_pattern () {
 }
 
 
-function map_sandbox_constraint_file_name_to_app_label () {
+function map_sandbox_constraints_file_name_to_app_label () {
 	local file_name
 	expect_args file_name -- "$@"
 
@@ -273,7 +273,7 @@ function archive_sandbox_layer () {
 	local sandbox_tag archive_name file_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
-	file_name=$( format_sandbox_constraint_file_name "${sandbox_tag}" ) || die
+	file_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
@@ -345,12 +345,12 @@ function install_matching_sandbox_layer () {
 	local tag constraints matching_tag source_dir
 	expect_args tag constraints matching_tag source_dir -- "$@"
 
-	local constraint_hash matching_hash matching_description
-	constraint_hash=$( get_tag_constraint_hash "${tag}" ) || die
-	matching_hash=$( get_tag_constraint_hash "${matching_tag}" ) || die
+	local constraints_hash matching_hash matching_description
+	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
+	matching_hash=$( get_tag_constraints_hash "${matching_tag}" ) || die
 	matching_description=$( format_sandbox_description "${matching_tag}" ) || die
 
-	if [ "${matching_hash}" = "${constraint_hash}" ]; then
+	if [ "${matching_hash}" = "${constraints_hash}" ]; then
 		log 'Using fully matching sandbox layer:      ' "${matching_description}"
 
 		restore_sandbox_layer "${matching_tag}" || return 1

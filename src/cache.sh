@@ -44,7 +44,7 @@ function clean_cache () {
 
 	local mark_time name_prefix
 	mark_time=$( get_file_modification_time "${HALCYON_CACHE_DIR}/.halcyon-mark" ) || die
-	name_prefix=$( format_sandbox_constraint_file_name_prefix ) || die
+	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/${name_prefix}"* || die
 
