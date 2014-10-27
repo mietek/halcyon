@@ -188,8 +188,7 @@ function prepare_env () {
 		! validate_updated_cabal_layer "${env_tag}" >'/dev/null'
 	then
 		if ! (( HALCYON_RECURSIVE )); then
-			if ! HALCYON_NO_CLEAN_CACHE=1      \
-				HALCYON_NO_WARN_IMPLICIT=1 \
+			if ! HALCYON_NO_CLEAN_CACHE=1   \
 				deploy_env "${env_tag}"
 			then
 				log_warning 'Cannot deploy environment'
@@ -286,7 +285,7 @@ function prepare_extra_apps () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_NO_WARN_IMPLICIT
+	expect_vars HALCYON_RECURSIVE
 
 	local env_tag app_label source_dir
 	expect_args env_tag app_label source_dir -- "$@"
@@ -311,7 +310,15 @@ function deploy_app () {
 	describe_full_tag "${tag}" "${source_dir}" || die
 	describe_storage || die
 
-	if ! (( HALCYON_NO_WARN_IMPLICIT )) && (( warn_implicit )); then
+	if (( warn_implicit )); then
+		if (( HALCYON_RECURSIVE )); then
+			log_error 'Cannot use implicit constraints'
+			log_error 'Expected cabal.config with explicit constraints'
+			log
+			help_add_explicit_constraints "${constraints}"
+			log
+			die
+		fi
 		log_warning 'Using implicit constraints'
 		log_warning 'Expected cabal.config with explicit constraints'
 		log
@@ -394,7 +401,6 @@ function deploy_unpacked_app () {
 
 	log
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
-		HALCYON_NO_WARN_IMPLICIT=1                  \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
 		log_warning 'Cannot deploy app'

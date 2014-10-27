@@ -777,10 +777,8 @@ function cabal_unpack_app () {
 			log_error "Cannot use implicit version of ${thing}"
 			die 'Expected app label with explicit version'
 		fi
-		if ! (( HALCYON_NO_WARN_IMPLICIT )); then
-			log_warning "Using implicit version of ${thing}"
-			log_warning 'Expected app label with explicit version'
-		fi
+		log_warning "Using implicit version of ${thing}"
+		log_warning 'Expected app label with explicit version'
 	fi
 
 	mv "${work_dir}/${app_label}" "${source_dir}" || die
