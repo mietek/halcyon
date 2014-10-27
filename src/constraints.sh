@@ -66,6 +66,8 @@ function detect_constraints () {
 	) || die
 
 	local -A constraints_A
+	constraints_A=()
+
 	local base_version candidate_package candidate_version
 	base_version=
 	while read -r candidate_package candidate_version; do
@@ -102,7 +104,7 @@ function freeze_implicit_constraints () {
 		filter_correct_constraints "${app_label}" |
 		sort_naturally
 	then
-		quote <"${stderr}"
+		quote <"${stderr}" || die
 		die 'Failed to freeze implicit constraints'
 	fi
 
@@ -122,7 +124,7 @@ function freeze_actual_constraints () {
 		filter_correct_constraints "${app_label}" |
 		sort_naturally
 	then
-		quote <"${stderr}"
+		quote <"${stderr}" || die
 		die 'Failed to freeze actual constraints'
 	fi
 
@@ -254,6 +256,8 @@ function locate_partial_sandbox_layers () {
 	log 'Examining partially matching sandbox layers'
 
 	local -a results
+	results=()
+
 	local partial_name
 	while read -r partial_name; do
 		local partial_hash
@@ -288,6 +292,8 @@ function select_best_partial_sandbox_layer () {
 	expect_args constraints partial_tags -- "$@"
 
 	local -A constraints_A
+	constraints_A=()
+
 	local package version
 	while read -r package version; do
 		constraints_A["${package}"]="${version}"
@@ -296,6 +302,8 @@ function select_best_partial_sandbox_layer () {
 	log 'Selecting best partially matching sandbox layer'
 
 	local -a results
+	results=()
+
 	local partial_tag
 	while read -r partial_tag; do
 		local partial_name

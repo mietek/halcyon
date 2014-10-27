@@ -222,7 +222,8 @@ function hash_cabal_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon-magic" -name 'cabal*' || die
+	hash_tree "${source_dir}/.halcyon-magic" \
+		-path './cabal*' || die
 }
 
 
@@ -237,7 +238,12 @@ function copy_cabal_magic () {
 	fi
 
 	mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
-	cp -p "${source_dir}/.halcyon-magic/cabal"* "${HALCYON_DIR}/cabal/.halcyon-magic" || die
+	find_tree "${source_dir}/.halcyon-magic" -type f \
+			-path './cabal*' |
+		while read -r file; do
+			cp -p "${source_dir}/.halcyon-magic/${file}" \
+				"${HALCYON_DIR}/cabal/.halcyon-magic" || die
+		done || die
 }
 
 
@@ -282,7 +288,10 @@ function build_cabal_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-build-hook" ]; then
 		log 'Running Cabal build hook'
-		if ! ( "${source_dir}/.halcyon-magic/cabal-build-hook" "${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote ); then
+		if ! (
+			"${source_dir}/.halcyon-magic/cabal-build-hook" \
+				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
+		); then
 			die 'Failed to run Cabal build hook'
 		fi
 	fi
@@ -496,8 +505,8 @@ function restore_cached_updated_cabal_layer () {
 
 	local updated_name
 	updated_name=$(
-		find "${HALCYON_CACHE_DIR}" -type f 2>'/dev/null' |
-		sed "s:^${HALCYON_CACHE_DIR}/::" |
+		find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
+		sed "s:^\./::" |
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 

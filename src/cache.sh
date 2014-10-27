@@ -18,8 +18,8 @@ function prepare_cache () {
 
 		local files
 		if files=$(
-			find "${HALCYON_CACHE_DIR}" -type f 2>'/dev/null' |
-			sed "s:^${HALCYON_CACHE_DIR}/::" |
+			find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
+			sed "s:^\./::" |
 			sort_naturally |
 			match_at_least_one
 		); then
@@ -49,7 +49,7 @@ function clean_cache () {
 	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/${name_prefix}"* || die
 
 	local file
-	find "${HALCYON_CACHE_DIR}" -type f 2>'/dev/null' |
+	find "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
 		while read -r file; do
 			local file_time
 			file_time=$( get_file_modification_time "${file}" ) || die

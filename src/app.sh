@@ -131,7 +131,12 @@ function hash_app_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' -or -name 'app*' \) || die
+	hash_tree "${source_dir}/.halcyon-magic" \
+		\(                               \
+		-path './ghc*'     -or           \
+		-path './sandbox*' -or           \
+		-path './app*'                   \
+		\) || die
 }
 
 
@@ -177,14 +182,19 @@ function build_app_layer () {
 		local target
 		target=$( get_tag_target "${tag}" ) || die
 
-		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure --prefix="${HALCYON_DIR}/${target}" |& quote; then
+		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure \
+			--prefix="${HALCYON_DIR}/${target}" |& quote
+		then
 			die 'Failed to configure app'
 		fi
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/app-build-hook" ]; then
 		log 'Running app build hook'
-		if ! ( "${source_dir}/.halcyon-magic/app-build-hook" "${tag}" "${source_dir}" |& quote ); then
+		if ! (
+			"${source_dir}/.halcyon-magic/app-build-hook" \
+				"${tag}" "${source_dir}" |& quote
+		); then
 			die 'Failed to run app build hook'
 		fi
 	fi

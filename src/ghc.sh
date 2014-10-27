@@ -151,7 +151,8 @@ function hash_ghc_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon-magic" -name 'ghc*' || die
+	hash_tree "${source_dir}/.halcyon-magic" \
+		-path './ghc*' || die
 }
 
 
@@ -166,7 +167,12 @@ function copy_ghc_magic () {
 	fi
 
 	mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
-	cp -p "${source_dir}/.halcyon-magic/ghc"* "${HALCYON_DIR}/ghc/.halcyon-magic" || die
+	find_tree "${source_dir}/.halcyon-magic" -type f \
+			-path './ghc*' |
+		while read -r file; do
+			cp -p "${source_dir}/.halcyon-magic/${file}" \
+				"${HALCYON_DIR}/ghc/.halcyon-magic" || die
+		done || die
 }
 
 
@@ -259,7 +265,10 @@ function build_ghc_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-build-hook" ]; then
 		log 'Running GHC build hook'
-		if ! ( "${source_dir}/.halcyon-magic/ghc-build-hook" "${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote ); then
+		if ! (
+			"${source_dir}/.halcyon-magic/ghc-build-hook" \
+				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
+		); then
 			die 'Failed to run GHC build hook'
 		fi
 	fi

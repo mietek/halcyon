@@ -158,7 +158,11 @@ function hash_sandbox_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon-magic" \( -name 'ghc*' -or -name 'sandbox*' \) || die
+	hash_tree "${source_dir}/.halcyon-magic" \
+		\(                               \
+		-path './ghc*'     -or           \
+		-path './sandbox*'               \
+		\) || die
 }
 
 
@@ -173,10 +177,15 @@ function copy_sandbox_magic () {
 	fi
 
 	mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
-	find "${source_dir}/.halcyon-magic" -type f \( -name 'ghc*' -or -name 'sandbox*' \) |
+	find_tree "${source_dir}/.halcyon-magic" -type f \
+			\(                               \
+			-path './ghc*'     -or           \
+			-path './sandbox*'               \
+			\) |
 		while read -r file; do
-			cp -p "${file}" "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
-		done
+			cp -p "${source_dir}/.halcyon-magic/${file}" \
+				"${HALCYON_DIR}/sandbox/.halcyon-magic" || die
+		done || die
 }
 
 
@@ -207,7 +216,10 @@ function build_sandbox_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-build-hook" ]; then
 		log 'Running sandbox build hook'
-		if ! ( "${source_dir}/.halcyon-magic/sandbox-build-hook" "${tag}" "${constraints}" "${source_dir}" |& quote ); then
+		if ! (
+			"${source_dir}/.halcyon-magic/sandbox-build-hook" \
+				"${tag}" "${constraints}" "${source_dir}" |& quote
+		); then
 			die 'Failed to run sandbox build hook'
 		fi
 	fi

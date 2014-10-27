@@ -284,7 +284,7 @@ function describe_full_tag () {
 	fi
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 		local -a sandbox_extra_apps
-		sandbox_extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) )
+		sandbox_extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 		log_indent 'Sandbox extra apps:                      ' "${sandbox_extra_apps[*]:-}"
 	fi
 
@@ -297,7 +297,7 @@ function describe_full_tag () {
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
 		local -a slug_extra_apps
-		slug_extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) )
+		slug_extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
 		log_indent 'Slug extra apps:                         ' "${slug_extra_apps[*]:-}"
 	fi
 }

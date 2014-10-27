@@ -21,6 +21,8 @@ function set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET:-0} )); then
 		export HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET=1
 
+		export HALCYON_CONSTRAINTS_FILE="${HALCYON_CONSTRAINTS_FILE:-}"
+
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
 		export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
 
@@ -32,11 +34,13 @@ function set_halcyon_vars () {
 		export HALCYON_ONLY_DEPLOY_ENV="${HALCYON_ONLY_DEPLOY_ENV:-0}"
 
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
+		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:-}"
 		export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
 
 		export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 
 		export HALCYON_SLUG_EXTRA_APPS="${HALCYON_SLUG_EXTRA_APPS:-}"
+		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:-}"
 		export HALCYON_SLUG_DIR="${HALCYON_SLUG_DIR:-}"
 		export HALCYON_NO_RESTORE_SLUG="${HALCYON_NO_RESTORE_SLUG:-0}"
 		export HALCYON_NO_ARCHIVE_SLUG="${HALCYON_NO_ARCHIVE_SLUG:-0}"
@@ -45,6 +49,8 @@ function set_halcyon_vars () {
 		export HALCYON_NO_PREPARE_CACHE="${HALCYON_NO_PREPARE_CACHE:-0}"
 		export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
 	else
+		export HALCYON_CONSTRAINTS_FILE=
+
 		export HALCYON_GHC_VERSION=
 		export HALCYON_FORCE_BUILD_GHC=0
 
@@ -56,11 +62,13 @@ function set_halcyon_vars () {
 		export HALCYON_ONLY_DEPLOY_ENV=0
 
 		export HALCYON_SANDBOX_EXTRA_APPS=
+		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=
 		export HALCYON_FORCE_BUILD_SANDBOX=0
 
 		export HALCYON_FORCE_BUILD_APP=0
 
 		export HALCYON_SLUG_EXTRA_APPS=
+		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR=
 		export HALCYON_SLUG_DIR=
 		export HALCYON_NO_RESTORE_SLUG=0
 		export HALCYON_NO_ARCHIVE_SLUG=0
@@ -134,6 +142,13 @@ function handle_command_line () {
 			export HALCYON_NO_UPLOAD=1;;
 
 		# Vars inherited once and reset:
+		'--constraints-file')
+			shift
+			expect_args constraints_file -- "$@"
+			export HALCYON_CONSTRAINTS_FILE="${constraints_file}";;
+		'--constraints-file='*)
+			export HALCYON_CONSTRAINTS_FILE="${1#*=}";;
+
 		'--ghc-version')
 			shift
 			expect_args ghc_version -- "$@"
@@ -171,12 +186,12 @@ function handle_command_line () {
 			export HALCYON_SANDBOX_EXTRA_APPS="${sandbox_extra_apps}";;
 		'--sandbox-extra-apps='*)
 			export HALCYON_SANDBOX_EXTRA_APPS="${1#*=}";;
-		'--extra-sandbox-apps')
+		'--sandbox-extra-apps-constraints-dir')
 			shift
-			expect_args sandbox_extra_apps -- "$@"
-			export HALCYON_SANDBOX_EXTRA_APPS="${sandbox_extra_apps}";;
-		'--extra-sandbox-apps='*)
-			export HALCYON_SANDBOX_EXTRA_APPS="${1#*=}";;
+			expect_args sandbox_extra_apps_constraints_dir -- "$@"
+			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${sandbox_extra_apps_constraints_dir}";;
+		'--sandbox-extra-apps-constraints-dir='*)
+			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
 		'--force-build-sandbox')
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
 
@@ -189,12 +204,12 @@ function handle_command_line () {
 			export HALCYON_SLUG_EXTRA_APPS="${slug_extra_apps}";;
 		'--slug-extra-apps='*)
 			export HALCYON_SLUG_EXTRA_APPS="${1#*=}";;
-		'--extra-slug-apps')
+		'--slug-extra-apps-constraints-dir')
 			shift
-			expect_args slug_extra_apps -- "$@"
-			export HALCYON_SLUG_EXTRA_APPS="${slug_extra_apps}";;
-		'--extra-slug-apps='*)
-			export HALCYON_SLUG_EXTRA_APPS="${1#*=}";;
+			expect_args slug_extra_apps_constraints_dir -- "$@"
+			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${slug_extra_apps_constraints_dir}";;
+		'--slug-extra-apps-constraints-dir='*)
+			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
 		'--slug-dir')
 			shift
 			expect_args slug_dir -- "$@"
