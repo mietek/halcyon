@@ -42,10 +42,11 @@ function clean_cache () {
 	local cache_dir
 	expect_args cache_dir -- "$@"
 
-	local mark_time
+	local mark_time name_prefix
 	mark_time=$( get_file_modification_time "${HALCYON_CACHE_DIR}/.halcyon-mark" ) || die
+	name_prefix=$( format_sandbox_constraint_file_name_prefix ) || die
 
-	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/"*".cabal.config" || die
+	rm -f "${HALCYON_CACHE_DIR}/.halcyon-mark" "${HALCYON_CACHE_DIR}/${name_prefix}"* || die
 
 	local file
 	find "${HALCYON_CACHE_DIR}" -type f 2>'/dev/null' |

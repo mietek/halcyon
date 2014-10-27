@@ -112,12 +112,12 @@ function format_sandbox_constraint_file_name () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	sandbox_id=$( format_sandbox_id "${tag}" ) || die
 
-	echo "halcyon-sandbox-${sandbox_id}-${app_label}.cabal.config"
+	echo "halcyon-sandbox-constraints-${sandbox_id}-${app_label}.cabal.config"
 }
 
 
 function format_sandbox_constraint_file_name_prefix () {
-	echo "halcyon-sandbox-"
+	echo "halcyon-sandbox-constraints-"
 }
 
 
@@ -128,7 +128,7 @@ function format_full_sandbox_constraint_file_name_pattern () {
 	local sandbox_id
 	sandbox_id=$( format_sandbox_id "${tag}" ) || die
 
-	echo "halcyon-sandbox-${sandbox_id}-.*.cabal.config"
+	echo "halcyon-sandbox-constraints-${sandbox_id}-.*.cabal.config"
 }
 
 
@@ -188,7 +188,8 @@ function build_sandbox_layer () {
 	if (( must_create )); then
 		expect_no_existing "${HALCYON_DIR}/sandbox"
 	else
-		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.cabal.config"
+		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" \
+			"${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 	fi
 	expect_existing "${source_dir}"
 
@@ -229,7 +230,7 @@ function build_sandbox_layer () {
 		die 'Failed to compile sandbox'
 	fi
 
-	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-sandbox.cabal.config" || die
+	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" || die
 
 	copy_sandbox_magic "${source_dir}" || die
 	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
@@ -250,7 +251,8 @@ function build_sandbox_layer () {
 
 function archive_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
-	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.cabal.config"
+	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" \
+		"${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
@@ -263,7 +265,7 @@ function archive_sandbox_layer () {
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	tar_archive "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	cp -p "${HALCYON_DIR}/sandbox/.halcyon-sandbox.cabal.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
+	cp -p "${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
 
 	local os ghc_version
 	os=$( get_tag_os "${sandbox_tag}" ) || die

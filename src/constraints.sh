@@ -350,18 +350,18 @@ function locate_best_matching_sandbox_layer () {
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
-	local os ghc_version file_name constraint_prefix partial_pattern
+	local os ghc_version file_name name_prefix partial_pattern
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	file_name=$( format_sandbox_constraint_file_name "${tag}" ) || die
-	constraint_prefix=$( format_sandbox_constraint_file_name_prefix ) || die
+	name_prefix=$( format_sandbox_constraint_file_name_prefix ) || die
 	partial_pattern=$( format_partial_sandbox_constraint_file_name_pattern "${tag}" ) || die
 
 	log 'Locating matching sandbox layers'
 
 	local all_names
 	all_names=$(
-		list_stored_files "${os}/ghc-${ghc_version}/${constraint_prefix}" |
+		list_stored_files "${os}/ghc-${ghc_version}/${name_prefix}" |
 		sed "s:${os}/ghc-${ghc_version}/::" |
 		filter_matching "^${partial_pattern}$" |
 		filter_not_matching "^${file_name}$" |
