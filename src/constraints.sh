@@ -65,16 +65,16 @@ function detect_constraints () {
 		sort_naturally
 	) || die
 
-	local -A constraints_A
-	constraints_A=()
+	local -A package_version_map
+	package_version_map=()
 
 	local base_version candidate_package candidate_version
 	base_version=
 	while read -r candidate_package candidate_version; do
-		if [ -n "${constraints_A[${candidate_package}]:+_}" ]; then
-			die "Unexpected duplicate constraint: ${candidate_package}-${constraints_A[${candidate_package}]} and ${candidate_package}-${candidate-version}"
+		if [ -n "${package_version_map[${candidate_package}]:+_}" ]; then
+			die "Unexpected duplicate constraint: ${candidate_package}-${package_version_map[${candidate_package}]} and ${candidate_package}-${candidate-version}"
 		fi
-		constraints_A["${candidate_package}"]="${candidate_version}"
+		package_version_map["${candidate_package}"]="${candidate_version}"
 		if [ "${candidate_package}" = 'base' ]; then
 			base_version="${candidate_version}"
 		fi
@@ -291,12 +291,12 @@ function select_best_partial_sandbox_layer () {
 	local constraints partial_tags
 	expect_args constraints partial_tags -- "$@"
 
-	local -A constraints_A
-	constraints_A=()
+	local -A package_version_map
+	package_version_map=()
 
 	local package version
 	while read -r package version; do
-		constraints_A["${package}"]="${version}"
+		package_version_map["${package}"]="${version}"
 	done <<<"${constraints}"
 
 	log 'Selecting best partially matching sandbox layer'
@@ -320,7 +320,7 @@ function select_best_partial_sandbox_layer () {
 		score=0
 		while read -r partial_package partial_version; do
 			local version
-			version="${constraints_A[${partial_package}]:-}"
+			version="${package_version_map[${partial_package}]:-}"
 			if [ -z "${version}" ]; then
 				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not needed"
 				score=
