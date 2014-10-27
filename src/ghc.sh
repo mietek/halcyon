@@ -244,7 +244,7 @@ function build_ghc_layer () {
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	original_url=$( prepare_ghc_layer "${tag}" ) || die
 	original_name=$( basename "${original_url}" ) || die
-	ghc_dir=$( get_tmp_dir 'halcyon.ghc-source' ) || die
+	ghc_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || die
 
 	log 'Building GHC layer'
 

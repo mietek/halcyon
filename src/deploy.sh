@@ -80,8 +80,8 @@ function deploy_layers () {
 	expect_args tag constraints source_dir -- "$@"
 
 	local cache_dir slug_dir
-	cache_dir=$( get_tmp_dir 'halcyon.cache' ) || die
-	slug_dir=$( get_tmp_dir 'halcyon.slug' ) || die
+	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
+	slug_dir=$( get_tmp_dir 'halcyon-slug' ) || die
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
 		log
@@ -120,11 +120,11 @@ function deploy_layers () {
 		saved_app=
 		if (( HALCYON_RECURSIVE )); then
 			if [ -d "${HALCYON_DIR}/sandbox" ]; then
-				saved_sandbox=$( get_tmp_dir 'halcyon.saved-sandbox' ) || die
+				saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
 				mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
 			fi
 			if [ -d "${HALCYON_DIR}/app" ]; then
-				saved_app=$( get_tmp_dir 'halcyon.saved-app' ) || die
+				saved_app=$( get_tmp_dir 'halcyon-saved-app' ) || die
 				mv "${HALCYON_DIR}/app" "${saved_app}" || die
 			fi
 		fi
@@ -267,7 +267,7 @@ function prepare_extra_apps () {
 	esac
 
 	local work_dir
-	work_dir=$( get_tmp_dir 'halcyon.extra-apps' ) || die
+	work_dir=$( get_tmp_dir 'halcyon-extra-apps' ) || die
 
 	local -a app_labels
 	local extra_app
@@ -331,7 +331,7 @@ function deploy_local_app () {
 	no_prepare_cache=$( prepare_env "${env_tag}" ) || return 1
 
 	local source_dir
-	source_dir=$( get_tmp_dir 'halcyon.copied-source' ) || die
+	source_dir=$( get_tmp_dir 'halcyon-copied-source' ) || die
 	copy_app_source "${local_dir}" "${source_dir}" || die
 
 	local app_label
@@ -357,7 +357,7 @@ function deploy_cloned_app () {
 	log 'Cloning app'
 
 	local source_dir
-	source_dir=$( get_tmp_dir 'halcyon.cloned-source' ) || die
+	source_dir=$( get_tmp_dir 'halcyon-cloned-source' ) || die
 	if ! git clone --depth=1 --quiet "${url}" "${source_dir}"; then
 		die 'Cannot clone app'
 	fi
@@ -389,7 +389,7 @@ function deploy_unpacked_app () {
 	log 'Unpacking app'
 
 	local source_dir app_label
-	source_dir=$( get_tmp_dir 'halcyon.unpacked-source' ) || die
+	source_dir=$( get_tmp_dir 'halcyon-unpacked-source' ) || die
 	app_label=$( cabal_unpack_app "${thing}" "${source_dir}" ) || die
 
 	log

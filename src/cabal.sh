@@ -267,7 +267,7 @@ function build_cabal_layer () {
 	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
 	original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
 	original_name=$( basename "${original_url}" ) || die
-	cabal_dir=$( get_tmp_dir 'halcyon.cabal-source' ) || die
+	cabal_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
 
 	log 'Building Cabal layer'
 
@@ -679,7 +679,7 @@ function sandboxed_cabal_do () {
 	local saved_config
 	saved_config=
 	if [ -f "${HALCYON_DIR}/sandbox/cabal.config" ]; then
-		saved_config=$( get_tmp_file 'halcyon.saved-config' ) || die
+		saved_config=$( get_tmp_file 'halcyon-saved-config' ) || die
 		mv "${HALCYON_DIR}/sandbox/cabal.config" "${saved_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
@@ -714,7 +714,7 @@ function cabal_freeze_implicit_constraints () {
 	# https://github.com/haskell/cabal/issues/2178
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon.cabal-freeze-stderr' ) || die
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
 
 	if ! cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
@@ -734,7 +734,7 @@ function cabal_freeze_actual_constraints () {
 	expect_args app_label source_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon.cabal-freeze-stderr' ) || die
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
 
 	if ! sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
@@ -756,8 +756,8 @@ function cabal_unpack_app () {
 	expect_args thing source_dir -- "$@"
 
 	local work_dir stderr
-	work_dir=$( get_tmp_dir 'halcyon.cabal-unpack' ) || die
-	stderr=$( get_tmp_file 'halcyon.cabal-unpack-stderr' ) || die
+	work_dir=$( get_tmp_dir 'halcyon-cabal-unpack' ) || die
+	stderr=$( get_tmp_file 'halcyon-cabal-unpack-stderr' ) || die
 
 	mkdir -p "${work_dir}" || die
 	rm -rf "${source_dir}" || die
