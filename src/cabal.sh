@@ -246,9 +246,7 @@ function build_cabal_layer () {
 	expect_existing "${HOME}"
 	expect_no_existing "${HALCYON_DIR}/cabal"
 
-	if [ -e "${HOME}/.cabal/config" ] &&
-		! [ -h "${HOME}/.cabal/config" ]
-	then
+	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
 		die "Expected no foreign ${HOME}/.cabal/config"
 	fi
 	rm -f "${HOME}/.cabal/config" || die
@@ -592,9 +590,21 @@ function restore_updated_cabal_layer () {
 }
 
 
-function describe_cabal_layer () {
+function activate_cabal_layer () {
+	expect_vars HOME HALCYON_DIR
+
 	local tag
 	expect_args tag -- "$@"
+
+	# NOTE: Creating a link to the Cabal config is necessary to allow the user to easily run Cabal
+	# commands, without using cabal_do.
+
+	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
+		die "Expected no foreign ${HOME}/.cabal/config"
+	fi
+	rm -f "${HOME}/.cabal/config" || die
+	mkdir -p "${HOME}/.cabal" || die
+	ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
 
 	local installed_tag description
 	installed_tag=$( validate_updated_cabal_layer "${tag}" ) || die
@@ -620,7 +630,7 @@ function install_cabal_layer () {
 		if restore_bare_cabal_layer "${tag}"; then
 			update_cabal_layer || die
 			archive_cabal_layer || die
-			describe_cabal_layer "${tag}" || die
+			activate_cabal_layer "${tag}" || die
 			return 0
 		fi
 
@@ -635,7 +645,7 @@ function install_cabal_layer () {
 	archive_cabal_layer || die
 	update_cabal_layer || die
 	archive_cabal_layer || die
-	describe_cabal_layer "${tag}" || die
+	activate_cabal_layer "${tag}" || die
 }
 
 

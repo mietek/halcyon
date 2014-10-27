@@ -369,7 +369,7 @@ function restore_ghc_layer () {
 }
 
 
-function describe_ghc_layer () {
+function activate_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -401,5 +401,5 @@ function install_ghc_layer () {
 	rm -rf "${HALCYON_DIR}/ghc" || die
 	build_ghc_layer "${tag}" "${source_dir}" || die
 	archive_ghc_layer || die
-	describe_ghc_layer "${tag}"
+	activate_ghc_layer "${tag}"
 }

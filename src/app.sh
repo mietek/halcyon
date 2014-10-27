@@ -382,9 +382,17 @@ function prepare_app_layer () {
 }
 
 
-function describe_app_layer () {
+function activate_app_layer () {
+	expect_vars HALCYON_DIR
+
 	local tag
 	expect_args tag -- "$@"
+
+	# NOTE: Creating a link to the sandbox config is necessary to allow the user to easily run Cabal
+	# commands within the app layer, without using sandboxed_cabal_do.
+
+	rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
+	ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${HALCYON_DIR}/app/cabal.sandbox.config" || die
 
 	local installed_tag description
 	installed_tag=$( validate_identical_app_layer "${tag}" ) || die
@@ -415,7 +423,7 @@ function install_app_layer () {
 		fi
 		build_app_layer "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" || die
 		archive_app_layer || die
-		describe_app_layer "${tag}" || die
+		activate_app_layer "${tag}" || die
 		return 0
 	fi
 
@@ -425,5 +433,5 @@ function install_app_layer () {
 	rm -rf "${HALCYON_DIR}/app" || die
 	build_app_layer "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" || die
 	archive_app_layer || die
-	describe_app_layer "${tag}" || die
+	activate_app_layer "${tag}" || die
 }
