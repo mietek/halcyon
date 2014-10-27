@@ -162,6 +162,5 @@ function apply_slug () {
 
 	cp -Rp "${slug_dir}${HALCYON_DIR}/." "${HALCYON_SLUG_DIR}${HALCYON_DIR}" | quote || die
 
-	log
 	log 'App deployed:                            ' "${description}"
 }

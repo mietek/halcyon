@@ -23,6 +23,10 @@ function validate_private_storage () {
 
 
 function describe_storage () {
+	if (( HALCYON_RECURSIVE )); then
+		return 0
+	fi
+
 	if validate_private_storage; then
 		log_indent 'External storage:                        ' "${HALCYON_S3_BUCKET} (private)"
 	elif ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then

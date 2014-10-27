@@ -206,7 +206,7 @@ function build_sandbox_layer () {
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-build-hook" ]; then
 		log 'Running sandbox build hook'
-		if ! ( "${source_dir}/.halcyon-magic/sandbox-build-hook" "${source_dir}" "${must_create}" "${tag}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/sandbox-build-hook" "${source_dir}" "${must_create}" "${constraints}" "${tag}" |& quote ); then
 			die 'Failed to run sandbox build hook'
 		fi
 	fi

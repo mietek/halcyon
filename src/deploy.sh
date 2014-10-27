@@ -109,6 +109,7 @@ function deploy_layers () {
 		if ! (( HALCYON_NO_RESTORE_SLUG )); then
 			log
 			if restore_slug "${tag}" "${slug_dir}"; then
+				log
 				apply_slug "${tag}" "${slug_dir}" || die
 				return 0
 			fi
