@@ -56,7 +56,7 @@ function prepare_slug () {
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-prepare-hook" ]; then
 		log 'Running slug prepare hook'
-		if ! ( "${source_dir}/.halcyon-magic/slug-prepare-hook" "${slug_dir}" "${source_dir}" "${tag}" |& quote ); then
+		if ! ( "${source_dir}/.halcyon-magic/slug-prepare-hook" "${tag}" "${source_dir}" "${slug_dir}" |& quote ); then
 			log_warning 'Failed to run slug prepare hook'
 			return 1
 		fi
