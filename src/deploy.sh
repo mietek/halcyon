@@ -191,7 +191,8 @@ function prepare_env () {
 				HALCYON_NO_WARN_IMPLICIT=1 \
 				deploy_env "${env_tag}"
 			then
-				die 'Cannot deploy environment'
+				log_warning 'Cannot deploy environment'
+				return 1
 			fi
 			log
 			no_prepare_cache=1
@@ -326,7 +327,7 @@ function deploy_local_app () {
 	expect_args env_tag local_dir -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=$( prepare_env "${env_tag}" ) || die
+	no_prepare_cache=$( prepare_env "${env_tag}" ) || return 1
 
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon.copied-source' ) || die
@@ -350,7 +351,7 @@ function deploy_cloned_app () {
 	expect_args env_tag url -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=$( prepare_env "${env_tag}" ) || die
+	no_prepare_cache=$( prepare_env "${env_tag}" ) || return 1
 
 	log 'Cloning app'
 
@@ -382,7 +383,7 @@ function deploy_unpacked_app () {
 	expect_args env_tag thing -- "$@"
 
 	local no_prepare_cache
-	no_prepare_cache=$( prepare_env "${env_tag}" ) || die
+	no_prepare_cache=$( prepare_env "${env_tag}" ) || return 1
 
 	log 'Unpacking app'
 
