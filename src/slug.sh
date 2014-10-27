@@ -54,10 +54,10 @@ function prepare_slug () {
 		die 'Failed to prepare slug'
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-extra-hook" ]; then
-		log 'Running slug extra hook'
-		if ! ( "${source_dir}/.halcyon-magic/slug-extra-hook" "${slug_dir}" "${source_dir}" "${tag}" |& quote ); then
-			log_warning 'Failed to run slug extra hook'
+	if [ -f "${source_dir}/.halcyon-magic/slug-prepare-hook" ]; then
+		log 'Running slug prepare hook'
+		if ! ( "${source_dir}/.halcyon-magic/slug-prepare-hook" "${slug_dir}" "${source_dir}" "${tag}" |& quote ); then
+			log_warning 'Failed to run slug prepare hook'
 			return 1
 		fi
 	fi
