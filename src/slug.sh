@@ -200,7 +200,7 @@ function restore_slug () {
 
 
 function install_slug () {
-	expect_vars HOME HALCYON_DIR HALCYON_NO_ANNOUNCE_SLUG
+	expect_vars HOME HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_ANNOUNCE_SLUG
 
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
@@ -226,15 +226,21 @@ function install_slug () {
 		log 'App deployed:                            ' "${description}"
 	fi
 
+	if (( HALCYON_RECURSIVE )); then
+		return 0
+	fi
+
 	# NOTE: Creating a link to the Cabal config is necessary to allow the user to easily run Cabal
 	# commands, without using cabal_do.
 
-	if [ -d "${HALCYON_DIR}/cabal" ] && [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-		log_warning "Expected no foreign ${HOME}/.cabal/config"
-	else
-		rm -f "${HOME}/.cabal/config" || die
-		mkdir -p "${HOME}/.cabal" || die
-		ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
+	if [ -d "${HALCYON_DIR}/cabal" ]; then
+		if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
+			log_warning "Expected no foreign ${HOME}/.cabal/config"
+		else
+			rm -f "${HOME}/.cabal/config" || die
+			mkdir -p "${HOME}/.cabal" || die
+			ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
+		fi
 	fi
 
 	# NOTE: Creating a link to the sandbox config is necessary to allow the user to easily run Cabal
