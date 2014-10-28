@@ -160,7 +160,8 @@ function handle_command_line () {
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
-		'--force-build-ghc')
+		'--force-build-ghc');&
+		'--force-ghc-build')
 			export HALCYON_FORCE_BUILD_GHC=1;;
 
 		'--cabal-version')
@@ -175,56 +176,75 @@ function handle_command_line () {
 			export HALCYON_CABAL_REMOTE_REPO="${remote_repo}";;
 		'--cabal-remote-repo='*)
 			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
-		'--update-cabal')
+		'--update-cabal');&
+		'--cabal-update');&
+		'--force-update-cabal');&
+		'--force-cabal-update')
 			export HALCYON_UPDATE_CABAL=1;;
-		'--cabal-update')
-			export HALCYON_UPDATE_CABAL=1;;
-		'--force-build-cabal')
+		'--force-build-cabal');&
+		'--force-cabal-build')
 			export HALCYON_FORCE_BUILD_CABAL=1;;
 
-		'--only-deploy-env')
+		'--only-deploy-env');&
+		'--deploy-only-env');&
+		'--only-env');&
+		'--env-only');&
+		'--env')
 			export HALCYON_ONLY_DEPLOY_ENV=1;;
 
-		'--sandbox-extra-apps')
+		'--sandbox-extra-apps');&
+		'--extra-sandbox-apps')
 			shift
 			expect_args sandbox_extra_apps -- "$@"
 			export HALCYON_SANDBOX_EXTRA_APPS="${sandbox_extra_apps}";;
-		'--sandbox-extra-apps='*)
+		'--sandbox-extra-apps='*);&
+		'--extra-sandbox-apps='*)
 			export HALCYON_SANDBOX_EXTRA_APPS="${1#*=}";;
-		'--sandbox-extra-apps-constraints-dir')
+		'--sandbox-extra-apps-constraints-dir');&
+		'--extra-sandbox-apps-constraints-dir')
 			shift
 			expect_args sandbox_extra_apps_constraints_dir -- "$@"
 			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${sandbox_extra_apps_constraints_dir}";;
-		'--sandbox-extra-apps-constraints-dir='*)
+		'--sandbox-extra-apps-constraints-dir='*);&
+		'--extra-sandbox-apps-constraints-dir='*)
 			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
-		'--force-build-sandbox')
+		'--force-build-sandbox');&
+		'--force-sandbox-build')
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
 
-		'--force-build-app')
+		'--force-build-app');&
+		'--force-app-build')
 			export HALCYON_FORCE_BUILD_APP=1;;
 
-		'--slug-extra-apps')
+		'--slug-extra-apps');&
+		'--extra-slug-apps')
 			shift
 			expect_args slug_extra_apps -- "$@"
 			export HALCYON_SLUG_EXTRA_APPS="${slug_extra_apps}";;
-		'--slug-extra-apps='*)
+		'--slug-extra-apps='*);&
+		'--extra-slug-apps='*)
 			export HALCYON_SLUG_EXTRA_APPS="${1#*=}";;
-		'--slug-extra-apps-constraints-dir')
+		'--slug-extra-apps-constraints-dir');&
+		'--extra-slug-apps-constraints-dir')
 			shift
 			expect_args slug_extra_apps_constraints_dir -- "$@"
 			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${slug_extra_apps_constraints_dir}";;
-		'--slug-extra-apps-constraints-dir='*)
+		'--slug-extra-apps-constraints-dir='*);&
+		'--extra-slug-apps-constraints-dir='*)
 			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
-		'--force-build-slug')
+		'--force-build-slug');&
+		'--force-slug-build')
 			export HALCYON_FORCE_BUILD_SLUG=1;;
 		'--no-announce-slug')
 			export HALCYON_NO_ANNOUNCE_SLUG=1;;
 
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
-		'--no-prepare-cache')
+		'--no-prepare-cache');&
+		'--no-cache-prepare')
 			export HALCYON_NO_PREPARE_CACHE=1;;
-		'--no-clean-cache')
+		'--no-clean-cache');&
+		'--no-cache-clean')
 			export HALCYON_NO_CLEAN_CACHE=1;;
 
 		'-'*)
