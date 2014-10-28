@@ -422,7 +422,8 @@ function deploy_app () {
 	expect_args env_tag app_label source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	log 'Deploying app:                           ' "${app_label}"
+	log 'Deploying app'
+	log_indent 'App label:                               ' "${app_label}"
 
 	if [ -n "${HALCYON_CONSTRAINTS_FILE:+_}" ] && [ -f "${HALCYON_CONSTRAINTS_FILE}" ]; then
 		cp -p "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die

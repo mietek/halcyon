@@ -172,14 +172,14 @@ function restore_slug () {
 
 
 function install_slug () {
+	expect_vars HALCYON_NO_ANNOUNCE_SLUG
+
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
 	local installed_tag description
 	installed_tag=$( validate_slug "${tag}" "${slug_dir}" ) || die
 	description=$( format_app_description "${installed_tag}" ) || die
-
-	log 'Installing slug'
 
 	local install_dir
 	install_dir='/'
@@ -190,5 +190,7 @@ function install_slug () {
 	rm -f "${slug_dir}/.halcyon-tag" || die
 	tar_copy "${slug_dir}" "${install_dir}" |& quote || die
 
-	log 'Slug installed:                          ' "${description}"
+	if ! (( HALCYON_NO_ANNOUNCE_SLUG )); then
+		log 'App deployed:                            ' "${description}"
+	fi
 }
