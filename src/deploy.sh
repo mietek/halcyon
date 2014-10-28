@@ -111,6 +111,10 @@ function deploy_layers () {
 			if restore_slug "${tag}" "${slug_dir}"; then
 				log
 				install_slug "${tag}" "${slug_dir}" || die
+				if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
+					log
+					clean_cache "${cache_dir}" || die
+				fi
 				return 0
 			fi
 		fi
