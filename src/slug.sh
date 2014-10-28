@@ -119,13 +119,13 @@ function build_slug () {
 
 
 function archive_slug () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_ARCHIVE_SLUG
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
 
 	local slug_dir
 	expect_args slug_dir -- "$@"
 	expect_existing "${slug_dir}/.halcyon-tag"
 
-	if (( HALCYON_NO_ARCHIVE )) || (( HALCYON_NO_ARCHIVE_SLUG )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 

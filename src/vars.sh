@@ -43,7 +43,6 @@ function set_halcyon_vars () {
 		export HALCYON_SLUG_EXTRA_APPS="${HALCYON_SLUG_EXTRA_APPS:-}"
 		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:-}"
 		export HALCYON_NO_RESTORE_SLUG="${HALCYON_NO_RESTORE_SLUG:-0}"
-		export HALCYON_NO_ARCHIVE_SLUG="${HALCYON_NO_ARCHIVE_SLUG:-0}"
 		export HALCYON_NO_ANNOUNCE_SLUG="${HALCYON_NO_ANNOUNCE_SLUG:-0}"
 
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
@@ -71,7 +70,6 @@ function set_halcyon_vars () {
 		export HALCYON_SLUG_EXTRA_APPS=
 		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR=
 		export HALCYON_NO_RESTORE_SLUG=0
-		export HALCYON_NO_ARCHIVE_SLUG=0
 		export HALCYON_NO_ANNOUNCE_SLUG=0
 
 		export HALCYON_PURGE_CACHE=0
@@ -219,8 +217,6 @@ function handle_command_line () {
 			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
 		'--no-restore-slug')
 			export HALCYON_NO_RESTORE_SLUG=1;;
-		'--no-archive-slug')
-			export HALCYON_NO_ARCHIVE_SLUG=1;;
 		'--no-announce-slug')
 			export HALCYON_NO_ANNOUNCE_SLUG=1;;
 
