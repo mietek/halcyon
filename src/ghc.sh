@@ -328,6 +328,8 @@ function archive_ghc_layer () {
 	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag") || die
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
+	log 'Archiving GHC layer'
+
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 
