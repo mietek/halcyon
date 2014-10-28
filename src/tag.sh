@@ -225,14 +225,14 @@ function describe_env_tag () {
 	local ghc_version
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
-	log_indent 'GHC version:                             ' "${ghc_version}"
+	log_indent_pad 'GHC version:' "${ghc_version}"
 
 	local cabal_version cabal_repo
 	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
-	log_indent 'Cabal version:                           ' "${cabal_version}"
-	log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
+	log_indent_pad 'Cabal version:' "${cabal_version}"
+	log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
 }
 
 
@@ -244,24 +244,24 @@ function describe_full_tag () {
 	target=$( get_tag_target "${tag}" ) || die
 
 	if [ "${target}" = 'sandbox' ]; then
-		log_indent 'Target:                                  ' 'sandbox'
+		log_indent_pad 'Target:' 'sandbox'
 	fi
 
 	local source_hash constraints_hash
 	source_hash=$( get_tag_source_hash "${tag}" ) || die
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 
-	log_indent 'Source hash:                             ' "${source_hash:0:7}"
-	log_indent 'Constraints hash:                        ' "${constraints_hash:0:7}"
+	log_indent_pad 'Source hash:' "${source_hash:0:7}"
+	log_indent_pad 'Constraints hash:' "${constraints_hash:0:7}"
 
 	if ! (( HALCYON_RECURSIVE )); then
 		local ghc_version ghc_magic_hash
 		ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 		ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 
-		log_indent 'GHC version:                             ' "${ghc_version}"
+		log_indent_pad 'GHC version:' "${ghc_version}"
 		if [ -n "${ghc_magic_hash}" ]; then
-			log_indent 'GHC magic hash:                          ' "${ghc_magic_hash:0:7}"
+			log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 		fi
 
 		local cabal_version cabal_magic_hash cabal_repo
@@ -269,35 +269,35 @@ function describe_full_tag () {
 		cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
 		cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
-		log_indent 'Cabal version:                           ' "${cabal_version}"
+		log_indent_pad 'Cabal version:' "${cabal_version}"
 		if [ -n "${cabal_magic_hash}" ]; then
-			log_indent 'Cabal magic hash:                        ' "${cabal_magic_hash:0:7}"
+			log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
 		fi
-		log_indent 'Cabal repository:                        ' "${cabal_repo%%:*}"
+		log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
 	fi
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
 	if [ -n "${sandbox_magic_hash}" ]; then
-		log_indent 'Sandbox magic hash:                      ' "${sandbox_magic_hash:0:7}"
+		log_indent_pad 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
 	fi
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 		local -a sandbox_extra_apps
 		sandbox_extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
-		log_indent 'Sandbox extra apps:                      ' "${sandbox_extra_apps[*]:-}"
+		log_indent_pad 'Sandbox extra apps:' "${sandbox_extra_apps[*]:-}"
 	fi
 
 	local app_magic_hash
 	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
 	if [ -n "${app_magic_hash}" ]; then
-		log_indent 'App magic hash:                          ' "${app_magic_hash:0:7}"
+		log_indent_pad 'App magic hash:' "${app_magic_hash:0:7}"
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
 		local -a slug_extra_apps
 		slug_extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
-		log_indent 'Slug extra apps:                         ' "${slug_extra_apps[*]:-}"
+		log_indent_pad 'Slug extra apps:' "${slug_extra_apps[*]:-}"
 	fi
 }

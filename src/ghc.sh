@@ -291,7 +291,7 @@ function build_ghc_layer () {
 	local installed_size
 	installed_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
 
-	log "GHC installed (${installed_size})"
+	log "GHC installed, ${installed_size}"
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]; then
 		log 'Executing GHC post-build hook'
@@ -310,7 +310,7 @@ function build_ghc_layer () {
 
 	local stripped_size
 	stripped_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
-	log_end "done (${stripped_size})"
+	log_end "done, ${stripped_size}"
 
 	rm -rf "${ghc_dir}" || die
 }
@@ -361,7 +361,7 @@ function restore_ghc_layer () {
 	description=$( format_ghc_description "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
-		log 'Using existing GHC layer:                ' "${description}"
+		log_pad 'Using existing GHC layer:' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
@@ -384,7 +384,7 @@ function restore_ghc_layer () {
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
 
-	log 'GHC layer restored:                      ' "${description}"
+	log_pad 'GHC layer restored:' "${description}"
 }
 
 
@@ -396,7 +396,7 @@ function announce_ghc_layer () {
 	installed_tag=$( validate_ghc_layer "${tag}" ) || die
 	description=$( format_ghc_description "${installed_tag}" ) || die
 
-	log 'GHC layer installed:                     ' "${description}"
+	log_pad 'GHC layer installed:' "${description}"
 }
 
 

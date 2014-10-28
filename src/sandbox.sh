@@ -267,7 +267,7 @@ function build_sandbox_layer () {
 	local compiled_size
 	compiled_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
 
-	log "Sandbox compiled (${compiled_size})"
+	log "Sandbox compiled, ${compiled_size}"
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]; then
 		log 'Executing sandbox post-build hook'
@@ -286,7 +286,7 @@ function build_sandbox_layer () {
 
 	local stripped_size
 	stripped_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
-	log_end "done (${stripped_size})"
+	log_end "done, ${stripped_size}"
 }
 
 
@@ -358,7 +358,7 @@ function restore_sandbox_layer () {
 	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
-		log 'Using existing sandbox layer:            ' "${description}"
+		log_pad 'Using existing sandbox layer:' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
@@ -381,7 +381,7 @@ function restore_sandbox_layer () {
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	fi
 
-	log 'Sandbox layer restored:                  ' "${description}"
+	log_pad 'Sandbox layer restored:' "${description}"
 }
 
 
@@ -397,7 +397,7 @@ function install_matching_sandbox_layer () {
 	matching_description=$( format_sandbox_description "${matching_tag}" ) || die
 
 	if [ "${matching_hash}" = "${constraints_hash}" ]; then
-		log 'Using fully matching sandbox layer:      ' "${matching_description}"
+		log_pad 'Using fully matching sandbox layer:' "${matching_description}"
 
 		restore_sandbox_layer "${matching_tag}" || return 1
 
@@ -405,7 +405,7 @@ function install_matching_sandbox_layer () {
 		return 0
 	fi
 
-	log 'Using partially matching sandbox layer:  ' "${matching_description}"
+	log_pad 'Using partially matching sandbox layer:' "${matching_description}"
 
 	restore_sandbox_layer "${matching_tag}" || return 1
 
@@ -423,7 +423,7 @@ function announce_sandbox_layer () {
 	installed_tag=$( validate_sandbox_layer "${tag}" ) || die
 	description=$( format_sandbox_description "${installed_tag}" ) || die
 
-	log 'Sandbox layer installed:                 ' "${description}"
+	log_pad 'Sandbox layer installed:' "${description}"
 }
 
 

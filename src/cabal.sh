@@ -343,7 +343,7 @@ EOF
 	local bootstrapped_size
 	bootstrapped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
 
-	log "Cabal bootstrapped (${bootstrapped_size})"
+	log "Cabal bootstrapped, ${bootstrapped_size}"
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]; then
 		log 'Executing Cabal post-build hook'
@@ -362,7 +362,7 @@ EOF
 
 	local stripped_size
 	stripped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
-	log_end "done (${stripped_size})"
+	log_end "done, ${stripped_size}"
 
 	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${cabal_dir}" || die
 }
@@ -386,7 +386,7 @@ function update_cabal_layer () {
 	local updated_size
 	updated_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
 
-	log "Cabal layer updated (${updated_size})"
+	log "Cabal layer updated, ${updated_size}"
 }
 
 
@@ -497,7 +497,7 @@ function restore_bare_cabal_layer () {
 	description=$( format_cabal_description "${tag}" ) || die
 
 	if validate_bare_cabal_layer "${tag}" >'/dev/null'; then
-		log 'Using existing Cabal layer:              ' "${description}"
+		log_pad 'Using existing Cabal layer:' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
 		return 0
 	fi
@@ -520,7 +520,7 @@ function restore_bare_cabal_layer () {
 		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
 	fi
 
-	log 'Cabal layer restored:                    ' "${description}"
+	log_pad 'Cabal layer restored:' "${description}"
 }
 
 
@@ -541,7 +541,7 @@ function restore_cached_updated_cabal_layer () {
 	if restored_tag=$( validate_updated_cabal_layer "${tag}" ); then
 		description=$( format_cabal_description "${restored_tag}" ) || die
 
-		log 'Using existing updated Cabal layer:      ' "${description}"
+		log_pad 'Using existing updated Cabal layer:' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || die
 		return 0
 	fi
@@ -561,7 +561,7 @@ function restore_cached_updated_cabal_layer () {
 	fi
 	description=$( format_cabal_description "${restored_tag}" ) || die
 
-	log 'Updated Cabal layer restored:            ' "${description}"
+	log_pad 'Updated Cabal layer restored:' "${description}"
 }
 
 
@@ -605,7 +605,7 @@ function restore_updated_cabal_layer () {
 	fi
 	description=$( format_cabal_description "${restored_tag}" ) || die
 
-	log 'Updated Cabal layer restored:            ' "${description}"
+	log_pad 'Updated Cabal layer restored:' "${description}"
 }
 
 
@@ -617,7 +617,7 @@ function announce_cabal_layer () {
 	installed_tag=$( validate_updated_cabal_layer "${tag}" ) || die
 	description=$( format_cabal_description "${installed_tag}" ) || die
 
-	log 'Updated Cabal layer installed:           ' "${description}"
+	log_pad 'Updated Cabal layer installed:' "${description}"
 }
 
 

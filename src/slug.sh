@@ -94,7 +94,7 @@ function build_slug () {
 	local copied_size
 	copied_size=$( size_tree "${slug_dir}" ) || die
 
-	log "App copied (${copied_size})"
+	log "App copied, ${copied_size}"
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-post-build-hook" ]; then
 		log 'Executing slug post-build hook'
@@ -114,7 +114,7 @@ function build_slug () {
 
 	local stripped_size
 	stripped_size=$( size_tree "${slug_dir}" ) || die
-	log_end "done (${stripped_size})"
+	log_end "done, ${stripped_size}"
 }
 
 
@@ -195,7 +195,7 @@ function restore_slug () {
 	fi
 	description=$( format_slug_description "${restored_tag}" )
 
-	log 'Slug restored:                           ' "${description}"
+	log_pad 'Slug restored:' "${description}"
 }
 
 
@@ -223,7 +223,7 @@ function install_slug () {
 
 	if ! (( HALCYON_NO_ANNOUNCE_SLUG )); then
 		log
-		log 'App deployed:                            ' "${description}"
+		log_pad 'App deployed:' "${description}"
 	fi
 
 	if (( HALCYON_RECURSIVE )); then

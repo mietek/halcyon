@@ -209,7 +209,7 @@ function build_app_layer () {
 	local compiled_size
 	compiled_size=$( size_tree "${HALCYON_DIR}/app" ) || die
 
-	log "App compiled (${compiled_size})"
+	log "App compiled, ${compiled_size}"
 
 	if [ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]; then
 		log 'Executing app post-build hook'
@@ -228,7 +228,7 @@ function build_app_layer () {
 
 	local stripped_size
 	stripped_size=$( size_tree "${HALCYON_DIR}/app" ) || die
-	log_end "done (${stripped_size})"
+	log_end "done, ${stripped_size}"
 
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 }
@@ -305,7 +305,7 @@ function restore_app_layer () {
 	description=$( format_app_description "${tag}" ) || die
 
 	if validate_identical_app_layer "${tag}" >'/dev/null'; then
-		log 'Using existing app layer:                ' "${description}"
+		log_pad 'Using existing app layer:' "${description}"
 		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
 		return 0
 	fi
@@ -330,7 +330,7 @@ function restore_app_layer () {
 	fi
 	description=$( format_app_description "${restored_tag}" ) || die
 
-	log 'App layer restored:                      ' "${description}"
+	log_pad 'App layer restored:' "${description}"
 }
 
 
@@ -413,7 +413,7 @@ function announce_app_layer () {
 	installed_tag=$( validate_identical_app_layer "${tag}" ) || die
 	description=$( format_app_description "${installed_tag}" ) || die
 
-	log 'App layer installed:                     ' "${description}"
+	log_pad 'App layer installed:' "${description}"
 }
 
 
