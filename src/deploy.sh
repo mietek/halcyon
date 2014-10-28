@@ -74,7 +74,7 @@ function detect_app_executable () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_FORCE_BUILD_SLUG HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_FORCE_BUILD_SANDBOX HALCYON_FORCE_BUILD_APP HALCYON_FORCE_BUILD_SLUG HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -106,7 +106,10 @@ function deploy_layers () {
 			rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
 		fi
 
-		if ! (( HALCYON_FORCE_BUILD_SLUG )); then
+		if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
+			! (( HALCYON_FORCE_BUILD_APP )) &&
+			! (( HALCYON_FORCE_BUILD_SLUG ))
+		then
 			log
 			if restore_slug "${tag}" "${slug_dir}"; then
 				log
