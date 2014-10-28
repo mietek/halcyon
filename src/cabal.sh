@@ -407,7 +407,7 @@ function archive_cabal_layer () {
 
 	local os
 	os=$( get_tag_os "${cabal_tag}" ) || die
-	upload_stored_file "${os}" "${archive_name}" || die
+	upload_stored_file "${os}" "${archive_name}" || true
 }
 
 

@@ -295,8 +295,8 @@ function archive_sandbox_layer () {
 	local os ghc_version
 	os=$( get_tag_os "${sandbox_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
-	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || die
-	upload_stored_file "${os}/ghc-${ghc_version}" "${file_name}" || die
+	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || true
+	upload_stored_file "${os}/ghc-${ghc_version}" "${file_name}" || true
 }
 
 

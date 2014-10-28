@@ -61,7 +61,7 @@ function transfer_original_file () {
 		local public_url
 		public_url=$( format_public_storage_url "${object}" ) || die
 		if curl_download "${public_url}" "${file}"; then
-			upload_stored_file 'original' "${file_name}" || die
+			upload_stored_file 'original' "${file_name}" || true
 			return 0
 		fi
 	fi
@@ -69,7 +69,7 @@ function transfer_original_file () {
 	if ! curl_download "${original_url}" "${file}"; then
 		die 'Cannot download original file'
 	fi
-	upload_stored_file 'original' "${file_name}" || die
+	upload_stored_file 'original' "${file_name}" || true
 }
 
 
@@ -106,7 +106,7 @@ function upload_stored_file () {
 	if (( HALCYON_NO_UPLOAD )) ||
 		! validate_private_storage
 	then
-		return 0
+		return 1
 	fi
 
 	local object file
@@ -116,6 +116,7 @@ function upload_stored_file () {
 
 	if ! s3_upload "${file}" "${HALCYON_S3_BUCKET}" "${object}" "${HALCYON_S3_ACL}"; then
 		log_warning 'Cannot upload stored file'
+		return 1
 	fi
 }
 
