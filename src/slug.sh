@@ -200,7 +200,7 @@ function restore_slug () {
 
 
 function install_slug () {
-	expect_vars HOME HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_ANNOUNCE_SLUG
+	expect_vars HOME HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_ANNOUNCE_DEPLOY
 
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
@@ -221,7 +221,7 @@ function install_slug () {
 	mkdir -p "${install_dir}" || die
 	cp -R "${slug_dir}/." "${install_dir}" |& quote || die
 
-	if ! (( HALCYON_NO_ANNOUNCE_SLUG )); then
+	if ! (( HALCYON_NO_ANNOUNCE_DEPLOY )); then
 		log
 		log_pad 'App deployed:' "${description}"
 	fi
