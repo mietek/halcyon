@@ -105,7 +105,7 @@ function deploy_layers () {
 	then
 		log
 		if restore_slug "${tag}" "${slug_dir}"; then
-			install_slug "${tag}" "${slug_dir}" || die
+			activate_slug "${tag}" "${slug_dir}" || die
 			return 0
 		fi
 	fi
@@ -131,6 +131,7 @@ function deploy_layers () {
 	log
 	build_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
 	archive_slug "${slug_dir}" || die
+	announce_slug "${tag}" "${slug_dir}" || die
 
 	if (( HALCYON_RECURSIVE )); then
 		if [ -n "${saved_sandbox}" ]; then
@@ -143,7 +144,7 @@ function deploy_layers () {
 		fi
 	fi
 
-	install_slug "${tag}" "${slug_dir}" || die
+	activate_slug "${tag}" "${slug_dir}" || die
 
 	rm -rf "${slug_dir}" || die
 }

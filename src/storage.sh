@@ -23,16 +23,18 @@ function validate_private_storage () {
 
 
 function describe_storage () {
+	expect_vars HALCYON_NO_DOWNLOAD_PUBLIC
+
 	if (( HALCYON_RECURSIVE )); then
 		return 0
 	fi
 
-	if validate_private_storage; then
-		log_indent_pad 'External storage:' "${HALCYON_S3_BUCKET}, private"
+	if validate_private_storage && ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
+		log_indent_pad 'External storage:' 'private and public'
+	elif validate_private_storage; then
+		log_indent_pad 'External storage:' 'private'
 	elif ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
-		local host
-		host=$( get_public_storage_host ) || die
-		log_indent_pad 'External storage:' "${host}, public"
+		log_indent_pad 'External storage:' 'public'
 	else
 		log_indent_pad 'External storage:' 'none'
 	fi
