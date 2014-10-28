@@ -171,7 +171,7 @@ function restore_slug () {
 }
 
 
-function apply_slug () {
+function install_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
@@ -179,7 +179,16 @@ function apply_slug () {
 	installed_tag=$( validate_slug "${tag}" "${slug_dir}" ) || die
 	description=$( format_app_description "${installed_tag}" ) || die
 
-	tar_copy "${slug_dir}" "${HALCYON_SLUG_DIR:-/}" || die
+	log 'Installing slug'
 
-	log 'App deployed:                            ' "${description}"
+	local install_dir
+	install_dir='/'
+	if [ -n "${HALCYON_INSTALL_DIR:+_}" ]; then
+		install_dir="${HALCYON_INSTALL_DIR}"
+	fi
+
+	rm -f "${slug_dir}/.halcyon-tag" || die
+	tar_copy "${slug_dir}" "${install_dir}" |& quote || die
+
+	log 'Slug installed:                          ' "${description}"
 }

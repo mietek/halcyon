@@ -9,6 +9,7 @@ function set_halcyon_vars () {
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 
+		export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-}"
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 
@@ -41,7 +42,6 @@ function set_halcyon_vars () {
 
 		export HALCYON_SLUG_EXTRA_APPS="${HALCYON_SLUG_EXTRA_APPS:-}"
 		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:-}"
-		export HALCYON_SLUG_DIR="${HALCYON_SLUG_DIR:-}"
 		export HALCYON_NO_RESTORE_SLUG="${HALCYON_NO_RESTORE_SLUG:-0}"
 		export HALCYON_NO_ARCHIVE_SLUG="${HALCYON_NO_ARCHIVE_SLUG:-0}"
 
@@ -69,7 +69,6 @@ function set_halcyon_vars () {
 
 		export HALCYON_SLUG_EXTRA_APPS=
 		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR=
-		export HALCYON_SLUG_DIR=
 		export HALCYON_NO_RESTORE_SLUG=0
 		export HALCYON_NO_ARCHIVE_SLUG=0
 
@@ -123,6 +122,12 @@ function handle_command_line () {
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
 
+		'--install-dir')
+			shift
+			expect_args install_dir -- "$@"
+			export HALCYON_INSTALL_DIR="${install_dir}";;
+		'--install-dir='*)
+			export HALCYON_INSTALL_DIR="${1#*=}";;
 		'--recursive')
 			export HALCYON_RECURSIVE=1;;
 		'--target')
@@ -210,12 +215,6 @@ function handle_command_line () {
 			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${slug_extra_apps_constraints_dir}";;
 		'--slug-extra-apps-constraints-dir='*)
 			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
-		'--slug-dir')
-			shift
-			expect_args slug_dir -- "$@"
-			export HALCYON_SLUG_DIR="${slug_dir}";;
-		'--slug-dir='*)
-			export HALCYON_SLUG_DIR="${1#*=}";;
 		'--no-restore-slug')
 			export HALCYON_NO_RESTORE_SLUG=1;;
 		'--no-archive-slug')

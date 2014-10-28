@@ -110,7 +110,7 @@ function deploy_layers () {
 			log
 			if restore_slug "${tag}" "${slug_dir}"; then
 				log
-				apply_slug "${tag}" "${slug_dir}" || die
+				install_slug "${tag}" "${slug_dir}" || die
 				return 0
 			fi
 		fi
@@ -149,7 +149,7 @@ function deploy_layers () {
 		fi
 
 		log
-		apply_slug "${tag}" "${slug_dir}" || die
+		install_slug "${tag}" "${slug_dir}" || die
 	fi
 
 	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
@@ -253,9 +253,9 @@ function deploy_slug_extra_apps () {
 		constraints_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${extra_app}.cabal.config"
 
 		if ! (
-			deploy  --recursive                              \
+			deploy  --install-dir="${slug_dir}"              \
+				--recursive                              \
 				--constraints-file="${constraints_file}" \
-				--slug-dir="${slug_dir}"                 \
 				"${extra_app}" |& quote
 		); then
 			log_warning 'Failed to deploy slug extra apps'
