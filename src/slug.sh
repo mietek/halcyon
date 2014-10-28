@@ -46,14 +46,15 @@ function build_slug () {
 	log 'Building slug'
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]; then
-		log 'Running slug pre-build hook'
+		log 'Executing slug pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/slug-pre-build-hook" \
 				"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
-			log_warning 'Failed to run slug pre-build hook'
+			log_warning 'Failed to execute slug pre-build hook'
 			return 1
 		fi
+		log 'Slug pre-build hook executed'
 	fi
 
 	log 'Copying app'
@@ -80,14 +81,15 @@ function build_slug () {
 	log "App copied (${copied_size})"
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-post-build-hook" ]; then
-		log 'Running slug post-build hook'
+		log 'Executing slug post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/slug-post-build-hook" \
 				"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
-			log_warning 'Failed to run slug post-build hook'
+			log_warning 'Failed to execute slug post-build hook'
 			return 1
 		fi
+		log 'Slug post-build hook executed'
 	fi
 
 	log_indent_begin 'Stripping slug...'

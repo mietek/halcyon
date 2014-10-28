@@ -288,13 +288,14 @@ function build_cabal_layer () {
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]; then
-		log 'Running Cabal pre-build hook'
+		log 'Executing Cabal pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
 				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
 		); then
-			die 'Failed to run Cabal pre-build hook'
+			die 'Failed to execute Cabal pre-build hook'
 		fi
+		log 'Cabal pre-build hook executed'
 	fi
 
 	log 'Bootstrapping Cabal'
@@ -345,13 +346,14 @@ EOF
 	log "Cabal bootstrapped (${bootstrapped_size})"
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]; then
-		log 'Running Cabal post-build hook'
+		log 'Executing Cabal post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
 				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
 		); then
-			die 'Failed to run Cabal post-build hook'
+			die 'Failed to execute Cabal post-build hook'
 		fi
+		log 'Cabal post-build hook executed'
 	fi
 
 	log_indent_begin 'Stripping Cabal layer...'

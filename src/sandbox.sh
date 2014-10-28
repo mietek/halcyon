@@ -215,13 +215,14 @@ function build_sandbox_layer () {
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]; then
-		log 'Running sandbox pre-build hook'
+		log 'Executing sandbox pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
 				"${tag}" "${constraints}" "${source_dir}" |& quote
 		); then
-			die 'Failed to run sandbox pre-build hook'
+			die 'Failed to execute sandbox pre-build hook'
 		fi
+		log 'Sandbox pre-build hook executed'
 	fi
 
 	if ! deploy_sandbox_extra_apps "${source_dir}"; then
@@ -253,13 +254,14 @@ function build_sandbox_layer () {
 	log "Sandbox compiled (${compiled_size})"
 
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]; then
-		log 'Running sandbox post-build hook'
+		log 'Executing sandbox post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
 				"${tag}" "${constraints}" "${source_dir}" |& quote
 		); then
-			die 'Failed to run sandbox post-build hook'
+			die 'Failed to execute sandbox post-build hook'
 		fi
+		log 'Sandbox post-build hook executed'
 	fi
 
 	log_indent_begin 'Stripping sandbox layer...'

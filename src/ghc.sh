@@ -265,13 +265,14 @@ function build_ghc_layer () {
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]; then
-		log 'Running GHC pre-build hook'
+		log 'Executing GHC pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/ghc-pre-build-hook" \
 				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
 		); then
-			die 'Failed to run GHC pre-build hook'
+			die 'Failed to execute GHC pre-build hook'
 		fi
+		log 'GHC pre-build hook executed'
 	fi
 
 	log 'Installing GHC'
@@ -293,13 +294,14 @@ function build_ghc_layer () {
 	log "GHC installed (${installed_size})"
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]; then
-		log 'Running GHC post-build hook'
+		log 'Executing GHC post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/ghc-post-build-hook" \
 				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
 		); then
-			die 'Failed to run GHC post-build hook'
+			die 'Failed to execute GHC post-build hook'
 		fi
+		log 'GHC post-build hook executed'
 	fi
 
 	log_indent_begin 'Stripping GHC layer...'
