@@ -398,16 +398,37 @@ function archive_cabal_layer () {
 		return 0
 	fi
 
-	local cabal_tag archive_name
+	local cabal_tag os archive_name update_timestamp
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
+	os=$( get_tag_os "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
+	update_timestamp=$( get_tag_update_timestamp "${cabal_tag}" ) || die
+
+	log 'Archiving Cabal layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	if ! upload_stored_file "${os}" "${archive_name}" || [ -z "${update_timestamp}" ]; then
+		return 0
+	fi
 
-	local os
-	os=$( get_tag_os "${cabal_tag}" ) || die
-	upload_stored_file "${os}" "${archive_name}" || true
+	local updated_prefix updated_pattern
+	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" ) || die
+	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" ) || die
+
+	local old_names
+	if old_names=$(
+		list_stored_files "${os}/${updated_prefix}" |
+		sed "s:${os}/::" |
+		filter_matching "^${updated_pattern}$" |
+		filter_not_matching "^${archive_name//./\.}$" |
+		match_at_least_one
+	); then
+		local old_name
+		while read -r old_name; do
+			delete_stored_file "${os}" "${old_name}" || die
+		done <<<"${old_names}"
+	fi
 }
 
 
