@@ -247,7 +247,7 @@ function archive_app_layer () {
 	archive_name=$( format_app_archive_name "${app_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	tar_archive "${HALCYON_DIR}/app" "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	tar_create "${HALCYON_DIR}/app" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 
 	local os ghc_version
 	os=$( get_tag_os "${app_tag}" ) || die

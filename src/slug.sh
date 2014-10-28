@@ -118,7 +118,7 @@ function archive_slug () {
 	archive_name=$( format_slug_archive_name "${app_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	tar_archive "${slug_dir}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	tar_create "${slug_dir}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 
 	local os ghc_version
 	os=$( get_tag_os "${app_tag}" ) || die

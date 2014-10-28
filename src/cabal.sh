@@ -403,7 +403,7 @@ function archive_cabal_layer () {
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	tar_archive "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	tar_create "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 
 	local os
 	os=$( get_tag_os "${cabal_tag}" ) || die

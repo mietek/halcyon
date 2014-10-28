@@ -329,7 +329,7 @@ function archive_ghc_layer () {
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	tar_archive "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	tar_create "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 
 	local os
 	os=$( get_tag_os "${ghc_tag}" ) || die
