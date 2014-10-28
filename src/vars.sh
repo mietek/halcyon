@@ -132,34 +132,12 @@ function handle_command_line () {
 		'--target='*)
 			export HALCYON_TARGET="${1#*=}";;
 
-		'--no-build-dependencies')
-			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
-		'--no-download-public')
-			export HALCYON_NO_DOWNLOAD_PUBLIC=1;;
-		'--no-archive')
-			export HALCYON_NO_ARCHIVE=1;;
-		'--no-upload')
-			export HALCYON_NO_UPLOAD=1;;
-		'--no-delete')
-			export HALCYON_NO_DELETE=1;;
-
-		# Vars inherited once and reset:
-		'--constraints-file')
-			shift
-			expect_args constraints_file -- "$@"
-			export HALCYON_CONSTRAINTS_FILE="${constraints_file}";;
-		'--constraints-file='*)
-			export HALCYON_CONSTRAINTS_FILE="${1#*=}";;
-
 		'--ghc-version')
 			shift
 			expect_args ghc_version -- "$@"
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
-		'--force-build-ghc');&
-		'--force-ghc-build')
-			export HALCYON_FORCE_BUILD_GHC=1;;
 
 		'--cabal-version')
 			shift
@@ -173,6 +151,35 @@ function handle_command_line () {
 			export HALCYON_CABAL_REMOTE_REPO="${remote_repo}";;
 		'--cabal-remote-repo='*)
 			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
+
+		'--no-build-dependencies')
+			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
+		'--no-download-public')
+			export HALCYON_NO_DOWNLOAD_PUBLIC=1;;
+		'--no-archive')
+			export HALCYON_NO_ARCHIVE=1;;
+		'--no-upload')
+			export HALCYON_NO_UPLOAD=1;;
+		'--no-delete')
+			export HALCYON_NO_DELETE=1;;
+
+		'--purge-cache')
+			export HALCYON_PURGE_CACHE=1;;
+		'--no-cache')
+			export HALCYON_NO_CACHE=1;;
+
+		# Vars inherited once and reset:
+		'--constraints-file')
+			shift
+			expect_args constraints_file -- "$@"
+			export HALCYON_CONSTRAINTS_FILE="${constraints_file}";;
+		'--constraints-file='*)
+			export HALCYON_CONSTRAINTS_FILE="${1#*=}";;
+
+		'--force-build-ghc');&
+		'--force-ghc-build')
+			export HALCYON_FORCE_BUILD_GHC=1;;
+
 		'--force-update-cabal');&
 		'--force-cabal-update')
 			export HALCYON_FORCE_UPDATE_CABAL=1;;
@@ -233,11 +240,6 @@ function handle_command_line () {
 
 		'--no-announce-deploy')
 			export HALCYON_NO_ANNOUNCE_DEPLOY=1;;
-
-		'--purge-cache')
-			export HALCYON_PURGE_CACHE=1;;
-		'--no-cache')
-			export HALCYON_NO_CACHE=1;;
 
 		'-'*)
 			die "Unexpected option: $1";;
