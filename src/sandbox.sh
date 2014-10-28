@@ -414,7 +414,7 @@ function install_matching_sandbox_layer () {
 }
 
 
-function activate_sandbox_layer () {
+function announce_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -442,7 +442,7 @@ function install_sandbox_layer () {
 			install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
 		then
 			archive_sandbox_layer || die
-			activate_sandbox_layer "${tag}" || die
+			announce_sandbox_layer "${tag}" || die
 			return 0
 		fi
 
@@ -457,7 +457,7 @@ function install_sandbox_layer () {
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
 	archive_sandbox_layer || die
-	activate_sandbox_layer "${tag}" || die
+	announce_sandbox_layer "${tag}" || die
 
 	validate_actual_constraints "${tag}" "${constraints}" "${source_dir}" || die
 }
