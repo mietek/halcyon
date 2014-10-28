@@ -576,26 +576,9 @@ function restore_updated_cabal_layer () {
 	) || return 1
 
 	local updated_name
-	updated_name=$( match_updated_cabal_archive_name "${tag}" <<<"${archive_names}" ) || true
-
-	if ! (( HALCYON_NO_UPLOAD )) &&
-		validate_private_storage
-	then
-		local old_names
-		if old_names=$(
-			filter_not_matching "^${updated_name//./\.}$" <<<"${archive_names}" |
-			match_at_least_one
-		); then
-			log 'Cleaning updated Cabal layer archives'
-
-			local old_name
-			while read -r old_name; do
-				delete_stored_file "${os}" "${old_name}" || die
-			done <<<"${old_names}"
-		fi
+	if ! updated_name=$( match_updated_cabal_archive_name "${tag}" <<<"${archive_names}" ); then
+		return 1
 	fi
-
-	[ -n "${updated_name}" ] || return 1
 
 	log 'Restoring updated Cabal layer'
 
