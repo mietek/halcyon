@@ -257,7 +257,7 @@ function build_cabal_layer () {
 	fi
 	rm -f "${HOME}/.cabal/config" || die
 
-	# NOTE:  Cabal sometimes creates HOME/.cabal/setup-exe-cache, and there is no way to use a
+	# NOTE: Cabal sometimes creates HOME/.cabal/setup-exe-cache, and there is no way to use a
 	# different path.
 	# https://github.com/haskell/cabal/issues/1242
 
@@ -300,7 +300,7 @@ function build_cabal_layer () {
 
 	log 'Bootstrapping Cabal'
 
-	# NOTE:  Bootstrapping cabal-install 1.20.0.0 with GHC 7.6.* fails.
+	# NOTE: Bootstrapping cabal-install 1.20.0.0 with GHC 7.6.* fails.
 
 	case "${ghc_version}-${cabal_version}" in
 	'7.8.'*'-1.20.0.'*)
@@ -322,7 +322,7 @@ EOF
 		die "Unexpected Cabal and GHC combination: ${cabal_version} and ${ghc_version}"
 	esac
 
-	# NOTE:  Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc is specified.
+	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc is specified.
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 
 	if ! (
@@ -688,7 +688,7 @@ function sandboxed_cabal_do () {
 	expect_existing "${HALCYON_DIR}/sandbox" "${work_dir}"
 	shift
 
-	# NOTE:  Specifying a cabal.sandbox.config file changes where Cabal looks for a cabal.config
+	# NOTE: Specifying a cabal.sandbox.config file changes where Cabal looks for a cabal.config
 	# file.
 	# https://github.com/haskell/cabal/issues/1915
 
