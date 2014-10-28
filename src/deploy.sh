@@ -449,14 +449,13 @@ function deploy_app () {
 		if (( HALCYON_RECURSIVE )); then
 			log_error 'Cannot use implicit constraints'
 			log_error 'Expected cabal.config with explicit constraints'
-			log
 			help_add_explicit_constraints "${constraints}"
 			die
 		fi
 		log_warning 'Using implicit constraints'
 		log_warning 'Expected cabal.config with explicit constraints'
-		log
 		help_add_explicit_constraints "${constraints}"
+		log
 	fi
 
 	deploy_layers "${tag}" "${constraints}" "${source_dir}" || return 1
