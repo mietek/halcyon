@@ -21,6 +21,22 @@ function format_slug_archive_name () {
 }
 
 
+function format_slug_archive_name_prefix () {
+	echo 'halcyon-slug-'
+}
+
+
+function format_slug_archive_name_pattern () {
+	local tag
+	expect_args tag -- "$@"
+
+	local app_label
+	app_label=$( get_tag_app_label "${tag}" ) || die
+
+	echo "halcyon-slug-.*-${app_label//./\.}.tar.gz"
+}
+
+
 function format_slug_description () {
 	local tag
 	expect_args tag -- "$@"
@@ -113,17 +129,37 @@ function archive_slug () {
 		return 0
 	fi
 
-	local app_tag archive_name
+	local app_tag os ghc_version archive_name
 	app_tag=$( detect_app_tag "${slug_dir}/.halcyon-tag" ) || die
+	os=$( get_tag_os "${app_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_slug_archive_name "${app_tag}" ) || die
+
+	log 'Archiving slug'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${slug_dir}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
+	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
+		return 0
+	fi
 
-	local os ghc_version
-	os=$( get_tag_os "${app_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
-	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || true
+	local archive_prefix archive_pattern
+	archive_prefix=$( format_slug_archive_name_prefix ) || die
+	archive_pattern=$( format_slug_archive_name_pattern "${app_tag}" ) || die
+
+	local old_names
+	if old_names=$(
+		list_stored_files "${os}/ghc-${ghc_version}/${archive_prefix}" |
+		sed "s:${os}/ghc-${ghc_version}/::" |
+		filter_matching "^${archive_pattern}$" |
+		filter_not_matching "^${archive_name//./\.}$" |
+		match_at_least_one
+	); then
+		local old_name
+		while read -r old_name; do
+			delete_stored_file "${os}/ghc-${ghc_version}" "${old_name}" || die
+		done <<<"${old_names}"
+	fi
 }
 
 
