@@ -193,7 +193,7 @@ function prepare_env () {
 		! validate_updated_cabal_layer "${env_tag}" >'/dev/null'
 	then
 		if ! (( HALCYON_RECURSIVE )); then
-			if ! HALCYON_NO_CLEAN_CACHE=1   \
+			if ! HALCYON_NO_CLEAN_CACHE=1 \
 				deploy_env "${env_tag}"
 			then
 				log_warning 'Cannot deploy environment'
@@ -499,6 +499,7 @@ function deploy_local_app () {
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
 		die 'Cannot detect app label'
 	fi
+
 	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
 		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
 	then
