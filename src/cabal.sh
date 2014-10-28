@@ -541,7 +541,7 @@ function restore_cached_updated_cabal_layer () {
 
 	[ -n "${updated_name}" ] || return 1
 
-	log 'Restoring updated Cabal layer'
+	log 'Restoring Cabal layer'
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
 		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
@@ -553,7 +553,7 @@ function restore_cached_updated_cabal_layer () {
 	fi
 	description=$( format_cabal_description "${restored_tag}" ) || die
 
-	log_pad 'Updated Cabal layer restored:' "${description}"
+	log_pad 'Cabal layer restored:' "${description}"
 }
 
 
@@ -571,7 +571,7 @@ function restore_updated_cabal_layer () {
 		return 0
 	fi
 
-	log 'Locating updated Cabal layers'
+	log 'Locating Cabal layers'
 
 	local archive_names
 	archive_names=$(
@@ -585,7 +585,7 @@ function restore_updated_cabal_layer () {
 		return 1
 	fi
 
-	log 'Restoring updated Cabal layer'
+	log 'Restoring Cabal layer'
 
 	local restored_tag description
 	if ! download_stored_file "${os}" "${updated_name}" ||
@@ -597,7 +597,7 @@ function restore_updated_cabal_layer () {
 	fi
 	description=$( format_cabal_description "${restored_tag}" ) || die
 
-	log_pad 'Updated Cabal layer restored:' "${description}"
+	log_pad 'Cabal layer restored:' "${description}"
 }
 
 
@@ -609,7 +609,7 @@ function announce_cabal_layer () {
 	installed_tag=$( validate_updated_cabal_layer "${tag}" ) || die
 	description=$( format_cabal_description "${installed_tag}" ) || die
 
-	log_pad 'Updated Cabal layer installed:' "${description}"
+	log_pad 'Cabal layer installed:' "${description}"
 }
 
 
