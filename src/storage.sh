@@ -149,12 +149,7 @@ function list_stored_files () {
 	if validate_private_storage; then
 		local listing
 		if listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" ); then
-			if [ -n "${listing}" ]; then
-				sort_naturally <<<"${listing}" | quote || die
-				echo "${listing}"
-			else
-				log_indent '(none)'
-			fi
+			echo "${listing}"
 			return 0
 		fi
 	fi
@@ -166,10 +161,5 @@ function list_stored_files () {
 
 	local listing
 	listing=$( curl_list_s3 "${public_url}" ) || return 1
-	if [ -n "${listing}" ]; then
-		sort_naturally <<<"${listing}" | quote || die
-		echo "${listing}"
-	else
-		log_indent '(none)'
-	fi
+	echo "${listing}"
 }
