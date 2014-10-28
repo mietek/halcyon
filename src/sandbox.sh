@@ -329,7 +329,7 @@ function archive_sandbox_layer () {
 	common_prefix=$( format_sandbox_common_file_name_prefix ) || die
 	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" ) || die
 
-	delete_old_stored_files "${os}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${file_name})" || die
+	delete_matching_private_stored_files "${os}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${file_name})" || die
 }
 
 

@@ -121,7 +121,7 @@ function upload_stored_file () {
 }
 
 
-function delete_stored_file () {
+function delete_private_stored_file () {
 	expect_vars HALCYON_NO_DELETE
 
 	local prefix file_name
@@ -142,21 +142,25 @@ function delete_stored_file () {
 }
 
 
-function delete_old_stored_files () {
-	local prefix name_prefix name_pattern new_name
-	expect_args prefix name_prefix name_pattern new_name -- "$@"
+function delete_matching_private_stored_files () {
+	local prefix match_prefix match_pattern save_name
+	expect_args prefix match_prefix match_pattern save_name -- "$@"
+
+	if ! validate_private_storage; then
+		return 0
+	fi
 
 	local old_names
 	if old_names=$(
-		list_stored_files "${prefix}/${name_prefix}" |
+		list_stored_files "${prefix}/${match_prefix}" |
 		sed "s:${prefix}/::" |
-		filter_matching "^${name_pattern}$" |
-		filter_not_matching "^${new_name//./\.}$" |
+		filter_matching "^${match_pattern}$" |
+		filter_not_matching "^${save_name//./\.}$" |
 		match_at_least_one
 	); then
 		local old_name
 		while read -r old_name; do
-			delete_stored_file "${prefix}" "${old_name}" || true
+			delete_private_stored_file "${prefix}" "${old_name}" || true
 		done <<<"${old_names}"
 	fi
 }

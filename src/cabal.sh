@@ -420,7 +420,7 @@ function archive_cabal_layer () {
 	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" ) || die
 	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" ) || die
 
-	delete_old_stored_files "${os}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${os}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
 }
 
 

@@ -151,7 +151,7 @@ function archive_slug () {
 	archive_prefix=$( format_slug_archive_name_prefix ) || die
 	archive_pattern=$( format_slug_archive_name_pattern "${app_tag}" ) || die
 
-	delete_old_stored_files "${os}/ghc-${ghc_version}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${os}/ghc-${ghc_version}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
 
 
