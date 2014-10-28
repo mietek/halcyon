@@ -642,13 +642,13 @@ function activate_cabal_layer () {
 
 
 function install_cabal_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_CABAL HALCYON_UPDATE_CABAL
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_UPDATE_CABAL HALCYON_FORCE_BUILD_CABAL
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
 	if ! (( HALCYON_FORCE_BUILD_CABAL )); then
-		if ! (( HALCYON_UPDATE_CABAL )) &&
+		if ! (( HALCYON_FORCE_UPDATE_CABAL )) &&
 			restore_updated_cabal_layer "${tag}"
 		then
 			return 0
