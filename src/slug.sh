@@ -58,7 +58,7 @@ function build_slug () {
 
 	log 'Copying app'
 
-	# NOTE: PATH is extended to silence a misleading Cabal warning.
+	# NOTE:  PATH is extended to silence a misleading Cabal warning.
 
 	if ! (
 		export PATH="${slug_dir}${HALCYON_DIR}/${target}:${PATH}" &&

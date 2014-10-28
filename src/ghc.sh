@@ -196,7 +196,7 @@ function prepare_ghc_layer () {
 		url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-14.04-x86_64-ghc-7.6.'*)
-		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured
+		# NOTE:  There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured
 		# binary distribution of GHC 7.6.*. However, GHC does not use the `mpn_bdivmod`
 		# function, which is the only difference between the ABI of .3 and .10. Hence, .10 is
 		# symlinked to .3, and the .3-flavoured binary distribution is used.

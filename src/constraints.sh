@@ -24,7 +24,7 @@ function filter_correct_constraints () {
 	local app_label
 	expect_args app_label -- "$@"
 
-	# NOTE: Cabal includes the package itself in the list of frozen constraints.
+	# NOTE:  Cabal includes the package itself in the list of frozen constraints.
 	# https://github.com/haskell/cabal/issues/1908
 
 	local app_name app_version
@@ -91,7 +91,7 @@ function freeze_implicit_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 
-	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
+	# NOTE:  Cabal automatically sets global installed constraints for installed packages, even
 	# during a dry run.  Hence, if a local constraint conflicts with an installed package, Cabal
 	# will fail to resolve dependencies.
 	# https://github.com/haskell/cabal/issues/2178
@@ -136,7 +136,7 @@ function validate_actual_constraints () {
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	# NOTE: Cabal sometimes gives different results when freezing constraints before and after
+	# NOTE:  Cabal sometimes gives different results when freezing constraints before and after
 	# installation.
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1

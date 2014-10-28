@@ -222,7 +222,12 @@ function deploy_sandbox_extra_apps () {
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${extra_app}.cabal.config"
 
-		if ! ( deploy --recursive --target='sandbox' --constraints-file="${constraints_file}" "${extra_app}" |& quote ); then
+		if ! (
+			deploy  --recursive                              \
+				--target='sandbox'                       \
+				--constraints-file="${constraints_file}" \
+				"${extra_app}" |& quote
+		); then
 			log_warning 'Failed to deploy sandbox extra apps'
 			return 1
 		fi
@@ -247,7 +252,12 @@ function deploy_slug_extra_apps () {
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${extra_app}.cabal.config"
 
-		if ! ( deploy --recursive --constraints-file="${constraints_file}" --slug-dir="${slug_dir}" "${extra_app}" |& quote ); then
+		if ! (
+			deploy  --recursive                              \
+				--constraints-file="${constraints_file}" \
+				--slug-dir="${slug_dir}"                 \
+				"${extra_app}" |& quote
+		); then
 			log_warning 'Failed to deploy slug extra apps'
 			return 1
 		fi

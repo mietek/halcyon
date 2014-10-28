@@ -25,8 +25,8 @@ function detect_app_tag () {
 	local tag_pattern
 	tag_pattern=$(
 		create_app_tag '.*' '.*' \
-			'.*' '.*'    \
-			'.*' '.*'    \
+			'.*' '.*'        \
+			'.*' '.*'        \
 			'.*' '.*'
 	) || die
 
@@ -144,7 +144,7 @@ function copy_app_source () {
 	local source_dir work_dir
 	expect_args source_dir work_dir -- "$@"
 
-	# NOTE: On a Heroku dyno, HALCYON_DIR (/app/.halcyon) is a subdirectory of source_dir (/app),
+	# NOTE:  On a Heroku dyno, HALCYON_DIR (/app/.halcyon) is a subdirectory of source_dir (/app),
 	# which means .halcyon must be excluded when copying source_dir to HALCYON_DIR/app.
 
 	tar_copy "${source_dir}" "${work_dir}" \
@@ -363,7 +363,7 @@ function prepare_app_layer () {
 
 	quote <<<"${changed_files}"
 
-	# NOTE: Restoring file modification times of unchanged files is necessary to avoid needless
+	# NOTE:  Restoring file modification times of unchanged files is necessary to avoid needless
 	# recompilation.
 
 	local unchanged_files
@@ -377,7 +377,7 @@ function prepare_app_layer () {
 		done <<<"${unchanged_files}"
 	fi
 
-	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for an
+	# NOTE:  Any build products outside dist will have to be rebuilt.  See alex or happy for an
 	# example.
 
 	rm -rf "${work_dir}/dist" || die
@@ -387,7 +387,7 @@ function prepare_app_layer () {
 	rm -rf "${HALCYON_DIR}/app" || die
 	mv "${work_dir}" "${HALCYON_DIR}/app" || die
 
-	# NOTE: With build-type: Custom, changing Setup.hs requires manually re-running configure, as
+	# NOTE:  With build-type: Custom, changing Setup.hs requires manually re-running configure, as
 	# Cabal fails to detect the change.
 	# https://github.com/mietek/haskell-on-heroku/issues/29
 
@@ -409,7 +409,7 @@ function activate_app_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	# NOTE: Creating a link to the sandbox config is necessary to allow the user to easily run Cabal
+	# NOTE:  Creating a link to the sandbox config is necessary to allow the user to easily run Cabal
 	# commands within the app layer, without using sandboxed_cabal_do.
 
 	rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
