@@ -88,7 +88,7 @@ function format_sandbox_description () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	sandbox_id=$( format_sandbox_id "${tag}" ) || die
 
-	echo "${app_label} (${sandbox_id})"
+	echo "${app_label}, ${sandbox_id}"
 }
 
 

@@ -126,7 +126,7 @@ function format_cabal_description () {
 	repo_name=$( format_cabal_repo_name "${tag}" ) || die
 	cabal_date=$( get_tag_cabal_date "${tag}" ) || die
 
-	echo "${cabal_id} (${repo_name}${cabal_date:+ ${cabal_date}})"
+	echo "${cabal_id}, ${repo_name}${cabal_date:+ ${cabal_date}}"
 }
 
 

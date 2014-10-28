@@ -28,13 +28,13 @@ function describe_storage () {
 	fi
 
 	if validate_private_storage; then
-		log_indent_pad 'External storage:' "${HALCYON_S3_BUCKET} (private)"
+		log_indent_pad 'External storage:' "${HALCYON_S3_BUCKET}, private"
 	elif ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
 		local host
 		host=$( get_public_storage_host ) || die
-		log_indent_pad 'External storage:' "${host} (public)"
+		log_indent_pad 'External storage:' "${host}, public"
 	else
-		log_indent_pad 'External storage:' '(none)'
+		log_indent_pad 'External storage:' 'none'
 	fi
 }
 
