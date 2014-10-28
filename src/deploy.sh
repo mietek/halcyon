@@ -74,7 +74,7 @@ function detect_app_executable () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_FORCE_BUILD_SANDBOX HALCYON_FORCE_BUILD_APP HALCYON_FORCE_BUILD_SLUG
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_FORCE_BUILD_SANDBOX HALCYON_FORCE_BUILD_APP HALCYON_FORCE_BUILD_SLUG
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
@@ -95,57 +95,55 @@ function deploy_layers () {
 		fi
 	fi
 
-	if ! (( HALCYON_ONLY_DEPLOY_ENV )); then
-		if ! (( HALCYON_RECURSIVE )); then
-			rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
-		fi
-
-		if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
-			! (( HALCYON_FORCE_BUILD_APP )) &&
-			! (( HALCYON_FORCE_BUILD_SLUG ))
-		then
-			log
-			if restore_slug "${tag}" "${slug_dir}"; then
-				install_slug "${tag}" "${slug_dir}" || die
-				return 0
-			fi
-		fi
-
-		local saved_sandbox saved_app
-		saved_sandbox=
-		saved_app=
-		if (( HALCYON_RECURSIVE )); then
-			if [ -d "${HALCYON_DIR}/sandbox" ]; then
-				saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
-				mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
-			fi
-			if [ -d "${HALCYON_DIR}/app" ]; then
-				saved_app=$( get_tmp_dir 'halcyon-saved-app' ) || die
-				mv "${HALCYON_DIR}/app" "${saved_app}" || die
-			fi
-		fi
-
-		log
-		install_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
-		log
-		install_app_layer "${tag}" "${source_dir}" || return 1
-		log
-		build_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
-		archive_slug "${slug_dir}" || die
-
-		if (( HALCYON_RECURSIVE )); then
-			if [ -n "${saved_sandbox}" ]; then
-				rm -rf "${HALCYON_DIR}/sandbox" || die
-				mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
-			fi
-			if [ -n "${saved_app}" ]; then
-				rm -rf "${HALCYON_DIR}/app" || die
-				mv "${saved_app}" "${HALCYON_DIR}/app" || die
-			fi
-		fi
-
-		install_slug "${tag}" "${slug_dir}" || die
+	if ! (( HALCYON_RECURSIVE )); then
+		rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
 	fi
+
+	if ! (( HALCYON_FORCE_BUILD_SANDBOX )) &&
+		! (( HALCYON_FORCE_BUILD_APP )) &&
+		! (( HALCYON_FORCE_BUILD_SLUG ))
+	then
+		log
+		if restore_slug "${tag}" "${slug_dir}"; then
+			install_slug "${tag}" "${slug_dir}" || die
+			return 0
+		fi
+	fi
+
+	local saved_sandbox saved_app
+	saved_sandbox=
+	saved_app=
+	if (( HALCYON_RECURSIVE )); then
+		if [ -d "${HALCYON_DIR}/sandbox" ]; then
+			saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
+			mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
+		fi
+		if [ -d "${HALCYON_DIR}/app" ]; then
+			saved_app=$( get_tmp_dir 'halcyon-saved-app' ) || die
+			mv "${HALCYON_DIR}/app" "${saved_app}" || die
+		fi
+	fi
+
+	log
+	install_sandbox_layer "${tag}" "${constraints}" "${source_dir}" || return 1
+	log
+	install_app_layer "${tag}" "${source_dir}" || return 1
+	log
+	build_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
+	archive_slug "${slug_dir}" || die
+
+	if (( HALCYON_RECURSIVE )); then
+		if [ -n "${saved_sandbox}" ]; then
+			rm -rf "${HALCYON_DIR}/sandbox" || die
+			mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
+		fi
+		if [ -n "${saved_app}" ]; then
+			rm -rf "${HALCYON_DIR}/app" || die
+			mv "${saved_app}" "${HALCYON_DIR}/app" || die
+		fi
+	fi
+
+	install_slug "${tag}" "${slug_dir}" || die
 
 	rm -rf "${slug_dir}" || die
 }
@@ -160,8 +158,10 @@ function deploy_env () {
 	describe_env_tag "${env_tag}" || die
 	describe_storage || die
 
-	HALCYON_ONLY_DEPLOY_ENV=1 \
-		deploy_layers "${env_tag}" '' '/dev/null' || return 1
+	log
+	install_ghc_layer "${env_tag}" '/dev/null' || return 1
+	log
+	install_cabal_layer "${env_tag}" '/dev/null' || return 1
 }
 
 
