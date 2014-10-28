@@ -119,7 +119,7 @@ function build_slug () {
 
 
 function archive_slug () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 
 	local slug_dir
 	expect_args slug_dir -- "$@"
@@ -140,6 +140,10 @@ function archive_slug () {
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${slug_dir}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
+		return 0
+	fi
+
+	if (( HALCYON_NO_DELETE )); then
 		return 0
 	fi
 

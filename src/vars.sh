@@ -17,6 +17,7 @@ function set_halcyon_vars () {
 		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
+		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
 	fi
 
 	if ! (( ${HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET:-0} )); then
@@ -145,6 +146,8 @@ function handle_command_line () {
 			export HALCYON_NO_ARCHIVE=1;;
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
+		'--no-delete')
+			export HALCYON_NO_DELETE=1;;
 
 		# Vars inherited once and reset:
 		'--constraints-file')

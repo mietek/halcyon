@@ -40,7 +40,7 @@ function describe_storage () {
 
 
 function transfer_original_file () {
-	expect_vars HALCYON_NO_DOWNLOAD_PUBLIC HALCYON_NO_UPLOAD
+	expect_vars HALCYON_NO_DOWNLOAD_PUBLIC
 
 	local original_url
 	expect_args original_url -- "$@"
@@ -122,12 +122,12 @@ function upload_stored_file () {
 
 
 function delete_stored_file () {
-	expect_vars HALCYON_NO_UPLOAD
+	expect_vars HALCYON_NO_DELETE
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_UPLOAD )) ||
+	if (( HALCYON_NO_DELETE )) ||
 		! validate_private_storage
 	then
 		return 0

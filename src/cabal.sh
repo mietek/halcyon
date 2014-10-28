@@ -391,7 +391,7 @@ function update_cabal_layer () {
 
 
 function archive_cabal_layer () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
@@ -409,6 +409,10 @@ function archive_cabal_layer () {
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	if ! upload_stored_file "${os}" "${archive_name}" || [ -z "${update_timestamp}" ]; then
+		return 0
+	fi
+
+	if (( HALCYON_NO_DELETE )); then
 		return 0
 	fi
 

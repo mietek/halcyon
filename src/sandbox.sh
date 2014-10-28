@@ -291,7 +291,7 @@ function build_sandbox_layer () {
 
 
 function archive_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
+	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" \
 		"${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 
@@ -320,7 +320,8 @@ function archive_sandbox_layer () {
 	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${file_name}"; then
 		no_delete=1
 	fi
-	if (( no_delete )); then
+
+	if (( HALCYON_NO_DELETE )) || (( no_delete )); then
 		return 0
 	fi
 
