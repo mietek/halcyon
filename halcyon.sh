@@ -34,8 +34,11 @@ function halcyon_deploy () {
 		die "Unexpected target: ${HALCYON_TARGET}"
 	fi
 
-	local env_tag
+	local cache_dir env_tag
+	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
 	env_tag=$( create_env_tag ) || die
+
+	prepare_cache "${cache_dir}" || die
 
 	if (( HALCYON_ONLY_DEPLOY_ENV )); then
 		deploy_env "${env_tag}" || return 1
@@ -45,28 +48,18 @@ function halcyon_deploy () {
 		else
 			deploy_local_app "${env_tag}" '.' || return 1
 		fi
-	elif (( ${#HALCYON_INTERNAL_ARGS[@]} == 1 )); then
-		deploy_thing "${env_tag}" "${HALCYON_INTERNAL_ARGS[0]}" || return 1
 	else
-		local index
+		local thing index
 		index=0
 		for thing in "${HALCYON_INTERNAL_ARGS[@]}"; do
 			index=$(( index + 1 ))
-			if (( index == 1 )); then
-				HALCYON_NO_CLEAN_CACHE=1 \
-					deploy_thing "${env_tag}" "${thing}" || return 1
-			else
+			if (( index > 1 )); then
 				log
 				log
-				if (( index == ${#HALCYON_INTERNAL_ARGS[@]} )); then
-					HALCYON_NO_PREPARE_CACHE=1 \
-						deploy_thing "${env_tag}" "${thing}" || return 1
-				else
-					HALCYON_NO_PREPARE_CACHE=1 \
-					HALCYON_NO_CLEAN_CACHE=1   \
-						deploy_thing "${env_tag}" "${thing}" || return 1
-				fi
 			fi
+			deploy_thing "${env_tag}" "${thing}" || return 1
 		done
 	fi
+
+	clean_cache "${cache_dir}" || die
 }

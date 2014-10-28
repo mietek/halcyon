@@ -27,8 +27,7 @@ function set_halcyon_vars () {
 		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
 
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
-		export HALCYON_NO_PREPARE_CACHE="${HALCYON_NO_PREPARE_CACHE:-0}"
-		export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
+		export HALCYON_NO_CACHE="${HALCYON_NO_CACHE:-0}"
 	fi
 
 	if ! (( ${HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET:-0} )); then
@@ -234,12 +233,8 @@ function handle_command_line () {
 
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
-		'--no-prepare-cache');&
-		'--no-cache-prepare')
-			export HALCYON_NO_PREPARE_CACHE=1;;
-		'--no-clean-cache');&
-		'--no-cache-clean')
-			export HALCYON_NO_CLEAN_CACHE=1;;
+		'--no-cache')
+			export HALCYON_NO_CACHE=1;;
 
 		'-'*)
 			die "Unexpected option: $1";;

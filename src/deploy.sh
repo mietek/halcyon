@@ -74,19 +74,13 @@ function detect_app_executable () {
 
 
 function deploy_layers () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_FORCE_BUILD_SANDBOX HALCYON_FORCE_BUILD_APP HALCYON_FORCE_BUILD_SLUG HALCYON_NO_PREPARE_CACHE HALCYON_NO_CLEAN_CACHE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV HALCYON_FORCE_BUILD_SANDBOX HALCYON_FORCE_BUILD_APP HALCYON_FORCE_BUILD_SLUG
 
 	local tag constraints source_dir
 	expect_args tag constraints source_dir -- "$@"
 
-	local cache_dir slug_dir
-	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
+	local slug_dir
 	slug_dir=$( get_tmp_dir 'halcyon-slug' ) || die
-
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_PREPARE_CACHE )); then
-		log
-		prepare_cache "${cache_dir}" || die
-	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
 		log
@@ -113,10 +107,6 @@ function deploy_layers () {
 			log
 			if restore_slug "${tag}" "${slug_dir}"; then
 				install_slug "${tag}" "${slug_dir}" || die
-				if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
-					log
-					clean_cache "${cache_dir}" || die
-				fi
 				return 0
 			fi
 		fi
@@ -157,12 +147,7 @@ function deploy_layers () {
 		install_slug "${tag}" "${slug_dir}" || die
 	fi
 
-	if ! (( HALCYON_RECURSIVE )) && ! (( HALCYON_NO_CLEAN_CACHE )); then
-		log
-		clean_cache "${cache_dir}" || die
-	fi
-
-	rm -rf "${cache_dir}" "${slug_dir}" || die
+	rm -rf "${slug_dir}" || die
 }
 
 
@@ -181,32 +166,24 @@ function deploy_env () {
 
 
 function prepare_env () {
-	expect_vars HALCYON_RECURSIVE HALCYON_NO_PREPARE_CACHE
+	expect_vars HALCYON_RECURSIVE
 
 	local env_tag
 	expect_args env_tag -- "$@"
-
-	local no_prepare_cache
-	no_prepare_cache="${HALCYON_NO_PREPARE_CACHE}"
 
 	if ! validate_ghc_layer "${env_tag}" >'/dev/null' ||
 		! validate_updated_cabal_layer "${env_tag}" >'/dev/null'
 	then
 		if ! (( HALCYON_RECURSIVE )); then
-			if ! HALCYON_NO_CLEAN_CACHE=1 \
-				deploy_env "${env_tag}"
-			then
+			if ! deploy_env "${env_tag}"; then
 				log_warning 'Cannot deploy environment'
 				return 1
 			fi
 			log
-			no_prepare_cache=1
 		else
 			die 'Cannot use existing environment'
 		fi
 	fi
-
-	echo "${no_prepare_cache}"
 }
 
 
@@ -222,19 +199,16 @@ function deploy_sandbox_extra_apps () {
 	local -a extra_apps
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 
-	local extra_app no_space
-	no_space=1
+	local extra_app index
+	index=0
 	for extra_app in "${extra_apps[@]}"; do
-		if (( no_space )); then
-			no_space=0
-		else
+		index=$(( index + 1 ))
+		if (( index > 1 )); then
 			log
 			log
 		fi
-
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${extra_app}.cabal.config"
-
 		if ! (
 			deploy  --recursive                              \
 				--target='sandbox'                       \
@@ -260,19 +234,16 @@ function deploy_slug_extra_apps () {
 	local -a extra_apps
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
 
-	local extra_app no_space
-	no_space=1
+	local extra_app index
+	index=0
 	for extra_app in "${extra_apps[@]}"; do
-		if (( no_space )); then
-			no_space=0
-		else
+		index=$(( index + 1 ))
+		if (( index > 1 )); then
 			log
 			log
 		fi
-
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${extra_app}.cabal.config"
-
 		if ! (
 			deploy  --install-dir="${slug_dir}"              \
 				--recursive                              \
@@ -488,8 +459,7 @@ function deploy_local_app () {
 	local env_tag local_dir
 	expect_args env_tag local_dir -- "$@"
 
-	local no_prepare_cache
-	no_prepare_cache=$( prepare_env "${env_tag}" ) || return 1
+	prepare_env "${env_tag}" || return 1
 
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon-copied-source' ) || die
@@ -500,9 +470,7 @@ function deploy_local_app () {
 		die 'Cannot detect app label'
 	fi
 
-	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
-		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
-	then
+	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
 		log_warning 'Cannot deploy app'
 		return 1
 	fi
@@ -513,8 +481,7 @@ function deploy_cloned_app () {
 	local env_tag url
 	expect_args env_tag url -- "$@"
 
-	local no_prepare_cache
-	no_prepare_cache=$( prepare_env "${env_tag}" ) || return 1
+	prepare_env "${env_tag}" || return 1
 
 	log 'Cloning app'
 
@@ -530,9 +497,7 @@ function deploy_cloned_app () {
 	fi
 
 	log
-	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
-		deploy_app "${env_tag}" "${app_label}" "${source_dir}"
-	then
+	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
 		log_warning 'Cannot deploy app'
 		return 1
 	fi
@@ -547,9 +512,10 @@ function deploy_unpacked_app () {
 	local env_tag thing
 	expect_args env_tag thing -- "$@"
 
-	local must_error no_prepare_cache
+	local must_error
 	must_error="${HALCYON_RECURSIVE}"
-	no_prepare_cache=$( prepare_env "${env_tag}" ) || return 1
+
+	prepare_env "${env_tag}" || return 1
 
 	log 'Unpacking app'
 
@@ -558,9 +524,7 @@ function deploy_unpacked_app () {
 	app_label=$( unpack_app "${thing}" "${must_error}" "${work_dir}" ) || die
 
 	log
-	if ! HALCYON_NO_PREPARE_CACHE="${no_prepare_cache}" \
-		deploy_app "${env_tag}" "${app_label}" "${work_dir}/${app_label}"
-	then
+	if ! deploy_app "${env_tag}" "${app_label}" "${work_dir}/${app_label}"; then
 		log_warning 'Cannot deploy app'
 		return 1
 	fi
