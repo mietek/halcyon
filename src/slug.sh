@@ -187,8 +187,11 @@ function install_slug () {
 		install_dir="${HALCYON_INSTALL_DIR}"
 	fi
 
+	# NOTE: When / is read-only, but HALCYON_DIR is not, both cp -Rp and tar_copy fail, but cp -R succeeds.
+
 	rm -f "${slug_dir}/.halcyon-tag" || die
-	tar_copy "${slug_dir}" "${install_dir}" |& quote || die
+	mkdir -p "${install_dir}" || die
+	cp -R "${slug_dir}/." "${install_dir}" |& quote || die
 
 	if ! (( HALCYON_NO_ANNOUNCE_SLUG )); then
 		log 'App deployed:                            ' "${description}"
