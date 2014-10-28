@@ -221,6 +221,11 @@ function install_slug () {
 	mkdir -p "${install_dir}" || die
 	cp -R "${slug_dir}/." "${install_dir}" |& quote || die
 
+	if ! (( HALCYON_NO_ANNOUNCE_SLUG )); then
+		log
+		log 'App deployed:                            ' "${description}"
+	fi
+
 	# NOTE: Creating a link to the Cabal config is necessary to allow the user to easily run Cabal
 	# commands, without using cabal_do.
 
@@ -238,9 +243,5 @@ function install_slug () {
 	if [ -d "${HALCYON_DIR}/sandbox" ] && [ -d "${HALCYON_DIR}/app" ]; then
 		rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
 		ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${HALCYON_DIR}/app/cabal.sandbox.config" || die
-	fi
-
-	if ! (( HALCYON_NO_ANNOUNCE_SLUG )); then
-		log 'App deployed:                            ' "${description}"
 	fi
 }
