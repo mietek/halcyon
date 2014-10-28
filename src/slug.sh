@@ -147,19 +147,7 @@ function archive_slug () {
 	archive_prefix=$( format_slug_archive_name_prefix ) || die
 	archive_pattern=$( format_slug_archive_name_pattern "${app_tag}" ) || die
 
-	local old_names
-	if old_names=$(
-		list_stored_files "${os}/ghc-${ghc_version}/${archive_prefix}" |
-		sed "s:${os}/ghc-${ghc_version}/::" |
-		filter_matching "^${archive_pattern}$" |
-		filter_not_matching "^${archive_name//./\.}$" |
-		match_at_least_one
-	); then
-		local old_name
-		while read -r old_name; do
-			delete_stored_file "${os}/ghc-${ghc_version}" "${old_name}" || die
-		done <<<"${old_names}"
-	fi
+	delete_old_stored_files "${os}/ghc-${ghc_version}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
 
 

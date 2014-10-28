@@ -416,19 +416,7 @@ function archive_cabal_layer () {
 	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" ) || die
 	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" ) || die
 
-	local old_names
-	if old_names=$(
-		list_stored_files "${os}/${updated_prefix}" |
-		sed "s:${os}/::" |
-		filter_matching "^${updated_pattern}$" |
-		filter_not_matching "^${archive_name//./\.}$" |
-		match_at_least_one
-	); then
-		local old_name
-		while read -r old_name; do
-			delete_stored_file "${os}" "${old_name}" || die
-		done <<<"${old_names}"
-	fi
+	delete_old_stored_files "${os}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
 }
 
 

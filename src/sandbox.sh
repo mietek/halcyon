@@ -143,6 +143,22 @@ function format_partial_sandbox_constraints_file_name_pattern () {
 }
 
 
+function format_sandbox_common_file_name_prefix () {
+	echo "halcyon-sandbox-"
+}
+
+
+function format_sandbox_common_file_name_pattern () {
+	local tag
+	expect_args tag -- "$@"
+
+	local app_label
+	app_label=$( get_tag_app_label "${tag}" ) || die
+
+	echo "halcyon-sandbox-.*-${app_label}.(tar.xz|cabal.config)"
+}
+
+
 function map_sandbox_constraints_file_name_to_app_label () {
 	local file_name
 	expect_args file_name -- "$@"
@@ -283,20 +299,36 @@ function archive_sandbox_layer () {
 		return 0
 	fi
 
-	local sandbox_tag archive_name file_name
+	local sandbox_tag os ghc_version archive_name file_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
+	os=$( get_tag_os "${sandbox_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	file_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
+
+	log 'Archiving sandbox layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	tar_create "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	cp -p "${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
 
-	local os ghc_version
-	os=$( get_tag_os "${sandbox_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
-	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || true
-	upload_stored_file "${os}/ghc-${ghc_version}" "${file_name}" || true
+	local no_delete
+	no_delete=0
+	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
+		no_delete=1
+	fi
+	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${file_name}"; then
+		no_delete=1
+	fi
+	if (( no_delete )); then
+		return 0
+	fi
+
+	local common_prefix common_pattern
+	common_prefix=$( format_sandbox_common_file_name_prefix ) || die
+	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" ) || die
+
+	delete_old_stored_files "${os}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${file_name})" || die
 }
 
 

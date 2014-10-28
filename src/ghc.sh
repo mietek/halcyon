@@ -324,17 +324,15 @@ function archive_ghc_layer () {
 		return 0
 	fi
 
-	local ghc_tag archive_name
+	local ghc_tag os archive_name
 	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag") || die
+	os=$( get_tag_os "${ghc_tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	log 'Archiving GHC layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-
-	local os
-	os=$( get_tag_os "${ghc_tag}" ) || die
 	upload_stored_file "${os}" "${archive_name}" || true
 }
 

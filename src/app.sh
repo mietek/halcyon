@@ -242,16 +242,16 @@ function archive_app_layer () {
 		return 0
 	fi
 
-	local app_tag archive_name
+	local app_tag os ghc_version archive_name
 	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die
+	os=$( get_tag_os "${app_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_app_archive_name "${app_tag}" ) || die
+
+	log 'Archiving app layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/app" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-
-	local os ghc_version
-	os=$( get_tag_os "${app_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || true
 }
 
