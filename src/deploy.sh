@@ -222,8 +222,16 @@ function deploy_sandbox_extra_apps () {
 	local -a extra_apps
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 
-	local extra_app
+	local extra_app no_space
+	no_space=1
 	for extra_app in "${extra_apps[@]}"; do
+		if (( no_space )); then
+			no_space=0
+		else
+			log
+			log
+		fi
+
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${extra_app}.cabal.config"
 
@@ -252,8 +260,16 @@ function deploy_slug_extra_apps () {
 	local -a extra_apps
 	extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
 
-	local extra_app
+	local extra_app no_space
+	no_space=1
 	for extra_app in "${extra_apps[@]}"; do
+		if (( no_space )); then
+			no_space=0
+		else
+			log
+			log
+		fi
+
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${extra_app}.cabal.config"
 
