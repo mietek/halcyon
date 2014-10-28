@@ -1,21 +1,21 @@
 function create_tag () {
 	expect_vars HALCYON_DIR
 
-	local app_label target                                             \
-		source_hash constraints_hash                               \
-		ghc_version ghc_magic_hash                                 \
-		cabal_version cabal_magic_hash cabal_repo update_timestamp \
+	local app_label target                                       \
+		source_hash constraints_hash                         \
+		ghc_version ghc_magic_hash                           \
+		cabal_version cabal_magic_hash cabal_repo cabal_date \
 		sandbox_magic_hash app_magic_hash
-	expect_args app_label target                                       \
-		source_hash constraints_hash                               \
-		ghc_version ghc_magic_hash                                 \
-		cabal_version cabal_magic_hash cabal_repo update_timestamp \
+	expect_args app_label target                                 \
+		source_hash constraints_hash                         \
+		ghc_version ghc_magic_hash                           \
+		cabal_version cabal_magic_hash cabal_repo cabal_date \
 		sandbox_magic_hash app_magic_hash -- "$@"
 
 	local os
 	os=$( detect_os ) || die
 
-	echo -e "1\t${os}\t${HALCYON_DIR}\t${app_label}\t${target}\t${source_hash}\t${constraints_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_repo}\t${update_timestamp}\t${sandbox_magic_hash}\t${app_magic_hash}"
+	echo -e "1\t${os}\t${HALCYON_DIR}\t${app_label}\t${target}\t${source_hash}\t${constraints_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_repo}\t${cabal_date}\t${sandbox_magic_hash}\t${app_magic_hash}"
 }
 
 
@@ -115,7 +115,7 @@ function get_tag_cabal_repo () {
 }
 
 
-function get_tag_update_timestamp () {
+function get_tag_cabal_date () {
 	local tag
 	expect_args tag -- "$@"
 

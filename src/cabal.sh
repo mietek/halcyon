@@ -26,13 +26,13 @@ function map_cabal_version_to_original_url () {
 
 
 function create_cabal_tag () {
-	local cabal_version cabal_magic_hash cabal_repo update_timestamp
-	expect_args cabal_version cabal_magic_hash cabal_repo update_timestamp -- "$@"
+	local cabal_version cabal_magic_hash cabal_repo cabal_date
+	expect_args cabal_version cabal_magic_hash cabal_repo cabal_date -- "$@"
 
-	create_tag '' ''                                                                       \
-		'' ''                                                                          \
-		'' ''                                                                          \
-		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${update_timestamp}" \
+	create_tag '' ''                                                                 \
+		'' ''                                                                    \
+		'' ''                                                                    \
+		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}" \
 		'' '' || die
 }
 
@@ -69,15 +69,15 @@ function derive_bare_cabal_tag () {
 
 
 function derive_updated_cabal_tag () {
-	local tag update_timestamp
-	expect_args tag update_timestamp -- "$@"
+	local tag cabal_date
+	expect_args tag cabal_date -- "$@"
 
 	local cabal_version cabal_magic_hash cabal_repo
 	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
-	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${update_timestamp}" || die
+	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}" || die
 }
 
 
@@ -121,20 +121,12 @@ function format_cabal_description () {
 	local tag
 	expect_args tag -- "$@"
 
-	local cabal_id repo_name update_timestamp
+	local cabal_id repo_name cabal_date
 	cabal_id=$( format_cabal_id "${tag}" ) || die
 	repo_name=$( format_cabal_repo_name "${tag}" ) || die
-	update_timestamp=$( get_tag_update_timestamp "${tag}" ) || die
-	if [ -z "${update_timestamp}" ]; then
-		echo "${cabal_id} (${repo_name})"
-		return 0
-	fi
+	cabal_date=$( get_tag_cabal_date "${tag}" ) || die
 
-	local timestamp_date timestamp_time
-	timestamp_date=$( get_timestamp_date "${update_timestamp}" ) || die
-	timestamp_time=$( get_timestamp_time "${update_timestamp}" ) || die
-
-	echo "${cabal_id} (${repo_name} ${timestamp_date} ${timestamp_time} UTC)"
+	echo "${cabal_id} (${repo_name}${cabal_date:+ ${cabal_date}})"
 }
 
 
@@ -162,12 +154,12 @@ function format_cabal_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
-	local cabal_id repo_name update_timestamp
+	local cabal_id repo_name cabal_date
 	cabal_id=$( format_cabal_id "${tag}" ) || die
 	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
-	update_timestamp=$( get_tag_update_timestamp "${tag}" ) || die
+	cabal_date=$( get_tag_cabal_date "${tag}" ) || die
 
-	echo "halcyon-cabal-${cabal_id}-${repo_name}${update_timestamp:+-${update_timestamp}}.tar.xz"
+	echo "halcyon-cabal-${cabal_id}-${repo_name}${cabal_date:+-${cabal_date}}.tar.xz"
 }
 
 
@@ -207,14 +199,14 @@ function format_updated_cabal_archive_name_pattern () {
 }
 
 
-function map_updated_cabal_archive_name_to_timestamp () {
+function map_updated_cabal_archive_name_to_date () {
 	local archive_name
 	expect_args archive_name -- "$@"
 
-	local timestamp_etc
-	timestamp_etc="${archive_name#halcyon-cabal-*-*-}"
+	local date_etc
+	date_etc="${archive_name#halcyon-cabal-*-*-}"
 
-	echo "${timestamp_etc%.tar.xz}"
+	echo "${date_etc%.tar.xz}"
 }
 
 
@@ -378,10 +370,10 @@ function update_cabal_layer () {
 		die 'Failed to update Cabal layer'
 	fi
 
-	local cabal_tag update_timestamp
+	local cabal_tag cabal_date
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	update_timestamp=$( format_timestamp ) || die
-	derive_updated_cabal_tag "${cabal_tag}" "${update_timestamp}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
+	cabal_date=$( format_date ) || die
+	derive_updated_cabal_tag "${cabal_tag}" "${cabal_date}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	local updated_size
 	updated_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
@@ -398,17 +390,17 @@ function archive_cabal_layer () {
 		return 0
 	fi
 
-	local cabal_tag os archive_name update_timestamp
+	local cabal_tag os archive_name cabal_date
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	os=$( get_tag_os "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
-	update_timestamp=$( get_tag_update_timestamp "${cabal_tag}" ) || die
+	cabal_date=$( get_tag_cabal_date "${cabal_tag}" ) || die
 
 	log 'Archiving Cabal layer'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	if ! upload_stored_file "${os}" "${archive_name}" || [ -z "${update_timestamp}" ]; then
+	if ! upload_stored_file "${os}" "${archive_name}" || [ -z "${cabal_date}" ]; then
 		return 0
 	fi
 
@@ -436,13 +428,13 @@ function validate_bare_cabal_layer () {
 }
 
 
-function validate_updated_cabal_timestamp () {
-	local candidate_timestamp
-	expect_args candidate_timestamp -- "$@"
+function validate_updated_cabal_date () {
+	local candidate_date
+	expect_args candidate_date -- "$@"
 
-	local yesterday_timestamp
-	yesterday_timestamp=$( format_timestamp -d yesterday ) || die
-	[[ "${candidate_timestamp}" > "${yesterday_timestamp}" ]] || return 1
+	local yesterday_date
+	yesterday_date=$( format_date -d yesterday ) || die
+	[[ "${candidate_date}" > "${yesterday_date}" ]] || return 1
 }
 
 
@@ -456,9 +448,9 @@ function validate_updated_cabal_layer () {
 	updated_pattern=$( derive_updated_cabal_tag_pattern "${tag}" ) || die
 	candidate_tag=$( detect_tag "${HALCYON_DIR}/cabal/.halcyon-tag" "${updated_pattern}" ) || return 1
 
-	local candidate_timestamp
-	candidate_timestamp=$( get_tag_update_timestamp "${candidate_tag}" ) || die
-	validate_updated_cabal_timestamp "${candidate_timestamp}" || return 1
+	local candidate_date
+	candidate_date=$( get_tag_cabal_date "${candidate_tag}" ) || die
+	validate_updated_cabal_date "${candidate_date}" || return 1
 
 	echo "${candidate_tag}"
 }
@@ -477,9 +469,9 @@ function match_updated_cabal_archive_name () {
 		match_exactly_one
 	) || return 1
 
-	local candidate_timestamp
-	candidate_timestamp=$( map_updated_cabal_archive_name_to_timestamp "${candidate_name}" ) || die
-	validate_updated_cabal_timestamp "${candidate_timestamp}" || return 1
+	local candidate_date
+	candidate_date=$( map_updated_cabal_archive_name_to_date "${candidate_name}" ) || die
+	validate_updated_cabal_date "${candidate_date}" || return 1
 
 	echo "${candidate_name}"
 }
