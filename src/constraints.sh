@@ -279,9 +279,10 @@ function locate_partial_sandbox_layers () {
 
 		results+=( "${partial_tag}" )
 	done <<<"${partial_names}"
+
 	[ -n "${results[@]:+_}" ] || return 1
 
-	( IFS=$'\n' && echo "${results[*]:-}" )
+	( IFS=$'\n' && echo "${results[*]}" )
 }
 
 
@@ -340,9 +341,11 @@ function select_best_partial_sandbox_layer () {
 		fi
 	done <<<"${partial_tags}"
 
+	[ -n "${results[@]:+_}" ] || return 1
+
 	local result
 	result=$(
-		( IFS=$'\n' && echo "${results[*]:-}" ) |
+		( IFS=$'\n' && echo "${results[*]}" ) |
 		filter_not_matching '^0 ' |
 		sort_naturally |
 		filter_last |
