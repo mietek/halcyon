@@ -95,9 +95,6 @@ function build_slug () {
 	local tag source_dir slug_dir
 	expect_args tag source_dir slug_dir -- "$@"
 
-	local target
-	target=$( get_tag_target "${tag}" ) || die
-
 	log 'Building slug'
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]; then
@@ -117,7 +114,7 @@ function build_slug () {
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
 	if ! (
-		export PATH="${slug_dir}${HALCYON_DIR}/${target}:${PATH}" &&
+		export PATH="${slug_dir}${HALCYON_DIR}/${HALCYON_TARGET}:${PATH}" &&
 		sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${slug_dir}" --verbose=0 |& quote
 	); then
 		die 'Failed to copy app'

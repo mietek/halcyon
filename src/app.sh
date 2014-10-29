@@ -144,7 +144,7 @@ function copy_app_source () {
 
 
 function build_app_layer () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_TARGET
 
 	local tag must_copy must_configure source_dir
 	expect_args tag must_copy must_configure source_dir -- "$@"
@@ -164,11 +164,8 @@ function build_app_layer () {
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'
 
-		local target
-		target=$( get_tag_target "${tag}" ) || die
-
 		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure \
-			--prefix="${HALCYON_DIR}/${target}" |& quote
+			--prefix="${HALCYON_DIR}/${HALCYON_TARGET}" |& quote
 		then
 			die 'Failed to configure app'
 		fi
