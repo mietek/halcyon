@@ -8,6 +8,7 @@ function set_halcyon_vars () {
 		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
+		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-}"
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
@@ -22,7 +23,6 @@ function set_halcyon_vars () {
 
 		export HALCYON_NO_COPY_LOCAL_SOURCE="${HALCYON_NO_COPY_LOCAL_SOURCE:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
-		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
@@ -117,6 +117,8 @@ function handle_command_line () {
 			export HALCYON_S3_ACL="${s3_acl}";;
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
+		'--no-public-storage')
+			export HALCYON_NO_PUBLIC_STORAGE=1;;
 
 		'--install-dir')
 			shift
@@ -157,8 +159,6 @@ function handle_command_line () {
 			export HALCYON_NO_COPY_LOCAL_SOURCE=1;;
 		'--no-build-dependencies')
 			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
-		'--no-download-public')
-			export HALCYON_NO_DOWNLOAD_PUBLIC=1;;
 		'--no-archive')
 			export HALCYON_NO_ARCHIVE=1;;
 		'--no-upload')

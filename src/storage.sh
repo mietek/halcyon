@@ -23,17 +23,17 @@ function use_private_storage () {
 
 
 function describe_storage () {
-	expect_vars HALCYON_NO_DOWNLOAD_PUBLIC
+	expect_vars HALCYON_NO_PUBLIC_STORAGE
 
 	if (( HALCYON_RECURSIVE )); then
 		return 0
 	fi
 
-	if use_private_storage && ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
+	if use_private_storage && ! (( HALCYON_NO_PUBLIC_STORAGE )); then
 		log_indent_pad 'External storage:' 'private and public'
 	elif use_private_storage; then
 		log_indent_pad 'External storage:' 'private'
-	elif ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
+	elif ! (( HALCYON_NO_PUBLIC_STORAGE )); then
 		log_indent_pad 'External storage:' 'public'
 	else
 		log_indent_pad 'External storage:' 'none'
@@ -42,7 +42,7 @@ function describe_storage () {
 
 
 function download_stored_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_DOWNLOAD_PUBLIC
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
@@ -55,7 +55,7 @@ function download_stored_file () {
 		return 0
 	fi
 
-	! (( HALCYON_NO_DOWNLOAD_PUBLIC )) || return 1
+	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
 
 	local public_url
 	public_url=$( format_public_storage_url "${object}" ) || die
@@ -82,7 +82,7 @@ function upload_stored_file () {
 
 
 function transfer_stored_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_DOWNLOAD_PUBLIC
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
@@ -95,7 +95,7 @@ function transfer_stored_file () {
 		return 0
 	fi
 
-	! (( HALCYON_NO_DOWNLOAD_PUBLIC )) || return 1
+	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
 
 	local public_url
 	public_url=$( format_public_storage_url "${object}" ) || die
@@ -107,7 +107,7 @@ function transfer_stored_file () {
 
 
 function transfer_original_stored_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_DOWNLOAD_PUBLIC
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
 	local original_url
 	expect_args original_url -- "$@"
@@ -164,7 +164,7 @@ function list_public_stored_files () {
 	public_url=$( format_public_storage_url "${prefix:+?prefix=${prefix}}" ) || die
 
 	local listing
-	if (( HALCYON_NO_DOWNLOAD_PUBLIC )) || ! listing=$( curl_list_s3 "${public_url}" ); then
+	if (( HALCYON_NO_PUBLIC_STORAGE )) || ! listing=$( curl_list_s3 "${public_url}" ); then
 		return 0
 	fi
 
