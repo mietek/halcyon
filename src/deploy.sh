@@ -85,9 +85,9 @@ function do_deploy_env () {
 		then
 			die 'Cannot use existing environment'
 		fi
+		return 0
 	fi
 
-	log
 	install_ghc_layer "${tag}" "${source_dir}" || return 1
 
 	log
@@ -96,6 +96,8 @@ function do_deploy_env () {
 
 
 function deploy_env () {
+	expect_vars HALCYON_RECURSIVE
+
 	local source_dir
 	expect_args source_dir -- "$@"
 
@@ -108,16 +110,19 @@ function deploy_env () {
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
 	cabal_repo=$( determine_cabal_repo ) || die
 
-	log 'Deploying environment'
+	if ! (( HALCYON_RECURSIVE )); then
+		log 'Deploying environment'
 
-	log_indent_pad 'GHC version:' "${ghc_version}"
-	[ -n "${ghc_magic_hash}" ] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
+		log_indent_pad 'GHC version:' "${ghc_version}"
+		[ -n "${ghc_magic_hash}" ] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
-	log_indent_pad 'Cabal version:' "${cabal_version}"
-	[ -n "${cabal_magic_hash}" ] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
-	log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
+		log_indent_pad 'Cabal version:' "${cabal_version}"
+		[ -n "${cabal_magic_hash}" ] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
+		log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
 
-	describe_storage || die
+		describe_storage || die
+		log
+	fi
 
 	local tag
 	tag=$(
@@ -142,7 +147,6 @@ function do_deploy_app_from_slug () {
 	local slug_dir
 	slug_dir=$( get_tmp_dir 'halcyon-slug' ) || die
 
-	log
 	restore_slug "${tag}" "${slug_dir}" || return 1
 
 	activate_slug "${tag}" "${slug_dir}" || die
@@ -181,6 +185,7 @@ function deploy_app_from_slug () {
 	log_indent_pad 'Source hash:' "${source_hash:0:7}"
 
 	describe_storage || die
+	log
 
 	local tag
 	tag=$(
@@ -192,6 +197,7 @@ function deploy_app_from_slug () {
 	) || die
 
 	if ! do_deploy_app_from_slug "${tag}"; then
+		log
 		return 1
 	fi
 }
@@ -271,9 +277,9 @@ function do_deploy_app () {
 		fi
 	else
 		rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
+		log
 	fi
 
-	log
 	install_sandbox_layer "${tag}" "${source_dir}" "${constraints}" || return 1
 
 	log
@@ -337,7 +343,6 @@ function deploy_app () {
 		format_constraints <<<"${constraints}" >"${source_dir}/cabal.config" || die
 		source_hash=$( hash_tree "${source_dir}" ) || die
 	else
-		log
 		log 'Deploying app'
 
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
@@ -394,13 +399,14 @@ function deploy_app () {
 		if (( HALCYON_RECURSIVE )); then
 			log_error 'Cannot use implicit constraints'
 			log_error 'Expected cabal.config with explicit constraints'
+			log
 			help_add_explicit_constraints "${constraints}"
 			die
 		fi
 		log_warning 'Using implicit constraints'
 		log_warning 'Expected cabal.config with explicit constraints'
-		help_add_explicit_constraints "${constraints}"
 		log
+		help_add_explicit_constraints "${constraints}"
 	fi
 
 	local tag
@@ -412,6 +418,7 @@ function deploy_app () {
 			"${sandbox_magic_hash}" "${app_magic_hash}" || die
 	) || die
 
+	log
 	if ! do_deploy_app "${tag}" "${source_dir}" "${constraints}"; then
 		log_warning 'Cannot deploy app'
 		return 1
@@ -488,7 +495,10 @@ function deploy_unpacked_app () {
 	work_dir=$( get_tmp_dir 'halcyon-unpacked-source' ) || die
 
 	deploy_env '/dev/null' || return 1
-	log
+
+	if ! (( HALCYON_RECURSIVE )); then
+		log
+	fi
 
 	log 'Unpacking app'
 
