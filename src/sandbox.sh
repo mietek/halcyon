@@ -205,11 +205,50 @@ function copy_sandbox_magic () {
 }
 
 
+function deploy_sandbox_extra_apps () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	if ! [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
+		return 0
+	fi
+
+	log 'Deploying sandbox extra apps'
+
+	local -a sandbox_apps
+	sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
+
+	local sandbox_app index
+	index=0
+	for sandbox_app in "${sandbox_apps[@]}"; do
+		index=$(( index + 1 ))
+		if (( index > 1 )); then
+			log
+			log
+		fi
+
+		local -a deploy_args
+		deploy_args=( --recursive --target='sandbox' "${sandbox_app}" )
+
+		local sandbox_file
+		sandbox_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${sandbox_app}.cabal.config"
+		if [ -f "${sandbox_file}" ]; then
+			deploy_args+=( --constraints-file="${sandbox_file}" )
+		fi
+
+		if ! ( deploy "${deploy_args[@]}" |& quote ); then
+			log_warning 'Cannot deploy sandbox extra apps'
+			return 1
+		fi
+	done
+}
+
+
 function build_sandbox_layer () {
 	expect_vars HALCYON_DIR
 
-	local tag constraints must_create source_dir
-	expect_args tag constraints must_create source_dir -- "$@"
+	local tag source_dir constraints must_create
+	expect_args tag source_dir constraints must_create -- "$@"
 	if (( must_create )); then
 		expect_no_existing "${HALCYON_DIR}/sandbox"
 	else
@@ -234,9 +273,10 @@ function build_sandbox_layer () {
 		log 'Executing sandbox pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
-				"${tag}" "${constraints}" "${source_dir}" |& quote
+				"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
-			die 'Failed to execute sandbox pre-build hook'
+			log_warning 'Cannot execute sandbox pre-build hook'
+			return 1
 		fi
 		log 'Sandbox pre-build hook executed'
 	fi
@@ -273,9 +313,10 @@ function build_sandbox_layer () {
 		log 'Executing sandbox post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
-				"${tag}" "${constraints}" "${source_dir}" |& quote
+				"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
-			die 'Failed to execute sandbox post-build hook'
+			log_warning 'Cannot execute sandbox post-build hook'
+			return 1
 		fi
 		log 'Sandbox post-build hook executed'
 	fi
@@ -388,8 +429,8 @@ function restore_sandbox_layer () {
 function install_matching_sandbox_layer () {
 	expect_vars HALCYON_DIR
 
-	local tag constraints matching_tag source_dir
-	expect_args tag constraints matching_tag source_dir -- "$@"
+	local tag source_dir constraints matching_tag
+	expect_args tag source_dir constraints matching_tag -- "$@"
 
 	local constraints_hash matching_hash matching_description
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
@@ -411,7 +452,7 @@ function install_matching_sandbox_layer () {
 
 	local must_create
 	must_create=0
-	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
+	build_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return 1
 }
 
 
@@ -430,8 +471,8 @@ function announce_sandbox_layer () {
 function install_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_SANDBOX
 
-	local tag constraints source_dir
-	expect_args tag constraints source_dir -- "$@"
+	local tag source_dir constraints
+	expect_args tag source_dir constraints -- "$@"
 
 	if ! (( HALCYON_FORCE_BUILD_SANDBOX )); then
 		if restore_sandbox_layer "${tag}"; then
@@ -440,7 +481,7 @@ function install_sandbox_layer () {
 
 		local matching_tag
 		if matching_tag=$( locate_best_matching_sandbox_layer "${tag}" "${constraints}" ) &&
-			install_matching_sandbox_layer "${tag}" "${constraints}" "${matching_tag}" "${source_dir}"
+			install_matching_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${matching_tag}"
 		then
 			archive_sandbox_layer || die
 			announce_sandbox_layer "${tag}" || die
@@ -456,9 +497,12 @@ function install_sandbox_layer () {
 	local must_create
 	must_create=1
 	rm -rf "${HALCYON_DIR}/sandbox" || die
-	build_sandbox_layer "${tag}" "${constraints}" "${must_create}" "${source_dir}" || die
+	if ! build_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${must_create}"; then
+		log_warning 'Cannot build sandbox layer'
+		return 1
+	fi
 	archive_sandbox_layer || die
 	announce_sandbox_layer "${tag}" || die
 
-	validate_actual_constraints "${tag}" "${constraints}" "${source_dir}" || die
+	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
 }

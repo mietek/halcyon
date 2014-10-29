@@ -74,6 +74,23 @@ function map_constraints_to_ghc_version () {
 }
 
 
+function determine_ghc_version () {
+	local constraints
+	expect_args constraints -- "$@"
+
+	local ghc_version
+	if [ -n "${HALCYON_GHC_VERSION:+_}" ]; then
+		ghc_version="${HALCYON_GHC_VERSION}"
+	elif [ -n "${constraints}" ]; then
+		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
+	else
+		ghc_version=$( get_default_ghc_version ) || die
+	fi
+
+	echo "${ghc_version}"
+}
+
+
 function create_ghc_tag () {
 	local ghc_version ghc_magic_hash
 	expect_args ghc_version ghc_magic_hash -- "$@"

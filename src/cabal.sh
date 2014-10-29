@@ -25,6 +25,30 @@ function map_cabal_version_to_original_url () {
 }
 
 
+function determine_cabal_version () {
+	local cabal_version
+	if [ -n "${HALCYON_CABAL_VERSION:+_}" ]; then
+		cabal_version="${HALCYON_CABAL_VERSION}"
+	else
+		cabal_version=$( get_default_cabal_version ) || die
+	fi
+
+	echo "${cabal_version}"
+}
+
+
+function determine_cabal_repo () {
+	local cabal_repo
+	if [ -n "${HALCYON_CABAL_REPO:+_}" ]; then
+		cabal_repo="${HALCYON_CABAL_REPO}"
+	else
+		cabal_repo=$( get_default_cabal_repo ) || die
+	fi
+
+	echo "${cabal_repo}"
+}
+
+
 function create_cabal_tag () {
 	local cabal_version cabal_magic_hash cabal_repo cabal_date
 	expect_args cabal_version cabal_magic_hash cabal_repo cabal_date -- "$@"
@@ -698,4 +722,83 @@ function sandboxed_cabal_do () {
 	fi
 
 	return "${status}"
+}
+
+
+function cabal_freeze_implicit_constraints () {
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
+	# during a dry run.  Hence, if a local constraint conflicts with an installed package, Cabal
+	# will fail to resolve dependencies.
+	# https://github.com/haskell/cabal/issues/2178
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
+
+	local constraints
+	if ! constraints=$(
+		cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
+		read_dry_frozen_constraints |
+		filter_correct_constraints "${app_label}" |
+		sort_naturally
+	); then
+		quote <"${stderr}" || die
+		die 'Failed to freeze implicit constraints'
+	fi
+
+	rm -f "${stderr}" || die
+
+	echo "${constraints}"
+}
+
+
+function cabal_freeze_actual_constraints () {
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
+
+	local constraints
+	if ! constraints=$(
+		sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
+		read_dry_frozen_constraints |
+		filter_correct_constraints "${app_label}" |
+		sort_naturally
+	); then
+		quote <"${stderr}" || die
+		die 'Failed to freeze actual constraints'
+	fi
+
+	rm -f "${stderr}" || die
+
+	echo "${constraints}"
+}
+
+
+function cabal_unpack_app () {
+	local app_oid work_dir
+	expect_args app_oid work_dir -- "$@"
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || die
+
+	mkdir -p "${work_dir}" || die
+
+	local app_label
+	if ! app_label=$(
+		cabal_do "${work_dir}" unpack "${app_oid}" 2>"${stderr}" |
+		filter_matching '^Unpacking to ' |
+		match_exactly_one |
+		sed 's:^Unpacking to \(.*\)/$:\1:'
+	); then
+		quote <"${stderr}" || die
+		die 'Failed to unpack app'
+	fi
+
+	rm -rf "${stderr}" || die
+
+	echo "${app_label}"
 }

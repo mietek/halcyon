@@ -87,54 +87,9 @@ function detect_constraints () {
 }
 
 
-function freeze_implicit_constraints () {
-	local app_label source_dir
-	expect_args app_label source_dir -- "$@"
-
-	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
-	# during a dry run.  Hence, if a local constraint conflicts with an installed package, Cabal
-	# will fail to resolve dependencies.
-	# https://github.com/haskell/cabal/issues/2178
-
-	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
-
-	if ! cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
-		read_dry_frozen_constraints |
-		filter_correct_constraints "${app_label}" |
-		sort_naturally
-	then
-		quote <"${stderr}" || die
-		die 'Failed to freeze implicit constraints'
-	fi
-
-	rm -f "${stderr}" || die
-}
-
-
-function freeze_actual_constraints () {
-	local app_label source_dir
-	expect_args app_label source_dir -- "$@"
-
-	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
-
-	if ! sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
-		read_dry_frozen_constraints |
-		filter_correct_constraints "${app_label}" |
-		sort_naturally
-	then
-		quote <"${stderr}" || die
-		die 'Failed to freeze actual constraints'
-	fi
-
-	rm -f "${stderr}" || die
-}
-
-
 function validate_actual_constraints () {
-	local tag constraints source_dir
-	expect_args tag constraints source_dir -- "$@"
+	local tag source_dir constraints
+	expect_args tag source_dir constraints -- "$@"
 
 	# NOTE: Cabal sometimes gives different results when freezing constraints before and after
 	# installation.
@@ -144,7 +99,7 @@ function validate_actual_constraints () {
 	local app_label constraints_hash actual_constraints actual_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
-	actual_constraints=$( freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
+	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
 	if [ "${actual_hash}" = "${constraints_hash}" ]; then
 		return 0

@@ -49,6 +49,45 @@ function format_slug_description () {
 }
 
 
+function deploy_slug_extra_apps () {
+	local source_dir slug_dir
+	expect_args source_dir slug_dir -- "$@"
+
+	if ! [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
+		return 0
+	fi
+
+	log 'Deploying slug extra apps'
+
+	local -a slug_apps
+	slug_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
+
+	local slug_app index
+	index=0
+	for slug_app in "${slug_apps[@]}"; do
+		index=$(( index + 1 ))
+		if (( index > 1 )); then
+			log
+			log
+		fi
+
+		local -a deploy_args
+		deploy_args=( --install-dir="${slug_dir}" --recursive "${slug_app}" )
+
+		local slug_file
+		slug_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${slug_app}.cabal.config"
+		if [ -f "${slug_file}" ]; then
+			deploy_args+=( --constraints-file="${slug_file}" )
+		fi
+
+		if ! ( deploy "${deploy_args[@]}" |& quote ); then
+			log_warning 'Cannot deploy slug extra apps'
+			return 1
+		fi
+	done
+}
+
+
 function build_slug () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
@@ -67,7 +106,7 @@ function build_slug () {
 			"${source_dir}/.halcyon-magic/slug-pre-build-hook" \
 				"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
-			log_warning 'Failed to execute slug pre-build hook'
+			log_warning 'Cannot execute slug pre-build hook'
 			return 1
 		fi
 		log 'Slug pre-build hook executed'
@@ -102,7 +141,7 @@ function build_slug () {
 			"${source_dir}/.halcyon-magic/slug-post-build-hook" \
 				"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
-			log_warning 'Failed to execute slug post-build hook'
+			log_warning 'Cannot execute slug post-build hook'
 			return 1
 		fi
 		log 'Slug post-build hook executed'
@@ -129,17 +168,16 @@ function archive_slug () {
 		return 0
 	fi
 
-	local app_tag os ghc_version archive_name
+	local app_tag os archive_name
 	app_tag=$( detect_app_tag "${slug_dir}/.halcyon-tag" ) || die
 	os=$( get_tag_os "${app_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_slug_archive_name "${app_tag}" ) || die
 
 	log 'Archiving slug'
 
 	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${slug_dir}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
+	if ! upload_stored_file "${os}" "${archive_name}"; then
 		return 0
 	fi
 
@@ -151,7 +189,7 @@ function archive_slug () {
 	archive_prefix=$( format_slug_archive_name_prefix ) || die
 	archive_pattern=$( format_slug_archive_name_pattern "${app_tag}" ) || die
 
-	delete_matching_private_stored_files "${os}/ghc-${ghc_version}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${os}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
 
 
@@ -171,9 +209,8 @@ function restore_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	local os ghc_version archive_name
+	local os archive_name
 	os=$( get_tag_os "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
 
 	log 'Restoring slug'
@@ -183,7 +220,7 @@ function restore_slug () {
 		! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 	then
 		rm -rf "${slug_dir}" || die
-		if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! transfer_stored_file "${os}" "${archive_name}" ||
 			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${slug_dir}" ||
 			! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 		then

@@ -25,10 +25,6 @@ function use_private_storage () {
 function describe_storage () {
 	expect_vars HALCYON_NO_PUBLIC_STORAGE
 
-	if (( HALCYON_RECURSIVE )); then
-		return 0
-	fi
-
 	if use_private_storage && ! (( HALCYON_NO_PUBLIC_STORAGE )); then
 		log_indent_pad 'External storage:' 'private and public'
 	elif use_private_storage; then

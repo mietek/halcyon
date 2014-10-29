@@ -28,38 +28,38 @@ function halcyon_deploy () {
 	export -a HALCYON_INTERNAL_ARGS
 	handle_command_line "$@" || die
 
-	if [ "${HALCYON_TARGET}" != 'sandbox' ] &&
-		[ "${HALCYON_TARGET}" != 'slug' ]
-	then
+	if [ "${HALCYON_TARGET}" != 'sandbox' ] && [ "${HALCYON_TARGET}" != 'slug' ]; then
 		die "Unexpected target: ${HALCYON_TARGET}"
 	fi
 
-	local cache_dir env_tag
+	local cache_dir
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
-	env_tag=$( create_env_tag ) || die
 
 	prepare_cache "${cache_dir}" || die
 
 	if (( HALCYON_ONLY_DEPLOY_ENV )); then
-		deploy_env "${env_tag}" || return 1
+		deploy_env '/dev/null' || return 1
 	elif [ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]; then
 		if ! detect_app_label '.'; then
-			deploy_env "${env_tag}" || return 1
+			deploy_env '/dev/null' || return 1
 		else
-			deploy_local_app "${env_tag}" '.' || return 1
+			deploy_local_app '.' || return 1
 		fi
 	else
-		local thing index
+		local app_oid index
 		index=0
-		for thing in "${HALCYON_INTERNAL_ARGS[@]}"; do
+		for app_oid in "${HALCYON_INTERNAL_ARGS[@]}"; do
 			index=$(( index + 1 ))
 			if (( index > 1 )); then
 				log
 				log
 			fi
-			deploy_thing "${env_tag}" "${thing}" || return 1
+
+			deploy_app_oid "${app_oid}" || return 1
 		done
 	fi
 
 	clean_cache "${cache_dir}" || die
+
+	rm -rf "${cache_dir}" || die
 }
