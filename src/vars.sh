@@ -4,12 +4,6 @@ function set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED:-0} )); then
 		export HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED=1
 
-		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
-		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
-		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
-		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
-		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
-
 		export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-}"
 		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
@@ -26,6 +20,12 @@ function set_halcyon_vars () {
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
+
+		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
+		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
+		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
+		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
+		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 		export HALCYON_NO_CACHE="${HALCYON_NO_CACHE:-0}"
@@ -93,33 +93,6 @@ function handle_command_line () {
 			export HALCYON_CACHE_DIR="${1#*=}";;
 
 		# Vars set once and inherited:
-		'--aws-access-key-id')
-			shift
-			expect_args aws_access_key_id -- "$@"
-			export HALCYON_AWS_ACCESS_KEY_ID="${aws_access_key_id}";;
-		'--aws-access-key-id='*)
-			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
-		'--aws-secret-access-key')
-			shift
-			expect_args aws_secret_access_key -- "$@"
-			export HALCYON_AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}";;
-		'--aws-secret-access-key='*)
-			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
-		'--s3-bucket')
-			shift
-			expect_args s3_bucket -- "$@"
-			export HALCYON_S3_BUCKET="${s3_bucket}";;
-		'--s3-bucket='*)
-			export HALCYON_S3_BUCKET="${1#*=}";;
-		'--s3-acl')
-			shift
-			expect_args s3_acl -- "$@"
-			export HALCYON_S3_ACL="${s3_acl}";;
-		'--s3-acl='*)
-			export HALCYON_S3_ACL="${1#*=}";;
-		'--no-public-storage')
-			export HALCYON_NO_PUBLIC_STORAGE=1;;
-
 		'--install-dir')
 			shift
 			expect_args install_dir -- "$@"
@@ -165,6 +138,33 @@ function handle_command_line () {
 			export HALCYON_NO_UPLOAD=1;;
 		'--no-delete')
 			export HALCYON_NO_DELETE=1;;
+
+		'--aws-access-key-id')
+			shift
+			expect_args aws_access_key_id -- "$@"
+			export HALCYON_AWS_ACCESS_KEY_ID="${aws_access_key_id}";;
+		'--aws-access-key-id='*)
+			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
+		'--aws-secret-access-key')
+			shift
+			expect_args aws_secret_access_key -- "$@"
+			export HALCYON_AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}";;
+		'--aws-secret-access-key='*)
+			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
+		'--s3-bucket')
+			shift
+			expect_args s3_bucket -- "$@"
+			export HALCYON_S3_BUCKET="${s3_bucket}";;
+		'--s3-bucket='*)
+			export HALCYON_S3_BUCKET="${1#*=}";;
+		'--s3-acl')
+			shift
+			expect_args s3_acl -- "$@"
+			export HALCYON_S3_ACL="${s3_acl}";;
+		'--s3-acl='*)
+			export HALCYON_S3_ACL="${1#*=}";;
+		'--no-public-storage')
+			export HALCYON_NO_PUBLIC_STORAGE=1;;
 
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
