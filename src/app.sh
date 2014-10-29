@@ -144,12 +144,7 @@ function copy_app_source () {
 	local source_dir work_dir
 	expect_args source_dir work_dir -- "$@"
 
-	# NOTE: On a Heroku dyno, HALCYON_DIR (/app/.halcyon) is a subdirectory of source_dir (/app),
-	# which means .halcyon must be excluded when copying source_dir to HALCYON_DIR/app.
-
 	tar_copy "${source_dir}" "${work_dir}" \
-		--exclude '.halcyon'           \
-		--exclude '.haskell-on-heroku' \
 		--exclude '.git'               \
 		--exclude '.ghc'               \
 		--exclude '.cabal'             \
