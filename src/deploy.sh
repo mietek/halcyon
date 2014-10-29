@@ -208,8 +208,10 @@ function deploy_sandbox_extra_apps () {
 			log
 			log
 		fi
+
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${extra_app}.cabal.config"
+
 		if ! (
 			deploy  --recursive                              \
 				--target='sandbox'                       \
@@ -243,8 +245,10 @@ function deploy_slug_extra_apps () {
 			log
 			log
 		fi
+
 		local constraints_file
 		constraints_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${extra_app}.cabal.config"
+
 		if ! (
 			deploy  --install-dir="${slug_dir}"              \
 				--recursive                              \
@@ -259,8 +263,10 @@ function deploy_slug_extra_apps () {
 
 
 function unpack_app () {
-	local thing must_error work_dir
-	expect_args thing must_error work_dir -- "$@"
+	expect_vars HALCYON_RECURSIVE
+
+	local thing work_dir
+	expect_args thing work_dir -- "$@"
 
 	local stderr
 	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || die
@@ -278,7 +284,7 @@ function unpack_app () {
 		die 'Failed to unpack app'
 	fi
 	if [ "${app_label}" != "${thing}" ]; then
-		if (( must_error )); then
+		if (( HALCYON_RECURSIVE )); then
 			log_error "Cannot use implicit version of ${thing}"
 			die 'Expected app label with explicit version'
 		fi
@@ -293,21 +299,16 @@ function unpack_app () {
 
 
 function prepare_sandbox_extra_apps () {
-	expect_vars HALCYON_RECURSIVE
-
 	local source_dir
 	expect_args source_dir -- "$@"
 
 	local -a extra_apps
 	extra_apps=()
 
-	local must_error
-	must_error="${HALCYON_RECURSIVE}"
 	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
 		extra_apps=( ${HALCYON_SANDBOX_EXTRA_APPS} )
 	elif [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 		extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
-		must_error=1
 	fi
 	if [ -z "${extra_apps[@]:+_}" ]; then
 		return 0
@@ -328,15 +329,13 @@ function prepare_sandbox_extra_apps () {
 
 	local extra_app
 	for extra_app in "${extra_apps[@]}"; do
-		local app_label constraints_file
-		app_label=$( unpack_app "${extra_app}" "${must_error}" "${work_dir}" ) || die
+		local app_label
+		app_label=$( unpack_app "${extra_app}" "${work_dir}" ) || die
+
+		local constraints_file
 		constraints_file="${constraints_dir}/${app_label}.cabal.config"
 
 		if ! [ -f "${constraints_file}" ]; then
-			if (( must_error )); then
-				log_error "Cannot use implicit constraints for ${app_label}"
-				die "Expected ${constraints_file##${source_dir}/} with explicit constraints"
-			fi
 			log_warning "Using implicit constraints for ${app_label}"
 			log_warning "Expected ${constraints_file##${source_dir}/} with explicit constraints"
 		fi
@@ -351,21 +350,16 @@ function prepare_sandbox_extra_apps () {
 
 
 function prepare_slug_extra_apps () {
-	expect_vars HALCYON_RECURSIVE
-
 	local source_dir
 	expect_args source_dir -- "$@"
 
 	local -a extra_apps
 	extra_apps=()
 
-	local must_error
-	must_error="${HALCYON_RECURSIVE}"
 	if [ -n "${HALCYON_SLUG_EXTRA_APPS:+_}" ]; then
 		extra_apps=( ${HALCYON_SLUG_EXTRA_APPS} )
 	elif [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
 		extra_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
-		must_error=1
 	fi
 	if [ -z "${extra_apps[@]:+_}" ]; then
 		return 0
@@ -386,15 +380,13 @@ function prepare_slug_extra_apps () {
 
 	local extra_app
 	for extra_app in "${extra_apps[@]}"; do
-		local app_label constraints_file
-		app_label=$( unpack_app "${extra_app}" "${must_error}" "${work_dir}" ) || die
+		local app_label
+		app_label=$( unpack_app "${extra_app}" "${work_dir}" ) || die
+
+		local constraints_file
 		constraints_file="${constraints_dir}/${app_label}.cabal.config"
 
 		if ! [ -f "${constraints_file}" ]; then
-			if (( must_error )); then
-				log_error "Cannot use implicit constraints for ${app_label}"
-				die "Expected ${constraints_file##${source_dir}/} with explicit constraints"
-			fi
 			log_warning "Using implicit constraints for ${app_label}"
 			log_warning "Expected ${constraints_file##${source_dir}/} with explicit constraints"
 		fi
@@ -518,13 +510,8 @@ function deploy_cloned_app () {
 
 
 function deploy_unpacked_app () {
-	expect_vars HALCYON_RECURSIVE
-
 	local env_tag thing
 	expect_args env_tag thing -- "$@"
-
-	local must_error
-	must_error="${HALCYON_RECURSIVE}"
 
 	prepare_env "${env_tag}" || return 1
 
@@ -532,7 +519,7 @@ function deploy_unpacked_app () {
 
 	local work_dir app_label
 	work_dir=$( get_tmp_dir 'halcyon-unpacked-source' ) || die
-	app_label=$( unpack_app "${thing}" "${must_error}" "${work_dir}" ) || die
+	app_label=$( unpack_app "${thing}" "${work_dir}" ) || die
 
 	log
 	if ! deploy_app "${env_tag}" "${app_label}" "${work_dir}/${app_label}"; then
