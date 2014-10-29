@@ -20,6 +20,7 @@ function set_halcyon_vars () {
 
 		export HALCYON_ONLY_DEPLOY_ENV="${HALCYON_ONLY_DEPLOY_ENV:-0}"
 
+		export HALCYON_NO_COPY_LOCAL_SOURCE="${HALCYON_NO_COPY_LOCAL_SOURCE:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
 		export HALCYON_NO_DOWNLOAD_PUBLIC="${HALCYON_NO_DOWNLOAD_PUBLIC:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
@@ -152,6 +153,8 @@ function handle_command_line () {
 		'--cabal-remote-repo='*)
 			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
 
+		'--no-copy-local-source')
+			export HALCYON_NO_COPY_LOCAL_SOURCE=1;;
 		'--no-build-dependencies')
 			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
 		'--no-download-public')

@@ -457,14 +457,20 @@ function deploy_app () {
 
 
 function deploy_local_app () {
+	expect_vars HALCYON_NO_COPY_LOCAL_SOURCE
+
 	local env_tag local_dir
 	expect_args env_tag local_dir -- "$@"
 
 	prepare_env "${env_tag}" || return 1
 
 	local source_dir
-	source_dir=$( get_tmp_dir 'halcyon-copied-source' ) || die
-	copy_app_source "${local_dir}" "${source_dir}" || die
+	if ! (( HALCYON_NO_COPY_LOCAL_SOURCE )); then
+		source_dir=$( get_tmp_dir 'halcyon-copied-source' ) || die
+		copy_app_source "${local_dir}" "${source_dir}" || die
+	else
+		source_dir="${local_dir}"
+	fi
 
 	local app_label
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
@@ -474,6 +480,10 @@ function deploy_local_app () {
 	if ! deploy_app "${env_tag}" "${app_label}" "${source_dir}"; then
 		log_warning 'Cannot deploy app'
 		return 1
+	fi
+
+	if ! (( HALCYON_NO_COPY_LOCAL_SOURCE )); then
+		rm -rf "${source_dir}" || die
 	fi
 }
 
