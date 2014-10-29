@@ -493,7 +493,7 @@ function match_updated_cabal_archive_name () {
 	updated_pattern=$( format_updated_cabal_archive_name_pattern "${tag}" ) || die
 	candidate_name=$(
 		filter_matching "^${updated_pattern}$" |
-		sort_naturally |
+		sort_natural -u |
 		filter_last |
 		match_exactly_one
 	) || return 1
@@ -752,7 +752,7 @@ function cabal_freeze_implicit_constraints () {
 		cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
 		filter_correct_constraints "${app_label}" |
-		sort_naturally
+		sort_natural
 	); then
 		quote <"${stderr}" || die
 		die 'Failed to freeze implicit constraints'
@@ -776,7 +776,7 @@ function cabal_freeze_actual_constraints () {
 		sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
 		read_dry_frozen_constraints |
 		filter_correct_constraints "${app_label}" |
-		sort_naturally
+		sort_natural
 	); then
 		quote <"${stderr}" || die
 		die 'Failed to freeze actual constraints'

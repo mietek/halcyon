@@ -62,7 +62,7 @@ function detect_constraints () {
 	constraints=$(
 		read_constraints <"${source_dir}/cabal.config" |
 		filter_correct_constraints "${app_label}" |
-		sort_naturally
+		sort_natural
 	) || die
 
 	local -A package_version_map
@@ -328,7 +328,7 @@ function locate_best_matching_sandbox_layer () {
 		sed "s:${os}/ghc-${ghc_version}/::" |
 		filter_matching "^${partial_pattern}$" |
 		filter_not_matching "^${file_name}$" |
-		sort_naturally |
+		sort_natural -u |
 		match_at_least_one
 	) || return 1
 
