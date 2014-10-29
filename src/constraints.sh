@@ -149,8 +149,8 @@ function validate_partial_constraints_file () {
 
 	local file_name short_hash_etc short_hash candidate_hash
 	file_name=$( basename "${candidate_file}" ) || die
-	short_hash_etc="${file_name#halcyon-constraints-}"
-	short_hash="${short_hash_etc%%-*}"
+	short_hash_etc="${file_name#halcyon-sandbox-constraints-}"
+	short_hash="${short_hash_etc%%[-.]*}"
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
 
 	if [ "${candidate_hash:0:7}" != "${short_hash}" ]; then
@@ -161,7 +161,7 @@ function validate_partial_constraints_file () {
 }
 
 
-function locate_first_full_sandbox_layer () {
+function match_full_sandbox_layer () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local tag all_names
@@ -203,7 +203,7 @@ function locate_first_full_sandbox_layer () {
 }
 
 
-function locate_partial_sandbox_layers () {
+function list_partial_sandbox_layers () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local tag constraints all_names
@@ -216,12 +216,11 @@ function locate_partial_sandbox_layers () {
 	partial_names=$(
 		filter_not_matching "^${full_pattern}$" <<<"${all_names}" |
 		match_at_least_one
-	) || return 1
+	) || return 0
 
 	log 'Examining partially matching sandbox layers'
 
-	local partial_name partial_file partial_hash status
-	status=1
+	local partial_name partial_file partial_hash
 	while read -r partial_name; do
 		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
@@ -239,14 +238,11 @@ function locate_partial_sandbox_layers () {
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" ) || die
 
 		echo "${partial_tag}"
-		status=0
 	done <<<"${partial_names}"
-
-	return "${status}"
 }
 
 
-function select_best_partial_sandbox_layer () {
+function score_partial_sandbox_layers () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local constraints partial_tags
@@ -260,10 +256,9 @@ function select_best_partial_sandbox_layer () {
 		package_version_map["${package}"]="${version}"
 	done <<<"${constraints}"
 
-	log 'Selecting best partially matching sandbox layer'
+	log 'Scoring partially matching sandbox layers'
 
-	local partial_tag partial_name partial_file status
-	status=1
+	local partial_tag partial_name partial_file
 	while read -r partial_tag; do
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" ) || die
 		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
@@ -295,20 +290,17 @@ function select_best_partial_sandbox_layer () {
 		if [ -n "${score}" ]; then
 			local pad
 			pad='       '
-			log_indent "${pad:0:$(( 7 - ${#score} ))}" "${description}"
+			log_indent "${pad:0:$(( 7 - ${#score} ))}${score}" "${description}"
 
 			if (( score )); then
 				echo "${score} ${partial_tag}"
-				status=1
 			fi
 		fi
 	done <<<"${partial_tags}"
-
-	return "${status}"
 }
 
 
-function locate_best_matching_sandbox_layer () {
+function match_sandbox_layer () {
 	expect_vars HALCYON_NO_BUILD_DEPENDENCIES
 	local tag constraints
 	expect_args tag constraints -- "$@"
@@ -320,7 +312,7 @@ function locate_best_matching_sandbox_layer () {
 	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
 	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" ) || die
 
-	log 'Locating matching sandbox layers'
+	log 'Locating sandbox layers'
 
 	local all_names
 	all_names=$(
@@ -333,7 +325,7 @@ function locate_best_matching_sandbox_layer () {
 	) || return 1
 
 	local full_tag
-	if full_tag=$( locate_first_full_sandbox_layer "${tag}" "${all_names}" ); then
+	if full_tag=$( match_full_sandbox_layer "${tag}" "${all_names}" ); then
 		echo "${full_tag}"
 		return 0
 	fi
@@ -342,18 +334,16 @@ function locate_best_matching_sandbox_layer () {
 		return 1
 	fi
 
-	local partial_tags
-	if partial_tags=$( locate_partial_sandbox_layers "${tag}" "${constraints}" "${all_names}" ); then
-		local result
-		if result=$(
-			select_best_partial_sandbox_layer "${constraints}" "${partial_tags}" |
-			sort_natural |
-			filter_last |
-			match_exactly_one
-		); then
-			echo "${result#* }"
-			return 0
-		fi
+	local partial_tags result
+	partial_tags=$( list_partial_sandbox_layers "${tag}" "${constraints}" "${all_names}" ) || die
+	if result=$(
+		score_partial_sandbox_layers "${constraints}" "${partial_tags}" |
+		sort_natural |
+		filter_last |
+		match_exactly_one
+	); then
+		echo "${result#* }"
+		return 0
 	fi
 
 	return 1

@@ -160,7 +160,7 @@ function map_sandbox_constraints_file_name_to_app_label () {
 	expect_args file_name -- "$@"
 
 	local app_label_etc
-	app_label_etc="${file_name#halcyon-sandbox-*-}"
+	app_label_etc="${file_name#halcyon-sandbox-constraints-*-}"
 
 	echo "${app_label_etc%.cabal.config}"
 }
@@ -478,7 +478,7 @@ function install_sandbox_layer () {
 		fi
 
 		local matching_tag
-		if matching_tag=$( locate_best_matching_sandbox_layer "${tag}" "${constraints}" ) &&
+		if matching_tag=$( match_sandbox_layer "${tag}" "${constraints}" ) &&
 			install_matching_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${matching_tag}"
 		then
 			archive_sandbox_layer || die
