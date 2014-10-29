@@ -14,7 +14,7 @@ function format_public_storage_url () {
 }
 
 
-function validate_private_storage () {
+function use_private_storage () {
 	[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] || return 1
 	[ -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] || return 1
 	[ -n "${HALCYON_S3_BUCKET:+_}" ] || return 1
@@ -29,9 +29,9 @@ function describe_storage () {
 		return 0
 	fi
 
-	if validate_private_storage && ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
+	if use_private_storage && ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
 		log_indent_pad 'External storage:' 'private and public'
-	elif validate_private_storage; then
+	elif use_private_storage; then
 		log_indent_pad 'External storage:' 'private'
 	elif ! (( HALCYON_NO_DOWNLOAD_PUBLIC )); then
 		log_indent_pad 'External storage:' 'public'
@@ -53,7 +53,7 @@ function transfer_original_file () {
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 	expect_no_existing "${file}"
 
-	if validate_private_storage &&
+	if use_private_storage &&
 		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
 	then
 		return 0
@@ -85,7 +85,7 @@ function download_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	if validate_private_storage &&
+	if use_private_storage &&
 		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
 	then
 		return 0
@@ -106,7 +106,7 @@ function upload_stored_file () {
 	expect_args prefix file_name -- "$@"
 
 	if (( HALCYON_NO_UPLOAD )) ||
-		! validate_private_storage
+		! use_private_storage
 	then
 		return 1
 	fi
@@ -130,7 +130,7 @@ function delete_private_stored_file () {
 	expect_args prefix file_name -- "$@"
 
 	if (( HALCYON_NO_DELETE )) ||
-		! validate_private_storage
+		! use_private_storage
 	then
 		return 0
 	fi
@@ -149,7 +149,7 @@ function list_private_stored_files () {
 	expect_args prefix -- "$@"
 
 	local listing
-	if ! validate_private_storage ||
+	if ! use_private_storage ||
 		! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" )
 	then
 		return 0
@@ -190,7 +190,7 @@ function delete_matching_private_stored_files () {
 	local prefix match_prefix match_pattern save_name
 	expect_args prefix match_prefix match_pattern save_name -- "$@"
 
-	if ! validate_private_storage; then
+	if ! use_private_storage; then
 		return 0
 	fi
 
