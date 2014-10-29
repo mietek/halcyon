@@ -21,11 +21,7 @@ function detect_sandbox_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$(
-		create_sandbox_tag '.*' '.*' \
-			'.*' '.*'            \
-			'.*'
-	) || die
+	tag_pattern=$( create_sandbox_tag '.*' '.*' '.*' '.*' '.*' ) || die
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then

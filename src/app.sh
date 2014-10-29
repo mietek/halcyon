@@ -17,18 +17,11 @@ function create_app_tag () {
 
 
 function detect_app_tag () {
-	expect_vars HALCYON_DIR
-
 	local tag_file
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$(
-		create_app_tag '.*' '.*' \
-			'.*' '.*'        \
-			'.*' '.*'        \
-			'.*' '.*'
-	) || die
+	tag_pattern=$( create_app_tag '.*' '.*' '.*' '.*' '.*' '.*' '.*' '.*' ) || die
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
@@ -93,10 +86,7 @@ function derive_recognized_app_tag_pattern () {
 	local app_label
 	app_label=$( get_tag_app_label "${tag}" ) || die
 
-	create_app_tag "${app_label}" '.*' \
-		'.*' '.*'                  \
-		'.*' '.*'                  \
-		'.*' '.*' || die
+	create_app_tag "${app_label}" '.*' '.*' '.*' '.*' '.*' '.*' '.*' || die
 }
 
 
