@@ -167,7 +167,7 @@ function locate_first_full_sandbox_layer () {
 	local tag all_names
 	expect_args tag all_names -- "$@"
 
-	local os ghc_version full_pattern all_names full_names
+	local os ghc_version full_pattern full_names
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
@@ -178,11 +178,9 @@ function locate_first_full_sandbox_layer () {
 
 	log 'Examining fully matching sandbox layers'
 
-	local full_name full_file
+	local full_name full_file full_hash
 	while read -r full_name; do
 		full_file="${HALCYON_CACHE_DIR}/${full_name}"
-
-		local full_hash
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
 			if ! download_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
@@ -211,25 +209,21 @@ function locate_partial_sandbox_layers () {
 	local tag constraints all_names
 	expect_args tag constraints all_names -- "$@"
 
-	local os ghc_version full_pattern all_names partial_names
+	local os ghc_version full_pattern partial_names
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
 	partial_names=$(
-		filter_not_matching "^${full_pattern}" <<<"${all_names}" |
+		filter_not_matching "^${full_pattern}$" <<<"${all_names}" |
 		match_at_least_one
 	) || return 1
 
 	log 'Examining partially matching sandbox layers'
 
-	local -a results
-	results=()
-
-	local partial_name partial_file
+	local partial_name partial_file partial_hash status
+	status=1
 	while read -r partial_name; do
 		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
-
-		local partial_hash
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
 			if ! download_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
@@ -244,12 +238,11 @@ function locate_partial_sandbox_layers () {
 		partial_label=$( map_sandbox_constraints_file_name_to_app_label "${partial_name}" ) || die
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" ) || die
 
-		results+=( "${partial_tag}" )
+		echo "${partial_tag}"
+		status=0
 	done <<<"${partial_names}"
 
-	[ -n "${results[@]:+_}" ] || return 1
-
-	( IFS=$'\n' && echo "${results[*]}" )
+	return "${status}"
 }
 
 
@@ -269,12 +262,9 @@ function select_best_partial_sandbox_layer () {
 
 	log 'Selecting best partially matching sandbox layer'
 
-	local -a results
-	results=()
-
-	local partial_tag
+	local partial_tag partial_name partial_file status
+	status=1
 	while read -r partial_tag; do
-		local partial_name partial_file
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" ) || die
 		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
 		if ! validate_partial_constraints_file "${partial_file}" >'/dev/null'; then
@@ -285,10 +275,9 @@ function select_best_partial_sandbox_layer () {
 		partial_constraints=$( read_constraints <"${partial_file}" ) || die
 		description=$( format_sandbox_description "${partial_tag}" ) || die
 
-		local score partial_package partial_version
+		local partial_package partial_version version score
 		score=0
 		while read -r partial_package partial_version; do
-			local version
 			version="${package_version_map[${partial_package}]:-}"
 			if [ -z "${version}" ]; then
 				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not needed"
@@ -304,23 +293,18 @@ function select_best_partial_sandbox_layer () {
 			score=$(( score + 1 ))
 		done <<<"${partial_constraints}"
 		if [ -n "${score}" ]; then
-			log_indent "${score}"$'\t'"${description}"
-			results+=( "${score} ${partial_tag}" )
+			local pad
+			pad='       '
+			log_indent "${pad:0:$(( 7 - ${#score} ))}" "${description}"
+
+			if (( score )); then
+				echo "${score} ${partial_tag}"
+				status=1
+			fi
 		fi
 	done <<<"${partial_tags}"
 
-	[ -n "${results[@]:+_}" ] || return 1
-
-	local result
-	result=$(
-		( IFS=$'\n' && echo "${results[*]}" ) |
-		filter_not_matching '^0 ' |
-		sort_naturally |
-		filter_last |
-		match_exactly_one
-	) || return 1
-
-	echo "${result#* }"
+	return "${status}"
 }
 
 
@@ -358,12 +342,18 @@ function locate_best_matching_sandbox_layer () {
 		return 1
 	fi
 
-	local partial_tags partial_tag
-	if partial_tags=$( locate_partial_sandbox_layers "${tag}" "${constraints}" "${all_names}" ) &&
-		partial_tag=$( select_best_partial_sandbox_layer "${constraints}" "${partial_tags}" )
-	then
-		echo "${partial_tag}"
-		return 0
+	local partial_tags
+	if partial_tags=$( locate_partial_sandbox_layers "${tag}" "${constraints}" "${all_names}" ); then
+		local result
+		if result=$(
+			select_best_partial_sandbox_layer "${constraints}" "${partial_tags}" |
+			sort_natural |
+			filter_last |
+			match_exactly_one
+		); then
+			echo "${result#* }"
+			return 0
+		fi
 	fi
 
 	return 1
