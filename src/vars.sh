@@ -38,8 +38,8 @@ function set_halcyon_vars () {
 
 		export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
 
-		export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
 		export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
+		export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
 
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:-}"
@@ -57,8 +57,8 @@ function set_halcyon_vars () {
 
 		export HALCYON_FORCE_BUILD_GHC=0
 
-		export HALCYON_FORCE_UPDATE_CABAL=0
 		export HALCYON_FORCE_BUILD_CABAL=0
+		export HALCYON_FORCE_UPDATE_CABAL=0
 
 		export HALCYON_SANDBOX_EXTRA_APPS=
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=
@@ -183,12 +183,12 @@ function handle_command_line () {
 		'--force-ghc-build')
 			export HALCYON_FORCE_BUILD_GHC=1;;
 
-		'--force-update-cabal');&
-		'--force-cabal-update')
-			export HALCYON_FORCE_UPDATE_CABAL=1;;
 		'--force-build-cabal');&
 		'--force-cabal-build')
 			export HALCYON_FORCE_BUILD_CABAL=1;;
+		'--force-update-cabal');&
+		'--force-cabal-update')
+			export HALCYON_FORCE_UPDATE_CABAL=1;;
 
 		'--only-deploy-env');&
 		'--deploy-only-env');&
