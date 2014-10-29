@@ -183,7 +183,7 @@ function restore_slug () {
 		! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 	then
 		rm -rf "${slug_dir}" || die
-		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
 			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${slug_dir}" ||
 			! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 		then

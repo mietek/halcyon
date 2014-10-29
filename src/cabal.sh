@@ -271,7 +271,9 @@ function build_cabal_layer () {
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
 		rm -rf "${cabal_dir}" || die
-		transfer_original_file "${original_url}" || die
+		if ! transfer_original_stored_file "${original_url}"; then
+			die 'Cannot download original Cabal archive'
+		fi
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
 			die 'Cannot bootstrap Cabal'
 		fi
@@ -501,7 +503,7 @@ function restore_bare_cabal_layer () {
 		! validate_bare_cabal_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/cabal" || die
-		if ! download_stored_file "${os}" "${bare_name}" ||
+		if ! transfer_stored_file "${os}" "${bare_name}" ||
 			! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
 			! validate_bare_cabal_layer "${tag}" >'/dev/null'
 		then

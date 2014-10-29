@@ -256,7 +256,9 @@ function build_ghc_layer () {
 
 	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${ghc_dir}"; then
 		rm -rf "${ghc_dir}" || die
-		transfer_original_file "${original_url}" || die
+		if ! transfer_original_stored_file "${original_url}"; then
+			die 'Cannot download original GHC archive'
+		fi
 		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${ghc_dir}"; then
 			die 'Cannot install GHC'
 		fi
@@ -373,7 +375,7 @@ function restore_ghc_layer () {
 		! validate_ghc_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/ghc" || die
-		if ! download_stored_file "${os}" "${archive_name}" ||
+		if ! transfer_stored_file "${os}" "${archive_name}" ||
 			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/ghc" ||
 			! validate_ghc_layer "${tag}" >'/dev/null'
 		then

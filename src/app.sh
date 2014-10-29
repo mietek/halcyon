@@ -318,7 +318,7 @@ function restore_app_layer () {
 		! restored_tag=$( validate_recognized_app_layer "${tag}" )
 	then
 		rm -rf "${HALCYON_DIR}/app" || die
-		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
 			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
 			! restored_tag=$( validate_recognized_app_layer "${tag}" )
 		then

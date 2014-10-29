@@ -370,7 +370,7 @@ function restore_sandbox_layer () {
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/sandbox" || die
-		if ! download_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
 			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
 			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then
