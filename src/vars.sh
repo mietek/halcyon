@@ -13,7 +13,7 @@ function set_halcyon_vars () {
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
 		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-}"
 
-		export HALCYON_ONLY_DEPLOY_ENV="${HALCYON_ONLY_DEPLOY_ENV:-0}"
+		export HALCYON_DEPLOY_ONLY_ENV="${HALCYON_DEPLOY_ONLY_ENV:-0}"
 
 		export HALCYON_NO_COPY_LOCAL_SOURCE="${HALCYON_NO_COPY_LOCAL_SOURCE:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
@@ -190,12 +190,12 @@ function handle_command_line () {
 		'--force-cabal-update')
 			export HALCYON_FORCE_UPDATE_CABAL=1;;
 
-		'--only-deploy-env');&
 		'--deploy-only-env');&
+		'--only-deploy-env');&
 		'--only-env');&
 		'--env-only');&
 		'--env')
-			export HALCYON_ONLY_DEPLOY_ENV=1;;
+			export HALCYON_DEPLOY_ONLY_ENV=1;;
 
 		'--sandbox-extra-apps');&
 		'--extra-sandbox-apps')

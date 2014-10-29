@@ -631,11 +631,14 @@ function announce_cabal_layer () {
 	description=$( format_cabal_description "${installed_tag}" ) || die
 
 	log_pad 'Cabal layer installed:' "${description}"
+
+	export HALCYON_FORCE_BUILD_CABAL=0
+	export HALCYON_FORCE_UPDATE_CABAL=0
 }
 
 
 function install_cabal_layer () {
-	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_UPDATE_CABAL HALCYON_FORCE_BUILD_CABAL
+	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"

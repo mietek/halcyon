@@ -461,6 +461,8 @@ function announce_sandbox_layer () {
 	description=$( format_sandbox_description "${installed_tag}" ) || die
 
 	log_pad 'Sandbox layer installed:' "${description}"
+
+	export HALCYON_FORCE_BUILD_SANDBOX=0
 }
 
 

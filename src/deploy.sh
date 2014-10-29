@@ -74,8 +74,6 @@ function detect_app_executable () {
 
 
 function do_deploy_env () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE
-
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
@@ -89,14 +87,15 @@ function do_deploy_env () {
 	fi
 
 	install_ghc_layer "${tag}" "${source_dir}" || return 1
-
 	log
+
 	install_cabal_layer "${tag}" "${source_dir}" || return 1
+	log
 }
 
 
 function deploy_env () {
-	expect_vars HALCYON_RECURSIVE
+	expect_vars HALCYON_RECURSIVE HALCYON_DEPLOY_ONLY_ENV
 
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -136,6 +135,10 @@ function deploy_env () {
 	if ! do_deploy_env "${tag}" "${source_dir}"; then
 		log_warning 'Cannot deploy environment'
 		return 1
+	fi
+
+	if (( HALCYON_DEPLOY_ONLY_ENV )); then
+		log_pad 'Environment deployed'
 	fi
 }
 
@@ -197,7 +200,6 @@ function deploy_app_from_slug () {
 	) || die
 
 	if ! do_deploy_app_from_slug "${tag}"; then
-		log
 		return 1
 	fi
 }
@@ -277,7 +279,6 @@ function do_deploy_app () {
 		fi
 	else
 		rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
-		log
 	fi
 
 	install_sandbox_layer "${tag}" "${source_dir}" "${constraints}" || return 1
@@ -446,10 +447,7 @@ function deploy_local_app () {
 		die 'Cannot detect app label'
 	fi
 
-	if ! deploy_app "${app_label}" "${source_dir}"; then
-		log_warning 'Cannot deploy app'
-		return 1
-	fi
+	deploy_app "${app_label}" "${source_dir}" || return 1
 
 	if ! (( HALCYON_NO_COPY_LOCAL_SOURCE )); then
 		rm -rf "${source_dir}" || die
@@ -476,10 +474,7 @@ function deploy_cloned_app () {
 	fi
 
 	log
-	if ! deploy_app "${app_label}" "${source_dir}"; then
-		log_warning 'Cannot deploy cloned app'
-		return 1
-	fi
+	deploy_app "${app_label}" "${source_dir}" || return 1
 
 	rm -rf "${source_dir}" || die
 }
@@ -495,10 +490,6 @@ function deploy_unpacked_app () {
 	work_dir=$( get_tmp_dir 'halcyon-unpacked-source' ) || die
 
 	deploy_env '/dev/null' || return 1
-
-	if ! (( HALCYON_RECURSIVE )); then
-		log
-	fi
 
 	log 'Unpacking app'
 
@@ -517,10 +508,7 @@ function deploy_unpacked_app () {
 	fi
 
 	log
-	if ! deploy_app "${app_label}" "${work_dir}/${app_label}"; then
-		log_warning 'Cannot deploy unpacked app'
-		return 1
-	fi
+	deploy_app "${app_label}" "${work_dir}/${app_label}" || return 1
 
 	rm -rf "${work_dir}" || die
 }

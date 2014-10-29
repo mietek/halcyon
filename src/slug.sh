@@ -283,6 +283,8 @@ function announce_slug () {
 	description=$( format_slug_description "${installed_tag}" ) || die
 
 	log_pad 'Slug installed:' "${description}"
+
+	export HALCYON_FORCE_BUILD_SLUG=0
 }
 
 

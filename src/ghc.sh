@@ -416,6 +416,8 @@ function announce_ghc_layer () {
 	description=$( format_ghc_description "${installed_tag}" ) || die
 
 	log_pad 'GHC layer installed:' "${description}"
+
+	export HALCYON_FORCE_BUILD_GHC=0
 }
 
 

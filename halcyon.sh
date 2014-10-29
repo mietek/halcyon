@@ -23,7 +23,7 @@ source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
 function halcyon_deploy () {
-	expect_vars HALCYON_TARGET HALCYON_ONLY_DEPLOY_ENV
+	expect_vars HALCYON_TARGET HALCYON_DEPLOY_ONLY_ENV
 
 	export -a HALCYON_INTERNAL_ARGS
 	handle_command_line "$@" || die
@@ -37,11 +37,11 @@ function halcyon_deploy () {
 
 	prepare_cache "${cache_dir}" || die
 
-	if (( HALCYON_ONLY_DEPLOY_ENV )); then
+	if (( HALCYON_DEPLOY_ONLY_ENV )); then
 		deploy_env '/dev/null' || return 1
 	elif [ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]; then
 		if ! detect_app_label '.'; then
-			deploy_env '/dev/null' || return 1
+			HALCYON_DEPLOY_ONLY_ENV=1 deploy_env '/dev/null' || return 1
 		else
 			deploy_local_app '.' || return 1
 		fi
