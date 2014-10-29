@@ -458,9 +458,12 @@ function validate_updated_cabal_date () {
 	local candidate_date
 	expect_args candidate_date -- "$@"
 
-	local yesterday_date
-	yesterday_date=$( format_date -d yesterday ) || die
-	[[ "${candidate_date}" > "${yesterday_date}" ]] || return 1
+	local today_date
+	today_date=$( format_date ) || die
+
+	if [[ "${candidate_date}" < "${today_date}" ]]; then
+		return 1
+	fi
 }
 
 
@@ -567,7 +570,9 @@ function restore_cached_updated_cabal_layer () {
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
-	[ -n "${updated_name}" ] || return 1
+	if [ -z "${updated_name}" ]; then
+		return 1
+	fi
 
 	log 'Restoring Cabal layer'
 

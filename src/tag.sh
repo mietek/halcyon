@@ -142,7 +142,10 @@ function get_tag_app_magic_hash () {
 function detect_tag () {
 	local file tag_pattern
 	expect_args file tag_pattern -- "$@"
-	[ -f "${file}" ] || return 1
+
+	if ! [ -f "${file}" ]; then
+		return 1
+	fi
 
 	local candidate_tag
 	candidate_tag=$(

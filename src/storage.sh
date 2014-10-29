@@ -15,10 +15,13 @@ function format_public_storage_url () {
 
 
 function use_private_storage () {
-	[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] || return 1
-	[ -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] || return 1
-	[ -n "${HALCYON_S3_BUCKET:+_}" ] || return 1
-	[ -n "${HALCYON_S3_ACL:+_}" ] || return 1
+	if [ -z "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] ||
+		[ -z "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] ||
+		[ -z "${HALCYON_S3_BUCKET:+_}" ] ||
+		[ -z "${HALCYON_S3_ACL:+_}" ]
+	then
+		return 1
+	fi
 }
 
 

@@ -116,7 +116,10 @@ function validate_actual_constraints () {
 function validate_full_constraints_file () {
 	local tag candidate_file
 	expect_args tag candidate_file -- "$@"
-	[ -f "${candidate_file}" ] || return 1
+
+	if ! [ -f "${candidate_file}" ]; then
+		return 1
+	fi
 
 	local candidate_constraints
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
@@ -124,7 +127,10 @@ function validate_full_constraints_file () {
 	local constraints_hash candidate_hash
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
-	[ "${candidate_hash}" = "${constraints_hash}" ] || return 1
+
+	if [ "${candidate_hash}" != "${constraints_hash}" ]; then
+		return 1
+	fi
 
 	echo "${candidate_hash}"
 }
@@ -133,7 +139,10 @@ function validate_full_constraints_file () {
 function validate_partial_constraints_file () {
 	local candidate_file
 	expect_args candidate_file -- "$@"
-	[ -f "${candidate_file}" ] || return 1
+
+	if ! [ -f "${candidate_file}" ]; then
+		return 1
+	fi
 
 	local candidate_constraints
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
@@ -143,7 +152,10 @@ function validate_partial_constraints_file () {
 	short_hash_etc="${file_name#halcyon-constraints-}"
 	short_hash="${short_hash_etc%%-*}"
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
-	[ "${candidate_hash:0:7}" = "${short_hash}" ] || return 1
+
+	if [ "${candidate_hash:0:7}" != "${short_hash}" ]; then
+		return 1
+	fi
 
 	echo "${candidate_hash}"
 }
