@@ -1,3 +1,44 @@
+function create_slug_tag () {
+	local app_label target source_hash
+	expect_args app_label target source_hash -- "$@"
+
+	create_tag "${app_label}" "${target}" \
+		"${source_hash}" ''           \
+		'' ''                         \
+		'' '' '' ''                   \
+		'' '' || die
+}
+
+
+function detect_slug_tag () {
+	local tag_file
+	expect_args tag_file -- "$@"
+
+	local tag_pattern
+	tag_pattern=$( create_slug_tag '.*' '.*' '.*' ) || die
+
+	local tag
+	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
+		die 'Cannot detect slug tag'
+	fi
+
+	echo "${tag}"
+}
+
+
+function derive_slug_tag () {
+	local tag
+	expect_args tag -- "$@"
+
+	local app_label target source_hash
+	app_label=$( get_tag_app_label "${tag}" ) || die
+	target=$( get_tag_target "${tag}" ) || die
+	source_hash=$( get_tag_source_hash "${tag}" ) || die
+
+	create_slug_tag "${app_label}" "${target}" "${source_hash}" || die
+}
+
+
 function format_slug_id () {
 	local tag
 	expect_args tag -- "$@"
@@ -7,6 +48,18 @@ function format_slug_id () {
 	source_hash=$( get_tag_source_hash "${tag}" ) || die
 
 	echo "${source_hash:0:7}-${app_label}"
+}
+
+
+function format_slug_description () {
+	local tag
+	expect_args tag -- "$@"
+
+	local app_label source_hash
+	app_label=$( get_tag_app_label "${tag}" ) || die
+	source_hash=$( get_tag_source_hash "${tag}" ) || die
+
+	echo "${app_label} (${source_hash:0:7})"
 }
 
 
@@ -34,18 +87,6 @@ function format_slug_archive_name_pattern () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 
 	echo "halcyon-slug-.*-${app_label//./\.}.tar.gz"
-}
-
-
-function format_slug_description () {
-	local tag
-	expect_args tag -- "$@"
-
-	local app_label source_hash
-	app_label=$( get_tag_app_label "${tag}" ) || die
-	source_hash=$( get_tag_source_hash "${tag}" ) || die
-
-	echo "${app_label}, ${source_hash:0:7}"
 }
 
 
@@ -125,7 +166,7 @@ function build_slug () {
 		return 1
 	fi
 
-	derive_app_tag "${tag}" >"${slug_dir}/.halcyon-tag" || die
+	derive_slug_tag "${tag}" >"${slug_dir}/.halcyon-tag" || die
 
 	local copied_size
 	copied_size=$( size_tree "${slug_dir}" ) || die
@@ -165,10 +206,10 @@ function archive_slug () {
 		return 0
 	fi
 
-	local app_tag os archive_name
-	app_tag=$( detect_app_tag "${slug_dir}/.halcyon-tag" ) || die
-	os=$( get_tag_os "${app_tag}" ) || die
-	archive_name=$( format_slug_archive_name "${app_tag}" ) || die
+	local slug_tag os archive_name
+	slug_tag=$( detect_slug_tag "${slug_dir}/.halcyon-tag" ) || die
+	os=$( get_tag_os "${slug_tag}" ) || die
+	archive_name=$( format_slug_archive_name "${slug_tag}" ) || die
 
 	log 'Archiving slug'
 
@@ -184,7 +225,7 @@ function archive_slug () {
 
 	local archive_prefix archive_pattern
 	archive_prefix=$( format_slug_archive_name_prefix ) || die
-	archive_pattern=$( format_slug_archive_name_pattern "${app_tag}" ) || die
+	archive_pattern=$( format_slug_archive_name_pattern "${slug_tag}" ) || die
 
 	delete_matching_private_stored_files "${os}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
@@ -194,9 +235,9 @@ function validate_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	local app_tag
-	app_tag=$( derive_app_tag "${tag}" ) || die
-	detect_tag "${slug_dir}/.halcyon-tag" "${app_tag//./\.}" || return 1
+	local slug_tag
+	slug_tag=$( derive_slug_tag "${tag}" ) || die
+	detect_tag "${slug_dir}/.halcyon-tag" "${slug_tag//./\.}" || return 1
 }
 
 
@@ -239,7 +280,7 @@ function announce_slug () {
 
 	local installed_tag description
 	installed_tag=$( validate_slug "${tag}" "${slug_dir}" ) || die
-	description=$( format_app_description "${installed_tag}" ) || die
+	description=$( format_slug_description "${installed_tag}" ) || die
 
 	log_pad 'Slug installed:' "${description}"
 }
@@ -253,7 +294,7 @@ function activate_slug () {
 
 	local installed_tag description
 	installed_tag=$( validate_slug "${tag}" "${slug_dir}" ) || die
-	description=$( format_app_description "${installed_tag}" ) || die
+	description=$( format_slug_description "${installed_tag}" ) || die
 
 	# NOTE: When / is read-only, but HALCYON_DIR is not, both cp -Rp and tar_copy fail, but cp -R
 	# succeeds.
