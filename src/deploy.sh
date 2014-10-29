@@ -85,10 +85,7 @@ function do_deploy_env () {
 		then
 			die 'Cannot use existing environment'
 		fi
-		return 0
 	fi
-
-	rm -rf "${HALCYON_DIR}/ghc" "${HALCYON_DIR}/cabal" || die
 
 	log
 	install_ghc_layer "${tag}" "${source_dir}" || return 1
