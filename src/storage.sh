@@ -144,6 +144,48 @@ function delete_private_stored_file () {
 }
 
 
+function list_private_stored_files () {
+	local prefix
+	expect_args prefix -- "$@"
+
+	local listing
+	if ! validate_private_storage ||
+		! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" )
+	then
+		return 0
+	fi
+
+	echo "${listing}"
+}
+
+
+function list_public_stored_files () {
+	local prefix
+	expect_args prefix -- "$@"
+
+	local public_url
+	public_url=$( format_public_storage_url "${prefix:+?prefix=${prefix}}" ) || die
+
+	local listing
+	if (( HALCYON_NO_DOWNLOAD_PUBLIC )) ||
+		! listing=$( curl_list_s3 "${public_url}" )
+	then
+		return 0
+	fi
+
+	echo "${listing}"
+}
+
+
+function list_stored_files () {
+	local prefix
+	expect_args prefix -- "$@"
+
+	list_private_stored_files "${prefix}" || die
+	list_public_stored_files "${prefix}" || die
+}
+
+
 function delete_matching_private_stored_files () {
 	local prefix match_prefix match_pattern save_name
 	expect_args prefix match_prefix match_pattern save_name -- "$@"
@@ -154,7 +196,7 @@ function delete_matching_private_stored_files () {
 
 	local old_names
 	if old_names=$(
-		list_stored_files "${prefix}/${match_prefix}" |
+		list_private_stored_files "${prefix}/${match_prefix}" |
 		sed "s:${prefix}/::" |
 		filter_matching "^${match_pattern}$" |
 		filter_not_matching "^${save_name//./\.}$" |
@@ -165,27 +207,4 @@ function delete_matching_private_stored_files () {
 			delete_private_stored_file "${prefix}" "${old_name}" || true
 		done <<<"${old_names}"
 	fi
-}
-
-
-function list_stored_files () {
-	local prefix
-	expect_args prefix -- "$@"
-
-	if validate_private_storage; then
-		local listing
-		if listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" ); then
-			echo "${listing}"
-			return 0
-		fi
-	fi
-
-	! (( HALCYON_NO_DOWNLOAD_PUBLIC )) || return 1
-
-	local public_url
-	public_url=$( format_public_storage_url "${prefix:+?prefix=${prefix}}" ) || die
-
-	local listing
-	listing=$( curl_list_s3 "${public_url}" ) || return 1
-	echo "${listing}"
 }
