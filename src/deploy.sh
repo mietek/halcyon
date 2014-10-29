@@ -200,6 +200,7 @@ function deploy_app_from_slug () {
 	) || die
 
 	if ! do_deploy_app_from_slug "${tag}"; then
+		log
 		return 1
 	fi
 }
@@ -464,7 +465,7 @@ function deploy_cloned_app () {
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon-cloned-source' ) || die
 
-	if ! git clone --depth=1 "${url}" "${source_dir}"; then
+	if ! git clone --depth=1 "${url}" "${source_dir}" |& quote; then
 		die 'Cannot clone app'
 	fi
 
