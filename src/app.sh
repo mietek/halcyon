@@ -232,7 +232,6 @@ function archive_app_layer () {
 
 	log 'Archiving app layer'
 
-	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/app" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" || true
 }
@@ -280,15 +279,16 @@ function restore_app_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os ghc_version archive_name description
+	local os ghc_version archive_name archive_file description
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_app_archive_name "${tag}" ) || die
+	archive_file="${HALCYON_CACHE_DIR}/${archive_name}"
 	description=$( format_app_description "${tag}" ) || die
 
 	if validate_identical_app_layer "${tag}" >'/dev/null'; then
 		log_pad 'Using existing app layer:' "${description}"
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
+		touch -c "${archive_file}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/app" || die
@@ -296,19 +296,19 @@ function restore_app_layer () {
 	log 'Restoring app layer'
 
 	local restored_tag
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
+	if ! tar_extract "${archive_file}" "${HALCYON_DIR}/app" ||
 		! restored_tag=$( validate_recognized_app_layer "${tag}" )
 	then
 		rm -rf "${HALCYON_DIR}/app" || die
 		if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
-			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/app" ||
+			! tar_extract "${archive_file}" "${HALCYON_DIR}/app" ||
 			! restored_tag=$( validate_recognized_app_layer "${tag}" )
 		then
 			rm -rf "${HALCYON_DIR}/app" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
+		touch -c "${archive_file}" || die
 	fi
 	description=$( format_app_description "${restored_tag}" ) || die
 

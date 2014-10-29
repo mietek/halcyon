@@ -284,25 +284,26 @@ function build_cabal_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	local ghc_version cabal_version original_url original_name cabal_dir
+	local ghc_version cabal_version original_url original_name original_file cabal_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
 	original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
 	original_name=$( basename "${original_url}" ) || die
+	original_file="${HALCYON_CACHE_DIR}/${original_name}"
 	cabal_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
 
 	log 'Building Cabal layer'
 
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
+	if ! tar_extract "${original_file}" "${cabal_dir}"; then
 		rm -rf "${cabal_dir}" || die
 		if ! transfer_original_stored_file "${original_url}"; then
 			die 'Cannot download original Cabal archive'
 		fi
-		if ! tar_extract "${HALCYON_CACHE_DIR}/${original_name}" "${cabal_dir}"; then
+		if ! tar_extract "${original_file}" "${cabal_dir}"; then
 			die 'Cannot bootstrap Cabal'
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${original_name}" || die
+		touch -c "${original_file}" || die
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]; then
@@ -424,7 +425,6 @@ function archive_cabal_layer () {
 
 	log 'Archiving Cabal layer'
 
-	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${HALCYON_DIR}/cabal" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	if ! upload_stored_file "${os}" "${archive_name}" || [ -z "${cabal_date}" ]; then
 		return 0
@@ -509,33 +509,34 @@ function restore_bare_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os bare_name description
+	local os bare_name bare_file description
 	os=$( get_tag_os "${tag}" ) || die
 	bare_name=$( format_bare_cabal_archive_name "${tag}" ) || die
+	bare_file="${HALCYON_CACHE_DIR}/${bare_name}"
 	description=$( format_cabal_description "${tag}" ) || die
 
 	if validate_bare_cabal_layer "${tag}" >'/dev/null'; then
 		log_pad 'Using existing Cabal layer:' "${description}"
-		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
+		touch -c "${bare_file}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
 	log 'Restoring Cabal layer'
 
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
+	if ! tar_extract "${bare_file}" "${HALCYON_DIR}/cabal" ||
 		! validate_bare_cabal_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/cabal" || die
 		if ! transfer_stored_file "${os}" "${bare_name}" ||
-			! tar_extract "${HALCYON_CACHE_DIR}/${bare_name}" "${HALCYON_DIR}/cabal" ||
+			! tar_extract "${bare_file}" "${HALCYON_DIR}/cabal" ||
 			! validate_bare_cabal_layer "${tag}" >'/dev/null'
 		then
 			rm -rf "${HALCYON_DIR}/cabal" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${bare_name}" || die
+		touch -c "${bare_file}" || die
 	fi
 
 	log_pad 'Cabal layer restored:' "${description}"
@@ -548,19 +549,20 @@ function restore_cached_updated_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local updated_name
+	local updated_name updated_file
 	updated_name=$(
 		find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
 		sed "s:^\./::" |
 		match_updated_cabal_archive_name "${tag}"
 	) || true
+	updated_file="${HALCYON_CACHE_DIR}/${updated_name}"
 
 	local restored_tag description
 	if restored_tag=$( validate_updated_cabal_layer "${tag}" ); then
 		description=$( format_cabal_description "${restored_tag}" ) || die
 
 		log_pad 'Using existing updated Cabal layer:' "${description}"
-		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || die
+		touch -c "${updated_file}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/cabal" || die
@@ -569,13 +571,13 @@ function restore_cached_updated_cabal_layer () {
 
 	log 'Restoring Cabal layer'
 
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
+	if ! tar_extract "${updated_file}" "${HALCYON_DIR}/cabal" ||
 		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
 	then
 		rm -rf "${HALCYON_DIR}/cabal" || die
 		return 1
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${updated_name}" || die
+		touch -c "${updated_file}" || die
 	fi
 	description=$( format_cabal_description "${restored_tag}" ) || die
 

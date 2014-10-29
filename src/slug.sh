@@ -213,7 +213,6 @@ function archive_slug () {
 
 	log 'Archiving slug'
 
-	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	tar_create "${slug_dir}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	if ! upload_stored_file "${os}" "${archive_name}"; then
 		return 0
@@ -247,26 +246,27 @@ function restore_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	local os archive_name
+	local os archive_name archive_file
 	os=$( get_tag_os "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
+	archive_file="${HALCYON_CACHE_DIR}/${archive_name}"
 
 	log 'Restoring slug'
 
 	local restored_tag description
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${slug_dir}" ||
+	if ! tar_extract "${archive_file}" "${slug_dir}" ||
 		! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 	then
 		rm -rf "${slug_dir}" || die
 		if ! transfer_stored_file "${os}" "${archive_name}" ||
-			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${slug_dir}" ||
+			! tar_extract "${archive_file}" "${slug_dir}" ||
 			! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 		then
 			rm -rf "${slug_dir}" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
+		touch -c "${archive_file}" || die
 	fi
 	description=$( format_slug_description "${restored_tag}" )
 

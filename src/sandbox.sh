@@ -345,7 +345,6 @@ function archive_sandbox_layer () {
 
 	log 'Archiving sandbox layer'
 
-	rm -f "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_CACHE_DIR}/${file_name}" || die
 	tar_create "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
 	cp -p "${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
 
@@ -388,34 +387,35 @@ function restore_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os ghc_version archive_name description
+	local os ghc_version archive_name archive_file description
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
+	archive_file="${HALCYON_CACHE_DIR}/${archive_name}"
 	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
 		log_pad 'Using existing sandbox layer:' "${description}"
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
+		touch -c "${archive_file}" || die
 		return 0
 	fi
 	rm -rf "${HALCYON_DIR}/sandbox" || die
 
 	log 'Restoring sandbox layer'
 
-	if ! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
+	if ! tar_extract "${archive_file}" "${HALCYON_DIR}/sandbox" ||
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_DIR}/sandbox" || die
 		if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
-			! tar_extract "${HALCYON_CACHE_DIR}/${archive_name}" "${HALCYON_DIR}/sandbox" ||
+			! tar_extract "${archive_file}" "${HALCYON_DIR}/sandbox" ||
 			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then
 			rm -rf "${HALCYON_DIR}/sandbox" || die
 			return 1
 		fi
 	else
-		touch -c "${HALCYON_CACHE_DIR}/${archive_name}" || die
+		touch -c "${archive_file}" || die
 	fi
 
 	log_pad 'Sandbox layer restored:' "${description}"

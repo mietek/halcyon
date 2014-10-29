@@ -166,19 +166,19 @@ function locate_first_full_sandbox_layer () {
 
 	log 'Examining fully matching sandbox layers'
 
-	local full_name
+	local full_name full_file
 	while read -r full_name; do
+		full_file="${HALCYON_CACHE_DIR}/${full_name}"
+
 		local full_hash
-		if ! full_hash=$( validate_full_constraints_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" ); then
-			rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
+		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
 			if ! download_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
-				! full_hash=$( validate_full_constraints_file "${tag}" "${HALCYON_CACHE_DIR}/${full_name}" )
+				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
 			then
-				rm -f "${HALCYON_CACHE_DIR}/${full_name}" || die
 				continue
 			fi
 		else
-			touch -c "${HALCYON_CACHE_DIR}/${full_name}" || die
+			touch -c "${full_file}" || die
 		fi
 
 		local full_label full_tag
@@ -213,19 +213,19 @@ function locate_partial_sandbox_layers () {
 	local -a results
 	results=()
 
-	local partial_name
+	local partial_name partial_file
 	while read -r partial_name; do
+		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
+
 		local partial_hash
-		if ! partial_hash=$( validate_partial_constraints_file "${HALCYON_CACHE_DIR}/${partial_name}" ); then
-			rm -f "${HALCYON_CACHE_DIR}/${partial_name}" || die
+		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
 			if ! download_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
-				! partial_hash=$( validate_partial_constraints_file "${HALCYON_CACHE_DIR}/${partial_name}" )
+				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
 			then
-				rm -f "${HALCYON_CACHE_DIR}/${partial_name}" || die
 				continue
 			fi
 		else
-			touch -c "${HALCYON_CACHE_DIR}/${partial_name}" || die
+			touch -c "${partial_file}" || die
 		fi
 
 		local partial_label partial_tag
@@ -262,14 +262,15 @@ function select_best_partial_sandbox_layer () {
 
 	local partial_tag
 	while read -r partial_tag; do
-		local partial_name
+		local partial_name partial_file
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" ) || die
-		if ! [ -f "${HALCYON_CACHE_DIR}/${partial_name}" ]; then
+		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
+		if ! validate_partial_constraints_file "${partial_file}" >'/dev/null'; then
 			continue
 		fi
 
 		local partial_constraints description
-		partial_constraints=$( read_constraints <"${HALCYON_CACHE_DIR}/${partial_name}" ) || die
+		partial_constraints=$( read_constraints <"${partial_file}" ) || die
 		description=$( format_sandbox_description "${partial_tag}" ) || die
 
 		local score partial_package partial_version
