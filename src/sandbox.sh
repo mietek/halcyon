@@ -278,7 +278,8 @@ function build_sandbox_layer () {
 	fi
 
 	if ! deploy_sandbox_extra_apps "${source_dir}"; then
-		die 'Cannot build sandbox layer'
+		log_warning 'Cannot deploy sandbox extra apps'
+		return 1
 	fi
 
 	log 'Compiling sandbox'

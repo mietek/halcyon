@@ -324,26 +324,23 @@ function prepare_app_layer () {
 	expect_args source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	log 'Examining app changes'
-
-	local work_dir
+	local work_dir all_files
 	work_dir=$( get_tmp_dir 'halcyon-changed-source' ) || die
 	copy_app_source "${source_dir}" "${work_dir}" || die
-
-	local all_files
 	all_files=$(
 		compare_tree "${HALCYON_DIR}/app" "${work_dir}" |
 		filter_not_matching '^. (\.halcyon-tag$|dist/)'
-	)
+	) || true
 
 	local changed_files
 	if ! changed_files=$(
 		filter_not_matching '^= ' <<<"${all_files}" |
 		match_at_least_one
 	); then
-		log_indent '(none)'
 		return 0
 	fi
+
+	log 'Examining app changes'
 
 	quote <<<"${changed_files}"
 

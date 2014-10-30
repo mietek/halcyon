@@ -288,7 +288,10 @@ function do_deploy_app () {
 	install_app_layer "${tag}" "${source_dir}" || return 1
 
 	log
-	build_slug "${tag}" "${source_dir}" "${slug_dir}" || return 1
+	if ! build_slug "${tag}" "${source_dir}" "${slug_dir}"; then
+		log_warning 'Cannot build slug'
+		return 1
+	fi
 	archive_slug "${slug_dir}" || die
 	announce_slug "${tag}" "${slug_dir}" || die
 

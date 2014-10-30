@@ -162,7 +162,7 @@ function build_slug () {
 	fi
 
 	if ! deploy_slug_extra_apps "${source_dir}" "${slug_dir}"; then
-		log_warning 'Cannot build slug'
+		log_warning 'Cannot deploy slug extra apps'
 		return 1
 	fi
 
