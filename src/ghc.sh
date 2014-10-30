@@ -310,7 +310,6 @@ function build_ghc_layer () {
 	fi
 
 	copy_ghc_magic "${source_dir}" || die
-	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
 	local installed_size
 	installed_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
@@ -335,6 +334,8 @@ function build_ghc_layer () {
 	local stripped_size
 	stripped_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
 	log_end "done, ${stripped_size}"
+
+	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die
 
 	rm -rf "${ghc_dir}" || die
 }

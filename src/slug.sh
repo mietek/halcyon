@@ -175,8 +175,6 @@ function build_slug () {
 		return 1
 	fi
 
-	derive_slug_tag "${tag}" >"${slug_dir}/.halcyon-tag" || die
-
 	local copied_size
 	copied_size=$( size_tree "${slug_dir}" ) || die
 
@@ -201,6 +199,8 @@ function build_slug () {
 	local stripped_size
 	stripped_size=$( size_tree "${slug_dir}" ) || die
 	log_end "done, ${stripped_size}"
+
+	derive_slug_tag "${tag}" >"${slug_dir}/.halcyon-tag" || die
 }
 
 

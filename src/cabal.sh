@@ -357,7 +357,6 @@ EOF
 	format_cabal_config "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
 	copy_cabal_magic "${source_dir}" || die
-	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	local bootstrapped_size
 	bootstrapped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
@@ -383,6 +382,8 @@ EOF
 	stripped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
 	log_end "done, ${stripped_size}"
 
+	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
+
 	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${cabal_dir}" || die
 }
 
@@ -400,12 +401,13 @@ function update_cabal_layer () {
 	local cabal_tag cabal_date
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
 	cabal_date=$( format_date ) || die
-	derive_updated_cabal_tag "${cabal_tag}" "${cabal_date}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
 	local updated_size
 	updated_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
 
 	log "Cabal layer updated, ${updated_size}"
+
+	derive_updated_cabal_tag "${cabal_tag}" "${cabal_date}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 }
 
 

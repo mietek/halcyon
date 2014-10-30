@@ -359,7 +359,6 @@ function build_sandbox_layer () {
 	format_constraints <<<"${constraints}" >"${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" || die
 
 	copy_sandbox_magic "${source_dir}" || die
-	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 
 	local compiled_size
 	compiled_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
@@ -385,6 +384,8 @@ function build_sandbox_layer () {
 	local stripped_size
 	stripped_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
 	log_end "done, ${stripped_size}"
+
+	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 }
 
 
