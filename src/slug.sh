@@ -152,6 +152,13 @@ function build_slug () {
 
 	log 'Copying app'
 
+	# NOTE: Cabal libraries may require data files at runtime.  See filestore for an example.
+	# http://www.haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
+
+	if [ -d "${HALCYON_DIR}/sandbox/share" ]; then
+		tar_copy "${HALCYON_DIR}/sandbox/share" "${slug_dir}${HALCYON_DIR}/sandbox/share" || die
+	fi
+
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
 	if ! (
