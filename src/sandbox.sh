@@ -201,6 +201,50 @@ function copy_sandbox_magic () {
 }
 
 
+function deploy_sandbox_extra_libs () {
+	expect_vars HALCYON_DIR
+
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	if ! [ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]; then
+		return 0
+	fi
+
+	local apt_dir
+	apt_dir=$( get_tmp_dir 'halcyon-sandbox-extra-libs' ) || die
+
+	log 'Deploying sandbox extra libs'
+
+	local -a apt_opts
+	apt_opts=( -o debug::nolocking='true' -o dir::cache="${apt_dir}/cache" -o dir::state="${apt_dir}/state" )
+
+	mkdir -p "${apt_dir}/cache/archives/partial" "${apt_dir}/state/lists/partial" || die
+
+	log_indent_begin 'Updating package lists...'
+
+	apt-get "${apt_opts[@]}" update --quiet --quiet |& quote || die
+
+	log_end 'done'
+
+	local -a sandbox_libs
+	sandbox_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
+
+	local sandbox_lib
+	for sandbox_lib in "${sandbox_libs[@]}"; do
+		apt-get "${apt_opts[@]}" --download-only --yes install "${sandbox_lib}" |& quote || die
+	done
+
+	local -a deb_files
+	deb_files=( "${apt_dir}/cache/archives/"*'.deb' )
+
+	local deb_file
+	for deb_file in "${deb_files[@]}"; do
+		dpkg --extract "${deb_file}" "${HALCYON_DIR}/sandbox/extra-libs" |& quote || die
+	done
+}
+
+
 function deploy_sandbox_extra_apps () {
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -277,6 +321,11 @@ function build_sandbox_layer () {
 		log 'Sandbox pre-build hook executed'
 	fi
 
+	if ! deploy_sandbox_extra_libs "${source_dir}"; then
+		log_warning 'Cannot deploy sandbox extra libs'
+		return 1
+	fi
+
 	if ! deploy_sandbox_extra_apps "${source_dir}"; then
 		log_warning 'Cannot deploy sandbox extra apps'
 		return 1
@@ -292,7 +341,16 @@ function build_sandbox_layer () {
 	# and to fail to recognise the packages have been installed.
 	# https://github.com/haskell/cabal/issues/779
 
-	if ! sandboxed_cabal_do "${source_dir}" install --dependencies-only |& quote; then
+	# TODO: Improve cross-platform compatibility.
+
+	local -a install_args
+	install_args=( --dependencies-only )
+	if [ -d "${HALCYON_DIR}/sandbox/extra-libs" ]; then
+		install_args+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/lib/x86_64-linux-gnu" )
+		install_args+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/include" )
+	fi
+
+	if ! sandboxed_cabal_do "${source_dir}" install "${install_args[@]}" |& quote; then
 		die 'Failed to compile sandbox'
 	fi
 

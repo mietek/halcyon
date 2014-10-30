@@ -41,6 +41,7 @@ function set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
 		export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
 
+		export HALCYON_SANDBOX_EXTRA_LIBS="${HALCYON_SANDBOX_EXTRA_LIBS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:-}"
 		export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
@@ -60,6 +61,7 @@ function set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_CABAL=0
 		export HALCYON_FORCE_UPDATE_CABAL=0
 
+		export HALCYON_SANDBOX_EXTRA_LIBS=
 		export HALCYON_SANDBOX_EXTRA_APPS=
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=
 		export HALCYON_FORCE_BUILD_SANDBOX=0
@@ -197,6 +199,14 @@ function handle_command_line () {
 		'--env')
 			export HALCYON_DEPLOY_ONLY_ENV=1;;
 
+		'--sandbox-extra-libs');&
+		'--extra-sandbox-libs')
+			shift
+			expect_args sandbox_extra_libs -- "$@"
+			export HALCYON_SANDBOX_EXTRA_LIBS="${sandbox_extra_libs}";;
+		'--sandbox-extra-libs='*);&
+		'--extra-sandbox-libs='*)
+			export HALCYON_SANDBOX_EXTRA_LIBS="${1#*=}";;
 		'--sandbox-extra-apps');&
 		'--extra-sandbox-apps')
 			shift

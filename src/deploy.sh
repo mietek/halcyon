@@ -217,6 +217,14 @@ function prepare_source_dir () {
 		cp -p "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die
 	fi
 
+	if [ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]; then
+		local -a sandbox_libs
+		sandbox_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
+
+		mkdir -p "${source_dir}/.halcyon-magic" || die
+		( IFS=$'\n' && echo "${sandbox_libs[*]}" >"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) || die
+	fi
+
 	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
 		local -a sandbox_apps
 		sandbox_apps=( ${HALCYON_SANDBOX_EXTRA_APPS} )
@@ -382,6 +390,12 @@ function deploy_app () {
 	log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
 
 	[ -n "${sandbox_magic_hash}" ] && log_indent_pad 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
+	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]; then
+		local -a sandbox_libs
+		sandbox_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
+
+		log_indent_pad 'Sandbox extra libs:' "${sandbox_libs[*]:-}"
+	fi
 	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 		local -a sandbox_apps
 		sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
