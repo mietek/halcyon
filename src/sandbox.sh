@@ -246,8 +246,8 @@ function deploy_sandbox_extra_libs () {
 
 
 function deploy_sandbox_extra_apps () {
-	local source_dir
-	expect_args source_dir -- "$@"
+	local tag source_dir
+	expect_args tag source_dir -- "$@"
 
 	if ! [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
 		return 0
@@ -269,6 +269,11 @@ function deploy_sandbox_extra_apps () {
 
 		local -a deploy_args
 		deploy_args=( --recursive --target='sandbox' "${sandbox_app}" )
+
+		local ghc_version cabal_version
+		ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+		cabal_version=$( get_tag_cabal_version "${tag}" ) || die
+		deploy_args+=( --ghc-version="${ghc_version}" --cabal-version="${cabal_version}" )
 
 		local sandbox_file
 		sandbox_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${sandbox_app}.cabal.config"
@@ -323,7 +328,7 @@ function build_sandbox_layer () {
 		return 1
 	fi
 
-	if ! deploy_sandbox_extra_apps "${source_dir}"; then
+	if ! deploy_sandbox_extra_apps "${tag}" "${source_dir}"; then
 		log_warning 'Cannot deploy sandbox extra apps'
 		return 1
 	fi

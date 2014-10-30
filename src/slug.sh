@@ -91,8 +91,8 @@ function format_slug_archive_name_pattern () {
 
 
 function deploy_slug_extra_apps () {
-	local source_dir slug_dir
-	expect_args source_dir slug_dir -- "$@"
+	local tag source_dir slug_dir
+	expect_args tag source_dir slug_dir -- "$@"
 
 	if ! [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
 		return 0
@@ -114,6 +114,11 @@ function deploy_slug_extra_apps () {
 
 		local -a deploy_args
 		deploy_args=( --install-dir="${slug_dir}" --recursive "${slug_app}" )
+
+		local ghc_version cabal_version
+		ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+		cabal_version=$( get_tag_cabal_version "${tag}" ) || die
+		deploy_args+=( --ghc-version="${ghc_version}" --cabal-version="${cabal_version}" )
 
 		local slug_file
 		slug_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${slug_app}.cabal.config"
@@ -165,7 +170,7 @@ function build_slug () {
 		die 'Failed to copy app'
 	fi
 
-	if ! deploy_slug_extra_apps "${source_dir}" "${slug_dir}"; then
+	if ! deploy_slug_extra_apps "${tag}" "${source_dir}" "${slug_dir}"; then
 		log_warning 'Cannot deploy slug extra apps'
 		return 1
 	fi
