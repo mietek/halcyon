@@ -616,7 +616,7 @@ function restore_updated_cabal_layer () {
 	log 'Restoring Cabal layer'
 
 	local restored_tag description
-	if ! download_stored_file "${os}" "${updated_name}" ||
+	if ! transfer_stored_file "${os}" "${updated_name}" ||
 		! tar_extract "${HALCYON_CACHE_DIR}/${updated_name}" "${HALCYON_DIR}/cabal" ||
 		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
 	then

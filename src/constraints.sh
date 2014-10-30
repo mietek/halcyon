@@ -183,7 +183,7 @@ function match_full_sandbox_layer () {
 	while read -r full_name; do
 		full_file="${HALCYON_CACHE_DIR}/${full_name}"
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
-			if ! download_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
+			if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
 			then
 				continue
@@ -225,7 +225,7 @@ function list_partial_sandbox_layers () {
 	while read -r partial_name; do
 		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
-			if ! download_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
+			if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
 			then
 				continue
