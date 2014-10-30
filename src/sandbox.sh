@@ -276,10 +276,7 @@ function deploy_sandbox_extra_apps () {
 			deploy_args+=( --constraints-file="${sandbox_file}" )
 		fi
 
-		if ! ( deploy "${deploy_args[@]}" |& quote ); then
-			log_warning 'Cannot deploy sandbox extra apps'
-			return 1
-		fi
+		( deploy "${deploy_args[@]}" |& quote ) || return 1
 	done
 }
 

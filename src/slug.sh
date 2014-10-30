@@ -121,10 +121,7 @@ function deploy_slug_extra_apps () {
 			deploy_args+=( --constraints-file="${slug_file}" )
 		fi
 
-		if ! ( deploy "${deploy_args[@]}" |& quote ); then
-			log_warning 'Cannot deploy slug extra apps'
-			return 1
-		fi
+		( deploy "${deploy_args[@]}" |& quote ) || return 1
 	done
 }
 
