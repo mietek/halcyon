@@ -409,6 +409,8 @@ function restore_ghc_layer () {
 		touch -c "${archive_file}" || die
 	fi
 
+	ghc-pkg recache || die
+
 	log_pad 'GHC layer restored:' "${description}"
 }
 
