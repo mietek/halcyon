@@ -56,6 +56,9 @@ function map_base_package_version_to_ghc_version () {
 	'4.7.0.0')	echo '7.8.2';;
 	'4.6.0.1')	echo '7.6.3';;
 	'4.6.0.0')	echo '7.6.1';;
+	'4.5.1.0')	echo '7.4.2';;
+	'4.4.1.0')	echo '7.2.2';;
+	'4.3.1.0')	echo '7.0.4';;
 	*)		die "Unexpected base package version: ${base_version}"
 	esac
 }
@@ -200,11 +203,12 @@ function prepare_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os os_description ghc_version libgmp_name libgmp_file libtinfo_file url
+	local os os_description ghc_version
 	os=$( get_tag_os "${tag}" ) || die
 	description=$( format_os_description "${os}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
+	local libgmp_name libgmp_file libtinfo_file url
 	case "${os}-ghc-${ghc_version}" in
 	'linux-ubuntu-14.04-x86_64-ghc-7.8.'*)
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
@@ -212,9 +216,9 @@ function prepare_ghc_layer () {
 		libgmp_name='libgmp.so.10'
 		url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
-	'linux-ubuntu-14.04-x86_64-ghc-7.6.'*)
+	'linux-ubuntu-14.04-x86_64-ghc-'*)
 		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured
-		# binary distribution of GHC 7.6.*. However, GHC does not use the `mpn_bdivmod`
+		# binary distribution of GHC <7.8.*. However, GHC does not use the `mpn_bdivmod`
 		# function, which is the only difference between the ABI of .3 and .10. Hence, .10 is
 		# symlinked to .3, and the .3-flavoured binary distribution is used.
 
@@ -229,13 +233,13 @@ function prepare_ghc_layer () {
 		libgmp_name='libgmp.so.10'
 		url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
-	'linux-ubuntu-12.04-x86_64-ghc-7.6.'*)
+	'linux-ubuntu-12.04-x86_64-ghc-'*)
 		libgmp_file='/usr/lib/libgmp.so.3'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_name='libgmp.so.3'
 		url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
-	'linux-ubuntu-10.04-x86_64-ghc-7.'[68]'.'*)
+	'linux-ubuntu-10.04-x86_64-ghc-'*)
 		libgmp_file='/usr/lib/libgmp.so.3'
 		libtinfo_file='/lib/libncurses.so.5'
 		libgmp_name='libgmp.so.3'
@@ -247,10 +251,10 @@ function prepare_ghc_layer () {
 	expect_existing "${libgmp_file}" "${libtinfo_file}"
 
 	mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
-	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so" || die
 	ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/${libgmp_name}" || die
 	ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
+	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
+	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so" || die
 
 	echo "${url}"
 }
