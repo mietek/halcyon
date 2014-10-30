@@ -720,8 +720,7 @@ function sandboxed_cabal_do () {
 	local status
 	status=0
 	if ! (
-		cabal_do "${work_dir}" \
-			--sandbox-config-file="${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "$@"
+		cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "$@"
 	); then
 		status=1
 	fi

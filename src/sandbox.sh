@@ -344,13 +344,13 @@ function build_sandbox_layer () {
 	# TODO: Improve cross-platform compatibility.
 
 	local -a install_args
-	install_args=( --dependencies-only )
+	install_args=( install --dependencies-only )
 	if [ -d "${HALCYON_DIR}/sandbox/extra-libs" ]; then
 		install_args+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/lib/x86_64-linux-gnu" )
 		install_args+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/include" )
 	fi
 
-	if ! sandboxed_cabal_do "${source_dir}" install "${install_args[@]}" |& quote; then
+	if ! sandboxed_cabal_do "${source_dir}" "${install_args[@]}" |& quote; then
 		die 'Failed to compile sandbox'
 	fi
 

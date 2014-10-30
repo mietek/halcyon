@@ -164,8 +164,11 @@ function build_app_layer () {
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'
 
-		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure \
-			--prefix="${HALCYON_DIR}/${HALCYON_TARGET}" |& quote
+		local -a configure_args
+		configure_args=( configure )
+		configure_args+=( --prefix="${HALCYON_DIR}/${HALCYON_TARGET}" )
+
+		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" "${configure_args[@]}" |& quote
 		then
 			die 'Failed to configure app'
 		fi
