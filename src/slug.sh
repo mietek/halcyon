@@ -297,15 +297,9 @@ function announce_slug () {
 }
 
 
-function activate_slug () {
-	expect_vars HOME HALCYON_DIR HALCYON_RECURSIVE HALCYON_NO_ANNOUNCE_DEPLOY
-
+function apply_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
-
-	local installed_tag description
-	installed_tag=$( validate_slug "${tag}" "${slug_dir}" ) || die
-	description=$( format_slug_description "${installed_tag}" ) || die
 
 	# NOTE: When / is read-only, but HALCYON_DIR is not, both cp -Rp and tar_copy fail, but cp -R
 	# succeeds.
@@ -319,29 +313,4 @@ function activate_slug () {
 	rm -f "${slug_dir}/.halcyon-tag" || die
 	mkdir -p "${install_dir}" || die
 	cp -R "${slug_dir}/." "${install_dir}" |& quote || die
-
-	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
-	# without having to use cabal_do or sandboxed_cabal_do.
-
-	if ! (( HALCYON_RECURSIVE )); then
-		if [ -d "${HALCYON_DIR}/cabal" ]; then
-			if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
-				log_warning "Expected no foreign ${HOME}/.cabal/config"
-			else
-				rm -f "${HOME}/.cabal/config" || die
-				mkdir -p "${HOME}/.cabal" || die
-				ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
-			fi
-		fi
-
-		if [ -d "${HALCYON_DIR}/sandbox" ] && [ -d "${HALCYON_DIR}/app" ]; then
-			rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
-			ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${HALCYON_DIR}/app/cabal.sandbox.config" || die
-		fi
-	fi
-
-	if ! (( HALCYON_NO_ANNOUNCE_DEPLOY )); then
-		log
-		log_pad 'App deployed:' "${description}"
-	fi
 }

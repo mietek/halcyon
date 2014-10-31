@@ -73,6 +73,44 @@ function detect_app_executable () {
 }
 
 
+function finish_deploy () {
+	expect_vars HOME HALCYON_DIR HALCYON_DEPLOY_ONLY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
+
+	local tag
+	expect_args tag -- "$@"
+
+	if ! (( HALCYON_NO_ANNOUNCE_DEPLOY )); then
+		if (( HALCYON_DEPLOY_ONLY_ENV )); then
+			log_pad 'Environment deployed'
+		else
+			local description
+			description=$( format_app_description "${tag}" ) || die
+
+			log
+			log_pad 'App deployed:' "${description}"
+		fi
+	fi
+
+	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
+	# without having to use cabal_do or sandboxed_cabal_do.
+
+	if [ -d "${HALCYON_DIR}/cabal" ]; then
+		if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
+			log_warning "Expected no foreign ${HOME}/.cabal/config"
+		else
+			rm -f "${HOME}/.cabal/config" || die
+			mkdir -p "${HOME}/.cabal" || die
+			ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
+		fi
+	fi
+
+	if [ -d "${HALCYON_DIR}/sandbox" ] && [ -d "${HALCYON_DIR}/app" ]; then
+		rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
+		ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${HALCYON_DIR}/app/cabal.sandbox.config" || die
+	fi
+}
+
+
 function do_deploy_env () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -137,9 +175,7 @@ function deploy_env () {
 		return 1
 	fi
 
-	if (( HALCYON_DEPLOY_ONLY_ENV )); then
-		log_pad 'Environment deployed'
-	fi
+	finish_deploy "${tag}" || die
 }
 
 
@@ -152,7 +188,7 @@ function do_deploy_app_from_slug () {
 
 	restore_slug "${tag}" "${slug_dir}" || return 1
 
-	activate_slug "${tag}" "${slug_dir}" || die
+	apply_slug "${tag}" "${slug_dir}" || die
 
 	rm -rf "${slug_dir}"
 }
@@ -202,6 +238,10 @@ function deploy_app_from_slug () {
 	if ! do_deploy_app_from_slug "${tag}"; then
 		log
 		return 1
+	fi
+
+	if ! (( HALCYON_RECURSIVE )); then
+		finish_deploy "${tag}" || die
 	fi
 }
 
@@ -324,7 +364,7 @@ function do_deploy_app () {
 		fi
 	fi
 
-	activate_slug "${tag}" "${slug_dir}" || die
+	apply_slug "${tag}" "${slug_dir}" || die
 
 	rm -rf "${slug_dir}" || die
 }
@@ -452,6 +492,10 @@ function deploy_app () {
 	if ! do_deploy_app "${tag}" "${source_dir}" "${constraints}"; then
 		log_warning 'Cannot deploy app'
 		return 1
+	fi
+
+	if ! (( HALCYON_RECURSIVE )); then
+		finish_deploy "${tag}" || die
 	fi
 }
 
