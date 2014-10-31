@@ -9,8 +9,12 @@ function set_halcyon_vars () {
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
+		export HALCYON_GHC_PRE_BUILD_HOOK="${HALCYON_GHC_PRE_BUILD_HOOK:-}"
+		export HALCYON_GHC_POST_BUILD_HOOK="${HALCYON_GHC_POST_BUILD_HOOK:-}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
+		export HALCYON_CABAL_PRE_BUILD_HOOK="${HALCYON_CABAL_PRE_BUILD_HOOK:-}"
+		export HALCYON_CABAL_POST_BUILD_HOOK="${HALCYON_CABAL_POST_BUILD_HOOK:-}"
 		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-}"
 
 		export HALCYON_DEPLOY_ONLY_ENV="${HALCYON_DEPLOY_ONLY_ENV:-0}"
@@ -46,12 +50,18 @@ function set_halcyon_vars () {
 		export HALCYON_SANDBOX_EXTRA_LIBS="${HALCYON_SANDBOX_EXTRA_LIBS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:-}"
+		export HALCYON_SANDBOX_PRE_BUILD_HOOK="${HALCYON_SANDBOX_PRE_BUILD_HOOK:-}"
+		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
 
+		export HALCYON_APP_PRE_BUILD_HOOK="${HALCYON_APP_PRE_BUILD_HOOK:-}"
+		export HALCYON_APP_POST_BUILD_HOOK="${HALCYON_APP_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 
 		export HALCYON_SLUG_EXTRA_APPS="${HALCYON_SLUG_EXTRA_APPS:-}"
 		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:-}"
+		export HALCYON_SLUG_PRE_BUILD_HOOK="${HALCYON_SLUG_PRE_BUILD_HOOK:-}"
+		export HALCYON_SLUG_POST_BUILD_HOOK="${HALCYON_SLUG_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_SLUG="${HALCYON_FORCE_BUILD_SLUG:-0}"
 
 		export HALCYON_NO_ANNOUNCE_DEPLOY="${HALCYON_NO_ANNOUNCE_DEPLOY:-0}"
@@ -68,12 +78,18 @@ function set_halcyon_vars () {
 		export HALCYON_SANDBOX_EXTRA_LIBS=
 		export HALCYON_SANDBOX_EXTRA_APPS=
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=
+		export HALCYON_SANDBOX_PRE_BUILD_HOOK=
+		export HALCYON_SANDBOX_POST_BUILD_HOOK=
 		export HALCYON_FORCE_BUILD_SANDBOX=0
 
+		export HALCYON_APP_PRE_BUILD_HOOK=
+		export HALCYON_APP_POST_BUILD_HOOK=
 		export HALCYON_FORCE_BUILD_APP=0
 
 		export HALCYON_SLUG_EXTRA_APPS=
 		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR=
+		export HALCYON_SLUG_PRE_BUILD_HOOK=
+		export HALCYON_SLUG_POST_BUILD_HOOK=
 		export HALCYON_FORCE_BUILD_SLUG=0
 
 		export HALCYON_NO_ANNOUNCE_DEPLOY=0
@@ -120,6 +136,18 @@ function handle_command_line () {
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
+		'--ghc-pre-build-hook')
+			shift
+			expect_args ghc_pre_build_hook -- "$@"
+			export HALCYON_GHC_PRE_BUILD_HOOK="${ghc_pre_build_hook}";;
+		'--ghc-pre-build-hook='*)
+			export HALCYON_GHC_PRE_BUILD_HOOK="${1#*=}";;
+		'--ghc-post-build-hook')
+			shift
+			expect_args ghc_post_build_hook -- "$@"
+			export HALCYON_GHC_POST_BUILD_HOOK="${ghc_post_build_hook}";;
+		'--ghc-post-build-hook='*)
+			export HALCYON_GHC_POST_BUILD_HOOK="${1#*=}";;
 
 		'--cabal-version')
 			shift
@@ -127,6 +155,18 @@ function handle_command_line () {
 			export HALCYON_CABAL_VERSION="${cabal_version}";;
 		'--cabal-version='*)
 			export HALCYON_CABAL_VERSION="${1#*=}";;
+		'--cabal-pre-build-hook')
+			shift
+			expect_args cabal_pre_build_hook -- "$@"
+			export HALCYON_CABAL_PRE_BUILD_HOOK="${cabal_pre_build_hook}";;
+		'--cabal-pre-build-hook='*)
+			export HALCYON_CABAL_PRE_BUILD_HOOK="${1#*=}";;
+		'--cabal-post-build-hook')
+			shift
+			expect_args cabal_post_build_hook -- "$@"
+			export HALCYON_CABAL_POST_BUILD_HOOK="${cabal_post_build_hook}";;
+		'--cabal-post-build-hook='*)
+			export HALCYON_CABAL_POST_BUILD_HOOK="${1#*=}";;
 		'--cabal-remote-repo')
 			shift
 			expect_args remote_repo -- "$@"
@@ -231,10 +271,34 @@ function handle_command_line () {
 		'--sandbox-extra-apps-constraints-dir='*);&
 		'--extra-sandbox-apps-constraints-dir='*)
 			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
+		'--sandbox-pre-build-hook')
+			shift
+			expect_args sandbox_pre_build_hook -- "$@"
+			export HALCYON_SANDBOX_PRE_BUILD_HOOK="${sandbox_pre_build_hook}";;
+		'--sandbox-pre-build-hook='*)
+			export HALCYON_SANDBOX_PRE_BUILD_HOOK="${1#*=}";;
+		'--sandbox-post-build-hook')
+			shift
+			expect_args sandbox_post_build_hook -- "$@"
+			export HALCYON_SANDBOX_POST_BUILD_HOOK="${sandbox_post_build_hook}";;
+		'--sandbox-post-build-hook='*)
+			export HALCYON_SANDBOX_POST_BUILD_HOOK="${1#*=}";;
 		'--force-build-sandbox');&
 		'--force-sandbox-build')
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
 
+		'--app-pre-build-hook')
+			shift
+			expect_args app_pre_build_hook -- "$@"
+			export HALCYON_APP_PRE_BUILD_HOOK="${app_pre_build_hook}";;
+		'--app-pre-build-hook='*)
+			export HALCYON_APP_PRE_BUILD_HOOK="${1#*=}";;
+		'--app-post-build-hook')
+			shift
+			expect_args app_post_build_hook -- "$@"
+			export HALCYON_APP_POST_BUILD_HOOK="${app_post_build_hook}";;
+		'--app-post-build-hook='*)
+			export HALCYON_APP_POST_BUILD_HOOK="${1#*=}";;
 		'--force-build-app');&
 		'--force-app-build')
 			export HALCYON_FORCE_BUILD_APP=1;;
@@ -255,6 +319,18 @@ function handle_command_line () {
 		'--slug-extra-apps-constraints-dir='*);&
 		'--extra-slug-apps-constraints-dir='*)
 			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
+		'--slug-pre-build-hook')
+			shift
+			expect_args slug_pre_build_hook -- "$@"
+			export HALCYON_SLUG_PRE_BUILD_HOOK="${slug_pre_build_hook}";;
+		'--slug-pre-build-hook='*)
+			export HALCYON_SLUG_PRE_BUILD_HOOK="${1#*=}";;
+		'--slug-post-build-hook')
+			shift
+			expect_args slug_post_build_hook -- "$@"
+			export HALCYON_SLUG_POST_BUILD_HOOK="${slug_post_build_hook}";;
+		'--slug-post-build-hook='*)
+			export HALCYON_SLUG_POST_BUILD_HOOK="${1#*=}";;
 		'--force-build-slug');&
 		'--force-slug-build')
 			export HALCYON_FORCE_BUILD_SLUG=1;;

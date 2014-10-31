@@ -236,6 +236,20 @@ function prepare_source_dir () {
 		copy_file "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die
 	fi
 
+	if [ -n "${HALCYON_GHC_PRE_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_GHC_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/ghc-pre-build-hook" || die
+	fi
+	if [ -n "${HALCYON_GHC_POST_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_GHC_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/ghc-post-build-hook" || die
+	fi
+
+	if [ -n "${HALCYON_CABAL_PRE_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/cabal-pre-build-hook" || die
+	fi
+	if [ -n "${HALCYON_CABAL_POST_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_CABAL_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/cabal-post-build-hook" || die
+	fi
+
 	if [ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]; then
 		local -a sandbox_libs
 		sandbox_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
@@ -254,6 +268,19 @@ function prepare_source_dir () {
 
 		copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}" "${sandbox_dir}" || die
 	fi
+	if [ -n "${HALCYON_SANDBOX_PRE_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" || die
+	fi
+	if [ -n "${HALCYON_SANDBOX_POST_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-post-build-hook" || die
+	fi
+
+	if [ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-pre-build-hook" || die
+	fi
+	if [ -n "${HALCYON_APP_POST_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_APP_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-post-build-hook" || die
+	fi
 
 	if [ -n "${HALCYON_SLUG_EXTRA_APPS:+_}" ]; then
 		local -a slug_apps
@@ -266,6 +293,12 @@ function prepare_source_dir () {
 		slug_dir="${source_dir}/.halcyon-magic/slug-extra-apps-constraints"
 
 		copy_dir_over "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR}" "${slug_dir}" || die
+	fi
+	if [ -n "${HALCYON_SLUG_PRE_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_SLUG_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/slug-pre-build-hook" || die
+	fi
+	if [ -n "${HALCYON_SLUG_POST_BUILD_HOOK:+_}" ]; then
+		copy_file "${HALCYON_SLUG_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/slug-post-build-hook" || die
 	fi
 }
 
