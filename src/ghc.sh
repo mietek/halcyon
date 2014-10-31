@@ -59,6 +59,8 @@ function map_base_package_version_to_ghc_version () {
 	'4.5.1.0')	echo '7.4.2';;
 	'4.4.1.0')	echo '7.2.2';;
 	'4.3.1.0')	echo '7.0.4';;
+	'4.2.0.2')	echo '6.12.3';;
+	'4.1.0.0')	echo '6.10.4';;
 	*)		die "Unexpected base package version: ${base_version}"
 	esac
 }
@@ -379,8 +381,9 @@ function restore_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os archive_name description
+	local os ghc_version archive_name description
 	os=$( get_tag_os "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
 	archive_file="${HALCYON_CACHE_DIR}/${archive_name}"
 	description=$( format_ghc_description "${tag}" ) || die
@@ -409,7 +412,12 @@ function restore_ghc_layer () {
 		touch -c "${archive_file}" || die
 	fi
 
-	ghc-pkg recache || die
+	case "${ghc_version}" in
+	'7.'*)
+		ghc-pkg recache || die;;
+	*)
+		true
+	esac
 
 	log_pad 'GHC layer restored:' "${description}"
 }
