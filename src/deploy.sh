@@ -121,11 +121,11 @@ function deploy_env () {
 
 	local ghc_version ghc_magic_hash
 	ghc_version=$( determine_ghc_version '' ) || die
-	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || die
 
 	local cabal_version cabal_magic_hash cabal_repo
 	cabal_version=$( determine_cabal_version ) || die
-	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || die
 	cabal_repo=$( determine_cabal_repo ) || die
 
 	if ! (( HALCYON_RECURSIVE )); then
@@ -417,11 +417,11 @@ function deploy_app () {
 
 	local ghc_version ghc_magic_hash
 	ghc_version=$( determine_ghc_version "${constraints}" ) || die
-	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || die
 
 	local cabal_version cabal_magic_hash cabal_repo
 	cabal_version=$( determine_cabal_version ) || die
-	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || die
 	cabal_repo=$( determine_cabal_repo ) || die
 
 	local sandbox_magic_hash app_magic_hash

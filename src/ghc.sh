@@ -96,6 +96,21 @@ function determine_ghc_version () {
 }
 
 
+function determine_ghc_magic_hash () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local ghc_magic_hash
+	if [ -n "${HALCYON_GHC_MAGIC_HASH:+_}" ]; then
+		ghc_magic_hash="${HALCYON_GHC_MAGIC_HASH}"
+	else
+		ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+	fi
+
+	echo "${ghc_magic_hash}"
+}
+
+
 function create_ghc_tag () {
 	local ghc_version ghc_magic_hash
 	expect_args ghc_version ghc_magic_hash -- "$@"

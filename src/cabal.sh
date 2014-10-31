@@ -37,6 +37,21 @@ function determine_cabal_version () {
 }
 
 
+function determine_cabal_magic_hash () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local cabal_magic_hash
+	if [ -n "${HALCYON_CABAL_MAGIC_HASH:+_}" ]; then
+		cabal_magic_hash="${HALCYON_CABAL_MAGIC_HASH}"
+	else
+		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+	fi
+
+	echo "${cabal_magic_hash}"
+}
+
+
 function determine_cabal_repo () {
 	local cabal_repo
 	if [ -n "${HALCYON_CABAL_REPO:+_}" ]; then

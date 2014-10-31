@@ -257,6 +257,24 @@ function deploy_sandbox_extra_apps () {
 		return 0
 	fi
 
+	local ghc_version ghc_magic_hash
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
+
+	local cabal_version cabal_magic_hash cabal_repo
+	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
+	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
+
+	local -a env_opts
+	env_opts+=( --recursive )
+	env_opts+=( --target='sandbox' )
+	env_opts+=( --ghc-version="${ghc_version}" )
+	[ -n "${ghc_magic_hash}" ] && env_opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
+	env_opts+=( --cabal-version="${cabal_version}" )
+	[ -n "${cabal_magic_hash}" ] && env_opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
+	env_opts+=( --cabal-repo="${cabal_repo}" )
+
 	log 'Deploying sandbox extra apps'
 
 	local -a sandbox_apps
@@ -271,21 +289,14 @@ function deploy_sandbox_extra_apps () {
 			log
 		fi
 
-		local -a deploy_args
-		deploy_args=( --recursive --target='sandbox' "${sandbox_app}" )
+		local constraints_file
+		constraints_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${sandbox_app}.cabal.config"
 
-		local ghc_version cabal_version
-		ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-		cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-		deploy_args+=( --ghc-version="${ghc_version}" --cabal-version="${cabal_version}" )
+		local -a opts
+		opts=( "${env_opts[@]}" )
+		[ -f "${constraints_file}" ] && opts+=( --constraints-file="${constraints_file}" )
 
-		local sandbox_file
-		sandbox_file="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints/${sandbox_app}.cabal.config"
-		if [ -f "${sandbox_file}" ]; then
-			deploy_args+=( --constraints-file="${sandbox_file}" )
-		fi
-
-		( deploy "${deploy_args[@]}" |& quote ) || return 1
+		( deploy "${opts[@]}" "${sandbox_app}" |& quote ) || return 1
 	done
 }
 
