@@ -264,7 +264,7 @@ function prepare_source_dir () {
 
 
 function do_deploy_app () {
-	expect_vars HALCYON_DIR HALCYON_RECURSIVE
+	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_FORCE_RESTORE_ALL
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
@@ -291,17 +291,26 @@ function do_deploy_app () {
 	fi
 
 	install_sandbox_layer "${tag}" "${source_dir}" "${constraints}" || return 1
-
 	log
+
 	install_app_layer "${tag}" "${source_dir}" || return 1
-
 	log
-	if ! build_slug "${tag}" "${source_dir}" "${slug_dir}"; then
-		log_warning 'Cannot build slug'
-		return 1
+
+	local must_build
+	must_build=1
+	if (( HALCYON_FORCE_RESTORE_ALL )) &&
+		restore_slug "${tag}" "${slug_dir}"
+	then
+		must_build=0
 	fi
-	archive_slug "${slug_dir}" || die
-	announce_slug "${tag}" "${slug_dir}" || die
+	if (( must_build )); then
+		if ! build_slug "${tag}" "${source_dir}" "${slug_dir}"; then
+			log_warning 'Cannot build slug'
+			return 1
+		fi
+		archive_slug "${slug_dir}" || die
+		announce_slug "${tag}" "${slug_dir}" || die
+	fi
 
 	if (( HALCYON_RECURSIVE )); then
 		if [ -n "${saved_sandbox}" ]; then
@@ -322,7 +331,7 @@ function do_deploy_app () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_RECURSIVE HALCYON_TARGET
+	expect_vars HALCYON_RECURSIVE HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
@@ -336,7 +345,9 @@ function deploy_app () {
 	if [ -f "${source_dir}/cabal.config" ]; then
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if deploy_app_from_slug "${app_label}" "${source_hash}" "${source_dir}"; then
+		if ! (( HALCYON_FORCE_RESTORE_ALL )) &&
+			deploy_app_from_slug "${app_label}" "${source_hash}" "${source_dir}"
+		then
 			return 0
 		fi
 	fi

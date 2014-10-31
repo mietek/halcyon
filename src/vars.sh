@@ -36,6 +36,8 @@ function set_halcyon_vars () {
 
 		export HALCYON_CONSTRAINTS_FILE="${HALCYON_CONSTRAINTS_FILE:-}"
 
+		export HALCYON_FORCE_RESTORE_ALL="${HALCYON_FORCE_RESTORE_ALL:-0}"
+
 		export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
 
 		export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
@@ -55,6 +57,8 @@ function set_halcyon_vars () {
 		export HALCYON_NO_ANNOUNCE_DEPLOY="${HALCYON_NO_ANNOUNCE_DEPLOY:-0}"
 	else
 		export HALCYON_CONSTRAINTS_FILE=
+
+		export HALCYON_FORCE_RESTORE_ALL=0
 
 		export HALCYON_FORCE_BUILD_GHC=0
 
@@ -180,6 +184,10 @@ function handle_command_line () {
 			export HALCYON_CONSTRAINTS_FILE="${constraints_file}";;
 		'--constraints-file='*)
 			export HALCYON_CONSTRAINTS_FILE="${1#*=}";;
+
+		'--force-restore-all');&
+		'--force-all-restore')
+			export HALCYON_FORCE_RESTORE_ALL=1;;
 
 		'--force-build-ghc');&
 		'--force-ghc-build')
