@@ -54,6 +54,77 @@ function detect_app_executable () {
 }
 
 
+function determine_ghc_version () {
+	local constraints
+	expect_args constraints -- "$@"
+
+	local ghc_version
+	if [ -n "${HALCYON_GHC_VERSION:+_}" ]; then
+		ghc_version="${HALCYON_GHC_VERSION}"
+	elif [ -n "${constraints}" ]; then
+		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
+	else
+		ghc_version=$( get_default_ghc_version ) || die
+	fi
+
+	echo "${ghc_version}"
+}
+
+
+function determine_ghc_magic_hash () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local ghc_magic_hash
+	if [ -n "${HALCYON_GHC_MAGIC_HASH:+_}" ]; then
+		ghc_magic_hash="${HALCYON_GHC_MAGIC_HASH}"
+	else
+		ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+	fi
+
+	echo "${ghc_magic_hash}"
+}
+
+
+function determine_cabal_version () {
+	local cabal_version
+	if [ -n "${HALCYON_CABAL_VERSION:+_}" ]; then
+		cabal_version="${HALCYON_CABAL_VERSION}"
+	else
+		cabal_version=$( get_default_cabal_version ) || die
+	fi
+
+	echo "${cabal_version}"
+}
+
+
+function determine_cabal_magic_hash () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local cabal_magic_hash
+	if [ -n "${HALCYON_CABAL_MAGIC_HASH:+_}" ]; then
+		cabal_magic_hash="${HALCYON_CABAL_MAGIC_HASH}"
+	else
+		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+	fi
+
+	echo "${cabal_magic_hash}"
+}
+
+
+function determine_cabal_repo () {
+	local cabal_repo
+	if [ -n "${HALCYON_CABAL_REPO:+_}" ]; then
+		cabal_repo="${HALCYON_CABAL_REPO}"
+	else
+		cabal_repo=$( get_default_cabal_repo ) || die
+	fi
+
+	echo "${cabal_repo}"
+}
+
+
 function finish_deploy () {
 	expect_vars HOME HALCYON_DIR HALCYON_DEPLOY_ONLY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
 

@@ -25,45 +25,6 @@ function map_cabal_version_to_original_url () {
 }
 
 
-function determine_cabal_version () {
-	local cabal_version
-	if [ -n "${HALCYON_CABAL_VERSION:+_}" ]; then
-		cabal_version="${HALCYON_CABAL_VERSION}"
-	else
-		cabal_version=$( get_default_cabal_version ) || die
-	fi
-
-	echo "${cabal_version}"
-}
-
-
-function determine_cabal_magic_hash () {
-	local source_dir
-	expect_args source_dir -- "$@"
-
-	local cabal_magic_hash
-	if [ -n "${HALCYON_CABAL_MAGIC_HASH:+_}" ]; then
-		cabal_magic_hash="${HALCYON_CABAL_MAGIC_HASH}"
-	else
-		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-	fi
-
-	echo "${cabal_magic_hash}"
-}
-
-
-function determine_cabal_repo () {
-	local cabal_repo
-	if [ -n "${HALCYON_CABAL_REPO:+_}" ]; then
-		cabal_repo="${HALCYON_CABAL_REPO}"
-	else
-		cabal_repo=$( get_default_cabal_repo ) || die
-	fi
-
-	echo "${cabal_repo}"
-}
-
-
 function create_cabal_tag () {
 	local cabal_version cabal_magic_hash cabal_repo cabal_date
 	expect_args cabal_version cabal_magic_hash cabal_repo cabal_date -- "$@"
