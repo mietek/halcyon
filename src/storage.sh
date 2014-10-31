@@ -79,28 +79,6 @@ function touch_cached_file () {
 }
 
 
-function download_stored_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
-
-	local prefix file_name
-	expect_args prefix file_name -- "$@"
-
-	local object file
-	object="${prefix:+${prefix}/}${file_name}"
-	file="${HALCYON_CACHE_DIR}/${file_name}"
-
-	if private_storage && s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"; then
-		return 0
-	fi
-
-	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
-
-	local public_url
-	public_url=$( format_public_storage_url "${object}" ) || die
-	curl_download "${public_url}" "${file}" || return 1
-}
-
-
 function upload_cached_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
 
@@ -239,5 +217,85 @@ function delete_matching_private_stored_files () {
 		while read -r old_name; do
 			delete_private_stored_file "${prefix}" "${old_name}" || true
 		done <<<"${old_names}"
+	fi
+}
+
+
+function prepare_cache () {
+	expect_vars HALCYON_CACHE_DIR HALCYON_RECURSIVE HALCYON_PURGE_CACHE HALCYON_NO_CACHE
+
+	local cache_dir
+	expect_args cache_dir -- "$@"
+
+	if (( HALCYON_RECURSIVE )) || (( HALCYON_NO_CACHE )); then
+		return 0
+	fi
+
+	if (( HALCYON_PURGE_CACHE )); then
+		log 'Purging cache'
+		log
+
+		rm -rf "${HALCYON_CACHE_DIR}"
+	fi
+
+	mkdir -p "${HALCYON_CACHE_DIR}" "${cache_dir}" || die
+
+	if ! (( HALCYON_PURGE_CACHE )); then
+		local files
+		if files=$(
+			find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
+			sed "s:^\./::" |
+			sort_natural |
+			match_at_least_one
+		); then
+			log 'Examining cache contents'
+
+			copy_dir_over "${HALCYON_CACHE_DIR}" "${cache_dir}" || die
+
+			quote <<<"${files}"
+			log
+		fi
+	fi
+
+	touch "${cache_dir}" || die
+}
+
+
+function clean_cache () {
+	expect_vars HALCYON_CACHE_DIR HALCYON_RECURSIVE HALCYON_NO_CACHE
+
+	local cache_dir
+	expect_args cache_dir -- "$@"
+
+	if (( HALCYON_RECURSIVE )) || (( HALCYON_NO_CACHE )); then
+		return 0
+	fi
+
+	local mark_time name_prefix
+	mark_time=$( get_modification_time "${cache_dir}" ) || die
+	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
+
+	rm -f "${HALCYON_CACHE_DIR}/${name_prefix}"* || die
+
+	local file
+	find "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
+		while read -r file; do
+			local file_time
+			file_time=$( get_modification_time "${file}" ) || die
+			if (( file_time < mark_time )); then
+				rm -f "${file}" || die
+			fi
+		done
+
+	local changed_files
+	if changed_files=$(
+		compare_tree "${cache_dir}" "${HALCYON_CACHE_DIR}" |
+		filter_not_matching '^= ' |
+		match_at_least_one
+	); then
+		log
+		log 'Examining cache changes'
+
+		quote <<<"${changed_files}"
 	fi
 }
