@@ -13,45 +13,26 @@ function detect_app_package () {
 }
 
 
-function detect_app_name () {
-	local source_dir
-	expect_args source_dir -- "$@"
-
-	local app_name
-	app_name=$(
-		detect_app_package "${source_dir}" |
-		awk '/^ *[Nn]ame:/ { print $2 }' |
-		tr -d '\r' |
-		match_exactly_one
-	) || return 1
-
-	echo "${app_name}"
-}
-
-
-function detect_app_version () {
-	local source_dir
-	expect_args source_dir -- "$@"
-
-	local app_version
-	app_version=$(
-		detect_app_package "${source_dir}" |
-		awk '/^ *[Vv]ersion:/ { print $2 }' |
-		tr -d '\r' |
-		match_exactly_one
-	) || return 1
-
-	echo "${app_version}"
-}
-
-
 function detect_app_label () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	local app_name app_version
-	app_name=$( detect_app_name "${source_dir}" ) || return 1
-	app_version=$( detect_app_version "${source_dir}" ) || return 1
+	local app_package
+	app_package=$( detect_app_package "${source_dir}" ) || return 1
+
+	local app_name
+	app_name=$(
+		awk '/^ *[Nn]ame:/ { print $2 }' <<<"${app_package}" |
+		tr -d '\r' |
+		match_exactly_one
+	) || return 1
+
+	local app_version
+	app_version=$(
+		awk '/^ *[Vv]ersion:/ { print $2 }' <<<"${app_package}" |
+		tr -d '\r' |
+		match_exactly_one
+	) || return 1
 
 	echo "${app_name}-${app_version}"
 }
