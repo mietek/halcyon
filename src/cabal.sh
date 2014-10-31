@@ -244,8 +244,11 @@ function hash_cabal_magic () {
 
 
 function copy_cabal_magic () {
+	expect_vars HALCYON_DIR
+
 	local source_dir
 	expect_args source_dir -- "$@"
+	expect_existing "${HALCYON_DIR}/cabal"
 
 	local cabal_magic_hash
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
@@ -253,12 +256,11 @@ function copy_cabal_magic () {
 		return 0
 	fi
 
-	mkdir -p "${HALCYON_DIR}/cabal/.halcyon-magic" || die
 	find_tree "${source_dir}/.halcyon-magic" -type f \
 			-path './cabal*' |
 		while read -r file; do
-			cp -p "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_DIR}/cabal/.halcyon-magic" || die
+			copy_file "${source_dir}/.halcyon-magic/${file}" \
+				"${HALCYON_DIR}/cabal/.halcyon-magic/${file}" || die
 		done || die
 }
 
@@ -352,8 +354,7 @@ EOF
 		die 'Failed to bootstrap Cabal'
 	fi
 
-	mkdir -p "${HALCYON_DIR}/cabal/bin" || die
-	mv "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
+	copy_file "${HOME}/.cabal/bin/cabal" "${HALCYON_DIR}/cabal/bin/cabal" || die
 	format_cabal_config "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-cabal.config" || die
 
 	copy_cabal_magic "${source_dir}" || die
@@ -716,7 +717,7 @@ function sandboxed_cabal_do () {
 		mv "${HALCYON_DIR}/sandbox/cabal.config" "${saved_config}" || die
 	fi
 	if [ -f "${work_dir}/cabal.config" ]; then
-		cp -p "${work_dir}/cabal.config" "${HALCYON_DIR}/sandbox/cabal.config" || die
+		copy_file "${work_dir}/cabal.config" "${HALCYON_DIR}/sandbox/cabal.config" || die
 	fi
 
 	local status

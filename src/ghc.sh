@@ -179,8 +179,11 @@ function hash_ghc_magic () {
 
 
 function copy_ghc_magic () {
+	expect_vars HALCYON_DIR
+
 	local source_dir
 	expect_args source_dir -- "$@"
+	expect_existing "${HALCYON_DIR}/ghc"
 
 	local ghc_magic_hash
 	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
@@ -188,12 +191,11 @@ function copy_ghc_magic () {
 		return 0
 	fi
 
-	mkdir -p "${HALCYON_DIR}/ghc/.halcyon-magic" || die
 	find_tree "${source_dir}/.halcyon-magic" -type f \
 			-path './ghc*' |
 		while read -r file; do
-			cp -p "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_DIR}/ghc/.halcyon-magic" || die
+			copy_file "${source_dir}/.halcyon-magic/${file}" \
+				"${HALCYON_DIR}/ghc/.halcyon-magic/${file}" || die
 		done || die
 }
 

@@ -179,8 +179,11 @@ function hash_sandbox_magic () {
 
 
 function copy_sandbox_magic () {
+	expect_vars HALCYON_DIR
+
 	local source_dir
 	expect_args source_dir -- "$@"
+	expect_existing "${HALCYON_DIR}/sandbox"
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
@@ -188,15 +191,14 @@ function copy_sandbox_magic () {
 		return 0
 	fi
 
-	mkdir -p "${HALCYON_DIR}/sandbox/.halcyon-magic" || die
 	find_tree "${source_dir}/.halcyon-magic" -type f \
 			\(                               \
 			-path './ghc*'     -or           \
 			-path './sandbox*'               \
 			\) |
 		while read -r file; do
-			cp -p "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_DIR}/sandbox/.halcyon-magic" || die
+			copy_file "${source_dir}/.halcyon-magic/${file}" \
+				"${HALCYON_DIR}/sandbox/.halcyon-magic/${file}" || die
 		done || die
 }
 
@@ -408,7 +410,7 @@ function archive_sandbox_layer () {
 	log 'Archiving sandbox layer'
 
 	tar_create "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	cp -p "${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
+	copy_file "${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
 
 	local no_delete
 	no_delete=0

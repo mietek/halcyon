@@ -233,30 +233,22 @@ function prepare_source_dir () {
 	expect_existing "${source_dir}"
 
 	if [ -n "${HALCYON_CONSTRAINTS_FILE:+_}" ]; then
-		expect_existing "${HALCYON_CONSTRAINTS_FILE}"
-
-		cp -p "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die
+		copy_file "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die
 	fi
 
 	if [ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]; then
 		local -a sandbox_libs
 		sandbox_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
 
-		mkdir -p "${source_dir}/.halcyon-magic" || die
-		( IFS=$'\n' && echo "${sandbox_libs[*]}" >"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) || die
+		copy_file <( IFS=$'\n' && echo "${sandbox_libs[*]}" ) "${source_dir}/.halcyon-magic/sandbox-extra-libs" || die
 	fi
-
 	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
 		local -a sandbox_apps
 		sandbox_apps=( ${HALCYON_SANDBOX_EXTRA_APPS} )
 
-		mkdir -p "${source_dir}/.halcyon-magic" || die
-		( IFS=$'\n' && echo "${sandbox_apps[*]}" >"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) || die
+		copy_file <( IFS=$'\n' && echo "${sandbox_apps[*]}" ) "${source_dir}/.halcyon-magic/sandbox-extra-apps" || die
 	fi
-
 	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]; then
-		expect_existing "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}"
-
 		local sandbox_dir
 		sandbox_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
 
@@ -268,13 +260,9 @@ function prepare_source_dir () {
 		local -a slug_apps
 		slug_apps=( ${HALCYON_SLUG_EXTRA_APPS} )
 
-		mkdir -p "${source_dir}/.halcyon-magic" || die
-		( IFS=$'\n' && echo "${slug_apps[*]}" >"${source_dir}/.halcyon-magic/slug-extra-apps" ) || die
+		copy_file <( IFS=$'\n' && echo "${slug_apps[*]}" ) "${source_dir}/.halcyon-magic/slug-extra-apps" || die
 	fi
-
 	if [ -n "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]; then
-		expect_existing "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR}"
-
 		local slug_dir
 		slug_dir="${source_dir}/.halcyon-magic/slug-extra-apps-constraints"
 
