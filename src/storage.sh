@@ -14,7 +14,7 @@ function format_public_storage_url () {
 }
 
 
-function use_private_storage () {
+function private_storage () {
 	if [ -z "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] ||
 		[ -z "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] ||
 		[ -z "${HALCYON_S3_BUCKET:+_}" ] ||
@@ -28,9 +28,9 @@ function use_private_storage () {
 function describe_storage () {
 	expect_vars HALCYON_NO_PUBLIC_STORAGE
 
-	if use_private_storage && ! (( HALCYON_NO_PUBLIC_STORAGE )); then
+	if private_storage && ! (( HALCYON_NO_PUBLIC_STORAGE )); then
 		log_indent_pad 'External storage:' 'private and public'
-	elif use_private_storage; then
+	elif private_storage; then
 		log_indent_pad 'External storage:' 'private'
 	elif ! (( HALCYON_NO_PUBLIC_STORAGE )); then
 		log_indent_pad 'External storage:' 'public'
@@ -89,7 +89,7 @@ function download_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	if use_private_storage && s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"; then
+	if private_storage && s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"; then
 		return 0
 	fi
 
@@ -107,7 +107,7 @@ function upload_cached_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_UPLOAD )) || ! use_private_storage; then
+	if (( HALCYON_NO_UPLOAD )) || ! private_storage; then
 		return 1
 	fi
 
@@ -129,7 +129,7 @@ function cache_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	if use_private_storage && s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"; then
+	if private_storage && s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"; then
 		return 0
 	fi
 
@@ -169,7 +169,7 @@ function delete_private_stored_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_DELETE )) || ! use_private_storage; then
+	if (( HALCYON_NO_DELETE )) || ! private_storage; then
 		return 0
 	fi
 
@@ -186,7 +186,7 @@ function list_private_stored_files () {
 	expect_args prefix -- "$@"
 
 	local listing
-	if ! use_private_storage || ! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" ); then
+	if ! private_storage || ! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" ); then
 		return 0
 	fi
 
@@ -223,7 +223,7 @@ function delete_matching_private_stored_files () {
 	local prefix match_prefix match_pattern save_name
 	expect_args prefix match_prefix match_pattern save_name -- "$@"
 
-	if ! use_private_storage; then
+	if ! private_storage; then
 		return 0
 	fi
 
