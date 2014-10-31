@@ -485,16 +485,29 @@ function deploy_local_app () {
 
 
 function deploy_cloned_app () {
-	local url
-	expect_args url -- "$@"
+	local url_oid
+	expect_args url_oid -- "$@"
 
 	log 'Cloning app'
 
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon-cloned-source' ) || die
 
-	if ! git clone --depth=1 "${url}" "${source_dir}" |& quote; then
+	local url
+	url="${url_oid%#*}"
+	if ! git clone "${url}" "${source_dir}" |& quote; then
 		die 'Cannot clone app'
+	fi
+
+	local branch_oid
+	branch_oid="${url_oid#*#}"
+	if [ "${branch_oid}" = "${url_oid}" ]; then
+		branch_oid=
+	fi
+	if [ -n "${branch_oid}" ]; then
+		if ! git -C "${source_dir}" checkout "${branch_oid}" |& quote; then
+			die 'Cannot checkout app'
+		fi
 	fi
 
 	local app_label
