@@ -66,8 +66,6 @@ function detect_constraints () {
 	) || die
 
 	local -A package_version_map
-	package_version_map=()
-
 	local base_version candidate_package candidate_version
 	base_version=
 	while read -r candidate_package candidate_version; do
@@ -250,8 +248,6 @@ function score_partial_sandbox_layers () {
 	expect_args constraints partial_tags -- "$@"
 
 	local -A package_version_map
-	package_version_map=()
-
 	local package version
 	while read -r package version; do
 		package_version_map["${package}"]="${version}"

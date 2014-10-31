@@ -218,14 +218,16 @@ function deploy_sandbox_extra_libs () {
 
 	log 'Deploying sandbox extra libs'
 
-	local -a apt_opts
-	apt_opts=( -o debug::nolocking='true' -o dir::cache="${apt_dir}/cache" -o dir::state="${apt_dir}/state" )
+	local -a opts
+	opts+=( -o debug::nolocking='true' )
+	opts+=( -o dir::cache="${apt_dir}/cache" )
+	opts+=( -o dir::state="${apt_dir}/state" )
 
 	mkdir -p "${apt_dir}/cache/archives/partial" "${apt_dir}/state/lists/partial" || die
 
 	log_indent_begin 'Updating package lists...'
 
-	apt-get "${apt_opts[@]}" update --quiet --quiet |& quote || die
+	apt-get "${opts[@]}" update --quiet --quiet |& quote || die
 
 	log_end 'done'
 
@@ -234,7 +236,7 @@ function deploy_sandbox_extra_libs () {
 
 	local sandbox_lib
 	for sandbox_lib in "${sandbox_libs[@]}"; do
-		apt-get "${apt_opts[@]}" --download-only --yes install "${sandbox_lib}" |& quote || die
+		apt-get "${opts[@]}" --download-only --yes install "${sandbox_lib}" |& quote || die
 	done
 
 	local -a deb_files
@@ -348,14 +350,14 @@ function build_sandbox_layer () {
 
 	# TODO: Improve cross-platform compatibility.
 
-	local -a install_args
-	install_args=( install --dependencies-only )
+	local -a opts
+	opts+=( --dependencies-only )
 	if [ -d "${HALCYON_DIR}/sandbox/extra-libs" ]; then
-		install_args+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/lib/x86_64-linux-gnu" )
-		install_args+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/include" )
+		opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/lib/x86_64-linux-gnu" )
+		opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/include" )
 	fi
 
-	if ! sandboxed_cabal_do "${source_dir}" "${install_args[@]}" |& quote; then
+	if ! sandboxed_cabal_do "${source_dir}" install "${opts[@]}" |& quote; then
 		die 'Failed to compile sandbox'
 	fi
 
