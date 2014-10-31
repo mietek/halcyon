@@ -362,7 +362,7 @@ function deploy_app () {
 	local constraints warn_implicit
 	warn_implicit=0
 	if ! [ -f "${source_dir}/cabal.config" ]; then
-		deploy_env "${source_dir}" || return 1
+		HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env "${source_dir}" || return 1
 
 		log 'Deploying app'
 
@@ -542,7 +542,7 @@ function deploy_unpacked_app () {
 	local work_dir
 	work_dir=$( get_tmp_dir 'halcyon-unpacked-source' ) || die
 
-	deploy_env '/dev/null' || return 1
+	HALCYON_DEPLOY_ONLY_ENV=1 HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env '/dev/null' || return 1
 
 	log 'Unpacking app'
 
