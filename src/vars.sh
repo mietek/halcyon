@@ -9,12 +9,8 @@ function set_halcyon_vars () {
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
-		export HALCYON_GHC_PRE_BUILD_HOOK="${HALCYON_GHC_PRE_BUILD_HOOK:-}"
-		export HALCYON_GHC_POST_BUILD_HOOK="${HALCYON_GHC_POST_BUILD_HOOK:-}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
-		export HALCYON_CABAL_PRE_BUILD_HOOK="${HALCYON_CABAL_PRE_BUILD_HOOK:-}"
-		export HALCYON_CABAL_POST_BUILD_HOOK="${HALCYON_CABAL_POST_BUILD_HOOK:-}"
 		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-}"
 
 		export HALCYON_DEPLOY_ONLY_ENV="${HALCYON_DEPLOY_ONLY_ENV:-0}"
@@ -42,8 +38,12 @@ function set_halcyon_vars () {
 
 		export HALCYON_FORCE_RESTORE_ALL="${HALCYON_FORCE_RESTORE_ALL:-0}"
 
+		export HALCYON_GHC_PRE_BUILD_HOOK="${HALCYON_GHC_PRE_BUILD_HOOK:-}"
+		export HALCYON_GHC_POST_BUILD_HOOK="${HALCYON_GHC_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_GHC="${HALCYON_FORCE_BUILD_GHC:-0}"
 
+		export HALCYON_CABAL_PRE_BUILD_HOOK="${HALCYON_CABAL_PRE_BUILD_HOOK:-}"
+		export HALCYON_CABAL_POST_BUILD_HOOK="${HALCYON_CABAL_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
 		export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
 
@@ -136,18 +136,6 @@ function handle_command_line () {
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
-		'--ghc-pre-build-hook')
-			shift
-			expect_args ghc_pre_build_hook -- "$@"
-			export HALCYON_GHC_PRE_BUILD_HOOK="${ghc_pre_build_hook}";;
-		'--ghc-pre-build-hook='*)
-			export HALCYON_GHC_PRE_BUILD_HOOK="${1#*=}";;
-		'--ghc-post-build-hook')
-			shift
-			expect_args ghc_post_build_hook -- "$@"
-			export HALCYON_GHC_POST_BUILD_HOOK="${ghc_post_build_hook}";;
-		'--ghc-post-build-hook='*)
-			export HALCYON_GHC_POST_BUILD_HOOK="${1#*=}";;
 
 		'--cabal-version')
 			shift
@@ -155,18 +143,6 @@ function handle_command_line () {
 			export HALCYON_CABAL_VERSION="${cabal_version}";;
 		'--cabal-version='*)
 			export HALCYON_CABAL_VERSION="${1#*=}";;
-		'--cabal-pre-build-hook')
-			shift
-			expect_args cabal_pre_build_hook -- "$@"
-			export HALCYON_CABAL_PRE_BUILD_HOOK="${cabal_pre_build_hook}";;
-		'--cabal-pre-build-hook='*)
-			export HALCYON_CABAL_PRE_BUILD_HOOK="${1#*=}";;
-		'--cabal-post-build-hook')
-			shift
-			expect_args cabal_post_build_hook -- "$@"
-			export HALCYON_CABAL_POST_BUILD_HOOK="${cabal_post_build_hook}";;
-		'--cabal-post-build-hook='*)
-			export HALCYON_CABAL_POST_BUILD_HOOK="${1#*=}";;
 		'--cabal-remote-repo')
 			shift
 			expect_args remote_repo -- "$@"
@@ -229,10 +205,34 @@ function handle_command_line () {
 		'--force-all-restore')
 			export HALCYON_FORCE_RESTORE_ALL=1;;
 
+		'--ghc-pre-build-hook')
+			shift
+			expect_args ghc_pre_build_hook -- "$@"
+			export HALCYON_GHC_PRE_BUILD_HOOK="${ghc_pre_build_hook}";;
+		'--ghc-pre-build-hook='*)
+			export HALCYON_GHC_PRE_BUILD_HOOK="${1#*=}";;
+		'--ghc-post-build-hook')
+			shift
+			expect_args ghc_post_build_hook -- "$@"
+			export HALCYON_GHC_POST_BUILD_HOOK="${ghc_post_build_hook}";;
+		'--ghc-post-build-hook='*)
+			export HALCYON_GHC_POST_BUILD_HOOK="${1#*=}";;
 		'--force-build-ghc');&
 		'--force-ghc-build')
 			export HALCYON_FORCE_BUILD_GHC=1;;
 
+		'--cabal-pre-build-hook')
+			shift
+			expect_args cabal_pre_build_hook -- "$@"
+			export HALCYON_CABAL_PRE_BUILD_HOOK="${cabal_pre_build_hook}";;
+		'--cabal-pre-build-hook='*)
+			export HALCYON_CABAL_PRE_BUILD_HOOK="${1#*=}";;
+		'--cabal-post-build-hook')
+			shift
+			expect_args cabal_post_build_hook -- "$@"
+			export HALCYON_CABAL_POST_BUILD_HOOK="${cabal_post_build_hook}";;
+		'--cabal-post-build-hook='*)
+			export HALCYON_CABAL_POST_BUILD_HOOK="${1#*=}";;
 		'--force-build-cabal');&
 		'--force-cabal-build')
 			export HALCYON_FORCE_BUILD_CABAL=1;;
