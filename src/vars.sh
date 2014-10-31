@@ -13,7 +13,7 @@ function set_halcyon_vars () {
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
 		export HALCYON_CABAL_MAGIC_HASH="${HALCYON_CABAL_MAGIC_HASH:-}"
-		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-}"
+		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-}"
 
 		export HALCYON_DEPLOY_ONLY_ENV="${HALCYON_DEPLOY_ONLY_ENV:-0}"
 
@@ -157,12 +157,12 @@ function handle_command_line () {
 			export HALCYON_CABAL_MAGIC_HASH="${cabal_magic_hash}";;
 		'--cabal-magic-hash='*)
 			export HALCYON_CABAL_MAGIC_HASH="${1#*=}";;
-		'--cabal-remote-repo')
+		'--cabal-repo')
 			shift
-			expect_args remote_repo -- "$@"
-			export HALCYON_CABAL_REMOTE_REPO="${remote_repo}";;
-		'--cabal-remote-repo='*)
-			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
+			expect_args cabal_repo -- "$@"
+			export HALCYON_CABAL_REPO="${cabal_repo}";;
+		'--cabal-repo='*)
+			export HALCYON_CABAL_REPO="${1#*=}";;
 
 		'--no-copy-local-source')
 			export HALCYON_NO_COPY_LOCAL_SOURCE=1;;
