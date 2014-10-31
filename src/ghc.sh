@@ -265,31 +265,30 @@ function prepare_ghc_layer () {
 
 
 function build_ghc_layer () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
-	expect_no_existing "${HALCYON_DIR}/ghc"
+	expect_vars HALCYON_DIR
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	local ghc_version original_url original_name original_file ghc_dir
+	rm -rf "${HALCYON_DIR}/ghc" || die
+
+	local ghc_version original_url original_name ghc_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	original_url=$( prepare_ghc_layer "${tag}" ) || die
 	original_name=$( basename "${original_url}" ) || die
-	original_file="${HALCYON_CACHE_DIR}/${original_name}"
 	ghc_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || die
 
 	log 'Building GHC layer'
 
-	if ! tar_extract "${original_file}" "${ghc_dir}"; then
-		rm -rf "${ghc_dir}" || die
-		if ! transfer_original_stored_file "${original_url}"; then
+	if ! extract_cached_archive_over "${original_name}" "${ghc_dir}"; then
+		if ! cache_original_stored_file "${original_url}"; then
 			die 'Cannot download original GHC archive'
 		fi
-		if ! tar_extract "${original_file}" "${ghc_dir}"; then
+		if ! extract_cached_archive_over "${original_name}" "${ghc_dir}"; then
 			die 'Cannot install GHC'
 		fi
 	else
-		touch -c "${original_file}" || die
+		touch_cached_file "${original_name}" || die
 	fi
 
 	if [ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]; then
@@ -346,7 +345,7 @@ function build_ghc_layer () {
 
 
 function archive_ghc_layer () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE
+	expect_vars HALCYON_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
@@ -360,8 +359,8 @@ function archive_ghc_layer () {
 
 	log 'Archiving GHC layer'
 
-	tar_create "${HALCYON_DIR}/ghc" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	upload_stored_file "${os}" "${archive_name}" || true
+	create_cached_archive "${HALCYON_DIR}/ghc" "${archive_name}" || die
+	upload_cached_file "${os}" "${archive_name}" || true
 }
 
 
@@ -378,7 +377,7 @@ function validate_ghc_layer () {
 
 
 function restore_ghc_layer () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_DIR
 
 	local tag
 	expect_args tag -- "$@"
@@ -387,31 +386,27 @@ function restore_ghc_layer () {
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
-	archive_file="${HALCYON_CACHE_DIR}/${archive_name}"
 	description=$( format_ghc_description "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
 		log_pad 'Using existing GHC layer:' "${description}"
-		touch -c "${archive_file}" || die
+		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
-	rm -rf "${HALCYON_DIR}/ghc" || die
 
 	log 'Restoring GHC layer'
 
-	if ! tar_extract "${archive_file}" "${HALCYON_DIR}/ghc" ||
+	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/ghc" ||
 		! validate_ghc_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_DIR}/ghc" || die
-		if ! transfer_stored_file "${os}" "${archive_name}" ||
-			! tar_extract "${archive_file}" "${HALCYON_DIR}/ghc" ||
+		if ! cache_stored_file "${os}" "${archive_name}" ||
+			! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/ghc" ||
 			! validate_ghc_layer "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_DIR}/ghc" || die
 			return 1
 		fi
 	else
-		touch -c "${archive_file}" || die
+		touch_cached_file "${archive_name}" || die
 	fi
 
 	case "${ghc_version}" in
@@ -456,7 +451,6 @@ function install_ghc_layer () {
 		fi
 	fi
 
-	rm -rf "${HALCYON_DIR}/ghc" || die
 	build_ghc_layer "${tag}" "${source_dir}" || die
 	archive_ghc_layer || die
 	announce_ghc_layer "${tag}"

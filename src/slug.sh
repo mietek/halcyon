@@ -138,6 +138,8 @@ function build_slug () {
 	local tag source_dir slug_dir
 	expect_args tag source_dir slug_dir -- "$@"
 
+	rm -rf "${slug_dir}" || die
+
 	log 'Building slug'
 
 	if [ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]; then
@@ -205,7 +207,7 @@ function build_slug () {
 
 
 function archive_slug () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
+	expect_vars HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 
 	local slug_dir
 	expect_args slug_dir -- "$@"
@@ -222,8 +224,8 @@ function archive_slug () {
 
 	log 'Archiving slug'
 
-	tar_create "${slug_dir}" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	if ! upload_stored_file "${os}" "${archive_name}"; then
+	create_cached_archive "${slug_dir}" "${archive_name}" || die
+	if ! upload_cached_file "${os}" "${archive_name}"; then
 		return 0
 	fi
 
@@ -250,32 +252,29 @@ function validate_slug () {
 
 
 function restore_slug () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars
 
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	local os archive_name archive_file
+	local os archive_name
 	os=$( get_tag_os "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
-	archive_file="${HALCYON_CACHE_DIR}/${archive_name}"
 
 	log 'Restoring slug'
 
 	local restored_tag description
-	if ! tar_extract "${archive_file}" "${slug_dir}" ||
+	if ! extract_cached_archive_over "${archive_name}" "${slug_dir}" ||
 		! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 	then
-		rm -rf "${slug_dir}" || die
-		if ! transfer_stored_file "${os}" "${archive_name}" ||
-			! tar_extract "${archive_file}" "${slug_dir}" ||
+		if ! cache_stored_file "${os}" "${archive_name}" ||
+			! extract_cached_archive_over "${archive_name}" "${slug_dir}" ||
 			! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 		then
-			rm -rf "${slug_dir}" || die
 			return 1
 		fi
 	else
-		touch -c "${archive_file}" || die
+		touch_cached_file "${archive_name}" || die
 	fi
 	description=$( format_slug_description "${restored_tag}" )
 

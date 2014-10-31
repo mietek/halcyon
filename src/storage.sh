@@ -40,6 +40,45 @@ function describe_storage () {
 }
 
 
+function create_cached_archive () {
+	expect_vars HALCYON_CACHE_DIR
+
+	local src_dir dst_file_name
+	expect_args src_dir dst_file_name -- "$@"
+	expect_existing "${src_dir}"
+
+	create_archive "${src_dir}" "${HALCYON_CACHE_DIR}/${dst_file_name}" || return 1
+}
+
+
+function extract_cached_archive_over () {
+	expect_vars HALCYON_CACHE_DIR
+
+	local src_file_name dst_dir
+	expect_args src_file_name dst_dir -- "$@"
+
+	if ! [ -f "${HALCYON_CACHE_DIR}/${src_file_name}" ]; then
+		return 1
+	fi
+
+	extract_archive_over "${HALCYON_CACHE_DIR}/${src_file_name}" "${dst_dir}" || return 1
+}
+
+
+function touch_cached_file () {
+	expect_vars HALCYON_CACHE_DIR
+
+	local file_name
+	expect_args file_name -- "$@"
+
+	if ! [ -f "${HALCYON_CACHE_DIR}/${file_name}" ]; then
+		return 1
+	fi
+
+	touch "${HALCYON_CACHE_DIR}/${file_name}" || return 1
+}
+
+
 function download_stored_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
@@ -62,7 +101,7 @@ function download_stored_file () {
 }
 
 
-function upload_stored_file () {
+function upload_cached_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
 
 	local prefix file_name
@@ -80,7 +119,7 @@ function upload_stored_file () {
 }
 
 
-function transfer_stored_file () {
+function cache_stored_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
 	local prefix file_name
@@ -101,11 +140,11 @@ function transfer_stored_file () {
 	if ! curl_download "${public_url}" "${file}"; then
 		return 1
 	fi
-	upload_stored_file "${prefix}" "${file_name}" || true
+	upload_cached_file "${prefix}" "${file_name}" || true
 }
 
 
-function transfer_original_stored_file () {
+function cache_original_stored_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
 	local original_url
@@ -115,12 +154,12 @@ function transfer_original_stored_file () {
 	file_name=$( basename "${original_url}" ) || die
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	if transfer_stored_file 'original' "${file_name}"; then
+	if cache_stored_file 'original' "${file_name}"; then
 		return 0
 	fi
 
 	curl_download "${original_url}" "${file}" || return 1
-	upload_stored_file 'original' "${file_name}" || true
+	upload_cached_file 'original' "${file_name}" || true
 }
 
 

@@ -148,9 +148,9 @@ function validate_partial_constraints_file () {
 	local candidate_constraints
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
 
-	local file_name short_hash_etc short_hash candidate_hash
-	file_name=$( basename "${candidate_file}" ) || die
-	short_hash_etc="${file_name#halcyon-sandbox-constraints-}"
+	local constraints_name short_hash_etc short_hash candidate_hash
+	constraints_name=$( basename "${candidate_file}" ) || die
+	short_hash_etc="${constraints_name#halcyon-sandbox-constraints-}"
 	short_hash="${short_hash_etc%%[-.]*}"
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
 
@@ -183,13 +183,13 @@ function match_full_sandbox_layer () {
 	while read -r full_name; do
 		full_file="${HALCYON_CACHE_DIR}/${full_name}"
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
-			if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
+			if ! cache_stored_file "${os}/ghc-${ghc_version}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
 			then
 				continue
 			fi
 		else
-			touch -c "${full_file}" || die
+			touch_cached_file "${full_name}" || die
 		fi
 
 		local full_label full_tag
@@ -225,13 +225,13 @@ function list_partial_sandbox_layers () {
 	while read -r partial_name; do
 		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
-			if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
+			if ! cache_stored_file "${os}/ghc-${ghc_version}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
 			then
 				continue
 			fi
 		else
-			touch -c "${partial_file}" || die
+			touch_cached_file "${partial_name}" || die
 		fi
 
 		local partial_label partial_tag
@@ -306,10 +306,10 @@ function match_sandbox_layer () {
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
-	local os ghc_version file_name name_prefix partial_pattern
+	local os ghc_version constraints_name name_prefix partial_pattern
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	file_name=$( format_sandbox_constraints_file_name "${tag}" ) || die
+	constraints_name=$( format_sandbox_constraints_file_name "${tag}" ) || die
 	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
 	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" ) || die
 
@@ -320,7 +320,7 @@ function match_sandbox_layer () {
 		list_stored_files "${os}/ghc-${ghc_version}/${name_prefix}" |
 		sed "s:${os}/ghc-${ghc_version}/::" |
 		filter_matching "^${partial_pattern}$" |
-		filter_not_matching "^${file_name}$" |
+		filter_not_matching "^${constraints_name}$" |
 		sort_natural -u |
 		match_at_least_one
 	) || return 1

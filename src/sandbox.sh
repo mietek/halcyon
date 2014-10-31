@@ -156,11 +156,11 @@ function format_sandbox_common_file_name_pattern () {
 
 
 function map_sandbox_constraints_file_name_to_app_label () {
-	local file_name
-	expect_args file_name -- "$@"
+	local constraints_name
+	expect_args constraints_name -- "$@"
 
 	local app_label_etc
-	app_label_etc="${file_name#halcyon-sandbox-constraints-*-}"
+	app_label_etc="${constraints_name#halcyon-sandbox-constraints-*-}"
 
 	echo "${app_label_etc%.cabal.config}"
 }
@@ -293,8 +293,9 @@ function build_sandbox_layer () {
 
 	local tag source_dir constraints must_create
 	expect_args tag source_dir constraints must_create -- "$@"
+
 	if (( must_create )); then
-		expect_no_existing "${HALCYON_DIR}/sandbox"
+		rm -rf "${HALCYON_DIR}/sandbox" || die
 	else
 		expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" \
 			"${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
@@ -400,27 +401,27 @@ function archive_sandbox_layer () {
 		return 0
 	fi
 
-	local sandbox_tag os ghc_version archive_name file_name
+	local sandbox_tag os ghc_version archive_name constraints_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
 	os=$( get_tag_os "${sandbox_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
-	file_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
+	constraints_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
 
 	log 'Archiving sandbox layer'
 
-	tar_create "${HALCYON_DIR}/sandbox" "${HALCYON_CACHE_DIR}/${archive_name}" || die
-	copy_file "${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" "${HALCYON_CACHE_DIR}/${file_name}" || die
+	create_cached_archive "${HALCYON_DIR}/sandbox" "${archive_name}" || die
+	copy_file "${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" \
+		"${HALCYON_CACHE_DIR}/${constraints_name}" || die
 
 	local no_delete
 	no_delete=0
-	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
+	if ! upload_cached_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
 		no_delete=1
 	fi
-	if ! upload_stored_file "${os}/ghc-${ghc_version}" "${file_name}"; then
+	if ! upload_cached_file "${os}/ghc-${ghc_version}" "${constraints_name}"; then
 		no_delete=1
 	fi
-
 	if (( HALCYON_NO_DELETE )) || (( no_delete )); then
 		return 0
 	fi
@@ -429,7 +430,7 @@ function archive_sandbox_layer () {
 	common_prefix=$( format_sandbox_common_file_name_prefix ) || die
 	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" ) || die
 
-	delete_matching_private_stored_files "${os}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${file_name})" || die
+	delete_matching_private_stored_files "${os}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || die
 }
 
 
@@ -446,40 +447,36 @@ function validate_sandbox_layer () {
 
 
 function restore_sandbox_layer () {
-	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_DIR
 
 	local tag
 	expect_args tag -- "$@"
 
-	local os ghc_version archive_name archive_file description
+	local os ghc_version archive_name description
 	os=$( get_tag_os "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
-	archive_file="${HALCYON_CACHE_DIR}/${archive_name}"
 	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
 		log_pad 'Using existing sandbox layer:' "${description}"
-		touch -c "${archive_file}" || die
+		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
-	rm -rf "${HALCYON_DIR}/sandbox" || die
 
 	log 'Restoring sandbox layer'
 
-	if ! tar_extract "${archive_file}" "${HALCYON_DIR}/sandbox" ||
+	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/sandbox" ||
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_DIR}/sandbox" || die
-		if ! transfer_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
-			! tar_extract "${archive_file}" "${HALCYON_DIR}/sandbox" ||
+		if ! cache_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+			! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/sandbox" ||
 			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_DIR}/sandbox" || die
 			return 1
 		fi
 	else
-		touch -c "${archive_file}" || die
+		touch_cached_file "${archive_name}" || die
 	fi
 
 	log_pad 'Sandbox layer restored:' "${description}"
@@ -558,7 +555,6 @@ function install_sandbox_layer () {
 
 	local must_create
 	must_create=1
-	rm -rf "${HALCYON_DIR}/sandbox" || die
 	if ! build_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${must_create}"; then
 		log_warning 'Cannot build sandbox layer'
 		return 1
