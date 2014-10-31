@@ -158,7 +158,7 @@ function build_slug () {
 	# http://www.haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
 
 	if [ -d "${HALCYON_DIR}/sandbox/share" ]; then
-		tar_copy "${HALCYON_DIR}/sandbox/share" "${slug_dir}${HALCYON_DIR}/sandbox/share" || die
+		copy_dir_into "${HALCYON_DIR}/sandbox/share" "${slug_dir}${HALCYON_DIR}/sandbox/share" || die
 	fi
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
@@ -301,8 +301,7 @@ function apply_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	# NOTE: When / is read-only, but HALCYON_DIR is not, both cp -Rp and tar_copy fail, but cp -R
-	# succeeds.
+	# NOTE: When / is read-only, but HALCYON_DIR is not, cp -Rp fails, but cp -R succeeds.
 
 	local install_dir
 	install_dir='/'

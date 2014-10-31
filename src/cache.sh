@@ -27,7 +27,7 @@ function prepare_cache () {
 		); then
 			log 'Examining cache contents'
 
-			tar_copy "${HALCYON_CACHE_DIR}" "${cache_dir}" || die
+			copy_dir_over "${HALCYON_CACHE_DIR}" "${cache_dir}" || die
 
 			quote <<<"${files}"
 			log

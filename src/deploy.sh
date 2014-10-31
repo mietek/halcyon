@@ -252,8 +252,7 @@ function prepare_source_dir () {
 		local sandbox_dir
 		sandbox_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
 
-		rm -rf "${sandbox_dir}" || die
-		tar_copy "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}" "${sandbox_dir}" || die
+		copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}" "${sandbox_dir}" || die
 	fi
 
 	if [ -n "${HALCYON_SLUG_EXTRA_APPS:+_}" ]; then
@@ -266,8 +265,7 @@ function prepare_source_dir () {
 		local slug_dir
 		slug_dir="${source_dir}/.halcyon-magic/slug-extra-apps-constraints"
 
-		rm -rf "${slug_dir}" || die
-		tar_copy "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR}" "${slug_dir}" || die
+		copy_dir_over "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR}" "${slug_dir}" || die
 	fi
 }
 
@@ -479,7 +477,7 @@ function deploy_local_app () {
 	if ! (( HALCYON_NO_COPY_LOCAL_SOURCE )); then
 		source_dir=$( get_tmp_dir 'halcyon-copied-source' ) || die
 
-		copy_app_source "${local_dir}" "${source_dir}" || die
+		copy_app_source_over "${local_dir}" "${source_dir}" || die
 	else
 		source_dir="${local_dir}"
 	fi

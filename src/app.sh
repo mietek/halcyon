@@ -130,15 +130,15 @@ function hash_app_magic () {
 }
 
 
-function copy_app_source () {
+function copy_app_source_over () {
 	local source_dir work_dir
 	expect_args source_dir work_dir -- "$@"
 
-	tar_copy "${source_dir}" "${work_dir}" \
-		--exclude '.git'               \
-		--exclude '.ghc'               \
-		--exclude '.cabal'             \
-		--exclude '.cabal-sandbox'     \
+	copy_dir_over "${source_dir}" "${work_dir}" \
+		--exclude '.git'                    \
+		--exclude '.ghc'                    \
+		--exclude '.cabal'                  \
+		--exclude '.cabal-sandbox'          \
 		--exclude 'cabal.sandbox.config' || die
 }
 
@@ -158,7 +158,7 @@ function build_app_layer () {
 	log 'Building app layer'
 
 	if (( must_copy )); then
-		copy_app_source "${source_dir}" "${HALCYON_DIR}/app" || die
+		copy_app_source_over "${source_dir}" "${HALCYON_DIR}/app" || die
 	fi
 
 	if (( must_copy )) || (( must_configure )); then
@@ -327,9 +327,12 @@ function prepare_app_layer () {
 	expect_args source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	local work_dir all_files
+	local work_dir
 	work_dir=$( get_tmp_dir 'halcyon-changed-source' ) || die
-	copy_app_source "${source_dir}" "${work_dir}" || die
+
+	copy_app_source_over "${source_dir}" "${work_dir}" || die
+
+	local all_files
 	all_files=$(
 		compare_tree "${HALCYON_DIR}/app" "${work_dir}" |
 		filter_not_matching '^. (\.halcyon-tag$|dist/)'
