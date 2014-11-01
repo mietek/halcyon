@@ -56,6 +56,7 @@ function set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
 
+		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_APP_PRE_BUILD_HOOK="${HALCYON_APP_PRE_BUILD_HOOK:-}"
 		export HALCYON_APP_POST_BUILD_HOOK="${HALCYON_APP_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
@@ -84,6 +85,7 @@ function set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=
 		export HALCYON_FORCE_BUILD_SANDBOX=0
 
+		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS=
 		export HALCYON_APP_PRE_BUILD_HOOK=
 		export HALCYON_APP_POST_BUILD_HOOK=
 		export HALCYON_FORCE_BUILD_APP=0
@@ -301,6 +303,12 @@ function handle_command_line () {
 		'--force-sandbox-build')
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
 
+		'--app-extra-configure-flags')
+			shift
+			expect_args app_extra_configure_flags -- "$@"
+			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${app_extra_configure_flags}";;
+		'--app-extra-configure-flags='*)
+			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
 		'--app-pre-build-hook')
 			shift
 			expect_args app_pre_build_hook -- "$@"

@@ -346,6 +346,9 @@ function prepare_source_dir () {
 		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-post-build-hook" || die
 	fi
 
+	if [ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]; then
+		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${source_dir}/.halcyon-magic/app-extra-configure-flags" || die
+	fi
 	if [ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]; then
 		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-pre-build-hook" || die
 	fi

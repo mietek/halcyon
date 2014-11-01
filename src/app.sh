@@ -166,6 +166,9 @@ function build_app_layer () {
 		log 'Configuring app'
 
 		local -a opts
+		if [ -f "${source_dir}/.halcyon-magic/app-extra-configure-flags" ]; then
+			opts=( $( <"${source_dir}/.halcyon-magic/app-extra-configure-flags" ) ) || die
+		fi
 		opts+=( --prefix="${HALCYON_DIR}/${HALCYON_TARGET}" )
 
 		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure "${opts[@]}" |& quote; then
@@ -375,7 +378,7 @@ function prepare_app_layer () {
 
 	local must_configure
 	must_configure=0
-	if filter_matching "^. Setup.hs$" <<<"${changed_files}" |
+	if filter_matching "^. (.halcyon-magic/app-extra-configure-flags|Setup.hs)$" <<<"${changed_files}" |
 		match_exactly_one >'/dev/null'
 	then
 		must_configure=1
