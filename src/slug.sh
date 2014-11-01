@@ -205,6 +205,16 @@ function build_slug () {
 		log 'Slug post-build hook executed'
 	fi
 
+	if [ -d "${slug_dir}/share/doc" ]; then
+		log_indent_begin 'Removing documentation from slug...'
+
+		rm -rf "${slug_dir}/share/doc" || die
+
+		local trimmed_size
+		trimmed_size=$( size_tree "${slug_dir}" ) || die
+		log_end "done, ${trimmed_size}"
+	fi
+
 	log_indent_begin 'Stripping slug...'
 
 	strip_tree "${slug_dir}" || die

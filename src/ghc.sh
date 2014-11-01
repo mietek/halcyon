@@ -313,6 +313,16 @@ function build_ghc_layer () {
 		log 'GHC post-build hook executed'
 	fi
 
+	if [ -d "${HALCYON_DIR}/ghc/share/doc" ]; then
+		log_indent_begin 'Removing documentation from GHC layer...'
+
+		rm -rf "${HALCYON_DIR}/ghc/share/doc" || die
+
+		local trimmed_size
+		trimmed_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
+		log_end "done, ${trimmed_size}"
+	fi
+
 	log_indent_begin 'Stripping GHC layer...'
 
 	strip_tree "${HALCYON_DIR}/ghc" || die

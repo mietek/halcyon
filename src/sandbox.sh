@@ -393,6 +393,16 @@ function build_sandbox_layer () {
 		log 'Sandbox post-build hook executed'
 	fi
 
+	if [ -d "${HALCYON_DIR}/sandbox/logs" ] || [ -d "${HALCYON_DIR}/sandbox/share/doc" ]; then
+		log_indent_begin 'Removing documentation from sandbox layer...'
+
+		rm -rf "${HALCYON_DIR}/sandbox/logs" "${HALCYON_DIR}/sandbox/share/doc" || die
+
+		local trimmed_size
+		trimmed_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
+		log_end "done, ${trimmed_size}"
+	fi
+
 	log_indent_begin 'Stripping sandbox layer...'
 
 	strip_tree "${HALCYON_DIR}/sandbox" || die
