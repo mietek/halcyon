@@ -630,7 +630,12 @@ function deploy_cloned_app () {
 	if ! git -C "${source_dir}" submodule update --init --recursive |& quote; then
 		die 'Cannot update app submodules'
 	fi
-	rm -rf "${source_dir}/.git" "${source_dir}/.gitmodules" || die
+	find "${source_dir}" -depth     \
+		\(                      \
+		-name '.git'        -or \
+		-name '.gitmodules'     \
+		\)                      \
+		-exec rm -rf '{}' ';' || die
 
 	local app_label
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
