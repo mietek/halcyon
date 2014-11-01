@@ -72,10 +72,10 @@ function touch_cached_file () {
 	expect_args file_name -- "$@"
 
 	if ! [ -f "${HALCYON_CACHE_DIR}/${file_name}" ]; then
-		return 1
+		return 0
 	fi
 
-	touch "${HALCYON_CACHE_DIR}/${file_name}" || return 1
+	touch "${HALCYON_CACHE_DIR}/${file_name}" || return 0
 }
 
 
