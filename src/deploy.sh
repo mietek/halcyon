@@ -455,11 +455,6 @@ function deploy_app () {
 	expect_args app_label source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if (( HALCYON_ONLY_SHOW_APP_LABEL )); then
-		echo "${app_label}"
-		return 0
-	fi
-
 	# NOTE: This is the first out of the two moments when source_dir is modified.
 
 	prepare_source_dir "${source_dir}" || die
@@ -495,6 +490,10 @@ function deploy_app () {
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 	fi
 
+	if (( HALCYON_ONLY_SHOW_APP_LABEL )); then
+		echo "${app_label}"
+		return 0
+	fi
 	if (( HALCYON_ONLY_SHOW_CONSTRAINTS )); then
 		format_constraints <<<"${constraints}" || die
 		return 0
