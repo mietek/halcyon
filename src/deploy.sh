@@ -447,11 +447,18 @@ function do_deploy_app () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_RECURSIVE HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL HALCYON_ONLY_FREEZE_CONSTRAINTS
+	expect_vars HALCYON_RECURSIVE HALCYON_TARGET \
+		HALCYON_FORCE_RESTORE_ALL \
+		HALCYON_ONLY_SHOW_APP_LABEL HALCYON_ONLY_SHOW_CONSTRAINTS
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 	expect_existing "${source_dir}"
+
+	if (( HALCYON_ONLY_SHOW_APP_LABEL )); then
+		echo "${app_label}"
+		return 0
+	fi
 
 	# NOTE: This is the first out of the two moments when source_dir is modified.
 
@@ -488,7 +495,7 @@ function deploy_app () {
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 	fi
 
-	if (( HALCYON_ONLY_FREEZE_CONSTRAINTS )); then
+	if (( HALCYON_ONLY_SHOW_CONSTRAINTS )); then
 		format_constraints <<<"${constraints}" || die
 		return 0
 	fi
