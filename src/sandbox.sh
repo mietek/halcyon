@@ -203,7 +203,7 @@ copy_sandbox_magic () {
 }
 
 
-deploy_sandbox_extra_libs () {
+install_sandbox_extra_libs () {
 	expect_vars HALCYON_DIR
 
 	local source_dir
@@ -216,7 +216,7 @@ deploy_sandbox_extra_libs () {
 	local apt_dir
 	apt_dir=$( get_tmp_dir 'halcyon-sandbox-extra-libs' ) || die
 
-	log 'Deploying sandbox extra libs'
+	log 'Installing sandbox extra libs'
 
 	local -a opts
 	opts+=( -o debug::nolocking='true' )
@@ -337,8 +337,8 @@ build_sandbox_layer () {
 		log 'Sandbox pre-build hook executed'
 	fi
 
-	if ! deploy_sandbox_extra_libs "${source_dir}"; then
-		log_warning 'Cannot deploy sandbox extra libs'
+	if ! install_sandbox_extra_libs "${source_dir}"; then
+		log_warning 'Cannot install sandbox extra libs'
 		return 1
 	fi
 
