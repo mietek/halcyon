@@ -10,8 +10,14 @@ quote () {
 
 
 halcyon_source_bashmenot () {
+	local no_autoupdate
+	no_autoupdate="${HALCYON_NO_AUTOUPDATE:-0}"
+	if (( ${HALCYON_RECURSIVE:-0} )); then
+		no_autoupdate=1
+	fi
+
 	if [[ -d "${HALCYON_TOP_DIR}/lib/bashmenot" ]]; then
-		BASHMENOT_NO_AUTOUPDATE="${HALCYON_NO_AUTOUPDATE:-0}" \
+		BASHMENOT_NO_AUTOUPDATE="${no_autoupdate}" \
 			source "${HALCYON_TOP_DIR}/lib/bashmenot/src.sh" || return 1
 		return 0
 	fi
@@ -54,7 +60,7 @@ source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
 halcyon_autoupdate () {
-	if (( ${HALCYON_NO_AUTOUPDATE:-0} )); then
+	if (( ${HALCYON_NO_AUTOUPDATE:-0} )) || (( ${HALCYON_RECURSIVE:-0} )); then
 		return 0
 	fi
 
