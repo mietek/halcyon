@@ -328,7 +328,8 @@ build_sandbox_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
+			HALCYON_RECURSIVE=1                                           \
+				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
 				"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
 			log_warning 'Cannot execute sandbox pre-build hook'
@@ -382,7 +383,8 @@ build_sandbox_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
+			HALCYON_RECURSIVE=1                                            \
+				"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
 				"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
 			log_warning 'Cannot execute sandbox post-build hook'

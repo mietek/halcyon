@@ -286,7 +286,8 @@ build_cabal_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
+			HALCYON_RECURSIVE=1                                         \
+				"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
 				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
 		); then
 			die 'Failed to execute Cabal pre-build hook'
@@ -342,7 +343,8 @@ EOF
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]]; then
 		log 'Executing Cabal post-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
+			HALCYON_RECURSIVE=1                                          \
+				"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
 				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
 		); then
 			die 'Failed to execute Cabal post-build hook'

@@ -156,7 +156,8 @@ build_slug () {
 	if [[ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]]; then
 		log 'Executing slug pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/slug-pre-build-hook" \
+			HALCYON_RECURSIVE=1                                        \
+				"${source_dir}/.halcyon-magic/slug-pre-build-hook" \
 				"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
 			log_warning 'Cannot execute slug pre-build hook'
@@ -196,7 +197,8 @@ build_slug () {
 	if [[ -f "${source_dir}/.halcyon-magic/slug-post-build-hook" ]]; then
 		log 'Executing slug post-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/slug-post-build-hook" \
+			HALCYON_RECURSIVE=1                                         \
+				"${source_dir}/.halcyon-magic/slug-post-build-hook" \
 				"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
 			log_warning 'Cannot execute slug post-build hook'

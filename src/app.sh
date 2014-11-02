@@ -191,7 +191,8 @@ build_app_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]]; then
 		log 'Executing app pre-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/app-pre-build-hook" \
+			HALCYON_RECURSIVE=1                                       \
+				"${source_dir}/.halcyon-magic/app-pre-build-hook" \
 				"${tag}" "${source_dir}" |& quote
 		); then
 			die 'Failed to execute app pre-build hook'
@@ -213,7 +214,8 @@ build_app_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]]; then
 		log 'Executing app post-build hook'
 		if ! (
-			"${source_dir}/.halcyon-magic/app-post-build-hook" \
+			HALCYON_RECURSIVE=1                                        \
+				"${source_dir}/.halcyon-magic/app-post-build-hook" \
 				"${tag}" "${source_dir}" |& quote
 		); then
 			die 'Failed to execute app post-build hook'
