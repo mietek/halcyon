@@ -18,7 +18,7 @@ halcyon_source_bashmenot () {
 	fi
 
 	local urloid url branch
-	urloid="${BASHMENOT_URL:-https://github.com/mietek/bashmenot.git}"
+	urloid="${BASHMENOT_URL:-https://github.com/mietek/bashmenot}"
 	url="${urloid%#*}"
 	branch="${urloid#*#}"
 	if [[ "${branch}" == "${url}" ]]; then
@@ -70,7 +70,7 @@ halcyon_autoupdate () {
 	fi
 
 	local urloid url branch
-	urloid="${HALCYON_URL:-https://github.com/mietek/halcyon.git}"
+	urloid="${HALCYON_URL:-https://github.com/mietek/halcyon}"
 	url="${urloid%#*}"
 	branch="${urloid#*#}"
 	if [[ "${branch}" == "${url}" ]]; then
