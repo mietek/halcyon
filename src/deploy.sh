@@ -293,6 +293,8 @@ function deploy_app_from_slug () {
 	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
+		export HALCYON_NO_CACHE=1
+
 		finish_deploy "${tag}" || die
 	fi
 }
