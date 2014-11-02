@@ -126,13 +126,13 @@ function determine_cabal_repo () {
 
 
 function finish_deploy () {
-	expect_vars HOME HALCYON_DIR HALCYON_DEPLOY_ONLY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
+	expect_vars HOME HALCYON_DIR HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
 
 	local tag
 	expect_args tag -- "$@"
 
 	if ! (( HALCYON_NO_ANNOUNCE_DEPLOY )); then
-		if (( HALCYON_DEPLOY_ONLY_ENV )); then
+		if (( HALCYON_ONLY_DEPLOY_ENV )); then
 			log_pad 'Environment deployed'
 		else
 			local description
@@ -185,7 +185,7 @@ function do_deploy_env () {
 
 
 function deploy_env () {
-	expect_vars HALCYON_RECURSIVE HALCYON_DEPLOY_ONLY_ENV
+	expect_vars HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV
 
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -649,7 +649,7 @@ function deploy_unpacked_app () {
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	HALCYON_DEPLOY_ONLY_ENV=1 HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env '/dev/null' || return 1
+	HALCYON_ONLY_DEPLOY_ENV=1 HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env '/dev/null' || return 1
 
 	log 'Unpacking app'
 
