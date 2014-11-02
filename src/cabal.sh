@@ -159,7 +159,7 @@ function format_cabal_archive_name () {
 	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
 	cabal_date=$( get_tag_cabal_date "${tag}" ) || die
 
-	echo "halcyon-cabal-${cabal_id}-${repo_name}${cabal_date:+-${cabal_date}}.tar.xz"
+	echo "halcyon-cabal-${cabal_id}-${repo_name}${cabal_date:+-${cabal_date}}.tar.gz"
 }
 
 
@@ -171,7 +171,7 @@ function format_bare_cabal_archive_name () {
 	cabal_id=$( format_cabal_id "${tag}" ) || die
 	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
 
-	echo "halcyon-cabal-${cabal_id}-${repo_name}.tar.xz"
+	echo "halcyon-cabal-${cabal_id}-${repo_name}.tar.gz"
 }
 
 
@@ -195,7 +195,7 @@ function format_updated_cabal_archive_name_pattern () {
 	cabal_id=$( format_cabal_id "${tag}" ) || die
 	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
 
-	echo "halcyon-cabal-${cabal_id//./\.}-${repo_name//./\.}-.*\.tar\.xz"
+	echo "halcyon-cabal-${cabal_id//./\.}-${repo_name//./\.}-.*\.tar\.gz"
 }
 
 
@@ -206,7 +206,7 @@ function map_updated_cabal_archive_name_to_date () {
 	local date_etc
 	date_etc="${archive_name#halcyon-cabal-*-*-}"
 
-	echo "${date_etc%.tar.xz}"
+	echo "${date_etc%.tar.gz}"
 }
 
 

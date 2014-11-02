@@ -148,7 +148,7 @@ function format_ghc_archive_name () {
 	local ghc_id
 	ghc_id=$( format_ghc_id "${tag}" ) || die
 
-	echo "halcyon-ghc-${ghc_id}.tar.xz"
+	echo "halcyon-ghc-${ghc_id}.tar.gz"
 }
 
 

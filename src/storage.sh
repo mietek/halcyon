@@ -299,3 +299,50 @@ function clean_cache () {
 		quote <<<"${changed_files}"
 	fi
 }
+
+
+function install_pigz () {
+	expect_vars HALCYON_TOP_DIR HALCYON_CACHE_DIR
+
+	if which 'pigz' &>'/dev/null'; then
+		return 0
+	fi
+
+	local os os_description
+	os=$( detect_os ) || die
+	description=$( format_os_description "${os}" ) || die
+
+	log 'Installing pigz'
+
+	local original_url
+	case "${os}" in
+	'linux-ubuntu-14.04-x86_64')
+		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.5-1_amd64.deb';;
+	'linux-ubuntu-12.04-x86_64')
+		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.6-1_amd64.deb';;
+	'linux-ubuntu-10.04-x86_64')
+		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.3-2_amd64.deb';;
+	*)
+		die "Unexpected OS: ${description}"
+	esac
+
+	local original_name pigz_dir
+	original_name=$( basename "${original_url}" ) || die
+	pigz_dir=$( get_tmp_dir 'halcyon-pigz' ) || die
+
+	if ! dpkg --extract "${HALCYON_CACHE_DIR}/${original_name}" "${pigz_dir}" 2>'/dev/null'; then
+		rm -rf "${pigz_dir}" || die
+		if ! cache_original_stored_file "${original_url}" ||
+			! dpkg --extract "${HALCYON_CACHE_DIR}/${original_name}" "${pigz_dir}" 2>'/dev/null'
+		then
+			log_warning 'Cannot install pigz'
+			return 1
+		fi
+	else
+		touch_cached_file "${original_name}" || die
+	fi
+
+	copy_file "${pigz_dir}/usr/bin/pigz" "${HALCYON_TOP_DIR}/bin/pigz" || die
+
+	rm -rf "${pigz_dir}" || die
+}

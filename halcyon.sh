@@ -35,6 +35,7 @@ function halcyon_deploy () {
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
 
 	prepare_cache "${cache_dir}" || die
+	install_pigz || die
 
 	if (( HALCYON_DEPLOY_ONLY_ENV )); then
 		deploy_env '/dev/null' || return 1

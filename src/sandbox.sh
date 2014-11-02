@@ -96,7 +96,7 @@ function format_sandbox_archive_name () {
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	sandbox_id=$( format_sandbox_id "${tag}" ) || die
 
-	echo "halcyon-sandbox-${sandbox_id}-${app_label}.tar.xz"
+	echo "halcyon-sandbox-${sandbox_id}-${app_label}.tar.gz"
 }
 
 
@@ -151,7 +151,7 @@ function format_sandbox_common_file_name_pattern () {
 	local app_label
 	app_label=$( get_tag_app_label "${tag}" ) || die
 
-	echo "halcyon-sandbox-.*-${app_label}.(tar.xz|cabal.config)"
+	echo "halcyon-sandbox-.*-${app_label}.(tar.gz|cabal.config)"
 }
 
 
