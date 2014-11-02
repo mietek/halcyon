@@ -117,6 +117,17 @@ function format_app_archive_name () {
 }
 
 
+function format_app_constraints_file_name () {
+	local tag
+	expect_args tag -- "$@"
+
+	local app_id
+	app_id=$( format_app_id "${tag}" ) || die
+
+	echo "halcyon-app-constraints-${app_id}.cabal.config"
+}
+
+
 function hash_app_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -224,22 +235,25 @@ function build_app_layer () {
 
 function archive_app_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_ARCHIVE
-	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
+	expect_existing "${HALCYON_DIR}/app/.halcyon-tag" "${HALCYON_DIR}/app/cabal.config"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
-	local app_tag os ghc_version archive_name
+	local app_tag os ghc_version archive_name constraints_name
 	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die
 	os=$( get_tag_os "${app_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_app_archive_name "${app_tag}" ) || die
+	constraints_name=$( format_app_constraints_file_name "${app_tag}" ) || die
 
 	log 'Archiving app layer'
 
 	create_cached_archive "${HALCYON_DIR}/app" "${archive_name}" || die
+	copy_file "${HALCYON_DIR}/app/cabal.config" "${HALCYON_CACHE_DIR}/${constraints_name}"
 	upload_cached_file "${os}/ghc-${ghc_version}" "${archive_name}" || true
+	upload_cached_file "${os}/ghc-${ghc_version}" "${constraints_name}" || true
 }
 
 
