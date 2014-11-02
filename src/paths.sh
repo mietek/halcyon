@@ -1,7 +1,7 @@
 export HALCYON_TOP_DIR
 HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )
 
-function set_halcyon_paths () {
+set_halcyon_paths () {
 	if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 		export HALCYON_INTERNAL_PATHS=1
 

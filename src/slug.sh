@@ -1,4 +1,4 @@
-function create_slug_tag () {
+create_slug_tag () {
 	local app_label target source_hash
 	expect_args app_label target source_hash -- "$@"
 
@@ -10,7 +10,7 @@ function create_slug_tag () {
 }
 
 
-function detect_slug_tag () {
+detect_slug_tag () {
 	local tag_file
 	expect_args tag_file -- "$@"
 
@@ -26,7 +26,7 @@ function detect_slug_tag () {
 }
 
 
-function derive_slug_tag () {
+derive_slug_tag () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -39,7 +39,7 @@ function derive_slug_tag () {
 }
 
 
-function format_slug_id () {
+format_slug_id () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -51,7 +51,7 @@ function format_slug_id () {
 }
 
 
-function format_slug_description () {
+format_slug_description () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -63,7 +63,7 @@ function format_slug_description () {
 }
 
 
-function format_slug_archive_name () {
+format_slug_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -74,12 +74,12 @@ function format_slug_archive_name () {
 }
 
 
-function format_slug_archive_name_prefix () {
+format_slug_archive_name_prefix () {
 	echo 'halcyon-slug-'
 }
 
 
-function format_slug_archive_name_pattern () {
+format_slug_archive_name_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -90,11 +90,11 @@ function format_slug_archive_name_pattern () {
 }
 
 
-function deploy_slug_extra_apps () {
+deploy_slug_extra_apps () {
 	local tag source_dir slug_dir
 	expect_args tag source_dir slug_dir -- "$@"
 
-	if ! [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
+	if [[ ! -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]]; then
 		return 0
 	fi
 
@@ -111,9 +111,9 @@ function deploy_slug_extra_apps () {
 	env_opts+=( --install-dir="${slug_dir}" )
 	env_opts+=( --recursive )
 	env_opts+=( --ghc-version="${ghc_version}" )
-	[ -n "${ghc_magic_hash}" ] && env_opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
+	[[ -n "${ghc_magic_hash}" ]] && env_opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
 	env_opts+=( --cabal-version="${cabal_version}" )
-	[ -n "${cabal_magic_hash}" ] && env_opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
+	[[ -n "${cabal_magic_hash}" ]] && env_opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
 	env_opts+=( --cabal-repo="${cabal_repo}" )
 
 	log 'Deploying slug extra apps'
@@ -135,14 +135,14 @@ function deploy_slug_extra_apps () {
 
 		local -a opts
 		opts=( "${env_opts[@]}" )
-		[ -f "${constraints_file}" ] && opts+=( --constraints-file="${constraints_file}" )
+		[[ -f "${constraints_file}" ]] && opts+=( --constraints-file="${constraints_file}" )
 
 		( deploy "${opts[@]}" "${slug_app}" |& quote ) || return 1
 	done
 }
 
 
-function build_slug () {
+build_slug () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
@@ -153,7 +153,7 @@ function build_slug () {
 
 	log 'Building slug'
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]]; then
 		log 'Executing slug pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/slug-pre-build-hook" \
@@ -170,7 +170,7 @@ function build_slug () {
 	# NOTE: Cabal libraries may require data files at runtime.  See filestore for an example.
 	# http://www.haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
 
-	if [ -d "${HALCYON_DIR}/sandbox/share" ]; then
+	if [[ -d "${HALCYON_DIR}/sandbox/share" ]]; then
 		copy_dir_into "${HALCYON_DIR}/sandbox/share" "${slug_dir}${HALCYON_DIR}/sandbox/share" || die
 	fi
 
@@ -193,7 +193,7 @@ function build_slug () {
 
 	log "App copied, ${copied_size}"
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-post-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/slug-post-build-hook" ]]; then
 		log 'Executing slug post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/slug-post-build-hook" \
@@ -205,7 +205,7 @@ function build_slug () {
 		log 'Slug post-build hook executed'
 	fi
 
-	if [ -d "${slug_dir}/share/doc" ]; then
+	if [[ -d "${slug_dir}/share/doc" ]]; then
 		log_indent_begin 'Removing documentation from slug...'
 
 		rm -rf "${slug_dir}/share/doc" || die
@@ -227,7 +227,7 @@ function build_slug () {
 }
 
 
-function archive_slug () {
+archive_slug () {
 	expect_vars HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 
 	local slug_dir
@@ -262,7 +262,7 @@ function archive_slug () {
 }
 
 
-function validate_slug () {
+validate_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
@@ -272,7 +272,7 @@ function validate_slug () {
 }
 
 
-function restore_slug () {
+restore_slug () {
 	expect_vars
 
 	local tag slug_dir
@@ -303,7 +303,7 @@ function restore_slug () {
 }
 
 
-function announce_slug () {
+announce_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
@@ -315,19 +315,17 @@ function announce_slug () {
 }
 
 
-function apply_slug () {
+apply_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	# NOTE: When / is read-only, but HALCYON_DIR is not, cp -Rp fails, but cp -R succeeds.
-
 	local install_dir
-	install_dir='/'
-	if [ -n "${HALCYON_INSTALL_DIR:+_}" ]; then
-		install_dir="${HALCYON_INSTALL_DIR}"
-	fi
+	install_dir="${HALCYON_INSTALL_DIR:-/}"
 
 	rm -f "${slug_dir}/.halcyon-tag" || die
 	mkdir -p "${install_dir}" || die
+
+	# NOTE: When / is read-only, but HALCYON_DIR is not, cp -Rp fails, but cp -R succeeds.
+
 	cp -R "${slug_dir}/." "${install_dir}" |& quote || die
 }

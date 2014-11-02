@@ -1,9 +1,9 @@
-function get_default_ghc_version () {
+get_default_ghc_version () {
 	echo '7.8.3'
 }
 
 
-function map_ghc_version_to_libgmp10_x86_64_original_url () {
+map_ghc_version_to_libgmp10_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -16,7 +16,7 @@ function map_ghc_version_to_libgmp10_x86_64_original_url () {
 }
 
 
-function map_ghc_version_to_libgmp3_x86_64_original_url () {
+map_ghc_version_to_libgmp3_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -47,7 +47,7 @@ function map_ghc_version_to_libgmp3_x86_64_original_url () {
 }
 
 
-function map_base_package_version_to_ghc_version () {
+map_base_package_version_to_ghc_version () {
 	local base_version
 	expect_args base_version -- "$@"
 
@@ -66,7 +66,7 @@ function map_base_package_version_to_ghc_version () {
 }
 
 
-function map_constraints_to_ghc_version () {
+map_constraints_to_ghc_version () {
 	local constraints
 	expect_args constraints -- "$@"
 
@@ -79,7 +79,7 @@ function map_constraints_to_ghc_version () {
 }
 
 
-function create_ghc_tag () {
+create_ghc_tag () {
 	local ghc_version ghc_magic_hash
 	expect_args ghc_version ghc_magic_hash -- "$@"
 
@@ -91,7 +91,7 @@ function create_ghc_tag () {
 }
 
 
-function detect_ghc_tag () {
+detect_ghc_tag () {
 	expect_vars HALCYON_DIR
 
 	local tag_file
@@ -109,7 +109,7 @@ function detect_ghc_tag () {
 }
 
 
-function derive_ghc_tag () {
+derive_ghc_tag () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -121,7 +121,7 @@ function derive_ghc_tag () {
 }
 
 
-function format_ghc_id () {
+format_ghc_id () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -133,7 +133,7 @@ function format_ghc_id () {
 }
 
 
-function format_ghc_description () {
+format_ghc_description () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -141,7 +141,7 @@ function format_ghc_description () {
 }
 
 
-function format_ghc_archive_name () {
+format_ghc_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -152,7 +152,7 @@ function format_ghc_archive_name () {
 }
 
 
-function hash_ghc_magic () {
+hash_ghc_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
@@ -161,7 +161,7 @@ function hash_ghc_magic () {
 }
 
 
-function copy_ghc_magic () {
+copy_ghc_magic () {
 	expect_vars HALCYON_DIR
 
 	local source_dir
@@ -170,7 +170,7 @@ function copy_ghc_magic () {
 
 	local ghc_magic_hash
 	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
-	if [ -z "${ghc_magic_hash}" ]; then
+	if [[ -z "${ghc_magic_hash}" ]]; then
 		return 0
 	fi
 
@@ -183,7 +183,7 @@ function copy_ghc_magic () {
 }
 
 
-function prepare_ghc_layer () {
+prepare_ghc_layer () {
 	expect_vars HALCYON_DIR
 	expect_no_existing "${HALCYON_DIR}/ghc/lib"
 
@@ -247,7 +247,7 @@ function prepare_ghc_layer () {
 }
 
 
-function build_ghc_layer () {
+build_ghc_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag source_dir
@@ -274,7 +274,7 @@ function build_ghc_layer () {
 		touch_cached_file "${original_name}" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/ghc-pre-build-hook" \
@@ -302,7 +302,7 @@ function build_ghc_layer () {
 
 	log "GHC installed, ${installed_size}"
 
-	if [ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]]; then
 		log 'Executing GHC post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/ghc-post-build-hook" \
@@ -313,7 +313,7 @@ function build_ghc_layer () {
 		log 'GHC post-build hook executed'
 	fi
 
-	if [ -d "${HALCYON_DIR}/ghc/share/doc" ]; then
+	if [[ -d "${HALCYON_DIR}/ghc/share/doc" ]]; then
 		log_indent_begin 'Removing documentation from GHC layer...'
 
 		rm -rf "${HALCYON_DIR}/ghc/share/doc" || die
@@ -337,7 +337,7 @@ function build_ghc_layer () {
 }
 
 
-function archive_ghc_layer () {
+archive_ghc_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/ghc/.halcyon-tag"
 
@@ -357,7 +357,7 @@ function archive_ghc_layer () {
 }
 
 
-function validate_ghc_layer () {
+validate_ghc_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -369,7 +369,7 @@ function validate_ghc_layer () {
 }
 
 
-function restore_ghc_layer () {
+restore_ghc_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -413,7 +413,7 @@ function restore_ghc_layer () {
 }
 
 
-function announce_ghc_layer () {
+announce_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -427,7 +427,7 @@ function announce_ghc_layer () {
 }
 
 
-function install_ghc_layer () {
+install_ghc_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_GHC
 
 	local tag source_dir

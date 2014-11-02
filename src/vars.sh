@@ -1,4 +1,4 @@
-function set_halcyon_vars () {
+set_halcyon_vars () {
 	set_halcyon_paths
 
 	if ! (( ${HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED:-0} )); then
@@ -72,7 +72,7 @@ function set_halcyon_vars () {
 
 		export HALCYON_NO_ANNOUNCE_DEPLOY="${HALCYON_NO_ANNOUNCE_DEPLOY:-0}"
 	else
-		export HALCYON_CONSTRAINTS_FILE=
+		export HALCYON_CONSTRAINTS_FILE=''
 
 		export HALCYON_FORCE_RESTORE_ALL=0
 
@@ -81,22 +81,22 @@ function set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_CABAL=0
 		export HALCYON_FORCE_UPDATE_CABAL=0
 
-		export HALCYON_SANDBOX_EXTRA_LIBS=
-		export HALCYON_SANDBOX_EXTRA_APPS=
-		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=
-		export HALCYON_SANDBOX_PRE_BUILD_HOOK=
-		export HALCYON_SANDBOX_POST_BUILD_HOOK=
+		export HALCYON_SANDBOX_EXTRA_LIBS=''
+		export HALCYON_SANDBOX_EXTRA_APPS=''
+		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=''
+		export HALCYON_SANDBOX_PRE_BUILD_HOOK=''
+		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
 		export HALCYON_FORCE_BUILD_SANDBOX=0
 
-		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS=
-		export HALCYON_APP_PRE_BUILD_HOOK=
-		export HALCYON_APP_POST_BUILD_HOOK=
+		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS=''
+		export HALCYON_APP_PRE_BUILD_HOOK=''
+		export HALCYON_APP_POST_BUILD_HOOK=''
 		export HALCYON_FORCE_BUILD_APP=0
 
-		export HALCYON_SLUG_EXTRA_APPS=
-		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR=
-		export HALCYON_SLUG_PRE_BUILD_HOOK=
-		export HALCYON_SLUG_POST_BUILD_HOOK=
+		export HALCYON_SLUG_EXTRA_APPS=''
+		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR=''
+		export HALCYON_SLUG_PRE_BUILD_HOOK=''
+		export HALCYON_SLUG_POST_BUILD_HOOK=''
 		export HALCYON_FORCE_BUILD_SLUG=0
 
 		export HALCYON_NO_ANNOUNCE_DEPLOY=0
@@ -104,7 +104,7 @@ function set_halcyon_vars () {
 }
 
 
-function handle_command_line () {
+handle_command_line () {
 	while (( $# )); do
 		case "$1" in
 		# Paths:

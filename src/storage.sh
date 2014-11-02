@@ -1,9 +1,9 @@
-function get_public_storage_host () {
+get_public_storage_host () {
 	echo 's3.halcyon.sh'
 }
 
 
-function format_public_storage_url () {
+format_public_storage_url () {
 	local object
 	expect_args object -- "$@"
 
@@ -14,18 +14,18 @@ function format_public_storage_url () {
 }
 
 
-function private_storage () {
-	if [ -z "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ] ||
-		[ -z "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ] ||
-		[ -z "${HALCYON_S3_BUCKET:+_}" ] ||
-		[ -z "${HALCYON_S3_ACL:+_}" ]
+private_storage () {
+	if [[ -z "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ||
+		-z "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ||
+		-z "${HALCYON_S3_BUCKET:+_}" ||
+		-z "${HALCYON_S3_ACL:+_}" ]]
 	then
 		return 1
 	fi
 }
 
 
-function describe_storage () {
+describe_storage () {
 	expect_vars HALCYON_NO_PUBLIC_STORAGE
 
 	if private_storage && ! (( HALCYON_NO_PUBLIC_STORAGE )); then
@@ -40,7 +40,7 @@ function describe_storage () {
 }
 
 
-function create_cached_archive () {
+create_cached_archive () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local src_dir dst_file_name
@@ -51,13 +51,13 @@ function create_cached_archive () {
 }
 
 
-function extract_cached_archive_over () {
+extract_cached_archive_over () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local src_file_name dst_dir
 	expect_args src_file_name dst_dir -- "$@"
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${src_file_name}" ]; then
+	if [[ ! -f "${HALCYON_CACHE_DIR}/${src_file_name}" ]]; then
 		return 1
 	fi
 
@@ -65,13 +65,13 @@ function extract_cached_archive_over () {
 }
 
 
-function touch_cached_file () {
+touch_cached_file () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local file_name
 	expect_args file_name -- "$@"
 
-	if ! [ -f "${HALCYON_CACHE_DIR}/${file_name}" ]; then
+	if [[ ! -f "${HALCYON_CACHE_DIR}/${file_name}" ]]; then
 		return 0
 	fi
 
@@ -79,7 +79,7 @@ function touch_cached_file () {
 }
 
 
-function upload_cached_file () {
+upload_cached_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
 
 	local prefix file_name
@@ -97,7 +97,7 @@ function upload_cached_file () {
 }
 
 
-function cache_stored_file () {
+cache_stored_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
 	local prefix file_name
@@ -122,7 +122,7 @@ function cache_stored_file () {
 }
 
 
-function cache_original_stored_file () {
+cache_original_stored_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
 
 	local original_url
@@ -141,7 +141,7 @@ function cache_original_stored_file () {
 }
 
 
-function delete_private_stored_file () {
+delete_private_stored_file () {
 	expect_vars HALCYON_NO_DELETE
 
 	local prefix file_name
@@ -159,7 +159,7 @@ function delete_private_stored_file () {
 }
 
 
-function list_private_stored_files () {
+list_private_stored_files () {
 	local prefix
 	expect_args prefix -- "$@"
 
@@ -172,7 +172,7 @@ function list_private_stored_files () {
 }
 
 
-function list_public_stored_files () {
+list_public_stored_files () {
 	local prefix
 	expect_args prefix -- "$@"
 
@@ -188,7 +188,7 @@ function list_public_stored_files () {
 }
 
 
-function list_stored_files () {
+list_stored_files () {
 	local prefix
 	expect_args prefix -- "$@"
 
@@ -197,7 +197,7 @@ function list_stored_files () {
 }
 
 
-function delete_matching_private_stored_files () {
+delete_matching_private_stored_files () {
 	local prefix match_prefix match_pattern save_name
 	expect_args prefix match_prefix match_pattern save_name -- "$@"
 
@@ -221,7 +221,7 @@ function delete_matching_private_stored_files () {
 }
 
 
-function prepare_cache () {
+prepare_cache () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_RECURSIVE HALCYON_PURGE_CACHE HALCYON_NO_CACHE
 
 	local cache_dir
@@ -261,7 +261,7 @@ function prepare_cache () {
 }
 
 
-function clean_cache () {
+clean_cache () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_RECURSIVE HALCYON_NO_CACHE
 
 	local cache_dir
@@ -301,7 +301,7 @@ function clean_cache () {
 }
 
 
-function install_pigz () {
+install_pigz () {
 	expect_vars HALCYON_TOP_DIR HALCYON_CACHE_DIR
 
 	if which 'pigz' &>'/dev/null'; then

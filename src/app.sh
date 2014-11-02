@@ -1,4 +1,4 @@
-function create_app_tag () {
+create_app_tag () {
 	local app_label target               \
 		source_hash constraints_hash \
 		ghc_version ghc_magic_hash   \
@@ -16,7 +16,7 @@ function create_app_tag () {
 }
 
 
-function detect_app_tag () {
+detect_app_tag () {
 	local tag_file
 	expect_args tag_file -- "$@"
 
@@ -32,7 +32,7 @@ function detect_app_tag () {
 }
 
 
-function derive_app_tag () {
+derive_app_tag () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -56,7 +56,7 @@ function derive_app_tag () {
 }
 
 
-function derive_configured_app_tag_pattern () {
+derive_configured_app_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -79,7 +79,7 @@ function derive_configured_app_tag_pattern () {
 }
 
 
-function derive_recognized_app_tag_pattern () {
+derive_recognized_app_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -90,7 +90,7 @@ function derive_recognized_app_tag_pattern () {
 }
 
 
-function format_app_id () {
+format_app_id () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -98,7 +98,7 @@ function format_app_id () {
 }
 
 
-function format_app_description () {
+format_app_description () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -106,7 +106,7 @@ function format_app_description () {
 }
 
 
-function format_app_archive_name () {
+format_app_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -117,7 +117,7 @@ function format_app_archive_name () {
 }
 
 
-function format_app_constraints_file_name () {
+format_app_constraints_file_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -128,7 +128,7 @@ function format_app_constraints_file_name () {
 }
 
 
-function hash_app_magic () {
+hash_app_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
@@ -141,7 +141,7 @@ function hash_app_magic () {
 }
 
 
-function copy_app_source_over () {
+copy_app_source_over () {
 	local source_dir work_dir
 	expect_args source_dir work_dir -- "$@"
 
@@ -155,7 +155,7 @@ function copy_app_source_over () {
 }
 
 
-function build_app_layer () {
+build_app_layer () {
 	expect_vars HALCYON_DIR HALCYON_TARGET
 
 	local tag must_copy must_configure source_dir
@@ -178,7 +178,7 @@ function build_app_layer () {
 		log 'Configuring app'
 
 		local -a opts
-		if [ -f "${source_dir}/.halcyon-magic/app-extra-configure-flags" ]; then
+		if [[ -f "${source_dir}/.halcyon-magic/app-extra-configure-flags" ]]; then
 			opts=( $( <"${source_dir}/.halcyon-magic/app-extra-configure-flags" ) ) || die
 		fi
 		opts+=( --prefix="${HALCYON_DIR}/${HALCYON_TARGET}" )
@@ -188,7 +188,7 @@ function build_app_layer () {
 		fi
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]]; then
 		log 'Executing app pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/app-pre-build-hook" \
@@ -210,7 +210,7 @@ function build_app_layer () {
 
 	log "App compiled, ${compiled_size}"
 
-	if [ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]]; then
 		log 'Executing app post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/app-post-build-hook" \
@@ -233,7 +233,7 @@ function build_app_layer () {
 }
 
 
-function archive_app_layer () {
+archive_app_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag" "${HALCYON_DIR}/app/cabal.config"
 
@@ -257,7 +257,7 @@ function archive_app_layer () {
 }
 
 
-function validate_identical_app_layer () {
+validate_identical_app_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -269,7 +269,7 @@ function validate_identical_app_layer () {
 }
 
 
-function validate_configured_app_layer () {
+validate_configured_app_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -281,7 +281,7 @@ function validate_configured_app_layer () {
 }
 
 
-function validate_recognized_app_layer () {
+validate_recognized_app_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -293,7 +293,7 @@ function validate_recognized_app_layer () {
 }
 
 
-function restore_app_layer () {
+restore_app_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -332,7 +332,7 @@ function restore_app_layer () {
 }
 
 
-function prepare_app_layer () {
+prepare_app_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
@@ -403,7 +403,7 @@ function prepare_app_layer () {
 }
 
 
-function announce_app_layer () {
+announce_app_layer () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -415,7 +415,7 @@ function announce_app_layer () {
 }
 
 
-function install_app_layer () {
+install_app_layer () {
 	expect_vars HALCYON_DIR HALCYON_FORCE_BUILD_APP
 
 	local tag source_dir

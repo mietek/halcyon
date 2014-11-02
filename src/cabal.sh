@@ -1,14 +1,14 @@
-function get_default_cabal_version () {
+get_default_cabal_version () {
 	echo '1.20.0.3'
 }
 
 
-function get_default_cabal_repo () {
+get_default_cabal_repo () {
 	echo 'Hackage:http://hackage.haskell.org/packages/archive'
 }
 
 
-function map_cabal_version_to_original_url () {
+map_cabal_version_to_original_url () {
 	local cabal_version
 	expect_args cabal_version -- "$@"
 
@@ -25,7 +25,7 @@ function map_cabal_version_to_original_url () {
 }
 
 
-function create_cabal_tag () {
+create_cabal_tag () {
 	local cabal_version cabal_magic_hash cabal_repo cabal_date
 	expect_args cabal_version cabal_magic_hash cabal_repo cabal_date -- "$@"
 
@@ -37,7 +37,7 @@ function create_cabal_tag () {
 }
 
 
-function detect_cabal_tag () {
+detect_cabal_tag () {
 	expect_vars HALCYON_DIR
 
 	local tag_file
@@ -55,7 +55,7 @@ function detect_cabal_tag () {
 }
 
 
-function derive_bare_cabal_tag () {
+derive_bare_cabal_tag () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -68,7 +68,7 @@ function derive_bare_cabal_tag () {
 }
 
 
-function derive_updated_cabal_tag () {
+derive_updated_cabal_tag () {
 	local tag cabal_date
 	expect_args tag cabal_date -- "$@"
 
@@ -81,7 +81,7 @@ function derive_updated_cabal_tag () {
 }
 
 
-function derive_updated_cabal_tag_pattern () {
+derive_updated_cabal_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -94,7 +94,7 @@ function derive_updated_cabal_tag_pattern () {
 }
 
 
-function format_cabal_id () {
+format_cabal_id () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -106,7 +106,7 @@ function format_cabal_id () {
 }
 
 
-function format_cabal_repo_name () {
+format_cabal_repo_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -117,7 +117,7 @@ function format_cabal_repo_name () {
 }
 
 
-function format_cabal_description () {
+format_cabal_description () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -130,7 +130,7 @@ function format_cabal_description () {
 }
 
 
-function format_cabal_config () {
+format_cabal_config () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -150,7 +150,7 @@ EOF
 }
 
 
-function format_cabal_archive_name () {
+format_cabal_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -163,7 +163,7 @@ function format_cabal_archive_name () {
 }
 
 
-function format_bare_cabal_archive_name () {
+format_bare_cabal_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -175,7 +175,7 @@ function format_bare_cabal_archive_name () {
 }
 
 
-function format_updated_cabal_archive_name_prefix () {
+format_updated_cabal_archive_name_prefix () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -187,7 +187,7 @@ function format_updated_cabal_archive_name_prefix () {
 }
 
 
-function format_updated_cabal_archive_name_pattern () {
+format_updated_cabal_archive_name_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -199,7 +199,7 @@ function format_updated_cabal_archive_name_pattern () {
 }
 
 
-function map_updated_cabal_archive_name_to_date () {
+map_updated_cabal_archive_name_to_date () {
 	local archive_name
 	expect_args archive_name -- "$@"
 
@@ -210,7 +210,7 @@ function map_updated_cabal_archive_name_to_date () {
 }
 
 
-function hash_cabal_magic () {
+hash_cabal_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
@@ -219,7 +219,7 @@ function hash_cabal_magic () {
 }
 
 
-function copy_cabal_magic () {
+copy_cabal_magic () {
 	expect_vars HALCYON_DIR
 
 	local source_dir
@@ -228,7 +228,7 @@ function copy_cabal_magic () {
 
 	local cabal_magic_hash
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
-	if [ -z "${cabal_magic_hash}" ]; then
+	if [[ -z "${cabal_magic_hash}" ]]; then
 		return 0
 	fi
 
@@ -241,7 +241,7 @@ function copy_cabal_magic () {
 }
 
 
-function build_cabal_layer () {
+build_cabal_layer () {
 	expect_vars HOME HALCYON_DIR
 	expect_existing "${HOME}"
 
@@ -250,7 +250,7 @@ function build_cabal_layer () {
 
 	rm -rf "${HALCYON_DIR}/cabal" || die
 
-	if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
+	if [[ -e "${HOME}/.cabal/config" && ! -h "${HOME}/.cabal/config" ]]; then
 		die "Expected no foreign ${HOME}/.cabal/config"
 	fi
 	rm -f "${HOME}/.cabal/config" || die
@@ -283,7 +283,7 @@ function build_cabal_layer () {
 		touch_cached_file "${original_name}" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
@@ -339,7 +339,7 @@ EOF
 
 	log "Cabal bootstrapped, ${bootstrapped_size}"
 
-	if [ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]]; then
 		log 'Executing Cabal post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
@@ -364,7 +364,7 @@ EOF
 }
 
 
-function update_cabal_layer () {
+update_cabal_layer () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
@@ -387,7 +387,7 @@ function update_cabal_layer () {
 }
 
 
-function archive_cabal_layer () {
+archive_cabal_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
@@ -409,7 +409,7 @@ function archive_cabal_layer () {
 
 	local cabal_date
 	cabal_date=$( get_tag_cabal_date "${cabal_tag}" ) || die
-	if [ -z "${cabal_date}" ] || (( HALCYON_NO_DELETE )); then
+	if [[ -z "${cabal_date}" ]] || (( HALCYON_NO_DELETE )); then
 		return 0
 	fi
 
@@ -421,7 +421,7 @@ function archive_cabal_layer () {
 }
 
 
-function validate_bare_cabal_layer () {
+validate_bare_cabal_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -433,7 +433,7 @@ function validate_bare_cabal_layer () {
 }
 
 
-function validate_updated_cabal_date () {
+validate_updated_cabal_date () {
 	local candidate_date
 	expect_args candidate_date -- "$@"
 
@@ -446,7 +446,7 @@ function validate_updated_cabal_date () {
 }
 
 
-function validate_updated_cabal_layer () {
+validate_updated_cabal_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -464,7 +464,7 @@ function validate_updated_cabal_layer () {
 }
 
 
-function match_updated_cabal_archive_name () {
+match_updated_cabal_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -485,7 +485,7 @@ function match_updated_cabal_archive_name () {
 }
 
 
-function restore_bare_cabal_layer () {
+restore_bare_cabal_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -521,7 +521,7 @@ function restore_bare_cabal_layer () {
 }
 
 
-function restore_cached_updated_cabal_layer () {
+restore_cached_updated_cabal_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR
 
 	local tag
@@ -543,7 +543,7 @@ function restore_cached_updated_cabal_layer () {
 		return 0
 	fi
 
-	if [ -z "${updated_name}" ]; then
+	if [[ -z "${updated_name}" ]]; then
 		return 1
 	fi
 
@@ -562,7 +562,7 @@ function restore_cached_updated_cabal_layer () {
 }
 
 
-function restore_updated_cabal_layer () {
+restore_updated_cabal_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -601,7 +601,7 @@ function restore_updated_cabal_layer () {
 }
 
 
-function announce_cabal_layer () {
+announce_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -616,7 +616,7 @@ function announce_cabal_layer () {
 }
 
 
-function install_cabal_layer () {
+install_cabal_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL
 
 	local tag source_dir
@@ -650,7 +650,7 @@ function install_cabal_layer () {
 }
 
 
-function cabal_do () {
+cabal_do () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
 
@@ -666,7 +666,7 @@ function cabal_do () {
 }
 
 
-function sandboxed_cabal_do () {
+sandboxed_cabal_do () {
 	expect_vars HALCYON_DIR
 
 	local work_dir
@@ -679,12 +679,12 @@ function sandboxed_cabal_do () {
 	# https://github.com/haskell/cabal/issues/1915
 
 	local saved_config
-	saved_config=
-	if [ -f "${HALCYON_DIR}/sandbox/cabal.config" ]; then
+	saved_config=''
+	if [[ -f "${HALCYON_DIR}/sandbox/cabal.config" ]]; then
 		saved_config=$( get_tmp_file 'halcyon-saved-config' ) || die
 		mv "${HALCYON_DIR}/sandbox/cabal.config" "${saved_config}" || die
 	fi
-	if [ -f "${work_dir}/cabal.config" ]; then
+	if [[ -f "${work_dir}/cabal.config" ]]; then
 		copy_file "${work_dir}/cabal.config" "${HALCYON_DIR}/sandbox/cabal.config" || die
 	fi
 
@@ -697,7 +697,7 @@ function sandboxed_cabal_do () {
 	fi
 
 	rm -f "${HALCYON_DIR}/sandbox/cabal.config" || die
-	if [ -n "${saved_config}" ]; then
+	if [[ -n "${saved_config}" ]]; then
 		mv "${saved_config}" "${HALCYON_DIR}/sandbox/cabal.config" || die
 	fi
 
@@ -705,7 +705,7 @@ function sandboxed_cabal_do () {
 }
 
 
-function cabal_freeze_implicit_constraints () {
+cabal_freeze_implicit_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 
@@ -734,7 +734,7 @@ function cabal_freeze_implicit_constraints () {
 }
 
 
-function cabal_freeze_actual_constraints () {
+cabal_freeze_actual_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 
@@ -758,7 +758,7 @@ function cabal_freeze_actual_constraints () {
 }
 
 
-function cabal_unpack_app () {
+cabal_unpack_app () {
 	local app_oid work_dir
 	expect_args app_oid work_dir -- "$@"
 

@@ -1,4 +1,4 @@
-function create_tag () {
+create_tag () {
 	expect_vars HALCYON_DIR
 
 	local app_label target                                       \
@@ -19,7 +19,7 @@ function create_tag () {
 }
 
 
-function get_tag_version () {
+get_tag_version () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -27,7 +27,7 @@ function get_tag_version () {
 }
 
 
-function get_tag_os () {
+get_tag_os () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -35,7 +35,7 @@ function get_tag_os () {
 }
 
 
-function get_tag_halcyon_dir () {
+get_tag_halcyon_dir () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -43,7 +43,7 @@ function get_tag_halcyon_dir () {
 }
 
 
-function get_tag_app_label () {
+get_tag_app_label () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -51,7 +51,7 @@ function get_tag_app_label () {
 }
 
 
-function get_tag_target () {
+get_tag_target () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -59,7 +59,7 @@ function get_tag_target () {
 }
 
 
-function get_tag_source_hash () {
+get_tag_source_hash () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -67,7 +67,7 @@ function get_tag_source_hash () {
 }
 
 
-function get_tag_constraints_hash () {
+get_tag_constraints_hash () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -75,7 +75,7 @@ function get_tag_constraints_hash () {
 }
 
 
-function get_tag_ghc_version () {
+get_tag_ghc_version () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -83,7 +83,7 @@ function get_tag_ghc_version () {
 }
 
 
-function get_tag_ghc_magic_hash () {
+get_tag_ghc_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -91,7 +91,7 @@ function get_tag_ghc_magic_hash () {
 }
 
 
-function get_tag_cabal_version () {
+get_tag_cabal_version () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -99,7 +99,7 @@ function get_tag_cabal_version () {
 }
 
 
-function get_tag_cabal_magic_hash () {
+get_tag_cabal_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -107,7 +107,7 @@ function get_tag_cabal_magic_hash () {
 }
 
 
-function get_tag_cabal_repo () {
+get_tag_cabal_repo () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -115,7 +115,7 @@ function get_tag_cabal_repo () {
 }
 
 
-function get_tag_cabal_date () {
+get_tag_cabal_date () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -123,7 +123,7 @@ function get_tag_cabal_date () {
 }
 
 
-function get_tag_sandbox_magic_hash () {
+get_tag_sandbox_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -131,7 +131,7 @@ function get_tag_sandbox_magic_hash () {
 }
 
 
-function get_tag_app_magic_hash () {
+get_tag_app_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -139,11 +139,11 @@ function get_tag_app_magic_hash () {
 }
 
 
-function detect_tag () {
+detect_tag () {
 	local file tag_pattern
 	expect_args file tag_pattern -- "$@"
 
-	if ! [ -f "${file}" ]; then
+	if [[ ! -f "${file}" ]]; then
 		return 1
 	fi
 

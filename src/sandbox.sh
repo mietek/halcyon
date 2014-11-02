@@ -1,4 +1,4 @@
-function create_sandbox_tag () {
+create_sandbox_tag () {
 	local app_label constraints_hash       \
 		ghc_version ghc_magic_hash     \
 		sandbox_magic_hash
@@ -14,7 +14,7 @@ function create_sandbox_tag () {
 }
 
 
-function detect_sandbox_tag () {
+detect_sandbox_tag () {
 	expect_vars HALCYON_DIR
 
 	local tag_file
@@ -32,7 +32,7 @@ function detect_sandbox_tag () {
 }
 
 
-function derive_sandbox_tag () {
+derive_sandbox_tag () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -49,7 +49,7 @@ function derive_sandbox_tag () {
 }
 
 
-function derive_matching_sandbox_tag () {
+derive_matching_sandbox_tag () {
 	local tag app_label constraints_hash
 	expect_args tag app_label constraints_hash -- "$@"
 
@@ -64,7 +64,7 @@ function derive_matching_sandbox_tag () {
 }
 
 
-function format_sandbox_id () {
+format_sandbox_id () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -76,7 +76,7 @@ function format_sandbox_id () {
 }
 
 
-function format_sandbox_description () {
+format_sandbox_description () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -88,7 +88,7 @@ function format_sandbox_description () {
 }
 
 
-function format_sandbox_archive_name () {
+format_sandbox_archive_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -100,7 +100,7 @@ function format_sandbox_archive_name () {
 }
 
 
-function format_sandbox_constraints_file_name () {
+format_sandbox_constraints_file_name () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -112,12 +112,12 @@ function format_sandbox_constraints_file_name () {
 }
 
 
-function format_sandbox_constraints_file_name_prefix () {
+format_sandbox_constraints_file_name_prefix () {
 	echo "halcyon-sandbox-constraints-"
 }
 
 
-function format_full_sandbox_constraints_file_name_pattern () {
+format_full_sandbox_constraints_file_name_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -128,7 +128,7 @@ function format_full_sandbox_constraints_file_name_pattern () {
 }
 
 
-function format_partial_sandbox_constraints_file_name_pattern () {
+format_partial_sandbox_constraints_file_name_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -139,12 +139,12 @@ function format_partial_sandbox_constraints_file_name_pattern () {
 }
 
 
-function format_sandbox_common_file_name_prefix () {
+format_sandbox_common_file_name_prefix () {
 	echo "halcyon-sandbox-"
 }
 
 
-function format_sandbox_common_file_name_pattern () {
+format_sandbox_common_file_name_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -155,7 +155,7 @@ function format_sandbox_common_file_name_pattern () {
 }
 
 
-function map_sandbox_constraints_file_name_to_app_label () {
+map_sandbox_constraints_file_name_to_app_label () {
 	local constraints_name
 	expect_args constraints_name -- "$@"
 
@@ -166,7 +166,7 @@ function map_sandbox_constraints_file_name_to_app_label () {
 }
 
 
-function hash_sandbox_magic () {
+hash_sandbox_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
@@ -178,7 +178,7 @@ function hash_sandbox_magic () {
 }
 
 
-function copy_sandbox_magic () {
+copy_sandbox_magic () {
 	expect_vars HALCYON_DIR
 
 	local source_dir
@@ -187,7 +187,7 @@ function copy_sandbox_magic () {
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
-	if [ -z "${sandbox_magic_hash}" ]; then
+	if [[ -z "${sandbox_magic_hash}" ]]; then
 		return 0
 	fi
 
@@ -203,13 +203,13 @@ function copy_sandbox_magic () {
 }
 
 
-function deploy_sandbox_extra_libs () {
+deploy_sandbox_extra_libs () {
 	expect_vars HALCYON_DIR
 
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	if ! [ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]; then
+	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		return 0
 	fi
 
@@ -249,11 +249,11 @@ function deploy_sandbox_extra_libs () {
 }
 
 
-function deploy_sandbox_extra_apps () {
+deploy_sandbox_extra_apps () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
+	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]]; then
 		return 0
 	fi
 
@@ -270,9 +270,9 @@ function deploy_sandbox_extra_apps () {
 	env_opts+=( --recursive )
 	env_opts+=( --target='sandbox' )
 	env_opts+=( --ghc-version="${ghc_version}" )
-	[ -n "${ghc_magic_hash}" ] && env_opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
+	[[ -n "${ghc_magic_hash}" ]] && env_opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
 	env_opts+=( --cabal-version="${cabal_version}" )
-	[ -n "${cabal_magic_hash}" ] && env_opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
+	[[ -n "${cabal_magic_hash}" ]] && env_opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
 	env_opts+=( --cabal-repo="${cabal_repo}" )
 
 	log 'Deploying sandbox extra apps'
@@ -294,14 +294,14 @@ function deploy_sandbox_extra_apps () {
 
 		local -a opts
 		opts=( "${env_opts[@]}" )
-		[ -f "${constraints_file}" ] && opts+=( --constraints-file="${constraints_file}" )
+		[[ -f "${constraints_file}" ]] && opts+=( --constraints-file="${constraints_file}" )
 
 		( deploy "${opts[@]}" "${sandbox_app}" |& quote ) || return 1
 	done
 }
 
 
-function build_sandbox_layer () {
+build_sandbox_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag source_dir constraints must_create
@@ -327,7 +327,7 @@ function build_sandbox_layer () {
 		mv "${HALCYON_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
@@ -363,7 +363,7 @@ function build_sandbox_layer () {
 
 	local -a opts
 	opts+=( --dependencies-only )
-	if [ -d "${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" ]; then
+	if [[ -d "${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" ]]; then
 		opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu" )
 		opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/include" )
 	fi
@@ -381,7 +381,7 @@ function build_sandbox_layer () {
 
 	log "Sandbox compiled, ${compiled_size}"
 
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
 		if ! (
 			"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
@@ -393,7 +393,7 @@ function build_sandbox_layer () {
 		log 'Sandbox post-build hook executed'
 	fi
 
-	if [ -d "${HALCYON_DIR}/sandbox/logs" ] || [ -d "${HALCYON_DIR}/sandbox/share/doc" ]; then
+	if [[ -d "${HALCYON_DIR}/sandbox/logs" || -d "${HALCYON_DIR}/sandbox/share/doc" ]]; then
 		log_indent_begin 'Removing documentation from sandbox layer...'
 
 		rm -rf "${HALCYON_DIR}/sandbox/logs" "${HALCYON_DIR}/sandbox/share/doc" || die
@@ -415,7 +415,7 @@ function build_sandbox_layer () {
 }
 
 
-function archive_sandbox_layer () {
+archive_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 	expect_existing "${HALCYON_DIR}/sandbox/.halcyon-tag" \
 		"${HALCYON_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
@@ -457,7 +457,7 @@ function archive_sandbox_layer () {
 }
 
 
-function validate_sandbox_layer () {
+validate_sandbox_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -469,7 +469,7 @@ function validate_sandbox_layer () {
 }
 
 
-function restore_sandbox_layer () {
+restore_sandbox_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag
@@ -506,7 +506,7 @@ function restore_sandbox_layer () {
 }
 
 
-function install_matching_sandbox_layer () {
+install_matching_sandbox_layer () {
 	expect_vars HALCYON_DIR
 
 	local tag source_dir constraints matching_tag
@@ -517,7 +517,7 @@ function install_matching_sandbox_layer () {
 	matching_hash=$( get_tag_constraints_hash "${matching_tag}" ) || die
 	matching_description=$( format_sandbox_description "${matching_tag}" ) || die
 
-	if [ "${matching_hash}" = "${constraints_hash}" ]; then
+	if [[ "${matching_hash}" == "${constraints_hash}" ]]; then
 		log_pad 'Using fully matching sandbox layer:' "${matching_description}"
 
 		restore_sandbox_layer "${matching_tag}" || return 1
@@ -536,7 +536,7 @@ function install_matching_sandbox_layer () {
 }
 
 
-function announce_sandbox_layer () {
+announce_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -548,7 +548,7 @@ function announce_sandbox_layer () {
 }
 
 
-function install_sandbox_layer () {
+install_sandbox_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_SANDBOX
 
 	local tag source_dir constraints

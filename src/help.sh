@@ -1,4 +1,4 @@
-function help_add_explicit_constraints () {
+help_add_explicit_constraints () {
 	local constraints
 	expect_args constraints -- "$@"
 

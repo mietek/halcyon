@@ -1,7 +1,7 @@
 export HALCYON_TOP_DIR
 HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
-if ! [ -d "${HALCYON_TOP_DIR}/lib/bashmenot" ]; then
+if [[ ! -d "${HALCYON_TOP_DIR}/lib/bashmenot" ]]; then
 	echo '   *** ERROR: Cannot source bashmenot' >&2
 	exit 1
 fi
@@ -21,13 +21,13 @@ source "${HALCYON_TOP_DIR}/src/vars.sh"
 source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
-function halcyon_deploy () {
+halcyon_deploy () {
 	expect_vars HALCYON_TARGET HALCYON_ONLY_DEPLOY_ENV
 
 	export -a HALCYON_INTERNAL_ARGS
 	handle_command_line "$@" || die
 
-	if [ "${HALCYON_TARGET}" != 'sandbox' ] && [ "${HALCYON_TARGET}" != 'slug' ]; then
+	if [[ "${HALCYON_TARGET}" != 'sandbox' && "${HALCYON_TARGET}" != 'slug' ]]; then
 		die "Unexpected target: ${HALCYON_TARGET}"
 	fi
 
@@ -39,7 +39,7 @@ function halcyon_deploy () {
 
 	if (( HALCYON_ONLY_DEPLOY_ENV )); then
 		deploy_env '/dev/null' || return 1
-	elif [ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]; then
+	elif [[ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]]; then
 		if ! detect_app_label '.' >'/dev/null'; then
 			HALCYON_ONLY_DEPLOY_ENV=1 deploy_env '/dev/null' || return 1
 		else

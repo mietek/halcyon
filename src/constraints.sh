@@ -1,16 +1,16 @@
-function read_constraints () {
+read_constraints () {
 	awk '/^ *[Cc]onstraints:/, !/[:,]/ { print }' |
 		tr -d '\r' |
 		sed 's/[Cc]onstraints://;s/[, ]//g;s/==/ /;/^$/d'
 }
 
 
-function read_dry_frozen_constraints () {
+read_dry_frozen_constraints () {
 	tail -n +3 | sed 's/ == / /'
 }
 
 
-function match_package_version () {
+match_package_version () {
 	local package_name
 	expect_args package_name -- "$@"
 
@@ -20,7 +20,7 @@ function match_package_version () {
 }
 
 
-function filter_correct_constraints () {
+filter_correct_constraints () {
 	local app_label
 	expect_args app_label -- "$@"
 
@@ -30,7 +30,7 @@ function filter_correct_constraints () {
 	local app_name app_version
 	app_name="${app_label%-*}"
 	app_version="${app_label##*-}"
-	if [ "${app_name}" = 'base' ]; then
+	if [[ ${app_name} == 'base' ]]; then
 		app_name='halcyon-fake-base'
 	fi
 
@@ -38,14 +38,14 @@ function filter_correct_constraints () {
 }
 
 
-function format_constraints () {
+format_constraints () {
 	awk 'BEGIN { printf "constraints:"; separator = " " }
 		!/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
 		END { printf "\n" }'
 }
 
 
-function hash_constraints () {
+hash_constraints () {
 	local constraints
 	expect_args constraints -- "$@"
 
@@ -53,7 +53,7 @@ function hash_constraints () {
 }
 
 
-function detect_constraints () {
+detect_constraints () {
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
 	expect_existing "${source_dir}/cabal.config"
@@ -67,17 +67,17 @@ function detect_constraints () {
 
 	local -A package_version_map
 	local base_version candidate_package candidate_version
-	base_version=
+	base_version=''
 	while read -r candidate_package candidate_version; do
-		if [ -n "${package_version_map[${candidate_package}]:+_}" ]; then
+		if [[ -n "${package_version_map[${candidate_package}]:+_}" ]]; then
 			die "Unexpected duplicate constraint: ${candidate_package}-${package_version_map[${candidate_package}]} and ${candidate_package}-${candidate-version}"
 		fi
 		package_version_map["${candidate_package}"]="${candidate_version}"
-		if [ "${candidate_package}" = 'base' ]; then
+		if [[ ${candidate_package} == 'base' ]]; then
 			base_version="${candidate_version}"
 		fi
 	done <<<"${constraints}"
-	if [ -z "${base_version}" ]; then
+	if [[ -z "${base_version}" ]]; then
 		die 'Expected base package constraint'
 	fi
 
@@ -85,7 +85,7 @@ function detect_constraints () {
 }
 
 
-function validate_actual_constraints () {
+validate_actual_constraints () {
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
@@ -99,7 +99,7 @@ function validate_actual_constraints () {
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
-	if [ "${actual_hash}" = "${constraints_hash}" ]; then
+	if [[ "${actual_hash}" == "${constraints_hash}" ]]; then
 		return 0
 	fi
 
@@ -112,11 +112,11 @@ function validate_actual_constraints () {
 }
 
 
-function validate_full_constraints_file () {
+validate_full_constraints_file () {
 	local tag candidate_file
 	expect_args tag candidate_file -- "$@"
 
-	if ! [ -f "${candidate_file}" ]; then
+	if [[ ! -f "${candidate_file}" ]]; then
 		return 1
 	fi
 
@@ -127,7 +127,7 @@ function validate_full_constraints_file () {
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
 
-	if [ "${candidate_hash}" != "${constraints_hash}" ]; then
+	if [[ "${candidate_hash}" != "${constraints_hash}" ]]; then
 		return 1
 	fi
 
@@ -135,11 +135,11 @@ function validate_full_constraints_file () {
 }
 
 
-function validate_partial_constraints_file () {
+validate_partial_constraints_file () {
 	local candidate_file
 	expect_args candidate_file -- "$@"
 
-	if ! [ -f "${candidate_file}" ]; then
+	if [[ ! -f "${candidate_file}" ]]; then
 		return 1
 	fi
 
@@ -152,7 +152,7 @@ function validate_partial_constraints_file () {
 	short_hash="${short_hash_etc%%[-.]*}"
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
 
-	if [ "${candidate_hash:0:7}" != "${short_hash}" ]; then
+	if [[ "${candidate_hash:0:7}" != "${short_hash}" ]]; then
 		return 1
 	fi
 
@@ -160,7 +160,7 @@ function validate_partial_constraints_file () {
 }
 
 
-function match_full_sandbox_layer () {
+match_full_sandbox_layer () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local tag all_names
@@ -202,7 +202,7 @@ function match_full_sandbox_layer () {
 }
 
 
-function list_partial_sandbox_layers () {
+list_partial_sandbox_layers () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local tag constraints all_names
@@ -241,7 +241,7 @@ function list_partial_sandbox_layers () {
 }
 
 
-function score_partial_sandbox_layers () {
+score_partial_sandbox_layers () {
 	expect_vars HALCYON_CACHE_DIR
 
 	local constraints partial_tags
@@ -271,20 +271,20 @@ function score_partial_sandbox_layers () {
 		score=0
 		while read -r partial_package partial_version; do
 			version="${package_version_map[${partial_package}]:-}"
-			if [ -z "${version}" ]; then
+			if [[ -z "${version}" ]]; then
 				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not needed"
-				score=
+				score=''
 				break
 			fi
-			if [ "${partial_version}" != "${version}" ]; then
+			if [[ "${partial_version}" != "${version}" ]]; then
 				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not ${version}"
-				score=
+				score=''
 				break
 			fi
 
 			score=$(( score + 1 ))
 		done <<<"${partial_constraints}"
-		if [ -n "${score}" ]; then
+		if [[ -n "${score}" ]]; then
 			local pad
 			pad='       '
 			log_indent "${pad:0:$(( 7 - ${#score} ))}${score}" "${description}"
@@ -297,7 +297,7 @@ function score_partial_sandbox_layers () {
 }
 
 
-function match_sandbox_layer () {
+match_sandbox_layer () {
 	expect_vars HALCYON_NO_BUILD_DEPENDENCIES
 	local tag constraints
 	expect_args tag constraints -- "$@"

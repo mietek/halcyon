@@ -1,4 +1,4 @@
-function detect_app_package () {
+detect_app_package () {
 	local source_dir
 	expect_args source_dir -- "$@"
 	expect_existing "${source_dir}"
@@ -13,7 +13,7 @@ function detect_app_package () {
 }
 
 
-function detect_app_label () {
+detect_app_label () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
@@ -38,7 +38,7 @@ function detect_app_label () {
 }
 
 
-function detect_app_executable () {
+detect_app_executable () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
@@ -54,14 +54,14 @@ function detect_app_executable () {
 }
 
 
-function determine_ghc_version () {
+determine_ghc_version () {
 	local constraints
 	expect_args constraints -- "$@"
 
 	local ghc_version
-	if [ -n "${HALCYON_GHC_VERSION:+_}" ]; then
+	if [[ -n "${HALCYON_GHC_VERSION:+_}" ]]; then
 		ghc_version="${HALCYON_GHC_VERSION}"
-	elif [ -n "${constraints}" ]; then
+	elif [[ -n "${constraints}" ]]; then
 		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
 	else
 		ghc_version=$( get_default_ghc_version ) || die
@@ -71,12 +71,12 @@ function determine_ghc_version () {
 }
 
 
-function determine_ghc_magic_hash () {
+determine_ghc_magic_hash () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
 	local ghc_magic_hash
-	if [ -n "${HALCYON_GHC_MAGIC_HASH:+_}" ]; then
+	if [[ -n "${HALCYON_GHC_MAGIC_HASH:+_}" ]]; then
 		ghc_magic_hash="${HALCYON_GHC_MAGIC_HASH}"
 	else
 		ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
@@ -86,9 +86,9 @@ function determine_ghc_magic_hash () {
 }
 
 
-function determine_cabal_version () {
+determine_cabal_version () {
 	local cabal_version
-	if [ -n "${HALCYON_CABAL_VERSION:+_}" ]; then
+	if [[ -n "${HALCYON_CABAL_VERSION:+_}" ]]; then
 		cabal_version="${HALCYON_CABAL_VERSION}"
 	else
 		cabal_version=$( get_default_cabal_version ) || die
@@ -98,12 +98,12 @@ function determine_cabal_version () {
 }
 
 
-function determine_cabal_magic_hash () {
+determine_cabal_magic_hash () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
 	local cabal_magic_hash
-	if [ -n "${HALCYON_CABAL_MAGIC_HASH:+_}" ]; then
+	if [[ -n "${HALCYON_CABAL_MAGIC_HASH:+_}" ]]; then
 		cabal_magic_hash="${HALCYON_CABAL_MAGIC_HASH}"
 	else
 		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
@@ -113,9 +113,9 @@ function determine_cabal_magic_hash () {
 }
 
 
-function determine_cabal_repo () {
+determine_cabal_repo () {
 	local cabal_repo
-	if [ -n "${HALCYON_CABAL_REPO:+_}" ]; then
+	if [[ -n "${HALCYON_CABAL_REPO:+_}" ]]; then
 		cabal_repo="${HALCYON_CABAL_REPO}"
 	else
 		cabal_repo=$( get_default_cabal_repo ) || die
@@ -125,7 +125,7 @@ function determine_cabal_repo () {
 }
 
 
-function finish_deploy () {
+finish_deploy () {
 	expect_vars HOME HALCYON_DIR HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
 
 	local tag
@@ -146,8 +146,8 @@ function finish_deploy () {
 	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
 	# without having to use cabal_do or sandboxed_cabal_do.
 
-	if [ -d "${HALCYON_DIR}/cabal" ]; then
-		if [ -e "${HOME}/.cabal/config" ] && ! [ -h "${HOME}/.cabal/config" ]; then
+	if [[ -d "${HALCYON_DIR}/cabal" ]]; then
+		if [[ -e "${HOME}/.cabal/config" && ! -h "${HOME}/.cabal/config" ]]; then
 			log_warning "Expected no foreign ${HOME}/.cabal/config"
 		else
 			rm -f "${HOME}/.cabal/config" || die
@@ -156,14 +156,14 @@ function finish_deploy () {
 		fi
 	fi
 
-	if [ -d "${HALCYON_DIR}/sandbox" ] && [ -d "${HALCYON_DIR}/app" ]; then
+	if [[ -d "${HALCYON_DIR}/sandbox" && -d "${HALCYON_DIR}/app" ]]; then
 		rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
 		ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${HALCYON_DIR}/app/cabal.sandbox.config" || die
 	fi
 }
 
 
-function do_deploy_env () {
+do_deploy_env () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
@@ -184,7 +184,7 @@ function do_deploy_env () {
 }
 
 
-function deploy_env () {
+deploy_env () {
 	expect_vars HALCYON_RECURSIVE HALCYON_ONLY_DEPLOY_ENV
 
 	local source_dir
@@ -203,10 +203,10 @@ function deploy_env () {
 		log 'Deploying environment'
 
 		log_indent_pad 'GHC version:' "${ghc_version}"
-		[ -n "${ghc_magic_hash}" ] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
+		[[ -n "${ghc_magic_hash}" ]] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
 		log_indent_pad 'Cabal version:' "${cabal_version}"
-		[ -n "${cabal_magic_hash}" ] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
+		[[ -n "${cabal_magic_hash}" ]] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
 		log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
 
 		describe_storage || die
@@ -231,7 +231,7 @@ function deploy_env () {
 }
 
 
-function do_deploy_app_from_slug () {
+do_deploy_app_from_slug () {
 	local tag
 	expect_args tag -- "$@"
 
@@ -246,7 +246,7 @@ function do_deploy_app_from_slug () {
 }
 
 
-function deploy_app_from_slug () {
+deploy_app_from_slug () {
 	expect_vars HALCYON_TARGET \
 		HALCYON_FORCE_BUILD_GHC \
 		HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL \
@@ -264,7 +264,7 @@ function deploy_app_from_slug () {
 		(( HALCYON_FORCE_BUILD_SANDBOX )) ||
 		(( HALCYON_FORCE_BUILD_APP )) ||
 		(( HALCYON_FORCE_BUILD_SLUG )) ||
-		! [ -f "${source_dir}/cabal.config" ]
+		[[ ! -f "${source_dir}/cabal.config" ]]
 	then
 		return 1
 	fi
@@ -272,7 +272,7 @@ function deploy_app_from_slug () {
 	log 'Deploying app from slug'
 
 	log_indent_pad 'App label:' "${app_label}"
-	[ "${HALCYON_TARGET}" != 'slug' ] && log_indent_pad 'Target:' "${HALCYON_TARGET}"
+	[[ "${HALCYON_TARGET}" != 'slug' ]] && log_indent_pad 'Target:' "${HALCYON_TARGET}"
 	log_indent_pad 'Source hash:' "${source_hash:0:7}"
 
 	describe_storage || die
@@ -300,105 +300,105 @@ function deploy_app_from_slug () {
 }
 
 
-function prepare_source_dir () {
+prepare_source_dir () {
 	local source_dir
 	expect_args source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if [ -n "${HALCYON_CONSTRAINTS_FILE:+_}" ]; then
+	if [[ -n "${HALCYON_CONSTRAINTS_FILE:+_}" ]]; then
 		copy_file "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die
 	fi
 
-	if [ -n "${HALCYON_GHC_PRE_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_GHC_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_GHC_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/ghc-pre-build-hook" || die
 	fi
-	if [ -n "${HALCYON_GHC_POST_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_GHC_POST_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_GHC_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/ghc-post-build-hook" || die
 	fi
 
-	if [ -n "${HALCYON_CABAL_PRE_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_CABAL_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/cabal-pre-build-hook" || die
 	fi
-	if [ -n "${HALCYON_CABAL_POST_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_CABAL_POST_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_CABAL_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/cabal-post-build-hook" || die
 	fi
 
-	if [ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]; then
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]]; then
 		local -a sandbox_libs
 		sandbox_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
 
 		copy_file <( IFS=$'\n' && echo "${sandbox_libs[*]}" ) "${source_dir}/.halcyon-magic/sandbox-extra-libs" || die
 	fi
-	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]; then
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]]; then
 		local -a sandbox_apps
 		sandbox_apps=( ${HALCYON_SANDBOX_EXTRA_APPS} )
 
 		copy_file <( IFS=$'\n' && echo "${sandbox_apps[*]}" ) "${source_dir}/.halcyon-magic/sandbox-extra-apps" || die
 	fi
-	if [ -n "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]; then
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
 		local sandbox_dir
 		sandbox_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
 
 		copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}" "${sandbox_dir}" || die
 	fi
-	if [ -n "${HALCYON_SANDBOX_PRE_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_SANDBOX_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" || die
 	fi
-	if [ -n "${HALCYON_SANDBOX_POST_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_SANDBOX_POST_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-post-build-hook" || die
 	fi
 
-	if [ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]; then
+	if [[ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
 		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${source_dir}/.halcyon-magic/app-extra-configure-flags" || die
 	fi
-	if [ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-pre-build-hook" || die
 	fi
-	if [ -n "${HALCYON_APP_POST_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_APP_POST_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_APP_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-post-build-hook" || die
 	fi
 
-	if [ -n "${HALCYON_SLUG_EXTRA_APPS:+_}" ]; then
+	if [[ -n "${HALCYON_SLUG_EXTRA_APPS:+_}" ]]; then
 		local -a slug_apps
 		slug_apps=( ${HALCYON_SLUG_EXTRA_APPS} )
 
 		copy_file <( IFS=$'\n' && echo "${slug_apps[*]}" ) "${source_dir}/.halcyon-magic/slug-extra-apps" || die
 	fi
-	if [ -n "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]; then
+	if [[ -n "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
 		local slug_dir
 		slug_dir="${source_dir}/.halcyon-magic/slug-extra-apps-constraints"
 
 		copy_dir_over "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR}" "${slug_dir}" || die
 	fi
-	if [ -n "${HALCYON_SLUG_PRE_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_SLUG_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SLUG_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/slug-pre-build-hook" || die
 	fi
-	if [ -n "${HALCYON_SLUG_POST_BUILD_HOOK:+_}" ]; then
+	if [[ -n "${HALCYON_SLUG_POST_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SLUG_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/slug-post-build-hook" || die
 	fi
 }
 
 
-function do_deploy_app () {
+do_deploy_app () {
 	expect_vars HALCYON_DIR HALCYON_RECURSIVE HALCYON_FORCE_RESTORE_ALL
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
 	local saved_sandbox saved_app slug_dir
-	saved_sandbox=
-	saved_app=
+	saved_sandbox=''
+	saved_app=''
 	slug_dir=$( get_tmp_dir 'halcyon-slug' ) || die
 
 	do_deploy_env "${tag}" "${source_dir}" || return 1
 
 	if (( HALCYON_RECURSIVE )); then
-		if [ -d "${HALCYON_DIR}/sandbox" ]; then
+		if [[ -d "${HALCYON_DIR}/sandbox" ]]; then
 			saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
 			mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
 		fi
 
-		if [ -d "${HALCYON_DIR}/app" ]; then
+		if [[ -d "${HALCYON_DIR}/app" ]]; then
 			saved_app=$( get_tmp_dir 'halcyon-saved-app' ) || die
 			mv "${HALCYON_DIR}/app" "${saved_app}" || die
 		fi
@@ -429,12 +429,12 @@ function do_deploy_app () {
 	fi
 
 	if (( HALCYON_RECURSIVE )); then
-		if [ -n "${saved_sandbox}" ]; then
+		if [[ -n "${saved_sandbox}" ]]; then
 			rm -rf "${HALCYON_DIR}/sandbox" || die
 			mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
 		fi
 
-		if [ -n "${saved_app}" ]; then
+		if [[ -n "${saved_app}" ]]; then
 			rm -rf "${HALCYON_DIR}/app" || die
 			mv "${saved_app}" "${HALCYON_DIR}/app" || die
 		fi
@@ -446,7 +446,7 @@ function do_deploy_app () {
 }
 
 
-function deploy_app () {
+deploy_app () {
 	expect_vars HALCYON_RECURSIVE HALCYON_TARGET \
 		HALCYON_FORCE_RESTORE_ALL \
 		HALCYON_ONLY_SHOW_APP_LABEL HALCYON_ONLY_SHOW_CONSTRAINTS
@@ -460,7 +460,7 @@ function deploy_app () {
 	prepare_source_dir "${source_dir}" || die
 
 	local source_hash
-	if [ -f "${source_dir}/cabal.config" ]; then
+	if [[ -f "${source_dir}/cabal.config" ]]; then
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
 		if ! (( HALCYON_FORCE_RESTORE_ALL )) &&
@@ -472,7 +472,7 @@ function deploy_app () {
 
 	local constraints warn_implicit
 	warn_implicit=0
-	if ! [ -f "${source_dir}/cabal.config" ]; then
+	if [[ ! -f "${source_dir}/cabal.config" ]]; then
 		HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env "${source_dir}" || return 1
 
 		log 'Deploying app'
@@ -516,34 +516,34 @@ function deploy_app () {
 	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
 
 	log_indent_pad 'App label:' "${app_label}"
-	[ "${HALCYON_TARGET}" != 'slug' ] && log_indent_pad 'Target:' "${HALCYON_TARGET}"
+	[[ "${HALCYON_TARGET}" != 'slug' ]] && log_indent_pad 'Target:' "${HALCYON_TARGET}"
 	log_indent_pad 'Source hash:' "${source_hash:0:7}"
 	log_indent_pad 'Constraints hash:' "${constraints_hash:0:7}"
 
 	log_indent_pad 'GHC version:' "${ghc_version}"
-	[ -n "${ghc_magic_hash}" ] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
+	[[ -n "${ghc_magic_hash}" ]] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
 	log_indent_pad 'Cabal version:' "${cabal_version}"
-	[ -n "${cabal_magic_hash}" ] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
+	[[ -n "${cabal_magic_hash}" ]] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
 	log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
 
-	[ -n "${sandbox_magic_hash}" ] && log_indent_pad 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]; then
+	[[ -n "${sandbox_magic_hash}" ]] && log_indent_pad 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		local -a sandbox_libs
 		sandbox_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
 
 		log_indent_pad 'Sandbox extra libs:' "${sandbox_libs[*]:-}"
 	fi
-	if [ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]]; then
 		local -a sandbox_apps
 		sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 
 		log_indent_pad 'Sandbox extra apps:' "${sandbox_apps[*]:-}"
 	fi
 
-	[ -n "${app_magic_hash}" ] && log_indent_pad 'App magic hash:' "${app_magic_hash:0:7}"
+	[[ -n "${app_magic_hash}" ]] && log_indent_pad 'App magic hash:' "${app_magic_hash:0:7}"
 
-	if [ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]; then
+	if [[ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]]; then
 		local -a slug_apps
 		slug_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
 
@@ -580,7 +580,7 @@ function deploy_app () {
 }
 
 
-function deploy_local_app () {
+deploy_local_app () {
 	expect_vars HALCYON_NO_COPY_LOCAL_SOURCE
 
 	local local_dir
@@ -608,7 +608,7 @@ function deploy_local_app () {
 }
 
 
-function deploy_cloned_app () {
+deploy_cloned_app () {
 	local url_oid
 	expect_args url_oid -- "$@"
 
@@ -626,10 +626,10 @@ function deploy_cloned_app () {
 
 	local branch_oid
 	branch_oid="${url_oid#*#}"
-	if [ "${branch_oid}" = "${url_oid}" ]; then
-		branch_oid=
+	if [[ "${branch_oid}" == "${url_oid}" ]]; then
+		branch_oid=''
 	fi
-	if [ -n "${branch_oid}" ]; then
+	if [[ -n "${branch_oid}" ]]; then
 		if ! git -C "${clone_dir}" checkout "${branch_oid}" |& quote; then
 			die 'Cannot checkout app branch'
 		fi
@@ -652,7 +652,7 @@ function deploy_cloned_app () {
 }
 
 
-function deploy_unpacked_app () {
+deploy_unpacked_app () {
 	local app_oid
 	expect_args app_oid -- "$@"
 
@@ -671,7 +671,7 @@ function deploy_unpacked_app () {
 
 	copy_app_source_over "${unpack_dir}/${app_label}" "${source_dir}" || die
 
-	if [ "${app_label}" != "${app_oid}" ]; then
+	if [[ "${app_label}" != "${app_oid}" ]]; then
 		log_warning "Using implicit version of ${app_oid}"
 		log_warning 'Expected app label with explicit version'
 	fi
@@ -683,7 +683,7 @@ function deploy_unpacked_app () {
 }
 
 
-function deploy_app_oid () {
+deploy_app_oid () {
 	local app_oid
 	expect_args app_oid -- "$@"
 
@@ -697,7 +697,7 @@ function deploy_app_oid () {
 		deploy_cloned_app "${app_oid}" || return 1
 		;;
 	*)
-		if [ -d "${app_oid}" ]; then
+		if [[ -d "${app_oid}" ]]; then
 			deploy_local_app "${app_oid%/}" || return 1
 		else
 			deploy_unpacked_app "${app_oid}" || return 1
