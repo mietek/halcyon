@@ -31,6 +31,8 @@ function set_halcyon_vars () {
 
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 		export HALCYON_NO_CACHE="${HALCYON_NO_CACHE:-0}"
+
+		export HALCYON_ONLY_FREEZE_CONSTRAINTS="${HALCYON_ONLY_FREEZE_CONSTRAINTS:-0}"
 	fi
 
 	if ! (( ${HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET:-0} )); then
@@ -208,6 +210,9 @@ function handle_command_line () {
 			export HALCYON_PURGE_CACHE=1;;
 		'--no-cache')
 			export HALCYON_NO_CACHE=1;;
+
+		'--only-freeze-constraints')
+			export HALCYON_ONLY_FREEZE_CONSTRAINTS=1;;
 
 		# Vars inherited once and reset:
 		'--constraints-file')

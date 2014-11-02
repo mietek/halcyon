@@ -447,7 +447,7 @@ function do_deploy_app () {
 
 
 function deploy_app () {
-	expect_vars HALCYON_RECURSIVE HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL
+	expect_vars HALCYON_RECURSIVE HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL HALCYON_ONLY_FREEZE_CONSTRAINTS
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
@@ -486,6 +486,11 @@ function deploy_app () {
 		log 'Deploying app'
 
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
+	fi
+
+	if (( HALCYON_ONLY_FREEZE_CONSTRAINTS )); then
+		format_constraints <<<"${constraints}" || die
+		return 0
 	fi
 
 	local constraints_hash
