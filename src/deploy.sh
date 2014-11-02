@@ -542,13 +542,6 @@ function deploy_app () {
 	describe_storage || die
 
 	if (( warn_implicit )); then
-		if (( HALCYON_RECURSIVE )); then
-			log_error 'Cannot use implicit constraints'
-			log_error 'Expected cabal.config with explicit constraints'
-			log
-			help_add_explicit_constraints "${constraints}"
-			die
-		fi
 		log_warning 'Using implicit constraints'
 		log_warning 'Expected cabal.config with explicit constraints'
 		log
@@ -649,8 +642,6 @@ function deploy_cloned_app () {
 
 
 function deploy_unpacked_app () {
-	expect_vars HALCYON_RECURSIVE
-
 	local app_oid
 	expect_args app_oid -- "$@"
 
@@ -670,10 +661,6 @@ function deploy_unpacked_app () {
 	copy_app_source_over "${unpack_dir}/${app_label}" "${source_dir}" || die
 
 	if [ "${app_label}" != "${app_oid}" ]; then
-		if (( HALCYON_RECURSIVE )); then
-			log_error "Cannot use implicit version of ${app_oid}"
-			die 'Expected app label with explicit version'
-		fi
 		log_warning "Using implicit version of ${app_oid}"
 		log_warning 'Expected app label with explicit version'
 	fi
