@@ -136,6 +136,7 @@ function copy_app_source_over () {
 
 	copy_dir_over "${source_dir}" "${work_dir}" \
 		--exclude '.git'                    \
+		--exclude '.gitmodules'             \
 		--exclude '.ghc'                    \
 		--exclude '.cabal'                  \
 		--exclude '.cabal-sandbox'          \

@@ -584,7 +584,7 @@ function deploy_local_app () {
 
 	local source_dir
 	if ! (( HALCYON_NO_COPY_LOCAL_SOURCE )); then
-		source_dir=$( get_tmp_dir 'halcyon-copied-source' ) || die
+		source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
 		copy_app_source_over "${local_dir}" "${source_dir}" || die
 	else
@@ -610,12 +610,13 @@ function deploy_cloned_app () {
 
 	log 'Cloning app'
 
-	local source_dir
-	source_dir=$( get_tmp_dir 'halcyon-cloned-source' ) || die
+	local clone_dir source_dir
+	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || die
+	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
 	local url
 	url="${url_oid%#*}"
-	if ! git clone "${url}" "${source_dir}" |& quote; then
+	if ! git clone "${url}" "${clone_dir}" |& quote; then
 		die 'Cannot clone app'
 	fi
 
@@ -625,19 +626,15 @@ function deploy_cloned_app () {
 		branch_oid=
 	fi
 	if [ -n "${branch_oid}" ]; then
-		if ! git -C "${source_dir}" checkout "${branch_oid}" |& quote; then
-			die 'Cannot checkout app'
+		if ! git -C "${clone_dir}" checkout "${branch_oid}" |& quote; then
+			die 'Cannot checkout app branch'
 		fi
 	fi
-	if ! git -C "${source_dir}" submodule update --init --recursive |& quote; then
+	if ! git -C "${clone_dir}" submodule update --init --recursive |& quote; then
 		die 'Cannot update app submodules'
 	fi
-	find "${source_dir}" -depth     \
-		\(                      \
-		-name '.git'        -or \
-		-name '.gitmodules'     \
-		\)                      \
-		-exec rm -rf '{}' ';' || die
+
+	copy_app_source_over "${clone_dir}" "${source_dir}" || die
 
 	local app_label
 	if ! app_label=$( detect_app_label "${source_dir}" ); then
@@ -647,7 +644,7 @@ function deploy_cloned_app () {
 	log
 	deploy_app "${app_label}" "${source_dir}" || return 1
 
-	rm -rf "${source_dir}" || die
+	rm -rf "${clone_dir}" "${source_dir}" || die
 }
 
 
@@ -657,17 +654,20 @@ function deploy_unpacked_app () {
 	local app_oid
 	expect_args app_oid -- "$@"
 
-	local work_dir
-	work_dir=$( get_tmp_dir 'halcyon-unpacked-source' ) || die
+	local unpack_dir source_dir
+	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
+	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
 	HALCYON_DEPLOY_ONLY_ENV=1 HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env '/dev/null' || return 1
 
 	log 'Unpacking app'
 
 	local app_label
-	if ! app_label=$( cabal_unpack_app "${app_oid}" "${work_dir}" ); then
+	if ! app_label=$( cabal_unpack_app "${app_oid}" "${unpack_dir}" ); then
 		die 'Cannot unpack app'
 	fi
+
+	copy_app_source_over "${unpack_dir}/${app_label}" "${source_dir}" || die
 
 	if [ "${app_label}" != "${app_oid}" ]; then
 		if (( HALCYON_RECURSIVE )); then
@@ -679,9 +679,9 @@ function deploy_unpacked_app () {
 	fi
 
 	log
-	deploy_app "${app_label}" "${work_dir}/${app_label}" || return 1
+	deploy_app "${app_label}" "${source_dir}" || return 1
 
-	rm -rf "${work_dir}" || die
+	rm -rf "${unpack_dir}" "${source_dir}" || die
 }
 
 
