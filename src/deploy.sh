@@ -704,3 +704,47 @@ deploy_app_oid () {
 		fi
 	esac
 }
+
+
+halcyon_deploy () {
+	expect_vars HALCYON_TARGET HALCYON_ONLY_DEPLOY_ENV
+
+	export -a HALCYON_INTERNAL_ARGS
+	handle_command_line "$@" || die
+
+	if [[ "${HALCYON_TARGET}" != 'sandbox' && "${HALCYON_TARGET}" != 'slug' ]]; then
+		die "Unexpected target: ${HALCYON_TARGET}"
+	fi
+
+	local cache_dir
+	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
+
+	prepare_cache "${cache_dir}" || die
+	install_pigz || die
+
+	if (( HALCYON_ONLY_DEPLOY_ENV )); then
+		deploy_env '/dev/null' || return 1
+	elif [[ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]]; then
+		if ! detect_app_label '.' >'/dev/null'; then
+			HALCYON_ONLY_DEPLOY_ENV=1 deploy_env '/dev/null' || return 1
+		else
+			deploy_local_app '.' || return 1
+		fi
+	else
+		local app_oid index
+		index=0
+		for app_oid in "${HALCYON_INTERNAL_ARGS[@]}"; do
+			index=$(( index + 1 ))
+			if (( index > 1 )); then
+				log
+				log
+			fi
+
+			deploy_app_oid "${app_oid}" || return 1
+		done
+	fi
+
+	clean_cache "${cache_dir}" || die
+
+	rm -rf "${cache_dir}" || die
+}
