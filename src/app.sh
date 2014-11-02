@@ -412,8 +412,6 @@ function announce_app_layer () {
 	description=$( format_app_description "${installed_tag}" ) || die
 
 	log_pad 'App layer installed:' "${description}"
-
-	export HALCYON_FORCE_BUILD_APP=0
 }
 
 
