@@ -70,8 +70,6 @@ halcyon_autoupdate () {
 		branch='master'
 	fi
 
-	log 'Auto-updating Halcyon'
-
 	local git_url must_update
 	must_update=0
 	git_url=$( cd "${HALCYON_TOP_DIR}" && git config --get 'remote.origin.url' ) || return 1
@@ -88,6 +86,8 @@ halcyon_autoupdate () {
 			return 0
 		fi
 	fi
+
+	log 'Auto-updating Halcyon'
 
 	( cd "${HALCYON_TOP_DIR}" && git fetch 'origin' |& quote ) || return 1
 	( cd "${HALCYON_TOP_DIR}" && git reset --hard "origin/${branch}" |& quote ) || return 1
