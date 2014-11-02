@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+set -eu
+
 export HALCYON_TOP_DIR
 HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )
 
-set -eu -o pipefail
 source "${HALCYON_TOP_DIR}/src.sh"
 
 set_halcyon_vars
