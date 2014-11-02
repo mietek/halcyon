@@ -239,13 +239,11 @@ deploy_sandbox_extra_libs () {
 		apt-get "${opts[@]}" --download-only --yes install "${sandbox_lib}" |& quote || die
 	done
 
-	local -a deb_files
-	deb_files=( "${apt_dir}/cache/archives/"*'.deb' )
-
-	local deb_file
-	for deb_file in "${deb_files[@]}"; do
-		dpkg --extract "${deb_file}" "${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" |& quote || die
-	done
+	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
+		while read -r file; do
+			dpkg --extract "${apt_dir}/cache/archives/${deb_file}" \
+				"${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" |& quote || die
+		done || die
 }
 
 
