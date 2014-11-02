@@ -244,7 +244,7 @@ function deploy_sandbox_extra_libs () {
 
 	local deb_file
 	for deb_file in "${deb_files[@]}"; do
-		dpkg --extract "${deb_file}" "${HALCYON_DIR}/sandbox/extra-libs" |& quote || die
+		dpkg --extract "${deb_file}" "${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" |& quote || die
 	done
 }
 
@@ -363,9 +363,9 @@ function build_sandbox_layer () {
 
 	local -a opts
 	opts+=( --dependencies-only )
-	if [ -d "${HALCYON_DIR}/sandbox/extra-libs" ]; then
-		opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/lib/x86_64-linux-gnu" )
-		opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/extra-libs/usr/include" )
+	if [ -d "${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" ]; then
+		opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu" )
+		opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/include" )
 	fi
 
 	if ! sandboxed_cabal_do "${source_dir}" install "${opts[@]}" |& quote; then
