@@ -27,7 +27,7 @@ halcyon_source_bashmenot () {
 	echo '-----> Installing bashmenot' >&2
 
 	git clone "${url}" "${HALCYON_TOP_DIR}/lib/bashmenot" |& quote || return 1
-	git -C "${HALCYON_TOP_DIR}/lib/bashmenot" checkout "${branch}" |& quote || return 1
+	( cd "${HALCYON_TOP_DIR}/lib/bashmenot" && git checkout "${branch}" |& quote ) || return 1
 
 	BASHMENOT_NO_AUTOUPDATE=1 \
 		source "${HALCYON_TOP_DIR}/lib/bashmenot/src.sh" || return 1
@@ -74,9 +74,9 @@ halcyon_autoupdate () {
 
 	local git_url must_update
 	must_update=0
-	git_url=$( git -C "${HALCYON_TOP_DIR}" ls-remote --get-url 'origin' ) || return 1
+	git_url=$( cd "${HALCYON_TOP_DIR}" && git config --get 'remote.origin.url' ) || return 1
 	if [[ "${git_url}" != "${url}" ]]; then
-		git -C "${HALCYON_TOP_DIR}" remote set-url 'origin' "${url}" |& quote || return 1
+		( cd "${HALCYON_TOP_DIR}" && git remote set-url 'origin' "${url}" |& quote ) || return 1
 		must_update=1
 	fi
 
@@ -89,8 +89,8 @@ halcyon_autoupdate () {
 		fi
 	fi
 
-	git -C "${HALCYON_TOP_DIR}" fetch 'origin' |& quote || return 1
-	git -C "${HALCYON_TOP_DIR}" reset --hard "origin/${branch}" |& quote || return 1
+	( cd "${HALCYON_TOP_DIR}" && git fetch 'origin' |& quote ) || return 1
+	( cd "${HALCYON_TOP_DIR}" && git reset --hard "origin/${branch}" |& quote ) || return 1
 
 	HALCYON_NO_AUTOUPDATE=1 \
 		source "${HALCYON_TOP_DIR}/src.sh" || return 1

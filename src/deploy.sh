@@ -630,11 +630,11 @@ deploy_cloned_app () {
 		branch_oid=''
 	fi
 	if [[ -n "${branch_oid}" ]]; then
-		if ! git -C "${clone_dir}" checkout "${branch_oid}" |& quote; then
+		if ! ( cd "${clone_dir}" && git checkout "${branch_oid}" |& quote ); then
 			die 'Cannot checkout app branch'
 		fi
 	fi
-	if ! git -C "${clone_dir}" submodule update --init --recursive |& quote; then
+	if ! ( cd "${clone_dir}" && git submodule update --init --recursive |& quote ); then
 		die 'Cannot update app submodules'
 	fi
 
