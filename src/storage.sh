@@ -15,13 +15,7 @@ format_public_storage_url () {
 
 
 private_storage () {
-	if [[ -z "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ||
-		-z "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ||
-		-z "${HALCYON_S3_BUCKET:+_}" ||
-		-z "${HALCYON_S3_ACL:+_}" ]]
-	then
-		return 1
-	fi
+	[[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}" && -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" && -n "${HALCYON_S3_BUCKET:+_}" && -n "${HALCYON_S3_ACL:+_}" ]] || return 1
 }
 
 
