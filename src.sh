@@ -4,11 +4,6 @@ export HALCYON_TOP_DIR
 HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
 
-quote () {
-	sed 's/^/       /' >&2 || return 0
-}
-
-
 halcyon_source_bashmenot () {
 	local no_autoupdate
 	no_autoupdate="${HALCYON_NO_AUTOUPDATE:-0}"
@@ -30,10 +25,16 @@ halcyon_source_bashmenot () {
 		branch='master'
 	fi
 
-	echo '-----> Installing bashmenot' >&2
+	echo -n '-----> Installing bashmenot...' >&2
 
-	git clone "${url}" "${HALCYON_TOP_DIR}/lib/bashmenot" |& quote || return 1
-	( cd "${HALCYON_TOP_DIR}/lib/bashmenot" && git checkout "${branch}" |& quote ) || return 1
+	local commit_hash
+	commit_hash=$(
+		git clone -q "${url}" "${HALCYON_TOP_DIR}/lib/bashmenot" &&
+		cd "${HALCYON_TOP_DIR}/lib/bashmenot" &&
+		git checkout -q "${branch}" &&
+		git log -n 1 --pretty='format:%h'
+	) || return 1
+	echo "done, ${commit_hash}" >&2
 
 	BASHMENOT_NO_AUTOUPDATE=1 \
 		source "${HALCYON_TOP_DIR}/lib/bashmenot/src.sh" || return 1
@@ -80,7 +81,7 @@ halcyon_autoupdate () {
 	must_update=0
 	git_url=$( cd "${HALCYON_TOP_DIR}" && git config --get 'remote.origin.url' ) || return 1
 	if [[ "${git_url}" != "${url}" ]]; then
-		( cd "${HALCYON_TOP_DIR}" && git remote set-url 'origin' "${url}" |& quote ) || return 1
+		( cd "${HALCYON_TOP_DIR}" && git remote set-url 'origin' "${url}" ) || return 1
 		must_update=1
 	fi
 
@@ -88,15 +89,21 @@ halcyon_autoupdate () {
 		local mark_time current_time
 		mark_time=$( get_modification_time "${HALCYON_TOP_DIR}" ) || return 1
 		current_time=$( date +'%s' ) || return 1
-		if (( mark_time > current_time - 60 )); then
+		if (( mark_time > current_time - 42 )); then
 			return 0
 		fi
 	fi
 
-	log 'Auto-updating Halcyon'
+	log_begin 'Auto-updating Halcyon...'
 
-	( cd "${HALCYON_TOP_DIR}" && git fetch 'origin' |& quote ) || return 1
-	( cd "${HALCYON_TOP_DIR}" && git reset --hard "origin/${branch}" |& quote ) || return 1
+	local commit_hash
+	commit_hash=$(
+		cd "${HALCYON_TOP_DIR}" &&
+		git fetch -q 'origin' &&
+		git reset -q --hard "origin/${branch}" &&
+		git log -n 1 --pretty='format:%h'
+	) || return 1
+	log_end "done, ${commit_hash}"
 
 	HALCYON_NO_AUTOUPDATE=1 \
 		source "${HALCYON_TOP_DIR}/src.sh" || return 1
