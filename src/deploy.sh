@@ -125,41 +125,26 @@ determine_cabal_repo () {
 }
 
 
-finish_deploy () {
+announce_deploy () {
 	expect_vars HOME HALCYON_DIR HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
 
 	local tag
 	expect_args tag -- "$@"
 
-	if ! (( HALCYON_NO_ANNOUNCE_DEPLOY )); then
-		if (( HALCYON_ONLY_DEPLOY_ENV )); then
-			log_pad 'Environment deployed'
-		else
-			local description
-			description=$( format_app_description "${tag}" ) || die
-
-			log
-			log_pad 'App deployed:' "${description}"
-		fi
+	if (( HALCYON_NO_ANNOUNCE_DEPLOY )); then
+		return 0
 	fi
 
-	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
-	# without having to use cabal_do or sandboxed_cabal_do.
-
-	if [[ -d "${HALCYON_DIR}/cabal" ]]; then
-		if [[ -e "${HOME}/.cabal/config" && ! -h "${HOME}/.cabal/config" ]]; then
-			log_warning "Expected no foreign ${HOME}/.cabal/config"
-		else
-			rm -f "${HOME}/.cabal/config" || die
-			mkdir -p "${HOME}/.cabal" || die
-			ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
-		fi
+	if (( HALCYON_ONLY_DEPLOY_ENV )); then
+		log_pad 'Environment deployed'
+		return 0
 	fi
 
-	if [[ -d "${HALCYON_DIR}/sandbox" && -d "${HALCYON_DIR}/app" ]]; then
-		rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
-		ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${HALCYON_DIR}/app/cabal.sandbox.config" || die
-	fi
+	local description
+	description=$( format_app_description "${tag}" ) || die
+
+	log
+	log_pad 'App deployed:' "${description}"
 }
 
 
@@ -227,7 +212,7 @@ deploy_env () {
 		return 1
 	fi
 
-	finish_deploy "${tag}" || die
+	announce_deploy "${tag}" || die
 }
 
 
@@ -295,7 +280,7 @@ deploy_app_from_slug () {
 	if ! (( HALCYON_RECURSIVE )); then
 		export HALCYON_NO_CACHE=1
 
-		finish_deploy "${tag}" || die
+		announce_deploy "${tag}" || die
 	fi
 }
 
@@ -473,7 +458,8 @@ deploy_app () {
 	local constraints warn_implicit
 	warn_implicit=0
 	if [[ ! -f "${source_dir}/cabal.config" ]]; then
-		HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env "${source_dir}" || return 1
+		HALCYON_NO_ANNOUNCE_DEPLOY=1 \
+			deploy_env "${source_dir}" || return 1
 
 		log 'Deploying app'
 
@@ -575,7 +561,7 @@ deploy_app () {
 	fi
 
 	if ! (( HALCYON_RECURSIVE )); then
-		finish_deploy "${tag}" || die
+		announce_deploy "${tag}" || die
 	fi
 }
 
@@ -660,7 +646,9 @@ deploy_unpacked_app () {
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	HALCYON_ONLY_DEPLOY_ENV=1 HALCYON_NO_ANNOUNCE_DEPLOY=1 deploy_env '/dev/null' || return 1
+	HALCYON_ONLY_DEPLOY_ENV=1            \
+		HALCYON_NO_ANNOUNCE_DEPLOY=1 \
+		deploy_env '/dev/null' || return 1
 
 	log 'Unpacking app'
 
@@ -726,7 +714,8 @@ halcyon_deploy () {
 		deploy_env '/dev/null' || return 1
 	elif [[ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]]; then
 		if ! detect_app_label '.' >'/dev/null'; then
-			HALCYON_ONLY_DEPLOY_ENV=1 deploy_env '/dev/null' || return 1
+			HALCYON_ONLY_DEPLOY_ENV=1 \
+				deploy_env '/dev/null' || return 1
 		else
 			deploy_local_app '.' || return 1
 		fi

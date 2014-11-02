@@ -248,20 +248,19 @@ build_cabal_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	rm -rf "${HALCYON_DIR}/cabal" || die
-
-	if [[ -e "${HOME}/.cabal/config" && ! -h "${HOME}/.cabal/config" ]]; then
-		die "Expected no foreign ${HOME}/.cabal/config"
+	if [[ -d "${HOME}/.ghc" && ! -f "${HOME}/.ghc/.halcyon-mark" ]]; then
+		log_error 'Unexpected existing ~/.ghc'
+		log
+		log 'To continue, remove ~/.ghc and ~/.cabal'
+		die
 	fi
-	rm -f "${HOME}/.cabal/config" || die
-
-	# NOTE: Cabal sometimes creates HOME/.cabal/setup-exe-cache, and there is no way to use a
-	# different path.
-	# https://github.com/haskell/cabal/issues/1242
-
-	rm -rf "${HOME}/.cabal/setup-exe-cache" || die
-	rmdir "${HOME}/.cabal" 2>'/dev/null' || true
-	expect_no_existing "${HOME}/.cabal" "${HOME}/.ghc"
+	if [[ -d "${HOME}/.cabal" && ! -f "${HOME}/.cabal/.halcyon-mark" ]]; then
+		log_error 'Unexpected existing ~/.cabal'
+		log
+		log 'To continue, remove ~/.ghc and ~/.cabal'
+		die
+	fi
+	rm -rf "${HOME}/.ghc" "${HOME}/.cabal" "${HALCYON_DIR}/cabal" || die
 
 	local ghc_version cabal_version original_url original_name cabal_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
@@ -319,6 +318,10 @@ EOF
 		die "Unexpected Cabal and GHC combination: ${cabal_version} and ${ghc_version}"
 	esac
 
+	mkdir -p "${HOME}/.ghc" "${HOME}/.cabal" || die
+	touch "${HOME}/.ghc/.halcyon-mark" || die
+	touch "${HOME}/.cabal/.halcyon-mark" || die
+
 	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc is specified.
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 
@@ -362,7 +365,7 @@ EOF
 
 	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
 
-	rm -rf "${HOME}/.cabal" "${HOME}/.ghc" "${cabal_dir}" || die
+	rm -rf "${HOME}/.ghc" "${HOME}/.cabal" "${cabal_dir}" || die
 }
 
 
@@ -618,6 +621,27 @@ announce_cabal_layer () {
 }
 
 
+link_cabal_config () {
+	expect_vars HOME HALCYON_DIR
+	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
+
+	if [[ -d "${HOME}/.cabal" && ! -f "${HOME}/.cabal/.halcyon-mark" ]]; then
+		log_error 'Unexpected existing ~/.cabal'
+		log
+		log 'To continue, remove ~/.cabal'
+		die
+	fi
+
+	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
+	# without having to use cabal_do or sandboxed_cabal_do.
+
+	rm -f "${HOME}/.cabal/config" || die
+	mkdir -p "${HOME}/.cabal" || die
+	touch "${HOME}/.cabal/.halcyon-mark" || die
+	ln -s "${HALCYON_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
+}
+
+
 install_cabal_layer () {
 	expect_vars HALCYON_DIR HALCYON_NO_BUILD_DEPENDENCIES HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL
 
@@ -628,6 +652,7 @@ install_cabal_layer () {
 		if ! (( HALCYON_FORCE_UPDATE_CABAL )) &&
 			restore_updated_cabal_layer "${tag}"
 		then
+			link_cabal_config || die
 			return 0
 		fi
 
@@ -635,6 +660,7 @@ install_cabal_layer () {
 			update_cabal_layer || die
 			archive_cabal_layer || die
 			announce_cabal_layer "${tag}" || die
+			link_cabal_config || die
 			return 0
 		fi
 
@@ -649,6 +675,7 @@ install_cabal_layer () {
 	update_cabal_layer || die
 	archive_cabal_layer || die
 	announce_cabal_layer "${tag}" || die
+	link_cabal_config || die
 }
 
 
