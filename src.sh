@@ -77,21 +77,10 @@ halcyon_autoupdate () {
 		branch='master'
 	fi
 
-	local git_url must_update
-	must_update=0
+	local git_url
 	git_url=$( cd "${HALCYON_TOP_DIR}" && git config --get 'remote.origin.url' ) || return 1
 	if [[ "${git_url}" != "${url}" ]]; then
 		( cd "${HALCYON_TOP_DIR}" && git remote set-url 'origin' "${url}" ) || return 1
-		must_update=1
-	fi
-
-	if ! (( must_update )); then
-		local mark_time current_time
-		mark_time=$( get_modification_time "${HALCYON_TOP_DIR}" ) || return 1
-		current_time=$( date +'%s' ) || return 1
-		if (( mark_time > current_time - 42 )); then
-			return 0
-		fi
 	fi
 
 	log_begin 'Auto-updating Halcyon...'
