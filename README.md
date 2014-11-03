@@ -26,8 +26,17 @@ Interested in deploying Haskell web applications?  Try [_Haskell on Heroku_](h
 
 ### Installation
 
+Clone the Halcyon repository:
+
 ```
-$ git clone https://github.com/mietek/halcyon
+$ git clone https://github.com/mietek/halcyon ANY_DIR/halcyon
+```
+
+Set up paths:
+
+```
+$ export PATH=ANY_DIR/halcyon:$PATH
+$ source <( halcyon show-paths )
 ```
 
 
