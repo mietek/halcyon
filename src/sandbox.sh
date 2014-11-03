@@ -236,7 +236,7 @@ install_sandbox_extra_libs () {
 
 	local sandbox_lib
 	for sandbox_lib in "${sandbox_libs[@]}"; do
-		apt-get "${opts[@]}" --download-only --yes install "${sandbox_lib}" |& quote || die
+		apt-get "${opts[@]}" install --download-only --reinstall --yes "${sandbox_lib}" |& quote || die
 	done
 
 	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
