@@ -433,8 +433,7 @@ do_deploy_app () {
 
 deploy_app () {
 	expect_vars HALCYON_RECURSIVE HALCYON_TARGET \
-		HALCYON_FORCE_RESTORE_ALL \
-		HALCYON_ONLY_SHOW_APP_LABEL HALCYON_ONLY_SHOW_CONSTRAINTS
+		HALCYON_FORCE_RESTORE_ALL
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
@@ -476,11 +475,11 @@ deploy_app () {
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 	fi
 
-	if (( HALCYON_ONLY_SHOW_APP_LABEL )); then
+	if (( ${HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL:-0} )); then
 		echo "${app_label}"
 		return 0
 	fi
-	if (( HALCYON_ONLY_SHOW_CONSTRAINTS )); then
+	if (( ${HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS:-0} )); then
 		format_constraints <<<"${constraints}" || die
 		return 0
 	fi
@@ -553,6 +552,11 @@ deploy_app () {
 			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
 			"${sandbox_magic_hash}" "${app_magic_hash}" || die
 	) || die
+
+	if (( ${HALCYON_INTERNAL_ONLY_SHOW_TAG:-0} )); then
+		echo "${tag}"
+		return 0
+	fi
 
 	log
 	if ! do_deploy_app "${tag}" "${source_dir}" "${constraints}"; then
@@ -695,15 +699,6 @@ deploy_app_oid () {
 
 
 halcyon_deploy () {
-	expect_vars HALCYON_TARGET HALCYON_ONLY_DEPLOY_ENV
-
-	export -a HALCYON_INTERNAL_ARGS
-	handle_command_line "$@" || die
-
-	if [[ "${HALCYON_TARGET}" != 'sandbox' && "${HALCYON_TARGET}" != 'slug' ]]; then
-		die "Unexpected target: ${HALCYON_TARGET}"
-	fi
-
 	local cache_dir
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
 

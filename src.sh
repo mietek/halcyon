@@ -47,7 +47,7 @@ fi
 
 
 source "${HALCYON_TOP_DIR}/src/paths.sh"
-source "${HALCYON_TOP_DIR}/src/vars.sh"
+source "${HALCYON_TOP_DIR}/src/main.sh"
 source "${HALCYON_TOP_DIR}/src/deploy.sh"
 source "${HALCYON_TOP_DIR}/src/storage.sh"
 source "${HALCYON_TOP_DIR}/src/tag.sh"

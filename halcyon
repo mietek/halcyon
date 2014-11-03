@@ -3,9 +3,9 @@
 set -eu
 
 export HALCYON_TOP_DIR
-HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )
+HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
 source "${HALCYON_TOP_DIR}/src.sh"
 
 set_halcyon_vars
-halcyon_deploy "$@"
+halcyon_main "$@"

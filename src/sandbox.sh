@@ -294,7 +294,7 @@ deploy_sandbox_extra_apps () {
 		opts=( "${env_opts[@]}" )
 		[[ -f "${constraints_file}" ]] && opts+=( --constraints-file="${constraints_file}" )
 
-		( deploy "${opts[@]}" "${sandbox_app}" |& quote ) || return 1
+		( halcyon deploy "${opts[@]}" "${sandbox_app}" |& quote ) || return 1
 	done
 }
 
