@@ -599,8 +599,8 @@ deploy_local_app () {
 
 
 deploy_cloned_app () {
-	local url_oid
-	expect_args url_oid -- "$@"
+	local urloid
+	expect_args urloid -- "$@"
 
 	log 'Cloning app'
 
@@ -609,18 +609,18 @@ deploy_cloned_app () {
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
 	local url
-	url="${url_oid%#*}"
+	url="${urloid%#*}"
 	if ! git clone "${url}" "${clone_dir}" |& quote; then
 		die 'Cannot clone app'
 	fi
 
-	local branch_oid
-	branch_oid="${url_oid#*#}"
-	if [[ "${branch_oid}" == "${url_oid}" ]]; then
-		branch_oid=''
+	local branchoid
+	branchoid="${urloid#*#}"
+	if [[ "${branchoid}" == "${urloid}" ]]; then
+		branchoid=''
 	fi
-	if [[ -n "${branch_oid}" ]]; then
-		if ! ( cd "${clone_dir}" && git checkout "${branch_oid}" |& quote ); then
+	if [[ -n "${branchoid}" ]]; then
+		if ! ( cd "${clone_dir}" && git checkout "${branchoid}" |& quote ); then
 			die 'Cannot checkout app branch'
 		fi
 	fi
@@ -643,8 +643,8 @@ deploy_cloned_app () {
 
 
 deploy_unpacked_app () {
-	local app_oid
-	expect_args app_oid -- "$@"
+	local appoid
+	expect_args appoid -- "$@"
 
 	local unpack_dir source_dir
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
@@ -657,14 +657,14 @@ deploy_unpacked_app () {
 	log 'Unpacking app'
 
 	local app_label
-	if ! app_label=$( cabal_unpack_app "${app_oid}" "${unpack_dir}" ); then
+	if ! app_label=$( cabal_unpack_app "${appoid}" "${unpack_dir}" ); then
 		die 'Cannot unpack app'
 	fi
 
 	copy_app_source_over "${unpack_dir}/${app_label}" "${source_dir}" || die
 
-	if [[ "${app_label}" != "${app_oid}" ]]; then
-		log_warning "Using implicit version of ${app_oid}"
+	if [[ "${app_label}" != "${appoid}" ]]; then
+		log_warning "Using implicit version of ${appoid}"
 		log_warning 'Expected app label with explicit version'
 	fi
 
@@ -675,24 +675,24 @@ deploy_unpacked_app () {
 }
 
 
-deploy_app_oid () {
-	local app_oid
-	expect_args app_oid -- "$@"
+deploy_appoid () {
+	local appoid
+	expect_args appoid -- "$@"
 
-	case "${app_oid}" in
+	case "${appoid}" in
 	'https://'*);&
 	'ssh://'*);&
 	'git@'*);&
 	'file://'*);&
 	'http://'*);&
 	'git://'*)
-		deploy_cloned_app "${app_oid}" || return 1
+		deploy_cloned_app "${appoid}" || return 1
 		;;
 	*)
-		if [[ -d "${app_oid}" ]]; then
-			deploy_local_app "${app_oid%/}" || return 1
+		if [[ -d "${appoid}" ]]; then
+			deploy_local_app "${appoid%/}" || return 1
 		else
-			deploy_unpacked_app "${app_oid}" || return 1
+			deploy_unpacked_app "${appoid}" || return 1
 		fi
 	esac
 }
@@ -716,7 +716,7 @@ halcyon_deploy () {
 			deploy_local_app '.' || return 1
 		fi
 	else
-		local app_oid index
+		local appoid index
 		index=0
 		while (( $# )); do
 			index=$(( index + 1 ))
@@ -725,7 +725,7 @@ halcyon_deploy () {
 				log
 			fi
 
-			deploy_app_oid "$1" || return 1
+			deploy_appoid "$1" || return 1
 			shift
 		done
 	fi
