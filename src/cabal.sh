@@ -248,6 +248,15 @@ build_cabal_layer () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
+	local ghc_version cabal_version original_url original_name cabal_dir
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
+	original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
+	original_name=$( basename "${original_url}" ) || die
+	cabal_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
+
+	log 'Building Cabal layer'
+
 	if [[ -d "${HOME}/.ghc" && ! -f "${HOME}/.ghc/.halcyon-mark" ]]; then
 		log_error 'Unexpected existing ~/.ghc'
 		log
@@ -261,15 +270,6 @@ build_cabal_layer () {
 		die
 	fi
 	rm -rf "${HOME}/.ghc" "${HOME}/.cabal" "${HALCYON_DIR}/cabal" || die
-
-	local ghc_version cabal_version original_url original_name cabal_dir
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-	original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
-	original_name=$( basename "${original_url}" ) || die
-	cabal_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
-
-	log 'Building Cabal layer'
 
 	if ! extract_cached_archive_over "${original_name}" "${cabal_dir}"; then
 		if ! cache_original_stored_file "${original_url}"; then
