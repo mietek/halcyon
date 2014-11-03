@@ -378,22 +378,22 @@ halcyon_main () {
 
 	case "${cmd}" in
 	'deploy')
-		halcyon_deploy "${args[@]:-}" || die
+		halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'show-paths')
 		cat "${HALCYON_TOP_DIR}/src/paths.sh" || die
 		;;
 	'show-app-label')
 		HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL=1 \
-			halcyon_deploy "${args[@]:-}" || die
+			halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'show-constraints')
 		HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS=1 \
-			halcyon_deploy "${args[@]:-}" || die
+			halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'show-tag')
 		HALCYON_INTERNAL_ONLY_SHOW_TAG=1 \
-			halcyon_deploy "${args[@]:-}" || die
+			halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args[*]:-}"
