@@ -418,7 +418,7 @@ announce_app_layer () {
 
 
 link_app_sandbox_config () {
-	expect_vars HOME HALCYON_DIR
+	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
 	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,

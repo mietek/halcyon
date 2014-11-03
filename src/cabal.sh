@@ -623,7 +623,7 @@ announce_cabal_layer () {
 
 link_cabal_config () {
 	expect_vars HOME HALCYON_DIR
-	expect_existing "${HALCYON_DIR}/cabal/.halcyon-tag"
+	expect_existing "${HOME}" "${HALCYON_DIR}/cabal/.halcyon-tag"
 
 	if [[ -d "${HOME}/.cabal" && ! -f "${HOME}/.cabal/.halcyon-mark" ]]; then
 		log_error 'Unexpected existing ~/.cabal'

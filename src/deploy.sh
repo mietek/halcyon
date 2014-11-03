@@ -126,7 +126,7 @@ determine_cabal_repo () {
 
 
 announce_deploy () {
-	expect_vars HOME HALCYON_DIR HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
+	expect_vars HALCYON_DIR HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
 
 	local tag
 	expect_args tag -- "$@"
