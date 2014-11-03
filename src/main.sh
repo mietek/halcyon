@@ -103,7 +103,11 @@ set_halcyon_vars () {
 }
 
 
-handle_command_line () {
+halcyon_main () {
+	local cmd
+	local -a args
+	cmd=''
+
 	while (( $# )); do
 		case "$1" in
 		# Paths:
@@ -339,10 +343,10 @@ handle_command_line () {
 		'--')
 			shift
 			while (( $# )); do
-				if [[ -z "${HALCYON_INTERNAL_CMD:+_}" ]]; then
-					export HALCYON_INTERNAL_CMD="$1"
+				if [[ -z "${cmd}" ]]; then
+					cmd="$1"
 				else
-					HALCYON_INTERNAL_ARGS+=( "$1" )
+					args+=( "$1" )
 				fi
 				shift
 			done
@@ -353,56 +357,46 @@ handle_command_line () {
 			die
 			;;
 		*)
-			if [[ -z "${HALCYON_INTERNAL_CMD:+_}" ]]; then
-				export HALCYON_INTERNAL_CMD="$1"
+			if [[ -z "${cmd}" ]]; then
+				cmd="$1"
 			else
-				HALCYON_INTERNAL_ARGS+=( "$1" )
+				args+=( "$1" )
 			fi
 		esac
 		shift
 	done
-}
-
-
-halcyon_main () {
-	expect_vars HALCYON_TARGET HALCYON_ONLY_DEPLOY_ENV
-
-	export HALCYON_INTERNAL_CMD
-	export -a HALCYON_INTERNAL_ARGS
-
-	handle_command_line "$@" || die
 
 	if [[ "${HALCYON_TARGET}" != 'sandbox' && "${HALCYON_TARGET}" != 'slug' ]]; then
 		die "Unexpected target: ${HALCYON_TARGET}"
 	fi
 
-	if [[ -z "${HALCYON_INTERNAL_CMD:+_}" ]]; then
+	if [[ -z "${cmd}" ]]; then
 		log_error 'Expected command'
 		help_usage
 		die
 	fi
 
-	case "${HALCYON_INTERNAL_CMD}" in
+	case "${cmd}" in
 	'deploy')
-		halcyon_deploy || die
+		halcyon_deploy "${args[@]:-}" || die
 		;;
 	'show-paths')
 		cat "${HALCYON_TOP_DIR}/src/paths.sh" || die
 		;;
 	'show-app-label')
 		HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL=1 \
-			halcyon_deploy || die
+			halcyon_deploy "${args[@]:-}" || die
 		;;
 	'show-constraints')
 		HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS=1 \
-			halcyon_deploy || die
+			halcyon_deploy "${args[@]:-}" || die
 		;;
 	'show-tag')
 		HALCYON_INTERNAL_ONLY_SHOW_TAG=1 \
-			halcyon_deploy || die
+			halcyon_deploy "${args[@]:-}" || die
 		;;
 	*)
-		log_error "Unexpected command: ${HALCYON_INTERNAL_CMD}"
+		log_error "Unexpected command: ${cmd} ${args[*]:-}"
 		help_usage
 		die
 	esac

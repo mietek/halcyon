@@ -703,11 +703,12 @@ halcyon_deploy () {
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
 
 	prepare_cache "${cache_dir}" || die
+
 	install_pigz || die
 
 	if (( HALCYON_ONLY_DEPLOY_ENV )); then
 		deploy_env '/dev/null' || return 1
-	elif [[ -z "${HALCYON_INTERNAL_ARGS[@]:+_}" ]]; then
+	elif ! (( $# )) || [[ "$1" == '' ]]; then
 		if ! detect_app_label '.' >'/dev/null'; then
 			HALCYON_ONLY_DEPLOY_ENV=1 \
 				deploy_env '/dev/null' || return 1
@@ -717,14 +718,15 @@ halcyon_deploy () {
 	else
 		local app_oid index
 		index=0
-		for app_oid in "${HALCYON_INTERNAL_ARGS[@]}"; do
+		while (( $# )); do
 			index=$(( index + 1 ))
 			if (( index > 1 )); then
 				log
 				log
 			fi
 
-			deploy_app_oid "${app_oid}" || return 1
+			deploy_app_oid "$1" || return 1
+			shift
 		done
 	fi
 
