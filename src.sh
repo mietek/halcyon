@@ -29,9 +29,9 @@ halcyon_source_bashmenot () {
 
 	local commit_hash
 	commit_hash=$(
-		git clone -q "${url}" "${HALCYON_TOP_DIR}/lib/bashmenot" &&
+		git clone -q "${url}" "${HALCYON_TOP_DIR}/lib/bashmenot" &>'/dev/null' &&
 		cd "${HALCYON_TOP_DIR}/lib/bashmenot" &&
-		git checkout -q "${branch}" &&
+		git checkout -q "${branch}" &>'/dev/null' &&
 		git log -n 1 --pretty='format:%h'
 	) || return 1
 	echo " done (${commit_hash})" >&2
@@ -88,8 +88,8 @@ halcyon_autoupdate () {
 	local commit_hash
 	commit_hash=$(
 		cd "${HALCYON_TOP_DIR}" &&
-		git fetch -q 'origin' &&
-		git reset -q --hard "origin/${branch}" &&
+		git fetch -q 'origin' &>'/dev/null' &&
+		git reset -q --hard "origin/${branch}" &>'/dev/null' &&
 		git log -n 1 --pretty='format:%h'
 	) || return 1
 	log_end "done (${commit_hash})"
