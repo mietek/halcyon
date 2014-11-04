@@ -1,7 +1,6 @@
 set -o pipefail
 
-export HALCYON_TOP_DIR
-HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
+export HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
 
 halcyon_source_bashmenot () {
