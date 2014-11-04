@@ -241,7 +241,7 @@ install_sandbox_extra_libs () {
 
 	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
 		while read -r file; do
-			dpkg --extract "${apt_dir}/cache/archives/${deb_file}" \
+			dpkg --extract "${apt_dir}/cache/archives/${file}" \
 				"${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" |& quote || die
 		done || die
 }
