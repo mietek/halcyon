@@ -336,7 +336,7 @@ install_pigz () {
 		touch_cached_file "${original_name}" || die
 	fi
 
-	copy_file "${pigz_dir}/usr/bin/pigz" "${HALCYON_TOP_DIR}/bin/pigz" || die
+	copy_file "${pigz_dir}/usr/bin/pigz" "${HALCYON_TOP_DIR}/pigz" || die
 
 	rm -rf "${pigz_dir}" || die
 }
