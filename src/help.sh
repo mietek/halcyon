@@ -40,7 +40,7 @@ help_usage () {
 		    --no-cache
 		    --no-public-storage
 
-		    --constraints-file=FILE
+		    --constraints-dir=DIR
 		    --force-restore-all
 		    --no-announce-deploy
 

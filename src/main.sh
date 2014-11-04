@@ -38,7 +38,7 @@ set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET:-0} )); then
 		export HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET=1
 
-		export HALCYON_CONSTRAINTS_FILE="${HALCYON_CONSTRAINTS_FILE:-}"
+		export HALCYON_CONSTRAINTS_DIR="${HALCYON_CONSTRAINTS_DIR:-}"
 		export HALCYON_FORCE_RESTORE_ALL="${HALCYON_FORCE_RESTORE_ALL:-0}"
 		export HALCYON_NO_ANNOUNCE_DEPLOY="${HALCYON_NO_ANNOUNCE_DEPLOY:-0}"
 
@@ -69,7 +69,7 @@ set_halcyon_vars () {
 		export HALCYON_SLUG_POST_BUILD_HOOK="${HALCYON_SLUG_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_SLUG="${HALCYON_FORCE_BUILD_SLUG:-0}"
 	else
-		export HALCYON_CONSTRAINTS_FILE=''
+		export HALCYON_CONSTRAINTS_DIR=''
 		export HALCYON_FORCE_RESTORE_ALL=0
 		export HALCYON_NO_ANNOUNCE_DEPLOY=0
 
@@ -216,12 +216,12 @@ halcyon_main () {
 			export HALCYON_NO_PUBLIC_STORAGE=1;;
 
 		# Vars inherited once and reset:
-		'--constraints-file')
+		'--constraints-dir')
 			shift
-			expect_args constraints_file -- "$@"
-			export HALCYON_CONSTRAINTS_FILE="${constraints_file}";;
-		'--constraints-file='*)
-			export HALCYON_CONSTRAINTS_FILE="${1#*=}";;
+			expect_args constraints_dir -- "$@"
+			export HALCYON_CONSTRAINTS_DIR="${constraints_dir}";;
+		'--constraints-dir='*)
+			export HALCYON_CONSTRAINTS_DIR="${1#*=}";;
 		'--force-restore-all')
 			export HALCYON_FORCE_RESTORE_ALL=1;;
 		'--no-announce-deploy')

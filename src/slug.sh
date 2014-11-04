@@ -107,14 +107,18 @@ deploy_slug_extra_apps () {
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
-	local -a env_opts
-	env_opts+=( --install-dir="${slug_dir}" )
-	env_opts+=( --recursive )
-	env_opts+=( --ghc-version="${ghc_version}" )
-	[[ -n "${ghc_magic_hash}" ]] && env_opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
-	env_opts+=( --cabal-version="${cabal_version}" )
-	[[ -n "${cabal_magic_hash}" ]] && env_opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
-	env_opts+=( --cabal-repo="${cabal_repo}" )
+	local constraints_dir
+	constraints_dir="${source_dir}/.halcyon-magic/slug-extra-apps-constraints"
+
+	local -a opts
+	opts+=( --install-dir="${slug_dir}" )
+	opts+=( --recursive )
+	opts+=( --ghc-version="${ghc_version}" )
+	[[ -n "${ghc_magic_hash}" ]] && opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
+	opts+=( --cabal-version="${cabal_version}" )
+	[[ -n "${cabal_magic_hash}" ]] && opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
+	opts+=( --cabal-repo="${cabal_repo}" )
+	[[ -d "${constraints_dir}" ]] && opts+=( --constraints-dir="${constraints_dir}" )
 
 	log 'Deploying slug extra apps'
 
@@ -129,13 +133,6 @@ deploy_slug_extra_apps () {
 			log
 			log
 		fi
-
-		local constraints_file
-		constraints_file="${source_dir}/.halcyon-magic/slug-extra-apps-constraints/${slug_app}.cabal.config"
-
-		local -a opts
-		opts=( "${env_opts[@]}" )
-		[[ -f "${constraints_file}" ]] && opts+=( --constraints-file="${constraints_file}" )
 
 		( halcyon deploy "${opts[@]}" "${slug_app}" |& quote ) || return 1
 	done

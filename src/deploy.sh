@@ -286,12 +286,12 @@ deploy_app_from_slug () {
 
 
 prepare_source_dir () {
-	local source_dir
-	expect_args source_dir -- "$@"
+	local app_label source_dir
+	expect_args app_label source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if [[ -n "${HALCYON_CONSTRAINTS_FILE:+_}" ]]; then
-		copy_file "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die
+	if [[ -n "${HALCYON_CONSTRAINTS_DIR:+_}" ]]; then
+		copy_file "${HALCYON_CONSTRAINTS_DIR}/${app_label}.cabal.config" "${source_dir}/cabal.config" || die
 	fi
 
 	if [[ -n "${HALCYON_GHC_PRE_BUILD_HOOK:+_}" ]]; then
@@ -441,7 +441,7 @@ deploy_app () {
 
 	# NOTE: This is the first out of the two moments when source_dir is modified.
 
-	prepare_source_dir "${source_dir}" || die
+	prepare_source_dir "${app_label}" "${source_dir}" || die
 
 	local source_hash
 	if [[ -f "${source_dir}/cabal.config" ]]; then
