@@ -1,10 +1,4 @@
 set_halcyon_vars () {
-	if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
-		export HALCYON_INTERNAL_PATHS=1
-
-		source "${HALCYON_TOP_DIR}/src/paths.sh"
-	fi
-
 	if ! (( ${HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED:-0} )); then
 		export HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED=1
 
