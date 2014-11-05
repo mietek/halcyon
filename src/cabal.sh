@@ -322,7 +322,8 @@ EOF
 	touch "${HOME}/.ghc/.halcyon-mark" || die
 	touch "${HOME}/.cabal/.halcyon-mark" || die
 
-	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc is specified.
+	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc
+	# is specified.
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 
 	if ! (
@@ -703,8 +704,8 @@ sandboxed_cabal_do () {
 	expect_existing "${HALCYON_DIR}/sandbox" "${work_dir}"
 	shift
 
-	# NOTE: Specifying a cabal.sandbox.config file changes where Cabal looks for a cabal.config
-	# file.
+	# NOTE: Specifying a cabal.sandbox.config file changes where Cabal looks for
+	# a cabal.config file.
 	# https://github.com/haskell/cabal/issues/1915
 
 	local saved_config
@@ -739,8 +740,8 @@ cabal_freeze_implicit_constraints () {
 	expect_args app_label source_dir -- "$@"
 
 	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
-	# during a dry run.  Hence, if a local constraint conflicts with an installed package, Cabal
-	# will fail to resolve dependencies.
+	# during a dry run.  Hence, if a local constraint conflicts with an installed package,
+	# Cabal will fail to resolve dependencies.
 	# https://github.com/haskell/cabal/issues/2178
 
 	local stderr

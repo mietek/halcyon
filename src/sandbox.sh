@@ -347,12 +347,12 @@ build_sandbox_layer () {
 
 	log 'Compiling sandbox'
 
-	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the executables
-	# to be installed, but not to install the packages.
+	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the
+	# executables to be installed, but not to install the packages.
 	# https://github.com/haskell/cabal/issues/220
 
-	# NOTE: Listing executable-only packages in build-depends causes Cabal to install the packages,
-	# and to fail to recognise the packages have been installed.
+	# NOTE: Listing executable-only packages in build-depends causes Cabal to install the
+	# packages, and to fail to recognise the packages have been installed.
 	# https://github.com/haskell/cabal/issues/779
 
 	# TODO: Improve cross-platform compatibility.

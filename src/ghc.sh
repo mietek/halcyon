@@ -206,8 +206,8 @@ prepare_ghc_layer () {
 	'linux-ubuntu-14.04-x86_64-ghc-'*)
 		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured
 		# binary distribution of GHC <7.8.*. However, GHC does not use the `mpn_bdivmod`
-		# function, which is the only difference between the ABI of .3 and .10. Hence, .10 is
-		# symlinked to .3, and the .3-flavoured binary distribution is used.
+		# function, which is the only difference between the ABI of .3 and .10. Hence,
+		# .10 is symlinked to .3, and the .3-flavoured binary distribution is used.
 
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
