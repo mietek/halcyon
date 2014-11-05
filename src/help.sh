@@ -13,9 +13,9 @@ help_usage () {
 
 		Arguments:
 		    (none)
-		        Deploy environment or local app in current directory.
+		        Deploy app from current directory, or only deploy environment.
 		    DIRECTORY
-		        Deploy local app in specified directory.
+		        Deploy app from specified directory.
 		    LABEL
 		        Unpack and deploy app from Cabal repository.
 		    GIT_URL
