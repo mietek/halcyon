@@ -360,7 +360,7 @@ build_sandbox_layer () {
 	local -a opts
 	opts+=( --dependencies-only )
 	if [[ -d "${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" ]]; then
-		opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu" )
+		opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib" )
 		opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/include" )
 	fi
 
