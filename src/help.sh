@@ -2,7 +2,7 @@ help_usage () {
 	log
 	quote <<-EOF
 		Usage:
-		    halcyon COMMAND [OPTIONS] [ARGUMENTS]
+		    halcyon COMMAND [ARGUMENTS] [OPTIONS]
 
 		Commands:
 		    deploy
@@ -10,6 +10,16 @@ help_usage () {
 		    show-app-label
 		    show-constraints
 		    show-tag
+
+		Arguments:
+		    (none)
+		        Deploy environment or local app in current directory.
+		    DIRECTORY
+		        Deploy local app in specified directory.
+		    LABEL
+		        Unpack and deploy app from Cabal repository.
+		    GIT_URL
+		        Clone and deploy app from specified Git repository.
 
 		Options:
 		    --halcyon-dir=DIRECTORY
@@ -70,16 +80,6 @@ help_usage () {
 		    --slug-pre-build-hook=FILE
 		    --slug-post-build-hook=FILE
 		    --force-build-slug
-
-		Arguments:
-		    (none)
-		        Deploy environment or local app in current directory.
-		    DIRECTORY
-		        Deploy local app in specified directory.
-		    LABEL
-		        Unpack and deploy app from Cabal repository.
-		    GIT_URL
-		        Clone and deploy app from specified Git repository.
 EOF
 }
 
