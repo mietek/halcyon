@@ -47,7 +47,8 @@ detect_app_executable () {
 		detect_app_package "${source_dir}" |
 		awk '/^ *[Ee]xecutable / { print $2 }' |
 		tr -d '\r' |
-		match_exactly_one
+		match_at_least_one |
+		head -n 1
 	) || return 1
 
 	echo "${app_executable}"
