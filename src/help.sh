@@ -26,7 +26,6 @@ help_usage () {
 
 		    --cache-dir=DIRECTORY
 		    --install-dir=DIRECTORY
-		    --recursive
 		    --target
 		    --only-deploy-env
 		    --no-copy-local-source

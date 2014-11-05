@@ -216,12 +216,12 @@ delete_matching_private_stored_files () {
 
 
 prepare_cache () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_RECURSIVE HALCYON_PURGE_CACHE HALCYON_NO_CACHE
+	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE HALCYON_NO_CACHE
 
 	local cache_dir
 	expect_args cache_dir -- "$@"
 
-	if (( HALCYON_RECURSIVE )) || (( HALCYON_NO_CACHE )); then
+	if (( HALCYON_NO_CACHE )) || (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
 		return 0
 	fi
 
@@ -256,12 +256,12 @@ prepare_cache () {
 
 
 clean_cache () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_RECURSIVE HALCYON_NO_CACHE
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_CACHE
 
 	local cache_dir
 	expect_args cache_dir -- "$@"
 
-	if (( HALCYON_RECURSIVE )) || (( HALCYON_NO_CACHE )); then
+	if (( HALCYON_NO_CACHE )) || (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
 		return 0
 	fi
 

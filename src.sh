@@ -6,7 +6,7 @@ export HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 halcyon_source_bashmenot () {
 	local no_autoupdate
 	no_autoupdate="${HALCYON_NO_AUTOUPDATE:-0}"
-	if (( ${HALCYON_RECURSIVE:-0} )); then
+	if (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
 		no_autoupdate=1
 	fi
 
@@ -60,7 +60,7 @@ source "${HALCYON_TOP_DIR}/src/help.sh"
 
 
 halcyon_autoupdate () {
-	if (( ${HALCYON_NO_AUTOUPDATE:-0} )) || (( ${HALCYON_RECURSIVE:-0} )); then
+	if (( ${HALCYON_NO_AUTOUPDATE:-0} )) || (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
 		return 0
 	fi
 

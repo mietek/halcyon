@@ -4,7 +4,6 @@ set_halcyon_vars () {
 
 		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon-cache}"
 		export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-}"
-		export HALCYON_RECURSIVE="${HALCYON_RECURSIVE:-0}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 		export HALCYON_ONLY_DEPLOY_ENV="${HALCYON_ONLY_DEPLOY_ENV:-0}"
 		export HALCYON_NO_COPY_LOCAL_SOURCE="${HALCYON_NO_COPY_LOCAL_SOURCE:-0}"
@@ -125,8 +124,6 @@ halcyon_main () {
 			export HALCYON_INSTALL_DIR="${install_dir}";;
 		'--install-dir='*)
 			export HALCYON_INSTALL_DIR="${1#*=}";;
-		'--recursive')
-			export HALCYON_RECURSIVE=1;;
 		'--target')
 			shift
 			expect_args target -- "$@"

@@ -277,7 +277,7 @@ build_ghc_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
 		if ! (
-			HALCYON_RECURSIVE=1                                       \
+			HALCYON_INTERNAL_RECURSIVE=1                              \
 				"${source_dir}/.halcyon-magic/ghc-pre-build-hook" \
 				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
 		); then
@@ -306,7 +306,7 @@ build_ghc_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]]; then
 		log 'Executing GHC post-build hook'
 		if ! (
-			HALCYON_RECURSIVE=1                                        \
+			HALCYON_INTERNAL_RECURSIVE=1                               \
 				"${source_dir}/.halcyon-magic/ghc-post-build-hook" \
 				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
 		); then

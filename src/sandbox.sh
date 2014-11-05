@@ -268,7 +268,6 @@ deploy_sandbox_extra_apps () {
 	constraints_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
 
 	local -a opts
-	opts+=( --recursive )
 	opts+=( --target='sandbox' )
 	opts+=( --ghc-version="${ghc_version}" )
 	[[ -n "${ghc_magic_hash}" ]] && opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
@@ -291,7 +290,10 @@ deploy_sandbox_extra_apps () {
 			log
 		fi
 
-		( halcyon deploy "${opts[@]}" "${sandbox_app}" |& quote ) || return 1
+		(
+			HALCYON_INTERNAL_RECURSIVE=1 \
+				halcyon deploy "${opts[@]}" "${sandbox_app}" |& quote
+		) || return 1
 	done
 }
 
@@ -325,7 +327,7 @@ build_sandbox_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
 		if ! (
-			HALCYON_RECURSIVE=1                                           \
+			HALCYON_INTERNAL_RECURSIVE=1                                  \
 				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
 				"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
@@ -380,7 +382,7 @@ build_sandbox_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
 		if ! (
-			HALCYON_RECURSIVE=1                                            \
+			HALCYON_INTERNAL_RECURSIVE=1                                   \
 				"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
 				"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
