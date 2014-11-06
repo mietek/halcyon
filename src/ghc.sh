@@ -3,7 +3,7 @@ get_default_ghc_version () {
 }
 
 
-map_ghc_version_to_libgmp10_x86_64_original_url () {
+map_ghc_version_to_linux_libgmp10_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -11,12 +11,12 @@ map_ghc_version_to_libgmp10_x86_64_original_url () {
 	'7.8.3')	echo 'http://www.haskell.org/ghc/dist/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.2')	echo 'http://www.haskell.org/ghc/dist/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.1')	echo 'http://www.haskell.org/ghc/dist/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
-	*)		die "Unexpected GHC version: ${ghc_version} (libgmp.so.10)"
+	*)		die "Unexpected GHC version for Linux/libgmp.so.10 (64-bit): ${ghc_version}"
 	esac
 }
 
 
-map_ghc_version_to_libgmp3_x86_64_original_url () {
+map_ghc_version_to_linux_libgmp3_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -42,7 +42,30 @@ map_ghc_version_to_libgmp3_x86_64_original_url () {
 	'6.10.3')	echo 'http://www.haskell.org/ghc/dist/6.10.3/ghc-6.10.3-x86_64-unknown-linux-n.tar.bz2';;
 	'6.10.2')	echo 'http://www.haskell.org/ghc/dist/6.10.2/ghc-6.10.2-x86_64-unknown-linux-libedit2.tar.bz2';;
 	'6.10.1')	echo 'http://www.haskell.org/ghc/dist/6.10.1/ghc-6.10.1-x86_64-unknown-linux-libedit2.tar.bz2';;
-	*)		die "Unexpected GHC version: ${ghc_version} (libgmp.so.3)"
+	*)		die "Unexpected GHC version for Linux/libgmp.so.3 (64-bit): ${ghc_version}"
+	esac
+}
+
+
+map_ghc_version_to_os_x_x86_64_original_url () {
+	local ghc_version
+	expect_args ghc_version -- "$@"
+
+	case "${ghc_version}" in
+	'7.8.3')	echo 'https://www.haskell.org/ghc/dist/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';; # 10.7+
+	'7.8.2')	echo 'https://www.haskell.org/ghc/dist/7.8.2/ghc-7.8.2-x86_64-apple-darwin-mavericks.tar.xz';; # 10.9 only?
+	'7.8.1')	echo 'https://www.haskell.org/ghc/dist/7.8.1/ghc-7.8.1-x86_64-apple-darwin-mavericks.tar.xz';; # 10.9 only?
+	'7.6.3')	echo 'https://www.haskell.org/ghc/dist/7.6.3/ghc-7.6.3-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.6.2')	echo 'https://www.haskell.org/ghc/dist/7.6.2/ghc-7.6.2-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.6.1')	echo 'https://www.haskell.org/ghc/dist/7.6.1/ghc-7.6.1-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.4.2')	echo 'https://www.haskell.org/ghc/dist/7.4.2/ghc-7.4.2-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.4.1')	echo 'https://www.haskell.org/ghc/dist/7.4.1/ghc-7.4.1-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.2.2')	echo 'https://www.haskell.org/ghc/dist/7.2.2/ghc-7.2.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.2.1')	echo 'https://www.haskell.org/ghc/dist/7.2.1/ghc-7.2.1-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.0.4')	echo 'https://www.haskell.org/ghc/dist/7.0.4/ghc-7.0.4-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.0.3')	echo 'https://www.haskell.org/ghc/dist/7.0.3/ghc-7.0.3-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.0.2')	echo 'https://www.haskell.org/ghc/dist/7.0.2/ghc-7.0.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	*)		die "Unexpected GHC version for OS X (64-bit): ${ghc_version}"
 	esac
 }
 
@@ -201,7 +224,7 @@ prepare_ghc_layer () {
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_name='libgmp.so.10'
-		url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+		url=$( map_ghc_version_to_linux_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-14.04-x86_64-ghc-'*)
 		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured
@@ -212,36 +235,48 @@ prepare_ghc_layer () {
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-7.8.'*)
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_name='libgmp.so.10'
-		url=$( map_ghc_version_to_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+		url=$( map_ghc_version_to_linux_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-12.04-x86_64-ghc-'*)
 		libgmp_file='/usr/lib/libgmp.so.3'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	'linux-ubuntu-10.04-x86_64-ghc-'*)
 		libgmp_file='/usr/lib/libgmp.so.3'
 		libtinfo_file='/lib/libncurses.so.5'
 		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		;;
+	'os-x-'*'-x86_64-ghc-'*)
+		url=$( map_ghc_version_to_os_x_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	*)
 		die "Unexpected GHC and OS combination: ${ghc_version} and ${description}"
 	esac
-	expect_existing "${libgmp_file}" "${libtinfo_file}"
 
-	mkdir -p "${HALCYON_DIR}/ghc/lib" || die
-	ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/${libgmp_name}" || die
-	ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
-	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
-	ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so" || die
+	if [ -n "${libgmp_file:-}" ]; then
+		expect_existing "${libgmp_file}"
+
+		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
+		ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/${libgmp_name}" || die
+		ln -s "${libgmp_file}" "${HALCYON_DIR}/ghc/lib/libgmp.so" || die
+	fi
+
+	if [ -n "${libtinfo_file:-}" ]; then
+		expect_existing "${libtinfo_file}"
+
+		mkdir -p "${HALCYON_DIR}/ghc/lib" || die
+		ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so.5" || die
+		ln -s "${libtinfo_file}" "${HALCYON_DIR}/ghc/lib/libtinfo.so" || die
+	fi
 
 	echo "${url}"
 }

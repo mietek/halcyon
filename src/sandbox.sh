@@ -206,17 +206,29 @@ copy_sandbox_magic () {
 install_sandbox_extra_libs () {
 	expect_vars HALCYON_DIR
 
-	local source_dir
-	expect_args source_dir -- "$@"
+	local tag source_dir
+	expect_args tag source_dir -- "$@"
 
 	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		return 0
 	fi
 
-	local apt_dir
+	local os description apt_dir
+	os=$( get_tag_os "${tag}" ) || die
+	description=$( format_os_description "${os}" ) || die
 	apt_dir=$( get_tmp_dir 'halcyon-sandbox-extra-libs' ) || die
 
 	log 'Installing sandbox extra libs'
+
+	case "${os}" in
+	'linux-ubuntu-14.04-x86_64');&
+	'linux-ubuntu-12.04-x86_64');&
+	'linux-ubuntu-10.04-x86_64')
+		true;;
+	*)
+		log_warning "Cannot install sandbox extra libs on ${description}"
+		return 0
+	esac
 
 	local -a opts
 	opts+=( -o debug::nolocking='true' )
@@ -337,7 +349,7 @@ build_sandbox_layer () {
 		log 'Sandbox pre-build hook executed'
 	fi
 
-	if ! install_sandbox_extra_libs "${source_dir}"; then
+	if ! install_sandbox_extra_libs "${tag}" "${source_dir}"; then
 		log_warning 'Cannot install sandbox extra libs'
 		return 1
 	fi

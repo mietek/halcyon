@@ -302,7 +302,7 @@ install_pigz () {
 		return 0
 	fi
 
-	local os os_description
+	local os description
 	os=$( detect_os ) || die
 	description=$( format_os_description "${os}" ) || die
 
@@ -317,7 +317,8 @@ install_pigz () {
 	'linux-ubuntu-10.04-x86_64')
 		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.5-1_amd64.deb';;
 	*)
-		die "Unexpected OS: ${description}"
+		log_warning "Cannot install pigz on ${description}"
+		return 0
 	esac
 
 	local original_name pigz_dir
@@ -330,7 +331,7 @@ install_pigz () {
 			! dpkg --extract "${HALCYON_CACHE_DIR}/${original_name}" "${pigz_dir}" 2>'/dev/null'
 		then
 			log_warning 'Cannot install pigz'
-			return 1
+			return 0
 		fi
 	else
 		touch_cached_file "${original_name}" || die
