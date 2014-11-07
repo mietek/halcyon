@@ -427,14 +427,6 @@ build_sandbox_layer () {
 		log_end "done, ${trimmed_size}"
 	fi
 
-	log_indent_begin 'Stripping sandbox layer...'
-
-	strip_tree "${HALCYON_DIR}/sandbox" || die
-
-	local stripped_size
-	stripped_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
-	log_end "done, ${stripped_size}"
-
 	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die
 }
 
