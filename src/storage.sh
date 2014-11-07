@@ -1,16 +1,10 @@
-get_public_storage_host () {
-	echo 's3.halcyon.sh'
-}
-
-
 format_public_storage_url () {
+	expect_vars HALCYON_PUBLIC_STORAGE_HOST
+
 	local object
 	expect_args object -- "$@"
 
-	local host
-	host=$( get_public_storage_host ) || die
-
-	echo "http://${host}/${object}"
+	echo "http://${HALCYON_PUBLIC_STORAGE_HOST}/${object}"
 }
 
 

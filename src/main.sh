@@ -19,6 +19,7 @@ set_halcyon_vars () {
 		export HALCYON_CABAL_MAGIC_HASH="${HALCYON_CABAL_MAGIC_HASH:-}"
 		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-}"
 
+		export HALCYON_PUBLIC_STORAGE_HOST="${HALCYON_PUBLIC_STORAGE_HOST:-cdn.halcyon.sh}"
 		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
 		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
@@ -175,6 +176,12 @@ halcyon_main () {
 		'--cabal-repo='*)
 			export HALCYON_CABAL_REPO="${1#*=}";;
 
+		'--public-storage-host')
+			shift
+			expect_args public_storage_host -- "$@"
+			export HALCYON_PUBLIC_STORAGE_HOST="${public_storage_host}";;
+		'--public-storage-host='*)
+			export HALCYON_PUBLIC_STORAGE_HOST="${1#*=}";;
 		'--aws-access-key-id')
 			shift
 			expect_args aws_access_key_id -- "$@"
