@@ -371,11 +371,24 @@ build_sandbox_layer () {
 
 	# TODO: Improve cross-platform compatibility.
 
+
 	local -a opts
 	opts+=( --dependencies-only )
+
 	if [[ -d "${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs" ]]; then
-		opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib" )
-		opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/include" )
+		local platform
+		platform=$( get_tag_platform "${tag}" ) || die
+
+		case "${platform}" in
+		'linux-ubuntu-14.04-x86_64');&
+		'linux-ubuntu-12.04-x86_64');&
+		'linux-ubuntu-10.04-x86_64')
+			opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu" )
+			opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/include/x86_64-linux-gnu" )
+			;;
+		*)
+			true
+		esac
 	fi
 
 	if ! sandboxed_cabal_do "${source_dir}" install "${opts[@]}" |& quote; then

@@ -8,15 +8,23 @@ if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 	export PATH="${HALCYON_DIR}/ghc/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/cabal/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/sandbox/bin:${PATH}"
-	export PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/app/bin:${PATH}"
 	export PATH="${HALCYON_DIR}/slug/bin:${PATH}"
 
 	export LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LIBRARY_PATH:-}"
-	export LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib:${LIBRARY_PATH}"
-
 	export LD_LIBRARY_PATH="${HALCYON_DIR}/ghc/lib:${LD_LIBRARY_PATH:-}"
-	export LD_LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib:${LD_LIBRARY_PATH}"
+
+	# TODO: Improve cross-platform compatibility.
+
+	case $( uname -s ) in
+	'Linux')
+		export PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/bin:${PATH}"
+		export LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu:${LIBRARY_PATH}"
+		export LD_LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
+		;;
+	*)
+		true
+	esac
 
 	export LANG="${LANG:-en_US.UTF-8}"
 else
