@@ -12,10 +12,10 @@ create_tag () {
 		cabal_version cabal_magic_hash cabal_repo cabal_date \
 		sandbox_magic_hash app_magic_hash -- "$@"
 
-	local os
-	os=$( detect_os ) || die
+	local platform
+	platform=$( detect_platform ) || die
 
-	echo -e "1\t${os}\t${HALCYON_DIR}\t${app_label}\t${target}\t${source_hash}\t${constraints_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_repo}\t${cabal_date}\t${sandbox_magic_hash}\t${app_magic_hash}"
+	echo -e "1\t${platform}\t${HALCYON_DIR}\t${app_label}\t${target}\t${source_hash}\t${constraints_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_repo}\t${cabal_date}\t${sandbox_magic_hash}\t${app_magic_hash}"
 }
 
 
@@ -27,7 +27,7 @@ get_tag_version () {
 }
 
 
-get_tag_os () {
+get_tag_platform () {
 	local tag
 	expect_args tag -- "$@"
 

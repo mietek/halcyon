@@ -243,9 +243,9 @@ archive_app_layer () {
 		return 0
 	fi
 
-	local app_tag os ghc_version archive_name constraints_name
+	local app_tag platform ghc_version archive_name constraints_name
 	app_tag=$( detect_app_tag "${HALCYON_DIR}/app/.halcyon-tag" ) || die
-	os=$( get_tag_os "${app_tag}" ) || die
+	platform=$( get_tag_platform "${app_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${app_tag}" ) || die
 	archive_name=$( format_app_archive_name "${app_tag}" ) || die
 	constraints_name=$( format_app_constraints_file_name "${app_tag}" ) || die
@@ -254,8 +254,8 @@ archive_app_layer () {
 
 	create_cached_archive "${HALCYON_DIR}/app" "${archive_name}" || die
 	copy_file "${HALCYON_DIR}/app/cabal.config" "${HALCYON_CACHE_DIR}/${constraints_name}"
-	upload_cached_file "${os}/ghc-${ghc_version}" "${archive_name}" || true
-	upload_cached_file "${os}/ghc-${ghc_version}" "${constraints_name}" || true
+	upload_cached_file "${platform}/ghc-${ghc_version}" "${archive_name}" || true
+	upload_cached_file "${platform}/ghc-${ghc_version}" "${constraints_name}" || true
 }
 
 
@@ -301,8 +301,8 @@ restore_app_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os ghc_version archive_name description
-	os=$( get_tag_os "${tag}" ) || die
+	local platform ghc_version archive_name description
+	platform=$( get_tag_platform "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_app_archive_name "${tag}" ) || die
 	description=$( format_app_description "${tag}" ) || die
@@ -319,7 +319,7 @@ restore_app_layer () {
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/app" ||
 		! restored_tag=$( validate_recognized_app_layer "${tag}" )
 	then
-		if ! cache_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/app" ||
 			! restored_tag=$( validate_recognized_app_layer "${tag}" )
 		then

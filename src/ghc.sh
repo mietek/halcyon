@@ -47,7 +47,7 @@ map_ghc_version_to_linux_libgmp3_x86_64_original_url () {
 }
 
 
-map_ghc_version_to_os_x_x86_64_original_url () {
+map_ghc_version_to_osx_x86_64_original_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -213,13 +213,13 @@ prepare_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os os_description ghc_version
-	os=$( get_tag_os "${tag}" ) || die
-	description=$( format_os_description "${os}" ) || die
+	local platform description ghc_version
+	platform=$( get_tag_platform "${tag}" ) || die
+	description=$( format_platform_description "${platform}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
 	local libgmp_name libgmp_file libtinfo_file url
-	case "${os}-ghc-${ghc_version}" in
+	case "${platform}-ghc-${ghc_version}" in
 	'linux-ubuntu-14.04-x86_64-ghc-7.8.'*)
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
@@ -255,11 +255,13 @@ prepare_ghc_layer () {
 		libgmp_name='libgmp.so.3'
 		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
-	'os-x-'*'-x86_64-ghc-'*)
-		url=$( map_ghc_version_to_os_x_x86_64_original_url "${ghc_version}" ) || die
+	'osx-'*'-x86_64-ghc-'*)
+		# TODO: Improve cross-version compatibility.
+
+		url=$( map_ghc_version_to_osx_x86_64_original_url "${ghc_version}" ) || die
 		;;
 	*)
-		die "Unexpected GHC and OS combination: ${ghc_version} and ${description}"
+		die "Unexpected GHC version for ${description}: ${ghc_version}"
 	esac
 
 	if [ -n "${libgmp_file:-}" ]; then
@@ -382,15 +384,15 @@ archive_ghc_layer () {
 		return 0
 	fi
 
-	local ghc_tag os archive_name
+	local ghc_tag platform archive_name
 	ghc_tag=$( detect_ghc_tag "${HALCYON_DIR}/ghc/.halcyon-tag") || die
-	os=$( get_tag_os "${ghc_tag}" ) || die
+	platform=$( get_tag_platform "${ghc_tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	log 'Archiving GHC layer'
 
 	create_cached_archive "${HALCYON_DIR}/ghc" "${archive_name}" || die
-	upload_cached_file "${os}" "${archive_name}" || true
+	upload_cached_file "${platform}" "${archive_name}" || true
 }
 
 
@@ -412,8 +414,8 @@ restore_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os ghc_version archive_name description
-	os=$( get_tag_os "${tag}" ) || die
+	local platform ghc_version archive_name description
+	platform=$( get_tag_platform "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
 	description=$( format_ghc_description "${tag}" ) || die
@@ -429,7 +431,7 @@ restore_ghc_layer () {
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/ghc" ||
 		! validate_ghc_layer "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${os}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/ghc" ||
 			! validate_ghc_layer "${tag}" >'/dev/null'
 		then

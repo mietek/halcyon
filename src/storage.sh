@@ -302,14 +302,14 @@ install_pigz () {
 		return 0
 	fi
 
-	local os description
-	os=$( detect_os ) || die
-	description=$( format_os_description "${os}" ) || die
+	local platform description
+	platform=$( detect_platform ) || die
+	description=$( format_platform_description "${platform}" ) || die
 
 	log 'Installing pigz'
 
 	local original_url
-	case "${os}" in
+	case "${platform}" in
 	'linux-ubuntu-14.04-x86_64')
 		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.3-2_amd64.deb';;
 	'linux-ubuntu-12.04-x86_64')

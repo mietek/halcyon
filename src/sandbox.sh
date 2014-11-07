@@ -213,14 +213,14 @@ install_sandbox_extra_libs () {
 		return 0
 	fi
 
-	local os description apt_dir
-	os=$( get_tag_os "${tag}" ) || die
-	description=$( format_os_description "${os}" ) || die
+	local platform description apt_dir
+	platform=$( get_tag_platform "${tag}" ) || die
+	description=$( format_platform_description "${platform}" ) || die
 	apt_dir=$( get_tmp_dir 'halcyon-sandbox-extra-libs' ) || die
 
 	log 'Installing sandbox extra libs'
 
-	case "${os}" in
+	case "${platform}" in
 	'linux-ubuntu-14.04-x86_64');&
 	'linux-ubuntu-12.04-x86_64');&
 	'linux-ubuntu-10.04-x86_64')
@@ -435,9 +435,9 @@ archive_sandbox_layer () {
 		return 0
 	fi
 
-	local sandbox_tag os ghc_version archive_name constraints_name
+	local sandbox_tag platform ghc_version archive_name constraints_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_DIR}/sandbox/.halcyon-tag" ) || die
-	os=$( get_tag_os "${sandbox_tag}" ) || die
+	platform=$( get_tag_platform "${sandbox_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	constraints_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
@@ -450,10 +450,10 @@ archive_sandbox_layer () {
 
 	local no_delete
 	no_delete=0
-	if ! upload_cached_file "${os}/ghc-${ghc_version}" "${archive_name}"; then
+	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${archive_name}"; then
 		no_delete=1
 	fi
-	if ! upload_cached_file "${os}/ghc-${ghc_version}" "${constraints_name}"; then
+	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${constraints_name}"; then
 		no_delete=1
 	fi
 	if (( HALCYON_NO_DELETE )) || (( no_delete )); then
@@ -464,7 +464,7 @@ archive_sandbox_layer () {
 	common_prefix=$( format_sandbox_common_file_name_prefix ) || die
 	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" ) || die
 
-	delete_matching_private_stored_files "${os}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || die
+	delete_matching_private_stored_files "${platform}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || die
 }
 
 
@@ -486,8 +486,8 @@ restore_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os ghc_version archive_name description
-	os=$( get_tag_os "${tag}" ) || die
+	local platform ghc_version archive_name description
+	platform=$( get_tag_platform "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
 	description=$( format_sandbox_description "${tag}" ) || die
@@ -503,7 +503,7 @@ restore_sandbox_layer () {
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/sandbox" ||
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${os}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_DIR}/sandbox" ||
 			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then

@@ -315,7 +315,7 @@ EOF
 		;;
 	*)
 		rm -rf "${cabal_dir}" || die
-		die "Unexpected Cabal and GHC combination: ${cabal_version} and ${ghc_version}"
+		die "Unexpected Cabal version for GHC ${ghc_version}: ${cabal_version}"
 	esac
 
 	mkdir -p "${HOME}/.ghc" "${HOME}/.cabal" || die
@@ -401,15 +401,15 @@ archive_cabal_layer () {
 		return 0
 	fi
 
-	local cabal_tag os archive_name
+	local cabal_tag platform archive_name
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	os=$( get_tag_os "${cabal_tag}" ) || die
+	platform=$( get_tag_platform "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
 	log 'Archiving Cabal layer'
 
 	create_cached_archive "${HALCYON_DIR}/cabal" "${archive_name}" || die
-	if ! upload_cached_file "${os}" "${archive_name}"; then
+	if ! upload_cached_file "${platform}" "${archive_name}"; then
 		return 0
 	fi
 
@@ -423,7 +423,7 @@ archive_cabal_layer () {
 	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" ) || die
 	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" ) || die
 
-	delete_matching_private_stored_files "${os}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${platform}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
 }
 
 
@@ -497,8 +497,8 @@ restore_bare_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os bare_name description
-	os=$( get_tag_os "${tag}" ) || die
+	local platform bare_name description
+	platform=$( get_tag_platform "${tag}" ) || die
 	bare_name=$( format_bare_cabal_archive_name "${tag}" ) || die
 	description=$( format_cabal_description "${tag}" ) || die
 
@@ -513,7 +513,7 @@ restore_bare_cabal_layer () {
 	if ! extract_cached_archive_over "${bare_name}" "${HALCYON_DIR}/cabal" ||
 		! validate_bare_cabal_layer "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${os}" "${bare_name}" ||
+		if ! cache_stored_file "${platform}" "${bare_name}" ||
 			! extract_cached_archive_over "${bare_name}" "${HALCYON_DIR}/cabal" ||
 			! validate_bare_cabal_layer "${tag}" >'/dev/null'
 		then
@@ -574,8 +574,8 @@ restore_updated_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local os archive_prefix
-	os=$( get_tag_os "${tag}" ) || die
+	local platform archive_prefix
+	platform=$( get_tag_platform "${tag}" ) || die
 	archive_prefix=$( format_updated_cabal_archive_name_prefix "${tag}" ) || die
 
 	if restore_cached_updated_cabal_layer "${tag}"; then
@@ -586,15 +586,15 @@ restore_updated_cabal_layer () {
 
 	local updated_name
 	updated_name=$(
-		list_stored_files "${os}/${archive_prefix}" |
-		sed "s:${os}/::" |
+		list_stored_files "${platform}/${archive_prefix}" |
+		sed "s:${platform}/::" |
 		match_updated_cabal_archive_name "${tag}"
 	) || return 1
 
 	log 'Restoring Cabal layer'
 
 	local restored_tag description
-	if ! cache_stored_file "${os}" "${updated_name}" ||
+	if ! cache_stored_file "${platform}" "${updated_name}" ||
 		! extract_cached_archive_over "${updated_name}" "${HALCYON_DIR}/cabal" ||
 		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
 	then

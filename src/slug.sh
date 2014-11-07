@@ -239,15 +239,15 @@ archive_slug () {
 		return 0
 	fi
 
-	local slug_tag os archive_name
+	local slug_tag platform archive_name
 	slug_tag=$( detect_slug_tag "${slug_dir}/.halcyon-tag" ) || die
-	os=$( get_tag_os "${slug_tag}" ) || die
+	platform=$( get_tag_platform "${slug_tag}" ) || die
 	archive_name=$( format_slug_archive_name "${slug_tag}" ) || die
 
 	log 'Archiving slug'
 
 	create_cached_archive "${slug_dir}" "${archive_name}" || die
-	if ! upload_cached_file "${os}" "${archive_name}"; then
+	if ! upload_cached_file "${platform}" "${archive_name}"; then
 		return 0
 	fi
 
@@ -259,7 +259,7 @@ archive_slug () {
 	archive_prefix=$( format_slug_archive_name_prefix ) || die
 	archive_pattern=$( format_slug_archive_name_pattern "${slug_tag}" ) || die
 
-	delete_matching_private_stored_files "${os}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${platform}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
 
 
@@ -279,8 +279,8 @@ restore_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	local os archive_name
-	os=$( get_tag_os "${tag}" ) || die
+	local platform archive_name
+	platform=$( get_tag_platform "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
 
 	log 'Restoring slug'
@@ -289,7 +289,7 @@ restore_slug () {
 	if ! extract_cached_archive_over "${archive_name}" "${slug_dir}" ||
 		! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 	then
-		if ! cache_stored_file "${os}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${slug_dir}" ||
 			! restored_tag=$( validate_slug "${tag}" "${slug_dir}" )
 		then
