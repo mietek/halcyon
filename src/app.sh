@@ -223,14 +223,6 @@ build_app_layer () {
 		log 'App post-build hook executed'
 	fi
 
-	log_indent_begin 'Stripping app layer...'
-
-	strip_tree "${HALCYON_DIR}/app" || die
-
-	local stripped_size
-	stripped_size=$( size_tree "${HALCYON_DIR}/app" ) || die
-	log_end "done, ${stripped_size}"
-
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die
 }
 
