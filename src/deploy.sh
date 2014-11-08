@@ -602,15 +602,18 @@ deploy_cloned_app () {
 	local urloid
 	expect_args urloid -- "$@"
 
-	log 'Cloning app'
-
 	local clone_dir source_dir
 	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || die
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	if ! git_clone_over "${urloid}" "${clone_dir}"; then
+	log_begin 'Cloning app...'
+
+	local commit_hash
+	if ! commit_hash=$( git_clone_over "${urloid}" "${clone_dir}" ); then
+		log_end 'error'
 		die 'Cannot clone app'
 	fi
+	log_end "done, ${commit_hash}"
 
 	copy_app_source_over "${clone_dir}" "${source_dir}" || die
 
@@ -619,7 +622,6 @@ deploy_cloned_app () {
 		die 'Cannot detect app label'
 	fi
 
-	log
 	deploy_app "${app_label}" "${source_dir}" || return 1
 
 	rm -rf "${clone_dir}" "${source_dir}" || die
@@ -641,9 +643,7 @@ deploy_unpacked_app () {
 	log 'Unpacking app'
 
 	local app_label
-	if ! app_label=$( cabal_unpack_app "${appoid}" "${unpack_dir}" ); then
-		die 'Cannot unpack app'
-	fi
+	app_label=$( cabal_unpack_app "${appoid}" "${unpack_dir}" ) || die
 
 	copy_app_source_over "${unpack_dir}/${app_label}" "${source_dir}" || die
 
@@ -652,7 +652,6 @@ deploy_unpacked_app () {
 		log_warning 'Expected app label with explicit version'
 	fi
 
-	log
 	deploy_app "${app_label}" "${source_dir}" || return 1
 
 	rm -rf "${unpack_dir}" "${source_dir}" || die
