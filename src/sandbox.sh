@@ -349,13 +349,13 @@ build_sandbox_layer () {
 		log 'Sandbox pre-build hook executed'
 	fi
 
-	if ! install_sandbox_extra_libs "${tag}" "${source_dir}"; then
-		log_warning 'Cannot install sandbox extra libs'
+	if ! deploy_sandbox_extra_apps "${tag}" "${source_dir}"; then
+		log_warning 'Cannot deploy sandbox extra apps'
 		return 1
 	fi
 
-	if ! deploy_sandbox_extra_apps "${tag}" "${source_dir}"; then
-		log_warning 'Cannot deploy sandbox extra apps'
+	if ! install_sandbox_extra_libs "${tag}" "${source_dir}"; then
+		log_warning 'Cannot install sandbox extra libs'
 		return 1
 	fi
 
