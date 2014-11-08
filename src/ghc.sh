@@ -336,7 +336,7 @@ build_ghc_layer () {
 	copy_ghc_magic "${source_dir}" || die
 
 	local installed_size
-	installed_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
+	installed_size=$( get_size "${HALCYON_DIR}/ghc" ) || die
 
 	log "GHC installed, ${installed_size}"
 
@@ -358,7 +358,7 @@ build_ghc_layer () {
 		rm -rf "${HALCYON_DIR}/ghc/share/doc" || die
 
 		local trimmed_size
-		trimmed_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
+		trimmed_size=$( get_size "${HALCYON_DIR}/ghc" ) || die
 		log_end "done, ${trimmed_size}"
 	fi
 
@@ -367,7 +367,7 @@ build_ghc_layer () {
 	strip_tree "${HALCYON_DIR}/ghc" || die
 
 	local stripped_size
-	stripped_size=$( size_tree "${HALCYON_DIR}/ghc" ) || die
+	stripped_size=$( get_size "${HALCYON_DIR}/ghc" ) || die
 	log_end "done, ${stripped_size}"
 
 	derive_ghc_tag "${tag}" >"${HALCYON_DIR}/ghc/.halcyon-tag" || die

@@ -48,7 +48,7 @@ detect_app_executable () {
 		awk '/^ *[Ee]xecutable / { print $2 }' |
 		tr -d '\r' |
 		match_at_least_one |
-		head -n 1
+		filter_first
 	) || return 1
 
 	echo "${app_executable}"

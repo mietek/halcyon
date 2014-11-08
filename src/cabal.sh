@@ -340,7 +340,7 @@ EOF
 	copy_cabal_magic "${source_dir}" || die
 
 	local bootstrapped_size
-	bootstrapped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
+	bootstrapped_size=$( get_size "${HALCYON_DIR}/cabal" ) || die
 
 	log "Cabal bootstrapped, ${bootstrapped_size}"
 
@@ -361,7 +361,7 @@ EOF
 	strip_tree "${HALCYON_DIR}/cabal" || die
 
 	local stripped_size
-	stripped_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
+	stripped_size=$( get_size "${HALCYON_DIR}/cabal" ) || die
 	log_end "done, ${stripped_size}"
 
 	derive_bare_cabal_tag "${tag}" >"${HALCYON_DIR}/cabal/.halcyon-tag" || die
@@ -385,7 +385,7 @@ update_cabal_layer () {
 	cabal_date=$( format_date ) || die
 
 	local updated_size
-	updated_size=$( size_tree "${HALCYON_DIR}/cabal" ) || die
+	updated_size=$( get_size "${HALCYON_DIR}/cabal" ) || die
 
 	log "Cabal layer updated, ${updated_size}"
 
@@ -536,7 +536,6 @@ restore_cached_updated_cabal_layer () {
 	local updated_name
 	updated_name=$(
 		find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
-		sed "s:^\./::" |
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 

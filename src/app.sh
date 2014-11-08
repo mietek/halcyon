@@ -207,7 +207,7 @@ build_app_layer () {
 	fi
 
 	local compiled_size
-	compiled_size=$( size_tree "${HALCYON_DIR}/app" ) || die
+	compiled_size=$( get_size "${HALCYON_DIR}/app" ) || die
 
 	log "App compiled, ${compiled_size}"
 
@@ -228,7 +228,7 @@ build_app_layer () {
 	strip_tree "${HALCYON_DIR}/app" || die
 
 	local stripped_size
-	stripped_size=$( size_tree "${HALCYON_DIR}/app" ) || die
+	stripped_size=$( get_size "${HALCYON_DIR}/app" ) || die
 	log_end "done, ${stripped_size}"
 
 	derive_app_tag "${tag}" >"${HALCYON_DIR}/app/.halcyon-tag" || die

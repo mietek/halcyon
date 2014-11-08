@@ -400,7 +400,7 @@ build_sandbox_layer () {
 	copy_sandbox_magic "${source_dir}" || die
 
 	local compiled_size
-	compiled_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
+	compiled_size=$( get_size "${HALCYON_DIR}/sandbox" ) || die
 
 	log "Sandbox compiled, ${compiled_size}"
 
@@ -423,7 +423,7 @@ build_sandbox_layer () {
 		rm -rf "${HALCYON_DIR}/sandbox/logs" "${HALCYON_DIR}/sandbox/share/doc" || die
 
 		local trimmed_size
-		trimmed_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
+		trimmed_size=$( get_size "${HALCYON_DIR}/sandbox" ) || die
 		log_end "done, ${trimmed_size}"
 	fi
 
@@ -432,7 +432,7 @@ build_sandbox_layer () {
 	strip_tree "${HALCYON_DIR}/sandbox" || die
 
 	local stripped_size
-	stripped_size=$( size_tree "${HALCYON_DIR}/sandbox" ) || die
+	stripped_size=$( get_size "${HALCYON_DIR}/sandbox" ) || die
 	log_end "done, ${stripped_size}"
 
 	derive_sandbox_tag "${tag}" >"${HALCYON_DIR}/sandbox/.halcyon-tag" || die

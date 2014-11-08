@@ -232,7 +232,6 @@ prepare_cache () {
 		local files
 		if files=$(
 			find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
-			sed "s:^\./::" |
 			sort_natural |
 			match_at_least_one
 		); then

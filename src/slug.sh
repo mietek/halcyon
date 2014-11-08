@@ -189,7 +189,7 @@ build_slug () {
 	fi
 
 	local copied_size
-	copied_size=$( size_tree "${slug_dir}" ) || die
+	copied_size=$( get_size "${slug_dir}" ) || die
 
 	log "App copied, ${copied_size}"
 
@@ -212,7 +212,7 @@ build_slug () {
 		rm -rf "${slug_dir}/share/doc" || die
 
 		local trimmed_size
-		trimmed_size=$( size_tree "${slug_dir}" ) || die
+		trimmed_size=$( get_size "${slug_dir}" ) || die
 		log_end "done, ${trimmed_size}"
 	fi
 
@@ -221,7 +221,7 @@ build_slug () {
 	strip_tree "${slug_dir}" || die
 
 	local stripped_size
-	stripped_size=$( size_tree "${slug_dir}" ) || die
+	stripped_size=$( get_size "${slug_dir}" ) || die
 	log_end "done, ${stripped_size}"
 
 	derive_slug_tag "${tag}" >"${slug_dir}/.halcyon-tag" || die
