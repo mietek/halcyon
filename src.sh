@@ -68,29 +68,13 @@ halcyon_autoupdate () {
 		return 1
 	fi
 
-	local urloid url branch
+	local urloid
 	urloid="${HALCYON_URL:-https://github.com/mietek/halcyon}"
-	url="${urloid%#*}"
-	branch="${urloid#*#}"
-	if [[ "${branch}" == "${url}" ]]; then
-		branch='master'
-	fi
-
-	local git_url
-	git_url=$( cd "${HALCYON_TOP_DIR}" && git config --get 'remote.origin.url' ) || return 1
-	if [[ "${git_url}" != "${url}" ]]; then
-		( cd "${HALCYON_TOP_DIR}" && git remote set-url 'origin' "${url}" ) || return 1
-	fi
 
 	log_begin 'Auto-updating Halcyon...'
 
 	local commit_hash
-	commit_hash=$(
-		cd "${HALCYON_TOP_DIR}" &&
-		git fetch -q 'origin' &>'/dev/null' &&
-		git reset -q --hard "origin/${branch}" &>'/dev/null' &&
-		git log -n 1 --pretty='format:%h'
-	) || return 1
+	commit_hash=$( git_update_into "${urloid}" "${HALCYON_TOP_DIR}" ) || return 1
 	log_end "done, ${commit_hash}"
 
 	HALCYON_NO_AUTOUPDATE=1 \

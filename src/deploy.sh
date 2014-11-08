@@ -608,24 +608,8 @@ deploy_cloned_app () {
 	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || die
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	local url branch
-	url="${urloid%#*}"
-	branch="${urloid#*#}"
-	if [[ "${branch}" == "${url}" ]]; then
-		branch=''
-	fi
-
-	if ! git clone "${url}" "${clone_dir}" |& quote; then
+	if ! git_clone_over "${urloid}" "${clone_dir}"; then
 		die 'Cannot clone app'
-	fi
-
-	if [[ -n "${branch}" ]]; then
-		if ! ( cd "${clone_dir}" && git checkout "${branch}" |& quote ); then
-			die 'Cannot checkout app branch'
-		fi
-	fi
-	if ! ( cd "${clone_dir}" && git submodule update --init --recursive |& quote ); then
-		die 'Cannot update app submodules'
 	fi
 
 	copy_app_source_over "${clone_dir}" "${source_dir}" || die
