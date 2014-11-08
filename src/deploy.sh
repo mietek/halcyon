@@ -137,7 +137,7 @@ announce_deploy () {
 	fi
 
 	if (( HALCYON_ONLY_DEPLOY_ENV )); then
-		log_pad 'Environment deployed'
+		log_label 'Environment deployed'
 		return 0
 	fi
 
@@ -145,7 +145,7 @@ announce_deploy () {
 	description=$( format_app_description "${tag}" ) || die
 
 	log
-	log_pad 'App deployed:' "${description}"
+	log_label 'App deployed:' "${description}"
 }
 
 
@@ -188,12 +188,12 @@ deploy_env () {
 	if ! (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
 		log 'Deploying environment'
 
-		log_indent_pad 'GHC version:' "${ghc_version}"
-		[[ -n "${ghc_magic_hash}" ]] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
+		log_indent_label 'GHC version:' "${ghc_version}"
+		[[ -n "${ghc_magic_hash}" ]] && log_indent_label 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
-		log_indent_pad 'Cabal version:' "${cabal_version}"
-		[[ -n "${cabal_magic_hash}" ]] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
-		log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
+		log_indent_label 'Cabal version:' "${cabal_version}"
+		[[ -n "${cabal_magic_hash}" ]] && log_indent_label 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
+		log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
 
 		describe_storage || die
 		log
@@ -257,9 +257,9 @@ deploy_app_from_slug () {
 
 	log 'Deploying app from slug'
 
-	log_indent_pad 'App label:' "${app_label}"
-	[[ "${HALCYON_TARGET}" != 'slug' ]] && log_indent_pad 'Target:' "${HALCYON_TARGET}"
-	log_indent_pad 'Source hash:' "${source_hash:0:7}"
+	log_indent_label 'App label:' "${app_label}"
+	[[ "${HALCYON_TARGET}" != 'slug' ]] && log_indent_label 'Target:' "${HALCYON_TARGET}"
+	log_indent_label 'Source hash:' "${source_hash:0:7}"
 
 	describe_storage || die
 	log
@@ -500,39 +500,39 @@ deploy_app () {
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
 	app_magic_hash=$( hash_app_magic "${source_dir}" ) || die
 
-	log_indent_pad 'App label:' "${app_label}"
-	[[ "${HALCYON_TARGET}" != 'slug' ]] && log_indent_pad 'Target:' "${HALCYON_TARGET}"
-	log_indent_pad 'Source hash:' "${source_hash:0:7}"
-	log_indent_pad 'Constraints hash:' "${constraints_hash:0:7}"
+	log_indent_label 'App label:' "${app_label}"
+	[[ "${HALCYON_TARGET}" != 'slug' ]] && log_indent_label 'Target:' "${HALCYON_TARGET}"
+	log_indent_label 'Source hash:' "${source_hash:0:7}"
+	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
 
-	log_indent_pad 'GHC version:' "${ghc_version}"
-	[[ -n "${ghc_magic_hash}" ]] && log_indent_pad 'GHC magic hash:' "${ghc_magic_hash:0:7}"
+	log_indent_label 'GHC version:' "${ghc_version}"
+	[[ -n "${ghc_magic_hash}" ]] && log_indent_label 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
-	log_indent_pad 'Cabal version:' "${cabal_version}"
-	[[ -n "${cabal_magic_hash}" ]] && log_indent_pad 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
-	log_indent_pad 'Cabal repository:' "${cabal_repo%%:*}"
+	log_indent_label 'Cabal version:' "${cabal_version}"
+	[[ -n "${cabal_magic_hash}" ]] && log_indent_label 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
+	log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
 
-	[[ -n "${sandbox_magic_hash}" ]] && log_indent_pad 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
+	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		local -a sandbox_libs
 		sandbox_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
 
-		log_indent_pad 'Sandbox extra libs:' "${sandbox_libs[*]:-}"
+		log_indent_label 'Sandbox extra libs:' "${sandbox_libs[*]:-}"
 	fi
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]]; then
 		local -a sandbox_apps
 		sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 
-		log_indent_pad 'Sandbox extra apps:' "${sandbox_apps[*]:-}"
+		log_indent_label 'Sandbox extra apps:' "${sandbox_apps[*]:-}"
 	fi
 
-	[[ -n "${app_magic_hash}" ]] && log_indent_pad 'App magic hash:' "${app_magic_hash:0:7}"
+	[[ -n "${app_magic_hash}" ]] && log_indent_label 'App magic hash:' "${app_magic_hash:0:7}"
 
 	if [[ -f "${source_dir}/.halcyon-magic/slug-extra-apps" ]]; then
 		local -a slug_apps
 		slug_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
 
-		log_indent_pad 'Slug extra apps:' "${slug_apps[*]:-}"
+		log_indent_label 'Slug extra apps:' "${slug_apps[*]:-}"
 	fi
 
 	describe_storage || die

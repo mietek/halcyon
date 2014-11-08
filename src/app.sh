@@ -308,7 +308,7 @@ restore_app_layer () {
 	description=$( format_app_description "${tag}" ) || die
 
 	if validate_identical_app_layer "${tag}" >'/dev/null'; then
-		log_pad 'Using existing app layer:' "${description}"
+		log_label 'Using existing app layer:' "${description}"
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
@@ -330,7 +330,7 @@ restore_app_layer () {
 	fi
 	description=$( format_app_description "${restored_tag}" ) || die
 
-	log_pad 'App layer restored:' "${description}"
+	log_label 'App layer restored:' "${description}"
 }
 
 
@@ -413,7 +413,7 @@ announce_app_layer () {
 	installed_tag=$( validate_identical_app_layer "${tag}" ) || die
 	description=$( format_app_description "${installed_tag}" ) || die
 
-	log_pad 'App layer installed:' "${description}"
+	log_label 'App layer installed:' "${description}"
 }
 
 

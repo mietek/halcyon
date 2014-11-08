@@ -503,7 +503,7 @@ restore_bare_cabal_layer () {
 	description=$( format_cabal_description "${tag}" ) || die
 
 	if validate_bare_cabal_layer "${tag}" >'/dev/null'; then
-		log_pad 'Using existing Cabal layer:' "${description}"
+		log_label 'Using existing Cabal layer:' "${description}"
 		touch_cached_file "${bare_name}" || die
 		return 0
 	fi
@@ -523,7 +523,7 @@ restore_bare_cabal_layer () {
 		touch_cached_file "${bare_name}" || die
 	fi
 
-	log_pad 'Cabal layer restored:' "${description}"
+	log_label 'Cabal layer restored:' "${description}"
 }
 
 
@@ -544,7 +544,7 @@ restore_cached_updated_cabal_layer () {
 	if restored_tag=$( validate_updated_cabal_layer "${tag}" ); then
 		description=$( format_cabal_description "${restored_tag}" ) || die
 
-		log_pad 'Using existing updated Cabal layer:' "${description}"
+		log_label 'Using existing updated Cabal layer:' "${description}"
 		touch_cached_file "${updated_name}" || die
 		return 0
 	fi
@@ -564,7 +564,7 @@ restore_cached_updated_cabal_layer () {
 	fi
 	description=$( format_cabal_description "${restored_tag}" ) || die
 
-	log_pad 'Cabal layer restored:' "${description}"
+	log_label 'Cabal layer restored:' "${description}"
 }
 
 
@@ -603,7 +603,7 @@ restore_updated_cabal_layer () {
 	fi
 	description=$( format_cabal_description "${restored_tag}" ) || die
 
-	log_pad 'Cabal layer restored:' "${description}"
+	log_label 'Cabal layer restored:' "${description}"
 }
 
 
@@ -615,7 +615,7 @@ announce_cabal_layer () {
 	installed_tag=$( validate_updated_cabal_layer "${tag}" ) || die
 	description=$( format_cabal_description "${installed_tag}" ) || die
 
-	log_pad 'Cabal layer installed:' "${description}"
+	log_label 'Cabal layer installed:' "${description}"
 
 	export HALCYON_FORCE_BUILD_CABAL=0
 	export HALCYON_FORCE_UPDATE_CABAL=0

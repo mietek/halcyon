@@ -506,7 +506,7 @@ restore_sandbox_layer () {
 	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
-		log_pad 'Using existing sandbox layer:' "${description}"
+		log_label 'Using existing sandbox layer:' "${description}"
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
@@ -526,7 +526,7 @@ restore_sandbox_layer () {
 		touch_cached_file "${archive_name}" || die
 	fi
 
-	log_pad 'Sandbox layer restored:' "${description}"
+	log_label 'Sandbox layer restored:' "${description}"
 }
 
 
@@ -542,7 +542,7 @@ install_matching_sandbox_layer () {
 	matching_description=$( format_sandbox_description "${matching_tag}" ) || die
 
 	if [[ "${matching_hash}" == "${constraints_hash}" ]]; then
-		log_pad 'Using fully matching sandbox layer:' "${matching_description}"
+		log_label 'Using fully matching sandbox layer:' "${matching_description}"
 
 		restore_sandbox_layer "${matching_tag}" || return 1
 
@@ -550,7 +550,7 @@ install_matching_sandbox_layer () {
 		return 0
 	fi
 
-	log_pad 'Using partially matching sandbox layer:' "${matching_description}"
+	log_label 'Using partially matching sandbox layer:' "${matching_description}"
 
 	restore_sandbox_layer "${matching_tag}" || return 1
 
@@ -568,7 +568,7 @@ announce_sandbox_layer () {
 	installed_tag=$( validate_sandbox_layer "${tag}" ) || die
 	description=$( format_sandbox_description "${installed_tag}" ) || die
 
-	log_pad 'Sandbox layer installed:' "${description}"
+	log_label 'Sandbox layer installed:' "${description}"
 }
 
 

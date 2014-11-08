@@ -421,7 +421,7 @@ restore_ghc_layer () {
 	description=$( format_ghc_description "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
-		log_pad 'Using existing GHC layer:' "${description}"
+		log_label 'Using existing GHC layer:' "${description}"
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
@@ -448,7 +448,7 @@ restore_ghc_layer () {
 		true
 	esac
 
-	log_pad 'GHC layer restored:' "${description}"
+	log_label 'GHC layer restored:' "${description}"
 }
 
 
@@ -460,7 +460,7 @@ announce_ghc_layer () {
 	installed_tag=$( validate_ghc_layer "${tag}" ) || die
 	description=$( format_ghc_description "${installed_tag}" ) || die
 
-	log_pad 'GHC layer installed:' "${description}"
+	log_label 'GHC layer installed:' "${description}"
 
 	export HALCYON_FORCE_BUILD_GHC=0
 }

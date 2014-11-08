@@ -17,13 +17,13 @@ describe_storage () {
 	expect_vars HALCYON_NO_PUBLIC_STORAGE
 
 	if private_storage && ! (( HALCYON_NO_PUBLIC_STORAGE )); then
-		log_indent_pad 'External storage:' 'private and public'
+		log_indent_label 'External storage:' 'private and public'
 	elif private_storage; then
-		log_indent_pad 'External storage:' 'private'
+		log_indent_label 'External storage:' 'private'
 	elif ! (( HALCYON_NO_PUBLIC_STORAGE )); then
-		log_indent_pad 'External storage:' 'public'
+		log_indent_label 'External storage:' 'public'
 	else
-		log_indent_pad 'External storage:' 'none'
+		log_indent_label 'External storage:' 'none'
 	fi
 }
 

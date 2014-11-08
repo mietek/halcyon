@@ -300,7 +300,7 @@ restore_slug () {
 	fi
 	description=$( format_slug_description "${restored_tag}" )
 
-	log_pad 'Slug restored:' "${description}"
+	log_label 'Slug restored:' "${description}"
 }
 
 
@@ -312,7 +312,7 @@ announce_slug () {
 	installed_tag=$( validate_slug "${tag}" "${slug_dir}" ) || die
 	description=$( format_slug_description "${installed_tag}" ) || die
 
-	log_pad 'Slug installed:' "${description}"
+	log_label 'Slug installed:' "${description}"
 }
 
 
