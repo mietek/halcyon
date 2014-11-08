@@ -19,8 +19,8 @@ if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 	case $( uname -s ) in
 	'Linux')
 		export PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/bin:${PATH}"
-		export LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu:${LIBRARY_PATH}"
-		export LD_LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
+		export LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib:${LIBRARY_PATH}"
+		export LD_LIBRARY_PATH="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib:${LD_LIBRARY_PATH}"
 		;;
 	*)
 		true

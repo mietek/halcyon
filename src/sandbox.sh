@@ -383,7 +383,7 @@ build_sandbox_layer () {
 		'linux-ubuntu-14.04-x86_64');&
 		'linux-ubuntu-12.04-x86_64');&
 		'linux-ubuntu-10.04-x86_64')
-			opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib/x86_64-linux-gnu" )
+			opts+=( --extra-lib-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/lib" )
 			opts+=( --extra-include-dirs="${HALCYON_DIR}/sandbox/.halcyon-sandbox-extra-libs/usr/include/x86_64-linux-gnu" )
 			;;
 		*)
