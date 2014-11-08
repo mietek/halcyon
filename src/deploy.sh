@@ -389,7 +389,7 @@ do_deploy_app () {
 			mv "${HALCYON_DIR}/app" "${saved_app}" || die
 		fi
 	else
-		rm -rf "${HALCYON_DIR}/sandbox" "${HALCYON_DIR}/app" "${HALCYON_DIR}/slug" || die
+		rm -rf "${HALCYON_DIR}/slug" || die
 	fi
 
 	install_sandbox_layer "${tag}" "${source_dir}" "${constraints}" || return 1
