@@ -1,8 +1,9 @@
 set_halcyon_vars () {
-	if ! (( ${HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED:-0} )); then
-		export HALCYON_INTERNAL_VARS_SET_ONCE_AND_INHERITED=1
+	# NOTE: Recursive vars are set once and inherited.
 
-		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon-cache}"
+	if ! (( ${HALCYON_INTERNAL_RECURSIVE_VARS:-0} )); then
+		export HALCYON_INTERNAL_RECURSIVE_VARS=1
+
 		export HALCYON_INSTALL_DIR="${HALCYON_INSTALL_DIR:-}"
 		export HALCYON_TARGET="${HALCYON_TARGET:-slug}"
 		export HALCYON_ONLY_DEPLOY_ENV="${HALCYON_ONLY_DEPLOY_ENV:-0}"
@@ -12,25 +13,31 @@ set_halcyon_vars () {
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
 
+		export HALCYON_PUBLIC_STORAGE_HOST="${HALCYON_PUBLIC_STORAGE_HOST:-cdn.halcyon.sh}"
+		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
+
+		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
+		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
+		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
+		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
+		export HALCYON_S3_HOST="${HALCYON_S3_HOST:-s3.amazonaws.com}"
+
+		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon-cache}"
+		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
+		export HALCYON_NO_CACHE="${HALCYON_NO_CACHE:-0}"
+
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
 		export HALCYON_GHC_MAGIC_HASH="${HALCYON_GHC_MAGIC_HASH:-}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
 		export HALCYON_CABAL_MAGIC_HASH="${HALCYON_CABAL_MAGIC_HASH:-}"
 		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-}"
-
-		export HALCYON_PUBLIC_STORAGE_HOST="${HALCYON_PUBLIC_STORAGE_HOST:-cdn.halcyon.sh}"
-		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
-		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
-		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
-		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
-		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
-		export HALCYON_NO_CACHE="${HALCYON_NO_CACHE:-0}"
-		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
 	fi
 
-	if ! (( ${HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET:-0} )); then
-		export HALCYON_INTERNAL_VARS_INHERITED_ONCE_AND_RESET=1
+	# NOTE: Non-recursive vars are inherited once, then reset to default.
+
+	if ! (( ${HALCYON_INTERNAL_NONRECURSIVE_VARS:-0} )); then
+		export HALCYON_INTERNAL_NONRECURSIVE_VARS=1
 
 		export HALCYON_CONSTRAINTS_DIR="${HALCYON_CONSTRAINTS_DIR:-}"
 		export HALCYON_FORCE_RESTORE_ALL="${HALCYON_FORCE_RESTORE_ALL:-0}"
@@ -104,21 +111,13 @@ halcyon_main () {
 
 	while (( $# )); do
 		case "$1" in
-		# Paths:
+	# General options:
 		'--halcyon-dir')
 			shift
 			expect_args halcyon_dir -- "$@"
 			export HALCYON_DIR="${halcyon_dir}";;
 		'--halcyon-dir='*)
 			export HALCYON_DIR="${1#*=}";;
-
-		# Vars set once and inherited:
-		'--cache-dir')
-			shift
-			expect_args cache_dir -- "$@"
-			export HALCYON_CACHE_DIR="${cache_dir}";;
-		'--cache-dir='*)
-			export HALCYON_CACHE_DIR="${1#*=}";;
 		'--install-dir')
 			shift
 			expect_args install_dir -- "$@"
@@ -144,44 +143,17 @@ halcyon_main () {
 		'--no-delete')
 			export HALCYON_NO_DELETE=1;;
 
-		'--ghc-version')
-			shift
-			expect_args ghc_version -- "$@"
-			export HALCYON_GHC_VERSION="${ghc_version}";;
-		'--ghc-version='*)
-			export HALCYON_GHC_VERSION="${1#*=}";;
-		'--ghc-magic-hash')
-			shift
-			expect_args ghc_magic_hash -- "$@"
-			export HALCYON_GHC_MAGIC_HASH="${ghc_magic_hash}";;
-		'--ghc-magic-hash='*)
-			export HALCYON_GHC_MAGIC_HASH="${1#*=}";;
-
-		'--cabal-version')
-			shift
-			expect_args cabal_version -- "$@"
-			export HALCYON_CABAL_VERSION="${cabal_version}";;
-		'--cabal-version='*)
-			export HALCYON_CABAL_VERSION="${1#*=}";;
-		'--cabal-magic-hash')
-			shift
-			expect_args cabal_magic_hash -- "$@"
-			export HALCYON_CABAL_MAGIC_HASH="${cabal_magic_hash}";;
-		'--cabal-magic-hash='*)
-			export HALCYON_CABAL_MAGIC_HASH="${1#*=}";;
-		'--cabal-repo')
-			shift
-			expect_args cabal_repo -- "$@"
-			export HALCYON_CABAL_REPO="${cabal_repo}";;
-		'--cabal-repo='*)
-			export HALCYON_CABAL_REPO="${1#*=}";;
-
+	# Public storage options:
 		'--public-storage-host')
 			shift
 			expect_args public_storage_host -- "$@"
 			export HALCYON_PUBLIC_STORAGE_HOST="${public_storage_host}";;
 		'--public-storage-host='*)
 			export HALCYON_PUBLIC_STORAGE_HOST="${1#*=}";;
+		'--no-public-storage')
+			export HALCYON_NO_PUBLIC_STORAGE=1;;
+
+	# Private storage options:
 		'--aws-access-key-id')
 			shift
 			expect_args aws_access_key_id -- "$@"
@@ -206,14 +178,60 @@ halcyon_main () {
 			export HALCYON_S3_ACL="${s3_acl}";;
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
+		'--s3-host')
+			shift
+			expect_args s3_host -- "$@"
+			export HALCYON_S3_HOST="${s3_host}";;
+		'--s3-host='*)
+			export HALCYON_S3_HOST="${1#*=}";;
+
+	# Cache options:
+		'--cache-dir')
+			shift
+			expect_args cache_dir -- "$@"
+			export HALCYON_CACHE_DIR="${cache_dir}";;
+		'--cache-dir='*)
+			export HALCYON_CACHE_DIR="${1#*=}";;
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
 		'--no-cache')
 			export HALCYON_NO_CACHE=1;;
-		'--no-public-storage')
-			export HALCYON_NO_PUBLIC_STORAGE=1;;
 
-		# Vars inherited once and reset:
+	# GHC layer options:
+		'--ghc-version')
+			shift
+			expect_args ghc_version -- "$@"
+			export HALCYON_GHC_VERSION="${ghc_version}";;
+		'--ghc-version='*)
+			export HALCYON_GHC_VERSION="${1#*=}";;
+		'--ghc-magic-hash')
+			shift
+			expect_args ghc_magic_hash -- "$@"
+			export HALCYON_GHC_MAGIC_HASH="${ghc_magic_hash}";;
+		'--ghc-magic-hash='*)
+			export HALCYON_GHC_MAGIC_HASH="${1#*=}";;
+
+	# Cabal layer options:
+		'--cabal-version')
+			shift
+			expect_args cabal_version -- "$@"
+			export HALCYON_CABAL_VERSION="${cabal_version}";;
+		'--cabal-version='*)
+			export HALCYON_CABAL_VERSION="${1#*=}";;
+		'--cabal-magic-hash')
+			shift
+			expect_args cabal_magic_hash -- "$@"
+			export HALCYON_CABAL_MAGIC_HASH="${cabal_magic_hash}";;
+		'--cabal-magic-hash='*)
+			export HALCYON_CABAL_MAGIC_HASH="${1#*=}";;
+		'--cabal-repo')
+			shift
+			expect_args cabal_repo -- "$@"
+			export HALCYON_CABAL_REPO="${cabal_repo}";;
+		'--cabal-repo='*)
+			export HALCYON_CABAL_REPO="${1#*=}";;
+
+	# Non-recursive general options:
 		'--constraints-dir')
 			shift
 			expect_args constraints_dir -- "$@"
@@ -225,6 +243,7 @@ halcyon_main () {
 		'--no-announce-deploy')
 			export HALCYON_NO_ANNOUNCE_DEPLOY=1;;
 
+	# Non-recursive GHC layer options:
 		'--ghc-pre-build-hook')
 			shift
 			expect_args ghc_pre_build_hook -- "$@"
@@ -240,6 +259,7 @@ halcyon_main () {
 		'--force-build-ghc')
 			export HALCYON_FORCE_BUILD_GHC=1;;
 
+	# Non-recursive Cabal layer options:
 		'--cabal-pre-build-hook')
 			shift
 			expect_args cabal_pre_build_hook -- "$@"
@@ -257,6 +277,7 @@ halcyon_main () {
 		'--force-update-cabal')
 			export HALCYON_FORCE_UPDATE_CABAL=1;;
 
+	# Non-recursive sandbox layer options:
 		'--sandbox-extra-libs')
 			shift
 			expect_args sandbox_extra_libs -- "$@"
@@ -290,6 +311,7 @@ halcyon_main () {
 		'--force-build-sandbox')
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
 
+	# Non-recursive app layer options:
 		'--app-extra-configure-flags')
 			shift
 			expect_args app_extra_configure_flags -- "$@"
@@ -311,6 +333,7 @@ halcyon_main () {
 		'--force-build-app')
 			export HALCYON_FORCE_BUILD_APP=1;;
 
+	# Non-recursive slug options:
 		'--slug-extra-apps')
 			shift
 			expect_args slug_extra_apps -- "$@"
@@ -378,20 +401,20 @@ halcyon_main () {
 	'deploy')
 		halcyon_deploy "${args[@]:-}" || return 1
 		;;
-	'show-paths')
-		cat "${HALCYON_TOP_DIR}/src/paths.sh" || die
-		;;
-	'show-app-label')
+	'app-label')
 		HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL=1 \
 			halcyon_deploy "${args[@]:-}" || return 1
 		;;
-	'show-constraints')
+	'constraints')
 		HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS=1 \
 			halcyon_deploy "${args[@]:-}" || return 1
 		;;
-	'show-tag')
+	'tag')
 		HALCYON_INTERNAL_ONLY_SHOW_TAG=1 \
 			halcyon_deploy "${args[@]:-}" || return 1
+		;;
+	'paths')
+		cat "${HALCYON_TOP_DIR}/src/paths.sh" || die
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args[*]:-}"
