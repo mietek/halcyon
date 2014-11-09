@@ -177,8 +177,8 @@ build_slug () {
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
 	if ! (
-		export PATH="${slug_dir}${HALCYON_DIR}/${HALCYON_TARGET}:${PATH}" &&
-		sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${slug_dir}" --verbose=0 |& quote
+		PATH="${slug_dir}${HALCYON_DIR}/${HALCYON_TARGET}:${PATH}" \
+			sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${slug_dir}" --verbose=0 |& quote
 	); then
 		die 'Failed to copy app'
 	fi

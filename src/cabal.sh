@@ -327,9 +327,9 @@ EOF
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 
 	if ! (
-		export EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" &&
 		cd "${cabal_dir}/cabal-install-${cabal_version}" &&
-		./bootstrap.sh --no-doc |& quote
+		EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_DIR}/ghc/lib" \
+			./bootstrap.sh --no-doc |& quote
 	); then
 		die 'Failed to bootstrap Cabal'
 	fi
