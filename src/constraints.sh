@@ -49,7 +49,7 @@ hash_constraints () {
 	local constraints
 	expect_args constraints -- "$@"
 
-	do_hash <<<"${constraints}" || die
+	hash_do <<<"${constraints}" || die
 }
 
 

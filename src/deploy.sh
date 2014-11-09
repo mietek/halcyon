@@ -613,7 +613,7 @@ deploy_cloned_app () {
 		log_end 'error'
 		die 'Cannot clone app'
 	fi
-	log_end "done, ${commit_hash}"
+	log_end "done, ${commit_hash:0:7}"
 
 	copy_app_source_over "${clone_dir}" "${source_dir}" || die
 

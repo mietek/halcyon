@@ -382,7 +382,7 @@ update_cabal_layer () {
 
 	local cabal_tag cabal_date
 	cabal_tag=$( detect_cabal_tag "${HALCYON_DIR}/cabal/.halcyon-tag" ) || die
-	cabal_date=$( format_date ) || die
+	cabal_date=$( get_date ) || die
 
 	local updated_size
 	updated_size=$( get_size "${HALCYON_DIR}/cabal" ) || die
@@ -444,7 +444,7 @@ validate_updated_cabal_date () {
 	expect_args candidate_date -- "$@"
 
 	local today_date
-	today_date=$( format_date ) || die
+	today_date=$( get_date ) || die
 
 	if [[ "${candidate_date}" < "${today_date}" ]]; then
 		return 1

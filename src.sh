@@ -33,7 +33,7 @@ halcyon_source_bashmenot () {
 		git checkout -q "${branch}" &>'/dev/null' &&
 		git log -n 1 --pretty='format:%h'
 	) || return 1
-	echo " done, ${commit_hash}" >&2
+	echo " done, ${commit_hash:0:7}" >&2
 
 	BASHMENOT_NO_AUTOUPDATE=1 \
 		source "${HALCYON_TOP_DIR}/lib/bashmenot/src.sh" || return 1
@@ -75,7 +75,7 @@ halcyon_autoupdate () {
 
 	local commit_hash
 	commit_hash=$( git_update_into "${urloid}" "${HALCYON_TOP_DIR}" ) || return 1
-	log_end "done, ${commit_hash}"
+	log_end "done, ${commit_hash:0:7}"
 
 	HALCYON_NO_AUTOUPDATE=1 \
 		source "${HALCYON_TOP_DIR}/src.sh" || return 1
