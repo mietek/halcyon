@@ -39,7 +39,7 @@ Usage
 
 ```
 $ git clone https://github.com/mietek/halcyon ~/halcyon
-$ source <( ~/halcyon/halcyon show-paths )
+$ source <( ~/halcyon/halcyon paths )
 $ halcyon deploy
 ```
 
