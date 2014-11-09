@@ -81,7 +81,9 @@ upload_cached_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	s3_upload "${file}" "${HALCYON_S3_BUCKET}" "${object}" "${HALCYON_S3_ACL}" || return 1
+	BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}" \
+	BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}" \
+		s3_upload "${file}" "${HALCYON_S3_BUCKET}" "${object}" "${HALCYON_S3_ACL}" || return 1
 }
 
 
@@ -95,7 +97,11 @@ cache_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE_DIR}/${file_name}"
 
-	if private_storage && s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"; then
+	if private_storage &&
+		BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}" \
+		BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}" \
+			s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
+	then
 		return 0
 	fi
 
@@ -141,7 +147,10 @@ delete_private_stored_file () {
 
 	local object
 	object="${prefix:+${prefix}/}${file_name}"
-	if ! s3_delete "${HALCYON_S3_BUCKET}" "${object}"; then
+	if ! BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}" \
+		BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}" \
+			s3_delete "${HALCYON_S3_BUCKET}" "${object}"
+	then
 		return 1
 	fi
 }
@@ -152,7 +161,11 @@ list_private_stored_files () {
 	expect_args prefix -- "$@"
 
 	local listing
-	if ! private_storage || ! listing=$( s3_list "${HALCYON_S3_BUCKET}" "${prefix}" ); then
+	if ! private_storage || ! listing=$(
+		BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}" \
+		BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}" \
+			s3_list "${HALCYON_S3_BUCKET}" "${prefix}"
+	); then
 		return 0
 	fi
 
