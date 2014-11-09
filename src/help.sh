@@ -2,31 +2,29 @@ help_usage () {
 	log
 	quote <<-EOF
 		Usage:
-		    halcyon COMMAND [ARGUMENTS] [OPTIONS]
+		    halcyon COMMAND
 
 		Commands:
-		    deploy
-		    show-paths
-		    show-app-label
-		    show-constraints
-		    show-tag
+		    deploy APP* OPTION*
+		    app-label APP* OPTION*
+		    constraints APP* OPTION*
+		    tag APP* OPTION*
+		    paths
 
-		Arguments:
+		App:
 		    (none)
-		        Deploy app from current directory, or only deploy environment.
-		    DIRECTORY
-		        Deploy app from specified directory.
-		    LABEL
-		        Unpack and deploy app from Cabal repository.
-		    GIT_URL
-		        Clone and deploy app from specified Git repository.
+		        Local app in current directory, or only environment.
+		    PATH
+		        Local app in specified directory.
+		    APP_LABEL
+		        Remote app with specified label in Cabal repository.
+		    URL
+		        Remote app in git repository at specified URL.
 
-		Options:
-		    --halcyon-dir=DIRECTORY
-
-		    --cache-dir=DIRECTORY
-		    --install-dir=DIRECTORY
-		    --target
+		General options:
+		    --halcyon-dir=PATH
+		    --install-dir=PATH
+		    --target=slug or --target=sandbox
 		    --only-deploy-env
 		    --no-copy-local-source
 		    --no-build-dependencies
@@ -34,51 +32,70 @@ help_usage () {
 		    --no-upload
 		    --no-delete
 
-		    --ghc-version=VERSION
-		    --ghc-magic-hash=HASH
+		Public storage options:
+		    --public-storage-host=STRING
+		    --no-public-storage
 
-		    --cabal-version=VERSION
-		    --cabal-magic-hash=HASH
-		    --cabal-repo=REPOSITORY
-
+		Private storage options:
 		    --aws-access-key-id=STRING
 		    --aws-secret-access-key=STRING
 		    --s3-bucket=STRING
 		    --s3-acl=STRING
+		    --s3-host=STRING
+
+		Cache options:
+		    --cache-dir=PATH
 		    --purge-cache
 		    --no-cache
-		    --no-public-storage
 
-		    --constraints-dir=DIR
+		GHC layer options:
+		    --ghc-version=STRING
+		    --ghc-magic-hash=STRING
+
+		Cabal layer options:
+		    --cabal-version=STRING
+		    --cabal-magic-hash=STRING
+		    --cabal-repo=STRING
+
+		Non-recursive general options:
+		    --constraints-dir=PATH
 		    --force-restore-all
 		    --no-announce-deploy
 
-		    --ghc-pre-build-hook=FILE
-		    --ghc-post-build-hook=FILE
+		Non-recursive GHC layer options:
+		    --ghc-pre-build-hook=PATH
+		    --ghc-post-build-hook=PATH
 		    --force-build-ghc
 
-		    --cabal-pre-build-hook=FILE
-		    --cabal-post-build-hook=FILE
+		Non-recursive Cabal layer options:
+		    --cabal-pre-build-hook=PATH
+		    --cabal-post-build-hook=PATH
 		    --force-build-cabal
 		    --force-update-cabal
 
-		    --sandbox-extra-libs=NAMES
-		    --sandbox-extra-apps=LABELS
-		    --sandbox-extra-apps-constraints-dir=DIRECTORY
-		    --sandbox-pre-build-hook=FILE
-		    --sandbox-post-build-hook=FILE
+		Non-recursive sandbox layer options:
+		    --sandbox-extra-libs=STRINGS
+		    --sandbox-extra-apps=STRINGS
+		    --sandbox-extra-apps-constraints-dir=PATH
+		    --sandbox-pre-build-hook=PATH
+		    --sandbox-post-build-hook=PATH
 		    --force-build-sandbox
 
-		    --app-extra-configure-flags=FLAGS
-		    --app-pre-build-hook=FILE
-		    --app-post-build-hook=FILE
+		Non-recursive app layer options:
+		    --app-extra-configure-flags=STRING
+		    --app-pre-build-hook=PATH
+		    --app-post-build-hook=PATH
 		    --force-build-app
 
-		    --slug-extra-apps=LABELS
-		    --slug-extra-apps-constraints-dir=DIRECTORY
-		    --slug-pre-build-hook=FILE
-		    --slug-post-build-hook=FILE
+		Non-recursive slug options:
+		    --slug-extra-apps=STRINGS
+		    --slug-extra-apps-constraints-dir=PATH
+		    --slug-pre-build-hook=PATH
+		    --slug-post-build-hook=PATH
 		    --force-build-slug
+
+		See the programmer’s reference for a description of available
+		commands and options:  http://halcyon.sh/reference/
 EOF
 }
 
