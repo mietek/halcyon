@@ -77,8 +77,8 @@ determine_ghc_magic_hash () {
 	expect_args source_dir -- "$@"
 
 	local ghc_magic_hash
-	if [[ -n "${HALCYON_GHC_MAGIC_HASH:+_}" ]]; then
-		ghc_magic_hash="${HALCYON_GHC_MAGIC_HASH}"
+	if [[ -n "${HALCYON_INTERNAL_GHC_MAGIC_HASH:+_}" ]]; then
+		ghc_magic_hash="${HALCYON_INTERNAL_GHC_MAGIC_HASH}"
 	else
 		ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
 	fi
@@ -104,8 +104,8 @@ determine_cabal_magic_hash () {
 	expect_args source_dir -- "$@"
 
 	local cabal_magic_hash
-	if [[ -n "${HALCYON_CABAL_MAGIC_HASH:+_}" ]]; then
-		cabal_magic_hash="${HALCYON_CABAL_MAGIC_HASH}"
+	if [[ -n "${HALCYON_INTERNAL_CABAL_MAGIC_HASH:+_}" ]]; then
+		cabal_magic_hash="${HALCYON_INTERNAL_CABAL_MAGIC_HASH}"
 	else
 		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
 	fi

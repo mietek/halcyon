@@ -113,9 +113,7 @@ deploy_slug_extra_apps () {
 	local -a opts
 	opts+=( --install-dir="${slug_dir}" )
 	opts+=( --ghc-version="${ghc_version}" )
-	[[ -n "${ghc_magic_hash}" ]] && opts+=( --ghc_magic_hash="${ghc_magic_hash}" )
 	opts+=( --cabal-version="${cabal_version}" )
-	[[ -n "${cabal_magic_hash}" ]] && opts+=( --cabal_magic_hash="${cabal_magic_hash}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
 	[[ -d "${constraints_dir}" ]] && opts+=( --constraints-dir="${constraints_dir}" )
 
@@ -134,7 +132,9 @@ deploy_slug_extra_apps () {
 		fi
 
 		(
-			HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_INTERNAL_RECURSIVE=1                            \
+			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}"     \
+			HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 				halcyon deploy "${opts[@]}" "${slug_app}" |& quote
 		) || return 1
 	done

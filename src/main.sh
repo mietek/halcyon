@@ -26,10 +26,8 @@ set_halcyon_vars () {
 		export HALCYON_NO_CACHE="${HALCYON_NO_CACHE:-0}"
 
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
-		export HALCYON_GHC_MAGIC_HASH="${HALCYON_GHC_MAGIC_HASH:-}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
-		export HALCYON_CABAL_MAGIC_HASH="${HALCYON_CABAL_MAGIC_HASH:-}"
 		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-}"
 
 		export HALCYON_INTERNAL_RECURSIVE="${HALCYON_INTERNAL_RECURSIVE:-0}"
@@ -37,6 +35,8 @@ set_halcyon_vars () {
 		export HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS="${HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS:-0}"
 		export HALCYON_INTERNAL_ONLY_SHOW_TAG="${HALCYON_INTERNAL_ONLY_SHOW_TAG:-0}"
 		export HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE="${HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE:-0}"
+		export HALCYON_INTERNAL_GHC_MAGIC_HASH="${HALCYON_INTERNAL_GHC_MAGIC_HASH:-}"
+		export HALCYON_INTERNAL_CABAL_MAGIC_HASH="${HALCYON_INTERNAL_CABAL_MAGIC_HASH:-}"
 	fi
 
 	# NOTE: Non-recursive vars are inherited once, then reset to default.
@@ -209,12 +209,6 @@ halcyon_main () {
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
-		'--ghc-magic-hash')
-			shift
-			expect_args ghc_magic_hash -- "$@"
-			export HALCYON_GHC_MAGIC_HASH="${ghc_magic_hash}";;
-		'--ghc-magic-hash='*)
-			export HALCYON_GHC_MAGIC_HASH="${1#*=}";;
 
 	# Cabal layer options:
 		'--cabal-version')
@@ -223,12 +217,6 @@ halcyon_main () {
 			export HALCYON_CABAL_VERSION="${cabal_version}";;
 		'--cabal-version='*)
 			export HALCYON_CABAL_VERSION="${1#*=}";;
-		'--cabal-magic-hash')
-			shift
-			expect_args cabal_magic_hash -- "$@"
-			export HALCYON_CABAL_MAGIC_HASH="${cabal_magic_hash}";;
-		'--cabal-magic-hash='*)
-			export HALCYON_CABAL_MAGIC_HASH="${1#*=}";;
 		'--cabal-repo')
 			shift
 			expect_args cabal_repo -- "$@"
