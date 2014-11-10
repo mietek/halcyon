@@ -1,17 +1,17 @@
 create_app_tag () {
-	local app_label target               \
+	local app_label target \
 		source_hash constraints_hash \
-		ghc_version ghc_magic_hash   \
+		ghc_version ghc_magic_hash \
 		sandbox_magic_hash app_magic_hash
-	expect_args app_label target         \
+	expect_args app_label target \
 		source_hash constraints_hash \
-		ghc_version ghc_magic_hash   \
+		ghc_version ghc_magic_hash \
 		sandbox_magic_hash app_magic_hash -- "$@"
 
-	create_tag "${app_label}" "${target}"          \
+	create_tag "${app_label}" "${target}" \
 		"${source_hash}" "${constraints_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"   \
-		'' '' '' ''                            \
+		"${ghc_version}" "${ghc_magic_hash}" \
+		'' '' '' ''  \
 		"${sandbox_magic_hash}" "${app_magic_hash}" || die
 }
 
@@ -36,9 +36,9 @@ derive_app_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local app_label target               \
+	local app_label target \
 		source_hash constraints_hash \
-		ghc_version ghc_magic_hash   \
+		ghc_version ghc_magic_hash \
 		sandbox_magic_hash app_magic_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
 	target=$( get_tag_target "${tag}" ) || die
@@ -49,9 +49,9 @@ derive_app_tag () {
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
-	create_app_tag "${app_label}" "${target}"      \
+	create_app_tag "${app_label}" "${target}" \
 		"${source_hash}" "${constraints_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"   \
+		"${ghc_version}" "${ghc_magic_hash}" \
 		"${sandbox_magic_hash}" "${app_magic_hash}" || die
 }
 
@@ -60,8 +60,8 @@ derive_configured_app_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
-	local app_label target             \
-		constraints_hash           \
+	local app_label target \
+		constraints_hash \
 		ghc_version ghc_magic_hash \
 		sandbox_magic_hash app_magic_hash
 	app_label=$( get_tag_app_label "${tag}" ) || die
@@ -72,8 +72,8 @@ derive_configured_app_tag_pattern () {
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 	app_magic_hash=$( get_tag_app_magic_hash "${tag}" ) || die
 
-	create_app_tag "${app_label//./\.}" "${target}"    \
-		'.*' "${constraints_hash}"                 \
+	create_app_tag "${app_label//./\.}" "${target}" \
+		'.*' "${constraints_hash}" \
 		"${ghc_version//./\.}" "${ghc_magic_hash}" \
 		"${sandbox_magic_hash}" "${app_magic_hash}" || die
 }
@@ -133,10 +133,10 @@ hash_app_magic () {
 	expect_args source_dir -- "$@"
 
 	hash_tree "${source_dir}/.halcyon-magic" \
-		\(                               \
-		-path './ghc*'     -or           \
-		-path './sandbox*' -or           \
-		-path './app*'                   \
+		\( \
+		-path './ghc*' -or \
+		-path './sandbox*' -or \
+		-path './app*' \
 		\) || die
 }
 
@@ -146,11 +146,11 @@ copy_app_source_over () {
 	expect_args source_dir work_dir -- "$@"
 
 	copy_dir_over "${source_dir}" "${work_dir}" \
-		--exclude '.git'                    \
-		--exclude '.gitmodules'             \
-		--exclude '.ghc'                    \
-		--exclude '.cabal'                  \
-		--exclude '.cabal-sandbox'          \
+		--exclude '.git' \
+		--exclude '.gitmodules' \
+		--exclude '.ghc' \
+		--exclude '.cabal' \
+		--exclude '.cabal-sandbox' \
 		--exclude 'cabal.sandbox.config' || die
 }
 
@@ -191,9 +191,9 @@ build_app_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]]; then
 		log 'Executing app pre-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                              \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/app-pre-build-hook" \
-				"${tag}" "${source_dir}" |& quote
+					"${tag}" "${source_dir}" |& quote
 		); then
 			die 'Failed to execute app pre-build hook'
 		fi
@@ -214,9 +214,9 @@ build_app_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]]; then
 		log 'Executing app post-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                               \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/app-post-build-hook" \
-				"${tag}" "${source_dir}" |& quote
+					"${tag}" "${source_dir}" |& quote
 		); then
 			die 'Failed to execute app post-build hook'
 		fi

@@ -3,9 +3,9 @@ create_slug_tag () {
 	expect_args app_label target source_hash -- "$@"
 
 	create_tag "${app_label}" "${target}" \
-		"${source_hash}" ''           \
-		'' ''                         \
-		'' '' '' ''                   \
+		"${source_hash}" '' \
+		'' '' \
+		'' '' '' '' \
 		'' '' || die
 }
 
@@ -132,8 +132,8 @@ deploy_slug_extra_apps () {
 		fi
 
 		(
-			HALCYON_INTERNAL_RECURSIVE=1                            \
-			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}"     \
+			HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 			HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 				halcyon deploy "${opts[@]}" "${slug_app}" |& quote
 		) || return 1
@@ -155,9 +155,9 @@ build_slug () {
 	if [[ -f "${source_dir}/.halcyon-magic/slug-pre-build-hook" ]]; then
 		log 'Executing slug pre-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                               \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/slug-pre-build-hook" \
-				"${tag}" "${source_dir}" "${slug_dir}" |& quote
+					"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
 			log_warning 'Cannot execute slug pre-build hook'
 			return 1
@@ -196,9 +196,9 @@ build_slug () {
 	if [[ -f "${source_dir}/.halcyon-magic/slug-post-build-hook" ]]; then
 		log 'Executing slug post-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                                \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/slug-post-build-hook" \
-				"${tag}" "${source_dir}" "${slug_dir}" |& quote
+					"${tag}" "${source_dir}" "${slug_dir}" |& quote
 		); then
 			log_warning 'Cannot execute slug post-build hook'
 			return 1

@@ -108,7 +108,8 @@ validate_actual_constraints () {
 	log_indent "--- ${constraints_hash:0:7}/cabal.config"
 	log_indent "+++ ${actual_hash:0:7}/cabal.config"
 	diff -u <( format_constraints <<<"${constraints}" ) \
-		<( format_constraints <<<"${actual_constraints}" ) | tail -n +3 |& quote || true
+		<( format_constraints <<<"${actual_constraints}" ) |
+			tail -n +3 |& quote || true
 }
 
 

@@ -29,9 +29,9 @@ create_cabal_tag () {
 	local cabal_version cabal_magic_hash cabal_repo cabal_date
 	expect_args cabal_version cabal_magic_hash cabal_repo cabal_date -- "$@"
 
-	create_tag '' ''                                                                 \
-		'' ''                                                                    \
-		'' ''                                                                    \
+	create_tag '' '' \
+		'' '' \
+		'' '' \
 		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}" \
 		'' '' || die
 }
@@ -233,11 +233,11 @@ copy_cabal_magic () {
 	fi
 
 	find_tree "${source_dir}/.halcyon-magic" -type f \
-			-path './cabal*' |
-		while read -r file; do
-			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_DIR}/cabal/.halcyon-magic/${file}" || die
-		done || die
+		-path './cabal*' |
+			while read -r file; do
+				copy_file "${source_dir}/.halcyon-magic/${file}" \
+					"${HALCYON_DIR}/cabal/.halcyon-magic/${file}" || die
+			done || die
 }
 
 
@@ -285,9 +285,10 @@ build_cabal_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                                \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
-				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
+					"${tag}" "${source_dir}" \
+					"${cabal_dir}/cabal-install-${cabal_version}" |& quote
 		); then
 			die 'Failed to execute Cabal pre-build hook'
 		fi
@@ -347,9 +348,10 @@ EOF
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]]; then
 		log 'Executing Cabal post-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                                 \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
-				"${tag}" "${source_dir}" "${cabal_dir}/cabal-install-${cabal_version}" |& quote
+					"${tag}" "${source_dir}" \
+					"${cabal_dir}/cabal-install-${cabal_version}" |& quote
 		); then
 			die 'Failed to execute Cabal post-build hook'
 		fi

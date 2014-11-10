@@ -205,9 +205,9 @@ deploy_env () {
 
 	local tag
 	tag=$(
-		create_tag '' ''                                                    \
-			'' ''                                                       \
-			"${ghc_version}" "${ghc_magic_hash}"                        \
+		create_tag '' '' \
+			'' '' \
+			"${ghc_version}" "${ghc_magic_hash}" \
 			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
 			'' ''
 	) || die
@@ -272,10 +272,10 @@ deploy_app_from_slug () {
 	local tag
 	tag=$(
 		create_tag "${app_label}" "${HALCYON_TARGET}" \
-			"${source_hash}" ''                   \
-			'' ''                                 \
-			'' '' '' ''                           \
-			'' ''                                 \
+			"${source_hash}" '' \
+			'' '' \
+			'' '' '' '' \
+			'' ''
 	) || die
 
 	if ! do_deploy_app_from_slug "${tag}"; then
@@ -556,9 +556,9 @@ deploy_app () {
 
 	local tag
 	tag=$(
-		create_tag "${app_label}" "${HALCYON_TARGET}"                       \
-			"${source_hash}" "${constraints_hash}"                      \
-			"${ghc_version}" "${ghc_magic_hash}"                        \
+		create_tag "${app_label}" "${HALCYON_TARGET}" \
+			"${source_hash}" "${constraints_hash}" \
+			"${ghc_version}" "${ghc_magic_hash}" \
 			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
 			"${sandbox_magic_hash}" "${app_magic_hash}" || die
 	) || die
@@ -646,8 +646,8 @@ deploy_unpacked_app () {
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	HALCYON_ONLY_DEPLOY_ENV=1                     \
-		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
+	HALCYON_ONLY_DEPLOY_ENV=1 \
+	HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 		deploy_env '/dev/null' || return 1
 
 	log 'Unpacking app'

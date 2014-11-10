@@ -1,14 +1,14 @@
 create_tag () {
 	expect_vars HALCYON_DIR
 
-	local app_label target                                       \
-		source_hash constraints_hash                         \
-		ghc_version ghc_magic_hash                           \
+	local app_label target \
+		source_hash constraints_hash \
+		ghc_version ghc_magic_hash \
 		cabal_version cabal_magic_hash cabal_repo cabal_date \
 		sandbox_magic_hash app_magic_hash
-	expect_args app_label target                                 \
-		source_hash constraints_hash                         \
-		ghc_version ghc_magic_hash                           \
+	expect_args app_label target \
+		source_hash constraints_hash \
+		ghc_version ghc_magic_hash \
 		cabal_version cabal_magic_hash cabal_repo cabal_date \
 		sandbox_magic_hash app_magic_hash -- "$@"
 

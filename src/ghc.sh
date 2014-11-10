@@ -106,10 +106,10 @@ create_ghc_tag () {
 	local ghc_version ghc_magic_hash
 	expect_args ghc_version ghc_magic_hash -- "$@"
 
-	create_tag '' ''                             \
-		'' ''                                \
+	create_tag '' '' \
+		'' '' \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' ''                          \
+		'' '' '' '' \
 		'' '' || die
 }
 
@@ -198,11 +198,11 @@ copy_ghc_magic () {
 	fi
 
 	find_tree "${source_dir}/.halcyon-magic" -type f \
-			-path './ghc*' |
-		while read -r file; do
-			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_DIR}/ghc/.halcyon-magic/${file}" || die
-		done || die
+		-path './ghc*' |
+			while read -r file; do
+				copy_file "${source_dir}/.halcyon-magic/${file}" \
+					"${HALCYON_DIR}/ghc/.halcyon-magic/${file}" || die
+			done || die
 }
 
 
@@ -314,9 +314,10 @@ build_ghc_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                              \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/ghc-pre-build-hook" \
-				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
+					"${tag}" "${source_dir}" \
+					"${ghc_dir}/ghc-${ghc-version}" |& quote
 		); then
 			die 'Failed to execute GHC pre-build hook'
 		fi
@@ -343,9 +344,10 @@ build_ghc_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]]; then
 		log 'Executing GHC post-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                               \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/ghc-post-build-hook" \
-				"${tag}" "${source_dir}" "${ghc_dir}/ghc-${ghc-version}" |& quote
+					"${tag}" "${source_dir}" \
+					"${ghc_dir}/ghc-${ghc-version}" |& quote
 		); then
 			die 'Failed to execute GHC post-build hook'
 		fi

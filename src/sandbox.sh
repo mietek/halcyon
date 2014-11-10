@@ -1,15 +1,15 @@
 create_sandbox_tag () {
-	local app_label constraints_hash       \
-		ghc_version ghc_magic_hash     \
+	local app_label constraints_hash \
+		ghc_version ghc_magic_hash \
 		sandbox_magic_hash
 	expect_args app_label constraints_hash \
-		ghc_version ghc_magic_hash     \
+		ghc_version ghc_magic_hash \
 		sandbox_magic_hash -- "$@"
 
-	create_tag "${app_label}" ''                 \
-		'' "${constraints_hash}"             \
+	create_tag "${app_label}" '' \
+		'' "${constraints_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' ''                          \
+		'' '' '' '' \
 		"${sandbox_magic_hash}" '' || die
 }
 
@@ -44,7 +44,7 @@ derive_sandbox_tag () {
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
 	create_sandbox_tag "${app_label}" "${constraints_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"            \
+		"${ghc_version}" "${ghc_magic_hash}" \
 		"${sandbox_magic_hash}" || die
 }
 
@@ -59,7 +59,7 @@ derive_matching_sandbox_tag () {
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
 	create_sandbox_tag "${app_label}" "${constraints_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"            \
+		"${ghc_version}" "${ghc_magic_hash}" \
 		"${sandbox_magic_hash}" || die
 }
 
@@ -171,9 +171,9 @@ hash_sandbox_magic () {
 	expect_args source_dir -- "$@"
 
 	hash_tree "${source_dir}/.halcyon-magic" \
-		\(                               \
-		-path './ghc*'     -or           \
-		-path './sandbox*'               \
+		\( \
+		-path './ghc*' -or \
+		-path './sandbox*' \
 		\) || die
 }
 
@@ -192,14 +192,14 @@ copy_sandbox_magic () {
 	fi
 
 	find_tree "${source_dir}/.halcyon-magic" -type f \
-			\(                               \
-			-path './ghc*'     -or           \
-			-path './sandbox*'               \
-			\) |
-		while read -r file; do
-			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_DIR}/sandbox/.halcyon-magic/${file}" || die
-		done || die
+		\( \
+		-path './ghc*' -or \
+		-path './sandbox*' \
+		\) |
+			while read -r file; do
+				copy_file "${source_dir}/.halcyon-magic/${file}" \
+					"${HALCYON_DIR}/sandbox/.halcyon-magic/${file}" || die
+			done || die
 }
 
 
@@ -301,8 +301,8 @@ deploy_sandbox_extra_apps () {
 		fi
 
 		(
-			HALCYON_INTERNAL_RECURSIVE=1                            \
-			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}"     \
+			HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 			HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 				halcyon deploy "${opts[@]}" "${sandbox_app}" |& quote
 		) || return 1
@@ -339,9 +339,9 @@ build_sandbox_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                                  \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
-				"${tag}" "${source_dir}" "${constraints}" |& quote
+					"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
 			log_warning 'Cannot execute sandbox pre-build hook'
 			return 1
@@ -407,9 +407,9 @@ build_sandbox_layer () {
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
 		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1                                   \
+			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
-				"${tag}" "${source_dir}" "${constraints}" |& quote
+					"${tag}" "${source_dir}" "${constraints}" |& quote
 		); then
 			log_warning 'Cannot execute sandbox post-build hook'
 			return 1
