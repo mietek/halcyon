@@ -127,12 +127,13 @@ determine_cabal_repo () {
 
 
 announce_deploy () {
-	expect_vars HALCYON_DIR HALCYON_ONLY_DEPLOY_ENV HALCYON_NO_ANNOUNCE_DEPLOY
+	expect_vars HALCYON_DIR HALCYON_ONLY_DEPLOY_ENV \
+		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY
 
 	local tag
 	expect_args tag -- "$@"
 
-	if (( HALCYON_NO_ANNOUNCE_DEPLOY )); then
+	if (( HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY )); then
 		return 0
 	fi
 
@@ -150,10 +151,12 @@ announce_deploy () {
 
 
 do_deploy_env () {
+	expect_vars HALCYON_INTERNAL_RECURSIVE
+
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if ! validate_ghc_layer "${tag}" >'/dev/null' ||
 			! validate_updated_cabal_layer "${tag}" >'/dev/null'
 		then
@@ -171,7 +174,8 @@ do_deploy_env () {
 
 
 deploy_env () {
-	expect_vars HALCYON_ONLY_DEPLOY_ENV
+	expect_vars HALCYON_ONLY_DEPLOY_ENV \
+		HALCYON_INTERNAL_RECURSIVE
 
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -185,7 +189,7 @@ deploy_env () {
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || die
 	cabal_repo=$( determine_cabal_repo ) || die
 
-	if ! (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		log 'Deploying environment'
 
 		log_indent_label 'GHC version:' "${ghc_version}"
@@ -238,7 +242,8 @@ deploy_app_from_slug () {
 		HALCYON_FORCE_BUILD_CABAL HALCYON_FORCE_UPDATE_CABAL \
 		HALCYON_FORCE_BUILD_SANDBOX \
 		HALCYON_FORCE_BUILD_APP \
-		HALCYON_FORCE_BUILD_SLUG
+		HALCYON_FORCE_BUILD_SLUG \
+		HALCYON_INTERNAL_RECURSIVE
 
 	local app_label source_hash source_dir
 	expect_args app_label source_hash source_dir -- "$@"
@@ -278,7 +283,7 @@ deploy_app_from_slug () {
 		return 1
 	fi
 
-	if ! (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		export HALCYON_NO_CACHE=1
 
 		announce_deploy "${tag}" || die
@@ -366,7 +371,8 @@ prepare_source_dir () {
 
 
 do_deploy_app () {
-	expect_vars HALCYON_DIR HALCYON_FORCE_RESTORE_ALL
+	expect_vars HALCYON_DIR HALCYON_FORCE_RESTORE_ALL \
+		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
@@ -378,7 +384,7 @@ do_deploy_app () {
 
 	do_deploy_env "${tag}" "${source_dir}" || return 1
 
-	if (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_DIR}/sandbox" ]]; then
 			saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
 			mv "${HALCYON_DIR}/sandbox" "${saved_sandbox}" || die
@@ -414,7 +420,7 @@ do_deploy_app () {
 		announce_slug "${tag}" "${slug_dir}" || die
 	fi
 
-	if (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -n "${saved_sandbox}" ]]; then
 			rm -rf "${HALCYON_DIR}/sandbox" || die
 			mv "${saved_sandbox}" "${HALCYON_DIR}/sandbox" || die
@@ -433,7 +439,11 @@ do_deploy_app () {
 
 
 deploy_app () {
-	expect_vars HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL
+	expect_vars HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL \
+		HALCYON_INTERNAL_RECURSIVE \
+		HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL \
+		HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS \
+		HALCYON_INTERNAL_ONLY_SHOW_TAG
 
 	local app_label source_dir
 	expect_args app_label source_dir -- "$@"
@@ -457,7 +467,7 @@ deploy_app () {
 	local constraints warn_implicit
 	warn_implicit=0
 	if [[ ! -f "${source_dir}/cabal.config" ]]; then
-		HALCYON_NO_ANNOUNCE_DEPLOY=1 \
+		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 			deploy_env "${source_dir}" || return 1
 
 		log 'Deploying app'
@@ -475,11 +485,11 @@ deploy_app () {
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 	fi
 
-	if (( ${HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL:-0} )); then
+	if (( HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL )); then
 		echo "${app_label}"
 		return 0
 	fi
-	if (( ${HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS:-0} )); then
+	if (( HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS )); then
 		format_constraints <<<"${constraints}" || die
 		return 0
 	fi
@@ -553,7 +563,7 @@ deploy_app () {
 			"${sandbox_magic_hash}" "${app_magic_hash}" || die
 	) || die
 
-	if (( ${HALCYON_INTERNAL_ONLY_SHOW_TAG:-0} )); then
+	if (( HALCYON_INTERNAL_ONLY_SHOW_TAG )); then
 		echo "${tag}"
 		return 0
 	fi
@@ -564,20 +574,20 @@ deploy_app () {
 		return 1
 	fi
 
-	if ! (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		announce_deploy "${tag}" || die
 	fi
 }
 
 
 deploy_local_app () {
-	expect_vars HALCYON_NO_COPY_LOCAL_SOURCE
+	expect_vars HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE
 
 	local local_dir
 	expect_args local_dir -- "$@"
 
 	local source_dir
-	if ! (( HALCYON_NO_COPY_LOCAL_SOURCE )); then
+	if ! (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
 		source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
 		copy_app_source_over "${local_dir}" "${source_dir}" || die
@@ -592,7 +602,7 @@ deploy_local_app () {
 
 	deploy_app "${app_label}" "${source_dir}" || return 1
 
-	if ! (( HALCYON_NO_COPY_LOCAL_SOURCE )); then
+	if ! (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
 		rm -rf "${source_dir}" || die
 	fi
 }
@@ -636,8 +646,8 @@ deploy_unpacked_app () {
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	HALCYON_ONLY_DEPLOY_ENV=1            \
-		HALCYON_NO_ANNOUNCE_DEPLOY=1 \
+	HALCYON_ONLY_DEPLOY_ENV=1                     \
+		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 		deploy_env '/dev/null' || return 1
 
 	log 'Unpacking app'
