@@ -87,18 +87,6 @@ determine_ghc_magic_hash () {
 }
 
 
-determine_cabal_version () {
-	local cabal_version
-	if [[ -n "${HALCYON_CABAL_VERSION:+_}" ]]; then
-		cabal_version="${HALCYON_CABAL_VERSION}"
-	else
-		cabal_version=$( get_default_cabal_version ) || die
-	fi
-
-	echo "${cabal_version}"
-}
-
-
 determine_cabal_magic_hash () {
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -111,18 +99,6 @@ determine_cabal_magic_hash () {
 	fi
 
 	echo "${cabal_magic_hash}"
-}
-
-
-determine_cabal_repo () {
-	local cabal_repo
-	if [[ -n "${HALCYON_CABAL_REPO:+_}" ]]; then
-		cabal_repo="${HALCYON_CABAL_REPO}"
-	else
-		cabal_repo=$( get_default_cabal_repo ) || die
-	fi
-
-	echo "${cabal_repo}"
 }
 
 
@@ -175,6 +151,7 @@ do_deploy_env () {
 
 deploy_env () {
 	expect_vars HALCYON_ONLY_DEPLOY_ENV \
+		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local source_dir
@@ -185,9 +162,9 @@ deploy_env () {
 	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || die
 
 	local cabal_version cabal_magic_hash cabal_repo
-	cabal_version=$( determine_cabal_version ) || die
+	cabal_version="${HALCYON_CABAL_VERSION}"
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || die
-	cabal_repo=$( determine_cabal_repo ) || die
+	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		log 'Deploying environment'
@@ -440,6 +417,7 @@ do_deploy_app () {
 
 deploy_app () {
 	expect_vars HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL \
+		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE \
 		HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL \
 		HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS \
@@ -502,9 +480,9 @@ deploy_app () {
 	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || die
 
 	local cabal_version cabal_magic_hash cabal_repo
-	cabal_version=$( determine_cabal_version ) || die
+	cabal_version="${HALCYON_CABAL_VERSION}"
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || die
-	cabal_repo=$( determine_cabal_repo ) || die
+	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	local sandbox_magic_hash app_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die

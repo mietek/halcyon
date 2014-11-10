@@ -1,13 +1,3 @@
-get_default_cabal_version () {
-	echo '1.20.0.3'
-}
-
-
-get_default_cabal_repo () {
-	echo 'Hackage:http://hackage.haskell.org/packages/archive'
-}
-
-
 map_cabal_version_to_original_url () {
 	local cabal_version
 	expect_args cabal_version -- "$@"
