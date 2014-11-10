@@ -58,7 +58,7 @@ set_halcyon_vars () {
 
 		export HALCYON_SANDBOX_EXTRA_LIBS="${HALCYON_SANDBOX_EXTRA_LIBS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
-		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:-}"
+		export HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR:-}"
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK="${HALCYON_SANDBOX_PRE_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
@@ -69,7 +69,7 @@ set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_APP="${HALCYON_FORCE_BUILD_APP:-0}"
 
 		export HALCYON_SLUG_EXTRA_APPS="${HALCYON_SLUG_EXTRA_APPS:-}"
-		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:-}"
+		export HALCYON_SLUG_EXTRA_CONSTRAINTS_DIR="${HALCYON_SLUG_EXTRA_CONSTRAINTS_DIR:-}"
 		export HALCYON_SLUG_PRE_BUILD_HOOK="${HALCYON_SLUG_PRE_BUILD_HOOK:-}"
 		export HALCYON_SLUG_POST_BUILD_HOOK="${HALCYON_SLUG_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_SLUG="${HALCYON_FORCE_BUILD_SLUG:-0}"
@@ -90,7 +90,7 @@ set_halcyon_vars () {
 
 		export HALCYON_SANDBOX_EXTRA_LIBS=''
 		export HALCYON_SANDBOX_EXTRA_APPS=''
-		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=''
+		export HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR=''
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK=''
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
 		export HALCYON_FORCE_BUILD_SANDBOX=0
@@ -101,7 +101,7 @@ set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_APP=0
 
 		export HALCYON_SLUG_EXTRA_APPS=''
-		export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR=''
+		export HALCYON_SLUG_EXTRA_CONSTRAINTS_DIR=''
 		export HALCYON_SLUG_PRE_BUILD_HOOK=''
 		export HALCYON_SLUG_POST_BUILD_HOOK=''
 		export HALCYON_FORCE_BUILD_SLUG=0
@@ -281,12 +281,12 @@ halcyon_main () {
 			export HALCYON_SANDBOX_EXTRA_APPS="${sandbox_extra_apps}";;
 		'--sandbox-extra-apps='*)
 			export HALCYON_SANDBOX_EXTRA_APPS="${1#*=}";;
-		'--sandbox-extra-apps-constraints-dir')
+		'--sandbox-extra-constraints-dir')
 			shift
-			expect_args sandbox_extra_apps_constraints_dir -- "$@"
-			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${sandbox_extra_apps_constraints_dir}";;
-		'--sandbox-extra-apps-constraints-dir='*)
-			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
+			expect_args sandbox_extra_constraints_dir -- "$@"
+			export HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR="${sandbox_extra_constraints_dir}";;
+		'--sandbox-extra-constraints-dir='*)
+			export HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR="${1#*=}";;
 		'--sandbox-pre-build-hook')
 			shift
 			expect_args sandbox_pre_build_hook -- "$@"
@@ -331,12 +331,12 @@ halcyon_main () {
 			export HALCYON_SLUG_EXTRA_APPS="${slug_extra_apps}";;
 		'--slug-extra-apps='*)
 			export HALCYON_SLUG_EXTRA_APPS="${1#*=}";;
-		'--slug-extra-apps-constraints-dir')
+		'--slug-extra-constraints-dir')
 			shift
-			expect_args slug_extra_apps_constraints_dir -- "$@"
-			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${slug_extra_apps_constraints_dir}";;
-		'--slug-extra-apps-constraints-dir='*)
-			export HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR="${1#*=}";;
+			expect_args slug_extra_constraints_dir -- "$@"
+			export HALCYON_SLUG_EXTRA_CONSTRAINTS_DIR="${slug_extra_constraints_dir}";;
+		'--slug-extra-constraints-dir='*)
+			export HALCYON_SLUG_EXTRA_CONSTRAINTS_DIR="${1#*=}";;
 		'--slug-pre-build-hook')
 			shift
 			expect_args slug_pre_build_hook -- "$@"

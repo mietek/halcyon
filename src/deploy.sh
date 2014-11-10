@@ -304,11 +304,11 @@ prepare_source_dir () {
 
 		copy_file <( IFS=$'\n' && echo "${sandbox_apps[*]}" ) "${source_dir}/.halcyon-magic/sandbox-extra-apps" || die
 	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR:+_}" ]]; then
 		local sandbox_dir
-		sandbox_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
+		sandbox_dir="${source_dir}/.halcyon-magic/sandbox-extra-constraints"
 
-		copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}" "${sandbox_dir}" || die
+		copy_dir_over "${HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR}" "${sandbox_dir}" || die
 	fi
 	if [[ -n "${HALCYON_SANDBOX_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" || die
@@ -333,11 +333,11 @@ prepare_source_dir () {
 
 		copy_file <( IFS=$'\n' && echo "${slug_apps[*]}" ) "${source_dir}/.halcyon-magic/slug-extra-apps" || die
 	fi
-	if [[ -n "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
+	if [[ -n "${HALCYON_SLUG_EXTRA_CONSTRAINTS_DIR:+_}" ]]; then
 		local slug_dir
-		slug_dir="${source_dir}/.halcyon-magic/slug-extra-apps-constraints"
+		slug_dir="${source_dir}/.halcyon-magic/slug-extra-constraints"
 
-		copy_dir_over "${HALCYON_SLUG_EXTRA_APPS_CONSTRAINTS_DIR}" "${slug_dir}" || die
+		copy_dir_over "${HALCYON_SLUG_EXTRA_CONSTRAINTS_DIR}" "${slug_dir}" || die
 	fi
 	if [[ -n "${HALCYON_SLUG_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SLUG_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/slug-pre-build-hook" || die

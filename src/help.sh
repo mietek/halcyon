@@ -26,7 +26,6 @@ help_usage () {
 		    --install-dir=PATH
 		    --target=slug or --target=sandbox
 		    --only-deploy-env
-		    --no-copy-local-source
 		    --no-build-dependencies
 		    --no-archive
 		    --no-upload
@@ -50,17 +49,14 @@ help_usage () {
 
 		GHC layer options:
 		    --ghc-version=STRING
-		    --ghc-magic-hash=STRING
 
 		Cabal layer options:
 		    --cabal-version=STRING
-		    --cabal-magic-hash=STRING
 		    --cabal-repo=STRING
 
 		Non-recursive general options:
 		    --constraints-dir=PATH
 		    --force-restore-all
-		    --no-announce-deploy
 
 		Non-recursive GHC layer options:
 		    --ghc-pre-build-hook=PATH
@@ -76,7 +72,7 @@ help_usage () {
 		Non-recursive sandbox layer options:
 		    --sandbox-extra-libs=STRINGS
 		    --sandbox-extra-apps=STRINGS
-		    --sandbox-extra-apps-constraints-dir=PATH
+		    --sandbox-extra-constraints-dir=PATH
 		    --sandbox-pre-build-hook=PATH
 		    --sandbox-post-build-hook=PATH
 		    --force-build-sandbox
@@ -89,7 +85,7 @@ help_usage () {
 
 		Non-recursive slug options:
 		    --slug-extra-apps=STRINGS
-		    --slug-extra-apps-constraints-dir=PATH
+		    --slug-extra-constraints-dir=PATH
 		    --slug-pre-build-hook=PATH
 		    --slug-post-build-hook=PATH
 		    --force-build-slug

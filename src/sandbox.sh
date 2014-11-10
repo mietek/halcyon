@@ -277,7 +277,7 @@ deploy_sandbox_extra_apps () {
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
 	local constraints_dir
-	constraints_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
+	constraints_dir="${source_dir}/.halcyon-magic/sandbox-extra-constraints"
 
 	local -a opts
 	opts+=( --target='sandbox' )

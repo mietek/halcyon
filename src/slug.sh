@@ -108,7 +108,7 @@ deploy_slug_extra_apps () {
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
 	local constraints_dir
-	constraints_dir="${source_dir}/.halcyon-magic/slug-extra-apps-constraints"
+	constraints_dir="${source_dir}/.halcyon-magic/slug-extra-constraints"
 
 	local -a opts
 	opts+=( --install-dir="${slug_dir}" )
