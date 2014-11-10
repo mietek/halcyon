@@ -25,7 +25,7 @@ set_halcyon_vars () {
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 		export HALCYON_NO_CACHE="${HALCYON_NO_CACHE:-0}"
 
-		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-}"
+		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-7.8.3}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-1.20.0.3}"
 		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-Hackage:http://hackage.haskell.org/packages/archive}"

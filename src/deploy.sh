@@ -56,16 +56,16 @@ detect_app_executable () {
 
 
 determine_ghc_version () {
+	expect_vars HALCYON_GHC_VERSION
+
 	local constraints
 	expect_args constraints -- "$@"
 
 	local ghc_version
-	if [[ -n "${HALCYON_GHC_VERSION:+_}" ]]; then
-		ghc_version="${HALCYON_GHC_VERSION}"
-	elif [[ -n "${constraints}" ]]; then
+	if [[ -n "${constraints}" ]]; then
 		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
 	else
-		ghc_version=$( get_default_ghc_version ) || die
+		ghc_version="${HALCYON_GHC_VERSION}"
 	fi
 
 	echo "${ghc_version}"
@@ -151,6 +151,7 @@ do_deploy_env () {
 
 deploy_env () {
 	expect_vars HALCYON_ONLY_DEPLOY_ENV \
+		HALCYON_GHC_VERSION \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
 
@@ -158,7 +159,7 @@ deploy_env () {
 	expect_args source_dir -- "$@"
 
 	local ghc_version ghc_magic_hash
-	ghc_version=$( determine_ghc_version '' ) || die
+	ghc_version="${HALCYON_GHC_VERSION}"
 	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || die
 
 	local cabal_version cabal_magic_hash cabal_repo
