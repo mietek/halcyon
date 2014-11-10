@@ -349,8 +349,8 @@ prepare_source_dir () {
 
 
 do_deploy_app () {
-	expect_vars HALCYON_DIR HALCYON_FORCE_RESTORE_ALL \
-		HALCYON_INTERNAL_RECURSIVE
+	expect_vars HALCYON_DIR \
+		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_FORCE_RESTORE_ALL
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
@@ -384,7 +384,7 @@ do_deploy_app () {
 
 	local must_build
 	must_build=1
-	if (( HALCYON_FORCE_RESTORE_ALL )) &&
+	if (( HALCYON_INTERNAL_FORCE_RESTORE_ALL )) &&
 		restore_slug "${tag}" "${slug_dir}"
 	then
 		must_build=0
@@ -417,9 +417,9 @@ do_deploy_app () {
 
 
 deploy_app () {
-	expect_vars HALCYON_TARGET HALCYON_FORCE_RESTORE_ALL \
+	expect_vars HALCYON_TARGET \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
-		HALCYON_INTERNAL_RECURSIVE \
+		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_FORCE_RESTORE_ALL \
 		HALCYON_INTERNAL_ONLY_SHOW_APP_LABEL \
 		HALCYON_INTERNAL_ONLY_SHOW_CONSTRAINTS \
 		HALCYON_INTERNAL_ONLY_SHOW_TAG
@@ -436,7 +436,7 @@ deploy_app () {
 	if [[ -f "${source_dir}/cabal.config" ]]; then
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if ! (( HALCYON_FORCE_RESTORE_ALL )) &&
+		if ! (( HALCYON_INTERNAL_FORCE_RESTORE_ALL )) &&
 			deploy_app_from_slug "${app_label}" "${source_hash}" "${source_dir}"
 		then
 			return 0

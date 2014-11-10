@@ -56,7 +56,6 @@ help_usage () {
 
 		Non-recursive general options:
 		    --constraints-dir=PATH
-		    --force-restore-all
 
 		Non-recursive GHC layer options:
 		    --ghc-pre-build-hook=PATH
