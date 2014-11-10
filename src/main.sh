@@ -414,6 +414,8 @@ halcyon_main () {
 			halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'paths')
+		echo -e "export HALCYON_TOP_DIR='${HALCYON_TOP_DIR}'\n"
+
 		cat "${HALCYON_TOP_DIR}/src/paths.sh" || die
 		;;
 	*)
