@@ -317,16 +317,15 @@ announce_slug () {
 
 
 apply_slug () {
+	expect_vars HALCYON_INSTALL_DIR
+
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	local install_dir
-	install_dir="${HALCYON_INSTALL_DIR:-/}"
-
 	rm -f "${slug_dir}/.halcyon-tag" || die
-	mkdir -p "${install_dir}" || die
+	mkdir -p "${HALCYON_INSTALL_DIR}" || die
 
 	# NOTE: When / is read-only, but HALCYON_DIR is not, cp -Rp fails, but cp -R succeeds.
 
-	cp -R "${slug_dir}/." "${install_dir}" |& quote || die
+	cp -R "${slug_dir}/." "${HALCYON_INSTALL_DIR}" |& quote || die
 }
