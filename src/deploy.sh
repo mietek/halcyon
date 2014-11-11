@@ -512,28 +512,34 @@ deploy_app () {
 		local -a sandbox_sources
 		sandbox_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
 
-		local sandbox_url index
-		index=0
+		local sandbox_url label
+		label='Sandbox sources:'
 		for sandbox_url in "${sandbox_sources[@]:-}"; do
-			index=$(( index + 1 ))
-			if (( index == 1 )); then
-				log_indent_label 'Sandbox sources:' "${sandbox_url}"
-			else
-				log_indent_label '' "${sandbox_url}"
-			fi
+			log_indent_label "${label}" "${sandbox_url}"
+			label=''
 		done
 	fi
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		local -a sandbox_libs
 		sandbox_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
 
-		log_indent_label 'Sandbox extra libs:' "${sandbox_libs[*]:-}"
+		local sandbox_lib label
+		label='Sandbox extra libs:'
+		for sandbox_lib in "${sandbox_libs[@]:-}"; do
+			log_indent_label "${label}" "${sandbox_lib}"
+			label=''
+		done
 	fi
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]]; then
 		local -a sandbox_apps
 		sandbox_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 
-		log_indent_label 'Sandbox extra apps:' "${sandbox_apps[*]:-}"
+		local sandbox_app label
+		label='Sandbox extra apps:'
+		for sandbox_app in "${sandbox_apps[@]:-}"; do
+			log_indent_label "${label}" "${sandbox_app}"
+			label=''
+		done
 	fi
 
 	[[ -n "${app_magic_hash}" ]] && log_indent_label 'App magic hash:' "${app_magic_hash:0:7}"
@@ -542,7 +548,12 @@ deploy_app () {
 		local -a slug_apps
 		slug_apps=( $( <"${source_dir}/.halcyon-magic/slug-extra-apps" ) ) || die
 
-		log_indent_label 'Slug extra apps:' "${slug_apps[*]:-}"
+		local slug_app label
+		label='Slug extra apps:'
+		for slug_app in "${slug_apps[@]:-}"; do
+			log_indent_label "${label}" "${slug_app}"
+			label=''
+		done
 	fi
 
 	describe_storage || die

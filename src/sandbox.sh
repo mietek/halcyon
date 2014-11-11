@@ -230,14 +230,14 @@ add_sandbox_sources () {
 
 		local commit_hash
 		if [[ ! -d "${sandbox_dir}" ]]; then
-			log_begin "Cloning ${dir_name}..."
+			log_indent_begin "Cloning ${sandbox_url}..."
 
 			if ! commit_hash=$( git_clone_over "${sandbox_url}" "${sandbox_dir}" ); then
 				log_end 'error'
 				die 'Cannot clone sandbox source'
 			fi
 		else
-			log_begin "Updating ${dir_name}..."
+			log_indent_begin "Updating ${sandbox_url}..."
 
 			if ! commit_hash=$( git_update_into "${sandbox_url}" "${sandbox_dir}" ); then
 				log_end 'error'
