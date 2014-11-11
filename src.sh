@@ -16,11 +16,11 @@ halcyon_source_bashmenot () {
 		return 0
 	fi
 
-	local urloid url branch
-	urloid="${BASHMENOT_URL:-https://github.com/mietek/bashmenot}"
-	url="${urloid%#*}"
-	branch="${urloid#*#}"
-	if [[ "${branch}" == "${url}" ]]; then
+	local url bare_url branch
+	url="${BASHMENOT_URL:-https://github.com/mietek/bashmenot}"
+	bare_url="${url%#*}"
+	branch="${url#*#}"
+	if [[ "${branch}" == "${bare_url}" ]]; then
 		branch='master'
 	fi
 
@@ -28,7 +28,7 @@ halcyon_source_bashmenot () {
 
 	local commit_hash
 	commit_hash=$(
-		git clone -q "${url}" "${HALCYON_TOP_DIR}/lib/bashmenot" &>'/dev/null' &&
+		git clone -q "${bare_url}" "${HALCYON_TOP_DIR}/lib/bashmenot" &>'/dev/null' &&
 		cd "${HALCYON_TOP_DIR}/lib/bashmenot" &&
 		git checkout -q "${branch}" &>'/dev/null' &&
 		git log -n 1 --pretty='format:%h'
@@ -68,13 +68,13 @@ halcyon_autoupdate () {
 		return 1
 	fi
 
-	local urloid
-	urloid="${HALCYON_URL:-https://github.com/mietek/halcyon}"
+	local url
+	url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
 
 	log_begin 'Auto-updating Halcyon...'
 
 	local commit_hash
-	commit_hash=$( git_update_into "${urloid}" "${HALCYON_TOP_DIR}" ) || return 1
+	commit_hash=$( git_update_into "${url}" "${HALCYON_TOP_DIR}" ) || return 1
 	log_end "done, ${commit_hash:0:7}"
 
 	HALCYON_NO_AUTOUPDATE=1 \
