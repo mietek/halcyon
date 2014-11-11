@@ -74,7 +74,10 @@ halcyon_autoupdate () {
 	log_begin 'Auto-updating Halcyon...'
 
 	local commit_hash
-	commit_hash=$( git_update_into "${url}" "${HALCYON_TOP_DIR}" ) || return 1
+	if ! commit_hash=$( git_update_into "${url}" "${HALCYON_TOP_DIR}" ); then
+		log_end 'error'
+		return 1
+	fi
 	log_end "done, ${commit_hash:0:7}"
 
 	HALCYON_NO_AUTOUPDATE=1 \

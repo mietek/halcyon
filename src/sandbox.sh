@@ -354,10 +354,7 @@ build_sandbox_layer () {
 		return 1
 	fi
 
-	if ! install_sandbox_extra_libs "${tag}" "${source_dir}"; then
-		log_warning 'Cannot install sandbox extra libs'
-		return 1
-	fi
+	install_sandbox_extra_libs "${tag}" "${source_dir}" || die
 
 	log 'Compiling sandbox'
 
