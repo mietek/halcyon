@@ -124,7 +124,7 @@ deploy_slug_extra_apps () {
 
 	local slug_app index
 	index=0
-	for slug_app in "${slug_apps[@]}"; do
+	for slug_app in "${slug_apps[@]:-}"; do
 		index=$(( index + 1 ))
 		if (( index > 1 )); then
 			log

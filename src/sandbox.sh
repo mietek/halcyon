@@ -247,7 +247,7 @@ install_sandbox_extra_libs () {
 	sandbox_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
 
 	local sandbox_lib
-	for sandbox_lib in "${sandbox_libs[@]}"; do
+	for sandbox_lib in "${sandbox_libs[@]:-}"; do
 		apt-get "${opts[@]}" install --download-only --reinstall --yes "${sandbox_lib}" |& quote || die
 	done
 
@@ -293,7 +293,7 @@ deploy_sandbox_extra_apps () {
 
 	local sandbox_app index
 	index=0
-	for sandbox_app in "${sandbox_apps[@]}"; do
+	for sandbox_app in "${sandbox_apps[@]:-}"; do
 		index=$(( index + 1 ))
 		if (( index > 1 )); then
 			log
