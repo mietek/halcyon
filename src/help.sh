@@ -69,6 +69,7 @@ help_usage () {
 		    --force-update-cabal
 
 		Non-recursive sandbox layer options:
+		    --sandbox-sources=STRINGS
 		    --sandbox-extra-libs=STRINGS
 		    --sandbox-extra-apps=STRINGS
 		    --sandbox-extra-constraints-dir=PATH

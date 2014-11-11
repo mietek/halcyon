@@ -203,6 +203,54 @@ copy_sandbox_magic () {
 }
 
 
+add_sandbox_sources () {
+	expect_vars HALCYON_DIR
+
+	local tag source_dir
+	expect_args tag source_dir -- "$@"
+
+	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-sources" ]]; then
+		return 0
+	fi
+
+	log 'Adding sandbox sources'
+
+	local -a sandbox_sources
+	sandbox_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
+
+	local sandbox_url
+	for sandbox_url in "${sandbox_sources[@]:-}"; do
+		if ! validate_git_url "${sandbox_url}"; then
+			die 'Cannot validate sandbox source URL'
+		fi
+
+		local dir_name sandbox_dir
+		dir_name=$( basename "${sandbox_url%.git}" ) || die
+		sandbox_dir="${HALCYON_DIR}/sandbox/.halcyon-sandbox-sources/${dir_name}"
+
+		local commit_hash
+		if [[ ! -d "${sandbox_dir}" ]]; then
+			log_begin "Cloning ${dir_name}..."
+
+			if ! commit_hash=$( git_clone_over "${sandbox_url}" "${sandbox_dir}" ); then
+				log_end 'error'
+				die 'Cannot clone sandbox source'
+			fi
+		else
+			log_begin "Updating ${dir_name}..."
+
+			if ! commit_hash=$( git_update_into "${sandbox_url}" "${sandbox_dir}" ); then
+				log_end 'error'
+				die 'Cannot update sandbox source'
+			fi
+		fi
+		log_end "done, ${commit_hash:0:7}"
+
+		sandboxed_cabal_do "${source_dir}" sandbox add-source "${sandbox_dir}" || die
+	done
+}
+
+
 install_sandbox_extra_libs () {
 	expect_vars HALCYON_DIR
 
@@ -355,6 +403,7 @@ build_sandbox_layer () {
 	fi
 
 	install_sandbox_extra_libs "${tag}" "${source_dir}" || die
+	add_sandbox_sources "${tag}" "${source_dir}" || die
 
 	log 'Compiling sandbox'
 

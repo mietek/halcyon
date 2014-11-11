@@ -55,6 +55,7 @@ set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_CABAL="${HALCYON_FORCE_BUILD_CABAL:-0}"
 		export HALCYON_FORCE_UPDATE_CABAL="${HALCYON_FORCE_UPDATE_CABAL:-0}"
 
+		export HALCYON_SANDBOX_SOURCES="${HALCYON_SANDBOX_SOURCES:-}"
 		export HALCYON_SANDBOX_EXTRA_LIBS="${HALCYON_SANDBOX_EXTRA_LIBS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
 		export HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR:-}"
@@ -87,6 +88,7 @@ set_halcyon_vars () {
 		export HALCYON_FORCE_BUILD_CABAL=0
 		export HALCYON_FORCE_UPDATE_CABAL=0
 
+		export HALCYON_SANDBOX_SOURCES=''
 		export HALCYON_SANDBOX_EXTRA_LIBS=''
 		export HALCYON_SANDBOX_EXTRA_APPS=''
 		export HALCYON_SANDBOX_EXTRA_CONSTRAINTS_DIR=''
@@ -267,6 +269,12 @@ halcyon_main () {
 			export HALCYON_FORCE_UPDATE_CABAL=1;;
 
 	# Non-recursive sandbox layer options:
+		'--sandbox-sources')
+			shift
+			expect_args sandbox_sources -- "$@"
+			export HALCYON_SANDBOX_SOURCES="${sandbox_sources}";;
+		'--sandbox-sources='*)
+			export HALCYON_SANDBOX_SOURCES="${1#*=}";;
 		'--sandbox-extra-libs')
 			shift
 			expect_args sandbox_extra_libs -- "$@"

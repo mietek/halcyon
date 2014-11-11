@@ -292,6 +292,12 @@ prepare_source_dir () {
 		copy_file "${HALCYON_CABAL_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/cabal-post-build-hook" || die
 	fi
 
+	if [[ -n "${HALCYON_SANDBOX_SOURCES:+_}" ]]; then
+		local -a sandbox_sources
+		sandbox_sources=( ${HALCYON_SANDBOX_SOURCES} )
+
+		copy_file <( IFS=$'\n' && echo "${sandbox_sources[*]}" ) "${source_dir}/.halcyon-magic/sandbox-sources" || die
+	fi
 	if [[ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]]; then
 		local -a sandbox_libs
 		sandbox_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
@@ -502,6 +508,21 @@ deploy_app () {
 	log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
 
 	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-sources" ]]; then
+		local -a sandbox_sources
+		sandbox_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
+
+		local sandbox_url index
+		index=0
+		for sandbox_url in "${sandbox_sources[@]:-}"; do
+			index=$(( index + 1 ))
+			if (( index == 1 )); then
+				log_indent_label 'Sandbox sources:' "${sandbox_url}"
+			else
+				log_indent_label '' "${sandbox_url}"
+			fi
+		done
+	fi
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		local -a sandbox_libs
 		sandbox_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
