@@ -588,8 +588,8 @@ deploy_local_app () {
 
 
 deploy_cloned_app () {
-	local urloid
-	expect_args urloid -- "$@"
+	local url
+	expect_args url -- "$@"
 
 	local clone_dir source_dir
 	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || die
@@ -598,7 +598,7 @@ deploy_cloned_app () {
 	log_begin 'Cloning app...'
 
 	local commit_hash
-	if ! commit_hash=$( git_clone_over "${urloid}" "${clone_dir}" ); then
+	if ! commit_hash=$( git_clone_over "${url}" "${clone_dir}" ); then
 		log_end 'error'
 		die 'Cannot clone app'
 	fi
@@ -618,8 +618,8 @@ deploy_cloned_app () {
 
 
 deploy_unpacked_app () {
-	local appoid
-	expect_args appoid -- "$@"
+	local app
+	expect_args app -- "$@"
 
 	local unpack_dir source_dir
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
@@ -632,41 +632,18 @@ deploy_unpacked_app () {
 	log 'Unpacking app'
 
 	local app_label
-	app_label=$( cabal_unpack_app "${appoid}" "${unpack_dir}" ) || die
+	app_label=$( cabal_unpack_app "${app}" "${unpack_dir}" ) || die
 
 	copy_app_source_over "${unpack_dir}/${app_label}" "${source_dir}" || die
 
-	if [[ "${app_label}" != "${appoid}" ]]; then
-		log_warning "Using implicit version of ${appoid}"
+	if [[ "${app_label}" != "${app}" ]]; then
+		log_warning "Using implicit version of ${app}"
 		log_warning 'Expected app label with explicit version'
 	fi
 
 	deploy_app "${app_label}" "${source_dir}" || return 1
 
 	rm -rf "${unpack_dir}" "${source_dir}" || die
-}
-
-
-deploy_appoid () {
-	local appoid
-	expect_args appoid -- "$@"
-
-	case "${appoid}" in
-	'https://'*);&
-	'ssh://'*);&
-	'git@'*);&
-	'file://'*);&
-	'http://'*);&
-	'git://'*)
-		deploy_cloned_app "${appoid}" || return 1
-		;;
-	*)
-		if [[ -d "${appoid}" ]]; then
-			deploy_local_app "${appoid%/}" || return 1
-		else
-			deploy_unpacked_app "${appoid}" || return 1
-		fi
-	esac
 }
 
 
@@ -688,7 +665,7 @@ halcyon_deploy () {
 			deploy_local_app '.' || return 1
 		fi
 	else
-		local appoid index
+		local app index
 		index=0
 		while (( $# )); do
 			index=$(( index + 1 ))
@@ -697,7 +674,13 @@ halcyon_deploy () {
 				log
 			fi
 
-			deploy_appoid "$1" || return 1
+			if validate_git_url "$1"; then
+				deploy_cloned_app "$1" || return 1
+			elif [[ -d "$1" ]]; then
+				deploy_local_app "${1%/}" || return 1
+			else
+				deploy_unpacked_app "$1" || return 1
+			fi
 			shift
 		done
 	fi

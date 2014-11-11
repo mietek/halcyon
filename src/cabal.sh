@@ -780,8 +780,8 @@ cabal_freeze_actual_constraints () {
 
 
 cabal_unpack_app () {
-	local appoid work_dir
-	expect_args appoid work_dir -- "$@"
+	local app work_dir
+	expect_args app work_dir -- "$@"
 
 	local stderr
 	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || die
@@ -790,7 +790,7 @@ cabal_unpack_app () {
 
 	local app_label
 	if ! app_label=$(
-		cabal_do "${work_dir}" unpack "${appoid}" 2>"${stderr}" |
+		cabal_do "${work_dir}" unpack "${app}" 2>"${stderr}" |
 		filter_matching '^Unpacking to ' |
 		match_exactly_one |
 		sed 's:^Unpacking to \(.*\)/$:\1:'
