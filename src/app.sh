@@ -391,7 +391,7 @@ prepare_app_layer () {
 	local must_configure
 	must_configure=0
 	if filter_matching "^. (.halcyon-magic/app-extra-configure-flags|cabal.config|Setup.hs|.*\.cabal)$" <<<"${changed_files}" |
-		match_exactly_one >'/dev/null'
+		match_at_least_one >'/dev/null'
 	then
 		must_configure=1
 	fi
