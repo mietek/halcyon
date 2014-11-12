@@ -279,9 +279,10 @@ restore_slug () {
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
 
-	local platform archive_name
+	local platform archive_name archive_pattern
 	platform=$( get_tag_platform "${tag}" ) || die
 	archive_name=$( format_slug_archive_name "${tag}" ) || die
+	archive_pattern=$( format_slug_archive_name_pattern "${tag}" ) || die
 
 	log 'Restoring slug'
 
@@ -301,6 +302,8 @@ restore_slug () {
 	description=$( format_slug_description "${restored_tag}" )
 
 	log_label 'Slug restored:' "${description}"
+
+	delete_matching_cached_files "${archive_pattern}" "${archive_name}" || die
 }
 
 

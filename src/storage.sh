@@ -71,6 +71,22 @@ touch_cached_file () {
 }
 
 
+delete_matching_cached_files () {
+	expect_vars HALCYON_CACHE_DIR
+
+	local match_pattern save_name
+	expect_args match_pattern save_name -- "$@"
+
+	local old_name
+	find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
+		filter_matching "^${match_pattern}$" |
+		filter_not_matching "^${save_name//./\.}$" |
+		while read -r old_name; do
+			rm -f "${HALCYON_CACHE_DIR}/${old_name}" || die
+		done || die
+}
+
+
 upload_cached_file () {
 	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
 
