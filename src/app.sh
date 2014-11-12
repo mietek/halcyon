@@ -368,16 +368,11 @@ prepare_app_layer () {
 	# NOTE: Restoring file modification times of unchanged files is necessary to avoid
 	# needless recompilation.
 
-	local unchanged_files
-	if unchanged_files=$(
-		filter_matching '^= ' <<<"${all_files}" |
-		match_at_least_one
-	); then
-		local file
+	local file
+	filter_matching '^= ' <<<"${all_files}" |
 		while read -r file; do
 			cp -p "${HALCYON_DIR}/app/${file#= }" "${work_dir}/${file#= }" || die
-		done <<<"${unchanged_files}"
-	fi
+		done
 
 	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for
 	# an example.

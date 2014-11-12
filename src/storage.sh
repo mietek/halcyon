@@ -214,19 +214,14 @@ delete_matching_private_stored_files () {
 		return 0
 	fi
 
-	local old_names
-	if old_names=$(
-		list_private_stored_files "${prefix}/${match_prefix}" |
+	local old_name
+	list_private_stored_files "${prefix}/${match_prefix}" |
 		sed "s:${prefix}/::" |
 		filter_matching "^${match_pattern}$" |
 		filter_not_matching "^${save_name//./\.}$" |
-		match_at_least_one
-	); then
-		local old_name
 		while read -r old_name; do
-			delete_private_stored_file "${prefix}" "${old_name}" || true
-		done <<<"${old_names}"
-	fi
+			delete_private_stored_file "${prefix}" "${old_name}" || die
+		done || die
 }
 
 
