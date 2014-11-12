@@ -320,10 +320,8 @@ announce_slug () {
 
 
 apply_slug () {
-	expect_vars HALCYON_INSTALL_DIR
-
-	local tag slug_dir
-	expect_args tag slug_dir -- "$@"
+	local slug_dir install_dir
+	expect_args slug_dir install_dir -- "$@"
 	expect_existing "${slug_dir}/.halcyon-tag"
 
 	local saved_tag
@@ -333,9 +331,9 @@ apply_slug () {
 	# Copying .halcyon-tag is avoided for the same reason.
 
 	mv "${slug_dir}/.halcyon-tag" "${saved_tag}" || die
-	mkdir -p "${HALCYON_INSTALL_DIR}" || die
 
-	cp -R "${slug_dir}/." "${HALCYON_INSTALL_DIR}" |& quote || die
+	mkdir -p "${install_dir}" || die
+	cp -R "${slug_dir}/." "${install_dir}" |& quote || die
 
 	mv "${saved_tag}" "${slug_dir}/.halcyon-tag" || die
 }

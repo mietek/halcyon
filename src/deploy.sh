@@ -200,6 +200,8 @@ deploy_env () {
 
 
 do_deploy_app_from_slug () {
+	expect_vars HALCYON_INSTALL_DIR
+
 	local tag
 	expect_args tag -- "$@"
 
@@ -208,7 +210,7 @@ do_deploy_app_from_slug () {
 
 	restore_slug "${tag}" "${slug_dir}" || return 1
 
-	apply_slug "${tag}" "${slug_dir}" || die
+	apply_slug "${slug_dir}" "${HALCYON_INSTALL_DIR}" || die
 
 	rm -rf "${slug_dir}"
 }
@@ -355,7 +357,7 @@ prepare_source_dir () {
 
 
 do_deploy_app () {
-	expect_vars HALCYON_DIR \
+	expect_vars HALCYON_DIR HALCYON_INSTALL_DIR \
 		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_FORCE_RESTORE_ALL
 
 	local tag source_dir constraints
@@ -414,7 +416,7 @@ do_deploy_app () {
 		fi
 	fi
 
-	apply_slug "${tag}" "${slug_dir}" || die
+	apply_slug "${slug_dir}" "${HALCYON_INSTALL_DIR}" || die
 	if (( must_build )); then
 		archive_slug "${slug_dir}" || die
 		announce_slug "${tag}" "${slug_dir}" || die
