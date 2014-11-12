@@ -324,11 +324,18 @@ apply_slug () {
 
 	local tag slug_dir
 	expect_args tag slug_dir -- "$@"
+	expect_existing "${slug_dir}/.halcyon-tag"
 
-	rm -f "${slug_dir}/.halcyon-tag" || die
-	mkdir -p "${HALCYON_INSTALL_DIR}" || die
+	local saved_tag
+	saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || die
 
 	# NOTE: When / is read-only, but HALCYON_DIR is not, cp -Rp fails, but cp -R succeeds.
+	# Copying .halcyon-tag is avoided for the same reason.
+
+	mv "${slug_dir}/.halcyon-tag" "${saved_tag}" || die
+	mkdir -p "${HALCYON_INSTALL_DIR}" || die
 
 	cp -R "${slug_dir}/." "${HALCYON_INSTALL_DIR}" |& quote || die
+
+	mv "${saved_tag}" "${slug_dir}/.halcyon-tag" || die
 }

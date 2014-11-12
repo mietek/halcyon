@@ -400,8 +400,6 @@ do_deploy_app () {
 			log_warning 'Cannot build slug'
 			return 1
 		fi
-		archive_slug "${slug_dir}" || die
-		announce_slug "${tag}" "${slug_dir}" || die
 	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
@@ -417,6 +415,10 @@ do_deploy_app () {
 	fi
 
 	apply_slug "${tag}" "${slug_dir}" || die
+	if (( must_build )); then
+		archive_slug "${slug_dir}" || die
+		announce_slug "${tag}" "${slug_dir}" || die
+	fi
 
 	rm -rf "${slug_dir}" || die
 }
