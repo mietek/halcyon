@@ -631,7 +631,7 @@ deploy_cloned_app () {
 	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || die
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	log_begin 'Cloning app...'
+	log_begin "Cloning ${url}..."
 
 	local commit_hash
 	if ! commit_hash=$( git_clone_over "${url}" "${clone_dir}" ); then
