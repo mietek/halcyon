@@ -412,15 +412,16 @@ announce_app_layer () {
 }
 
 
-link_app_sandbox_config () {
+apply_app_sandbox_config () {
 	expect_vars HALCYON_DIR
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
-	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
+	# NOTE: Copying the sandbox config is necessary to allow the user to easily run Cabal commands,
 	# without having to use cabal_do or sandboxed_cabal_do.
 
 	rm -f "${HALCYON_DIR}/app/cabal.sandbox.config" || die
-	ln -s "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" "${HALCYON_DIR}/app/cabal.sandbox.config" || die
+	copy_file "${HALCYON_DIR}/sandbox/.halcyon-sandbox.config" \
+		"${HALCYON_DIR}/app/cabal.sandbox.config" || die
 }
 
 
@@ -432,7 +433,7 @@ install_app_layer () {
 
 	if ! (( HALCYON_FORCE_BUILD_APP )) && restore_app_layer "${tag}"; then
 		if validate_identical_app_layer "${tag}" >'/dev/null'; then
-			link_app_sandbox_config || die
+			apply_app_sandbox_config || die
 			return 0
 		fi
 
@@ -447,7 +448,7 @@ install_app_layer () {
 		build_app_layer "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" || die
 		archive_app_layer || die
 		announce_app_layer "${tag}" || die
-		link_app_sandbox_config || die
+		apply_app_sandbox_config || die
 		return 0
 	fi
 
@@ -457,5 +458,5 @@ install_app_layer () {
 	build_app_layer "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" || die
 	archive_app_layer || die
 	announce_app_layer "${tag}" || die
-	link_app_sandbox_config || die
+	apply_app_sandbox_config || die
 }
