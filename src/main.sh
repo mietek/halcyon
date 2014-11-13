@@ -27,6 +27,9 @@ set_halcyon_vars () {
 
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-7.8.3}"
 
+		# NOTE: Cabal does not support HTTPS repository URLs.
+		# https://github.com/haskell/cabal/issues/936
+
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-1.20.0.3}"
 		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-Hackage:http://hackage.haskell.org/packages/archive}"
 
