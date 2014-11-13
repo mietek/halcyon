@@ -55,7 +55,7 @@ To learn more, check back soon.
 
 Halcyon requires:
 
-- Ubuntu [10.04 LTS](http://releases.ubuntu.com/10.04/), [12.04 LTS](http://releases.ubuntu.com/12.04/), or [14.04 LTS](http://releases.ubuntu.com/14.04/) (64-bit).
+- Ubuntu [10.04 LTS](http://releases.ubuntu.com/10.04/), [12.04 LTS](http://releases.ubuntu.com/12.04/), [14.04 LTS](http://releases.ubuntu.com/14.04/), or [14.10](http://releases.ubuntu.com/14.10/) (64-bit).
 - [GNU _bash_](http://gnu.org/software/bash/) 4 or newer, [GNU _date_](http://gnu.org/software/coreutils/manual/html_node/date-invocation.html), [GNU _sort_](http://gnu.org/software/coreutils/manual/html_node/sort-invocation.html), [_curl_](http://curl.haxx.se/), [OpenSSL](https://www.openssl.org/), and [_git_](http://git-scm.com/).
 
 

@@ -220,14 +220,16 @@ prepare_ghc_layer () {
 
 	local libgmp_name libgmp_file libtinfo_file url
 	case "${platform}-ghc-${ghc_version}" in
+	'linux-ubuntu-14.10-x86_64-ghc-'*);&
 	'linux-ubuntu-14.04-x86_64-ghc-7.8.'*)
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		libgmp_name='libgmp.so.10'
 		url=$( map_ghc_version_to_linux_libgmp10_x86_64_original_url "${ghc_version}" ) || die
 		;;
+	'linux-ubuntu-14.10-x86_64-ghc-'*);&
 	'linux-ubuntu-14.04-x86_64-ghc-'*)
-		# NOTE: There is no libgmp.so.3 on Ubuntu 14.04 LTS, and there is no .10-flavoured
+		# NOTE: There is no libgmp.so.3 on Ubuntu 14.*, and there is no .10-flavoured
 		# binary distribution of GHC <7.8.*. However, GHC does not use the `mpn_bdivmod`
 		# function, which is the only difference between the ABI of .3 and .10. Hence,
 		# .10 is symlinked to .3, and the .3-flavoured binary distribution is used.
