@@ -338,13 +338,13 @@ install_pigz () {
 	local original_url
 	case "${platform}" in
 	'linux-ubuntu-14.10-x86_64')
-		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.3.1-1_amd64.deb';;
+		original_url='https://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.3.1-1_amd64.deb';;
 	'linux-ubuntu-14.04-x86_64')
-		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.3-2_amd64.deb';;
+		original_url='https://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.3-2_amd64.deb';;
 	'linux-ubuntu-12.04-x86_64')
-		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.6-1_amd64.deb';;
+		original_url='https://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.6-1_amd64.deb';;
 	'linux-ubuntu-10.04-x86_64')
-		original_url='http://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.5-1_amd64.deb';;
+		original_url='https://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.5-1_amd64.deb';;
 	*)
 		log_warning "Cannot install pigz on ${description}"
 		return 0

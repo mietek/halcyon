@@ -8,9 +8,9 @@ map_ghc_version_to_linux_libgmp10_x86_64_original_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.8.3')	echo 'http://www.haskell.org/ghc/dist/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
-	'7.8.2')	echo 'http://www.haskell.org/ghc/dist/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
-	'7.8.1')	echo 'http://www.haskell.org/ghc/dist/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
+	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
 	*)		die "Unexpected GHC version for Linux/libgmp.so.10 (64-bit): ${ghc_version}"
 	esac
 }
@@ -21,27 +21,27 @@ map_ghc_version_to_linux_libgmp3_x86_64_original_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.8.3')	echo 'http://www.haskell.org/ghc/dist/7.8.3/ghc-7.8.3-x86_64-unknown-linux-centos65.tar.xz';;
-	'7.8.2')	echo 'http://www.haskell.org/ghc/dist/7.8.2/ghc-7.8.2-x86_64-unknown-linux-centos65.tar.xz';;
-	'7.8.1')	echo 'http://www.haskell.org/ghc/dist/7.8.1/ghc-7.8.1-x86_64-unknown-linux-centos65.tar.xz';;
-	'7.6.3')	echo 'http://www.haskell.org/ghc/dist/7.6.3/ghc-7.6.3-x86_64-unknown-linux.tar.bz2';;
-	'7.6.2')	echo 'http://www.haskell.org/ghc/dist/7.6.2/ghc-7.6.2-x86_64-unknown-linux.tar.bz2';;
-	'7.6.1')	echo 'http://www.haskell.org/ghc/dist/7.6.1/ghc-7.6.1-x86_64-unknown-linux.tar.bz2';;
-	'7.4.2')	echo 'http://www.haskell.org/ghc/dist/7.4.2/ghc-7.4.2-x86_64-unknown-linux.tar.bz2';;
-	'7.4.1')	echo 'http://www.haskell.org/ghc/dist/7.4.1/ghc-7.4.1-x86_64-unknown-linux.tar.bz2';;
-	'7.2.2')	echo 'http://www.haskell.org/ghc/dist/7.2.2/ghc-7.2.2-x86_64-unknown-linux.tar.bz2';;
-	'7.2.1')	echo 'http://www.haskell.org/ghc/dist/7.2.1/ghc-7.2.1-x86_64-unknown-linux.tar.bz2';;
-	'7.0.4')	echo 'http://www.haskell.org/ghc/dist/7.0.4/ghc-7.0.4-x86_64-unknown-linux.tar.bz2';;
-	'7.0.3')	echo 'http://www.haskell.org/ghc/dist/7.0.3/ghc-7.0.3-x86_64-unknown-linux.tar.bz2';;
-	'7.0.2')	echo 'http://www.haskell.org/ghc/dist/7.0.2/ghc-7.0.2-x86_64-unknown-linux.tar.bz2';;
-	'7.0.1')	echo 'http://www.haskell.org/ghc/dist/7.0.1/ghc-7.0.1-x86_64-unknown-linux.tar.bz2';;
-	'6.12.3')	echo 'http://www.haskell.org/ghc/dist/6.12.3/ghc-6.12.3-x86_64-unknown-linux-n.tar.bz2';;
-	'6.12.2')	echo 'http://www.haskell.org/ghc/dist/6.12.2/ghc-6.12.2-x86_64-unknown-linux-n.tar.bz2';;
-	'6.12.1')	echo 'http://www.haskell.org/ghc/dist/6.12.1/ghc-6.12.1-x86_64-unknown-linux-n.tar.bz2';;
-	'6.10.4')	echo 'http://www.haskell.org/ghc/dist/6.10.4/ghc-6.10.4-x86_64-unknown-linux-n.tar.bz2';;
-	'6.10.3')	echo 'http://www.haskell.org/ghc/dist/6.10.3/ghc-6.10.3-x86_64-unknown-linux-n.tar.bz2';;
-	'6.10.2')	echo 'http://www.haskell.org/ghc/dist/6.10.2/ghc-6.10.2-x86_64-unknown-linux-libedit2.tar.bz2';;
-	'6.10.1')	echo 'http://www.haskell.org/ghc/dist/6.10.1/ghc-6.10.1-x86_64-unknown-linux-libedit2.tar.bz2';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-centos65.tar.xz';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-centos65.tar.xz';;
+	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-unknown-linux-centos65.tar.xz';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-unknown-linux.tar.bz2';;
+	'7.6.2')	echo 'https://downloads.haskell.org/~ghc/7.6.2/ghc-7.6.2-x86_64-unknown-linux.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-unknown-linux.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-unknown-linux.tar.bz2';;
+	'7.4.1')	echo 'https://downloads.haskell.org/~ghc/7.4.1/ghc-7.4.1-x86_64-unknown-linux.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-unknown-linux.tar.bz2';;
+	'7.2.1')	echo 'https://downloads.haskell.org/~ghc/7.2.1/ghc-7.2.1-x86_64-unknown-linux.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-linux.tar.bz2';;
+	'7.0.3')	echo 'https://downloads.haskell.org/~ghc/7.0.3/ghc-7.0.3-x86_64-unknown-linux.tar.bz2';;
+	'7.0.2')	echo 'https://downloads.haskell.org/~ghc/7.0.2/ghc-7.0.2-x86_64-unknown-linux.tar.bz2';;
+	'7.0.1')	echo 'https://downloads.haskell.org/~ghc/7.0.1/ghc-7.0.1-x86_64-unknown-linux.tar.bz2';;
+	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-x86_64-unknown-linux-n.tar.bz2';;
+	'6.12.2')	echo 'https://downloads.haskell.org/~ghc/6.12.2/ghc-6.12.2-x86_64-unknown-linux-n.tar.bz2';;
+	'6.12.1')	echo 'https://downloads.haskell.org/~ghc/6.12.1/ghc-6.12.1-x86_64-unknown-linux-n.tar.bz2';;
+	'6.10.4')	echo 'https://downloads.haskell.org/~ghc/6.10.4/ghc-6.10.4-x86_64-unknown-linux-n.tar.bz2';;
+	'6.10.3')	echo 'https://downloads.haskell.org/~ghc/6.10.3/ghc-6.10.3-x86_64-unknown-linux-n.tar.bz2';;
+	'6.10.2')	echo 'https://downloads.haskell.org/~ghc/6.10.2/ghc-6.10.2-x86_64-unknown-linux-libedit2.tar.bz2';;
+	'6.10.1')	echo 'https://downloads.haskell.org/~ghc/6.10.1/ghc-6.10.1-x86_64-unknown-linux-libedit2.tar.bz2';;
 	*)		die "Unexpected GHC version for Linux/libgmp.so.3 (64-bit): ${ghc_version}"
 	esac
 }
@@ -52,19 +52,19 @@ map_ghc_version_to_osx_x86_64_original_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.8.3')	echo 'https://www.haskell.org/ghc/dist/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';; # 10.7+
-	'7.8.2')	echo 'https://www.haskell.org/ghc/dist/7.8.2/ghc-7.8.2-x86_64-apple-darwin-mavericks.tar.xz';; # 10.9 only?
-	'7.8.1')	echo 'https://www.haskell.org/ghc/dist/7.8.1/ghc-7.8.1-x86_64-apple-darwin-mavericks.tar.xz';; # 10.9 only?
-	'7.6.3')	echo 'https://www.haskell.org/ghc/dist/7.6.3/ghc-7.6.3-x86_64-apple-darwin.tar.bz2';; # 10.7+?
-	'7.6.2')	echo 'https://www.haskell.org/ghc/dist/7.6.2/ghc-7.6.2-x86_64-apple-darwin.tar.bz2';; # 10.7+?
-	'7.6.1')	echo 'https://www.haskell.org/ghc/dist/7.6.1/ghc-7.6.1-x86_64-apple-darwin.tar.bz2';; # 10.7+?
-	'7.4.2')	echo 'https://www.haskell.org/ghc/dist/7.4.2/ghc-7.4.2-x86_64-apple-darwin.tar.bz2';; # 10.7+?
-	'7.4.1')	echo 'https://www.haskell.org/ghc/dist/7.4.1/ghc-7.4.1-x86_64-apple-darwin.tar.bz2';; # 10.7+?
-	'7.2.2')	echo 'https://www.haskell.org/ghc/dist/7.2.2/ghc-7.2.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
-	'7.2.1')	echo 'https://www.haskell.org/ghc/dist/7.2.1/ghc-7.2.1-x86_64-apple-darwin.tar.bz2';; # 10.6+?
-	'7.0.4')	echo 'https://www.haskell.org/ghc/dist/7.0.4/ghc-7.0.4-x86_64-apple-darwin.tar.bz2';; # 10.6+?
-	'7.0.3')	echo 'https://www.haskell.org/ghc/dist/7.0.3/ghc-7.0.3-x86_64-apple-darwin.tar.bz2';; # 10.6+?
-	'7.0.2')	echo 'https://www.haskell.org/ghc/dist/7.0.2/ghc-7.0.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';; # 10.7+
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-apple-darwin-mavericks.tar.xz';; # 10.9 only?
+	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-apple-darwin-mavericks.tar.xz';; # 10.9 only?
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.6.2')	echo 'https://downloads.haskell.org/~ghc/7.6.2/ghc-7.6.2-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.4.1')	echo 'https://downloads.haskell.org/~ghc/7.4.1/ghc-7.4.1-x86_64-apple-darwin.tar.bz2';; # 10.7+?
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.2.1')	echo 'https://downloads.haskell.org/~ghc/7.2.1/ghc-7.2.1-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.0.3')	echo 'https://downloads.haskell.org/~ghc/7.0.3/ghc-7.0.3-x86_64-apple-darwin.tar.bz2';; # 10.6+?
+	'7.0.2')	echo 'https://downloads.haskell.org/~ghc/7.0.2/ghc-7.0.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
 	*)		die "Unexpected GHC version for OS X (64-bit): ${ghc_version}"
 	esac
 }
