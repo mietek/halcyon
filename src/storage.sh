@@ -1,10 +1,10 @@
 format_public_storage_url () {
-	expect_vars HALCYON_PUBLIC_STORAGE_HOST
+	expect_vars HALCYON_PUBLIC_STORAGE_URL
 
 	local object
 	expect_args object -- "$@"
 
-	echo "http://${HALCYON_PUBLIC_STORAGE_HOST}/${object}"
+	echo "${HALCYON_PUBLIC_STORAGE_URL}/${object}"
 }
 
 

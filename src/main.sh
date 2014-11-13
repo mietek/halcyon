@@ -12,7 +12,7 @@ set_halcyon_vars () {
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
 
-		export HALCYON_PUBLIC_STORAGE_HOST="${HALCYON_PUBLIC_STORAGE_HOST:-cdn.halcyon.sh}"
+		export HALCYON_PUBLIC_STORAGE_URL="${HALCYON_PUBLIC_STORAGE_URL:-https://halcyon.global.ssl.fastly.net}"
 		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
@@ -151,12 +151,12 @@ halcyon_main () {
 			export HALCYON_NO_DELETE=1;;
 
 	# Public storage options:
-		'--public-storage-host')
+		'--public-storage-url')
 			shift
-			expect_args public_storage_host -- "$@"
-			export HALCYON_PUBLIC_STORAGE_HOST="${public_storage_host}";;
-		'--public-storage-host='*)
-			export HALCYON_PUBLIC_STORAGE_HOST="${1#*=}";;
+			expect_args public_storage_url -- "$@"
+			export HALCYON_PUBLIC_STORAGE_URL="${public_storage_url}";;
+		'--public-storage-url='*)
+			export HALCYON_PUBLIC_STORAGE_URL="${1#*=}";;
 		'--no-public-storage')
 			export HALCYON_NO_PUBLIC_STORAGE=1;;
 

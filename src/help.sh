@@ -32,7 +32,7 @@ help_usage () {
 		    --no-delete
 
 		Public storage options:
-		    --public-storage-host=STRING
+		    --public-storage-url=STRING
 		    --no-public-storage
 
 		Private storage options:
