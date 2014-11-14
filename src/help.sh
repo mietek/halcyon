@@ -92,7 +92,7 @@ help_usage () {
 		    --force-build-slug
 
 		See the programmer’s reference for a description of available
-		commands and options:  http://halcyon.sh/reference/
+		commands and options:  https://halcyon.sh/reference/
 EOF
 }
 
