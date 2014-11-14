@@ -20,6 +20,7 @@ set_halcyon_vars () {
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
 		export HALCYON_S3_HOST="${HALCYON_S3_HOST:-s3.amazonaws.com}"
+		export HALCYON_NO_PRIVATE_STORAGE="${HALCYON_NO_PRIVATE_STORAGE:-0}"
 
 		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon-cache}"
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
@@ -194,6 +195,8 @@ halcyon_main () {
 			export HALCYON_S3_HOST="${s3_host}";;
 		'--s3-host='*)
 			export HALCYON_S3_HOST="${1#*=}";;
+		'--no-private-storage')
+			export HALCYON_NO_PRIVATE_STORAGE=1;;
 
 	# Cache options:
 		'--cache-dir')

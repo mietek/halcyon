@@ -41,6 +41,7 @@ help_usage () {
 		    --s3-bucket=STRING
 		    --s3-acl=STRING
 		    --s3-host=STRING
+		    --no-private-storage
 
 		Cache options:
 		    --cache-dir=PATH

@@ -9,6 +9,12 @@ format_public_storage_url () {
 
 
 private_storage () {
+	expect_vars HALCYON_NO_PRIVATE_STORAGE
+
+	if (( HALCYON_NO_PRIVATE_STORAGE )); then
+		return 1
+	fi
+
 	[[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}"
 	&& -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}"
 	&& -n "${HALCYON_S3_BUCKET:+_}"
