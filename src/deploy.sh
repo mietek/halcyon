@@ -150,8 +150,7 @@ do_deploy_env () {
 
 
 deploy_env () {
-	expect_vars HALCYON_ONLY_DEPLOY_ENV \
-		HALCYON_GHC_VERSION \
+	expect_vars HALCYON_GHC_VERSION \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
 
@@ -684,6 +683,8 @@ deploy_unpacked_app () {
 
 
 halcyon_deploy () {
+	expect_vars HALCYON_ONLY_DEPLOY_ENV
+
 	local cache_dir
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
 
