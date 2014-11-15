@@ -37,7 +37,9 @@ To disable automatic updates, set [`HALCYON_NO_AUTOUPDATE`](options/#halcyon_no_
 
 ### Examples
 
-_Work in progress._
+Please refer to the Haskell on Heroku website for examples of [real-world](https://haskellonheroku.com/apps/) and [“Hello, world!”](https://haskellonheroku.com/examples/) Haskell web applications.
+
+Examples of using Halcyon directly will be available soon.
 
 
 ### Documentation
