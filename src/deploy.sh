@@ -460,14 +460,23 @@ deploy_app () {
 		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 			deploy_env "${source_dir}" || return 1
 
-		# NOTE: This is the second out of the two moments when source_dir is modified.
-
 		constraints=$( cabal_freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
+
 		log_warning 'Using implicit constraints'
 		log_warning 'Expected cabal.config with explicit constraints'
 		log
-		help_add_explicit_constraints "${constraints}"
+		if (( HALCYON_INTERNAL_NONLOCAL_SOURCE )); then
+			log "To use explicit constraints, specify --constraints-dir with:"
+			log_indent "$ cat >${app_label}.cabal.config <<EOF"
+		else
+			log 'To use explicit constraints:'
+			log_indent '$ cat >cabal.config <<EOF'
+		fi
+		format_constraints <<<"${constraints}" >&2 || die
+		echo 'EOF' >&2
 		log
+
+		# NOTE: This is the second out of the two moments when source_dir is modified.
 
 		format_constraints <<<"${constraints}" >"${source_dir}/cabal.config" || die
 		source_hash=$( hash_tree "${source_dir}" ) || die
@@ -649,7 +658,8 @@ deploy_cloned_app () {
 		die 'Cannot detect app label'
 	fi
 
-	deploy_app "${app_label}" "${source_dir}" || return 1
+	HALCYON_INTERNAL_NONLOCAL_SOURCE=1 \
+		deploy_app "${app_label}" "${source_dir}" || return 1
 
 	rm -rf "${clone_dir}" "${source_dir}" || die
 }
@@ -679,7 +689,8 @@ deploy_unpacked_app () {
 		log_warning 'Expected app label with explicit version'
 	fi
 
-	deploy_app "${app_label}" "${source_dir}" || return 1
+	HALCYON_INTERNAL_NONLOCAL_SOURCE=1 \
+		deploy_app "${app_label}" "${source_dir}" || return 1
 
 	rm -rf "${unpack_dir}" "${source_dir}" || die
 }
