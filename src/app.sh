@@ -181,7 +181,21 @@ build_app_layer () {
 		if [[ -f "${source_dir}/.halcyon-magic/app-extra-configure-flags" ]]; then
 			opts=( $( <"${source_dir}/.halcyon-magic/app-extra-configure-flags" ) ) || die
 		fi
-		opts+=( --prefix="${HALCYON_DIR}/${HALCYON_TARGET}" )
+		if [[ -f "${source_dir}/.halcyon-magic/app-custom-prefix" ]]; then
+			if [[ "${HALCYON_TARGET}" != 'custom' ]]; then
+				log_error "Unexpected target for app with custom prefix: ${HALCYON_TARGET}"
+				log
+				log 'To continue, set HALCYON_TARGET=custom'
+				die
+			fi
+
+			local custom_prefix
+			custom_prefix=$( <"${source_dir}/.halcyon-magic/app-custom-prefix" ) || die
+
+			opts+=( --prefix="${custom_prefix}" )
+		else
+			opts+=( --prefix="${HALCYON_DIR}/${HALCYON_TARGET}" )
+		fi
 
 		if ! sandboxed_cabal_do "${HALCYON_DIR}/app" configure "${opts[@]}" |& quote; then
 			die 'Failed to configure app'

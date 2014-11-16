@@ -24,7 +24,7 @@ help_usage () {
 		General options:
 		    --halcyon-dir=PATH
 		    --install-dir=PATH
-		    --target=slug or --target=sandbox
+		    --target=slug or --target=sandbox or --target=custom
 		    --only-deploy-env
 		    --no-build-dependencies
 		    --no-archive
@@ -79,6 +79,7 @@ help_usage () {
 		    --force-build-sandbox
 
 		Non-recursive app layer options:
+		    --app-custom-prefix=PATH
 		    --app-extra-configure-flags=STRING
 		    --app-pre-build-hook=PATH
 		    --app-post-build-hook=PATH

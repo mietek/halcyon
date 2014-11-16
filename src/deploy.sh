@@ -324,6 +324,9 @@ prepare_source_dir () {
 		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-post-build-hook" || die
 	fi
 
+	if [[ -n "${HALCYON_APP_CUSTOM_PREFIX:+_}" ]]; then
+		copy_file <( echo "${HALCYON_APP_CUSTOM_PREFIX}" ) "${source_dir}/.halcyon-magic/app-custom-prefix" || die
+	fi
 	if [[ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
 		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${source_dir}/.halcyon-magic/app-extra-configure-flags" || die
 	fi

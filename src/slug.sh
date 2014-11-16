@@ -142,7 +142,7 @@ deploy_slug_extra_apps () {
 
 
 build_slug () {
-	expect_vars HALCYON_DIR
+	expect_vars HALCYON_DIR HALCYON_TARGET
 	expect_existing "${HALCYON_DIR}/app/.halcyon-tag"
 
 	local tag source_dir slug_dir
@@ -176,8 +176,18 @@ build_slug () {
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
+	local copy_path
+	if [[ "${HALCYON_TARGET}" != 'custom' ]]; then
+		copy_path="${slug_dir}${HALCYON_DIR}/${HALCYON_TARGET}"
+	else
+		local custom_prefix
+		custom_prefix=$( <"${source_dir}/.halcyon-magic/app-custom-prefix" ) || die
+
+		copy_path="${slug_dir}${custom_prefix}"
+	fi
+
 	if ! (
-		PATH="${slug_dir}${HALCYON_DIR}/${HALCYON_TARGET}:${PATH}" \
+		PATH="${copy_path}:${PATH}" \
 			sandboxed_cabal_do "${HALCYON_DIR}/app" copy --destdir="${slug_dir}" --verbose=0 |& quote
 	); then
 		die 'Failed to copy app'

@@ -67,6 +67,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_FORCE_BUILD_SANDBOX="${HALCYON_FORCE_BUILD_SANDBOX:-0}"
 
+		export HALCYON_APP_CUSTOM_PREFIX="${HALCYON_APP_CUSTOM_PREFIX:-}"
 		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_APP_PRE_BUILD_HOOK="${HALCYON_APP_PRE_BUILD_HOOK:-}"
 		export HALCYON_APP_POST_BUILD_HOOK="${HALCYON_APP_POST_BUILD_HOOK:-}"
@@ -100,6 +101,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
 		export HALCYON_FORCE_BUILD_SANDBOX=0
 
+		export HALCYON_APP_CUSTOM_PREFIX=''
 		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS=''
 		export HALCYON_APP_PRE_BUILD_HOOK=''
 		export HALCYON_APP_POST_BUILD_HOOK=''
@@ -315,6 +317,12 @@ halcyon_main () {
 			export HALCYON_FORCE_BUILD_SANDBOX=1;;
 
 	# Non-recursive app layer options:
+		'--app-custom-prefix')
+			shift
+			expect_args app_custom_prefix -- "$@"
+			export HALCYON_APP_CUSTOM_PREFIX="${app_custom_prefix}";;
+		'--app-custom-prefix='*)
+			export HALCYON_APP_CUSTOM_PREFIX="${1#*=}";;
 		'--app-extra-configure-flags')
 			shift
 			expect_args app_extra_configure_flags -- "$@"
@@ -390,9 +398,14 @@ halcyon_main () {
 		shift
 	done
 
-	if [[ "${HALCYON_TARGET}" != 'sandbox' && "${HALCYON_TARGET}" != 'slug' ]]; then
+	case "${HALCYON_TARGET}" in
+	'slug');&
+	'sandbox');&
+	'custom')
+		true;;
+	*)
 		die "Unexpected target: ${HALCYON_TARGET}"
-	fi
+	esac
 
 	if [[ -z "${cmd}" ]]; then
 		log_error 'Expected command'
