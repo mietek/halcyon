@@ -5,10 +5,10 @@ help_usage () {
 		    halcyon COMMAND
 
 		Commands:
-		    deploy APP* OPTION*
-		    app-label APP* OPTION*
-		    constraints APP* OPTION*
-		    tag APP* OPTION*
+		    deploy APP OPTION*
+		    label APP OPTION*
+		    constraints APP OPTION*
+		    tag APP OPTION*
 		    paths
 
 		App:
@@ -16,20 +16,21 @@ help_usage () {
 		        Local app in current directory, or only environment.
 		    PATH
 		        Local app in specified directory.
-		    APP_LABEL
+		    LABEL
 		        Remote app with specified label in Cabal repository.
 		    URL
 		        Remote app in git repository at specified URL.
 
-		General options:
-		    --halcyon-dir=PATH
-		    --install-dir=PATH
-		    --target=slug or --target=sandbox or --target=custom
-		    --only-deploy-env
+		Options:
+		    --app-dir=PATH
+		    --root-dir=PATH
+		    --target=sandbox or --target=custom
+		    --no-app
 		    --no-build-dependencies
-		    --no-archive
-		    --no-upload
-		    --no-delete
+		    --no-build-any
+		    --no-archive-any
+		    --no-upload-any
+		    --no-delete-any
 
 		Public storage options:
 		    --public-storage-url=STRING
@@ -46,7 +47,7 @@ help_usage () {
 		Cache options:
 		    --cache-dir=PATH
 		    --purge-cache
-		    --no-cache
+		    --no-clean-cache
 
 		GHC layer options:
 		    --ghc-version=STRING
@@ -55,44 +56,40 @@ help_usage () {
 		    --cabal-version=STRING
 		    --cabal-repo=STRING
 
-		Non-recursive general options:
+		Non-recursive options:
 		    --constraints-dir=PATH
+		    --custom-prefix=PATH
+		    --extra-configure-flags=STRINGS
+		    --extra-apps=STRINGS
+		    --extra-apps-constraints-dir=PATH
+		    --extra-copy=source or --extra-copy=build or --extra-copy=all
+		    --pre-build-hook=PATH
+		    --post-build-hook=PATH
+		    --pre-install-hook=PATH
+		    --post-install-hook=PATH
+		    --force-configure
+		    --force-clean-rebuild
 
 		Non-recursive GHC layer options:
 		    --ghc-pre-build-hook=PATH
 		    --ghc-post-build-hook=PATH
-		    --force-build-ghc
+		    --force-clean-rebuild-ghc
 
 		Non-recursive Cabal layer options:
 		    --cabal-pre-build-hook=PATH
 		    --cabal-post-build-hook=PATH
-		    --force-build-cabal
+		    --cabal-pre-update-hook=PATH
+		    --cabal-post-update-hook=PATH
+		    --force-clean-rebuild-cabal
 		    --force-update-cabal
 
 		Non-recursive sandbox layer options:
 		    --sandbox-sources=STRINGS
 		    --sandbox-extra-libs=STRINGS
 		    --sandbox-extra-apps=STRINGS
-		    --sandbox-extra-constraints-dir=PATH
+		    --sandbox-extra-apps-constraints-dir=PATH
 		    --sandbox-pre-build-hook=PATH
 		    --sandbox-post-build-hook=PATH
-		    --force-build-sandbox
-
-		Non-recursive app layer options:
-		    --app-custom-prefix=PATH
-		    --app-extra-configure-flags=STRING
-		    --app-pre-build-hook=PATH
-		    --app-post-build-hook=PATH
-		    --force-build-app
-
-		Non-recursive slug options:
-		    --slug-extra-apps=STRINGS
-		    --slug-extra-constraints-dir=PATH
-		    --slug-pre-build-hook=PATH
-		    --slug-post-build-hook=PATH
-		    --force-build-slug
-
-		See the programmer’s reference for a description of available
-		commands and options:  https://halcyon.sh/reference/
+		    --force-clean-rebuild-sandbox
 EOF
 }

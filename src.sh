@@ -16,11 +16,11 @@ halcyon_source_bashmenot () {
 		return 0
 	fi
 
-	local url bare_url branch
+	local url base_url branch
 	url="${BASHMENOT_URL:-https://github.com/mietek/bashmenot}"
-	bare_url="${url%#*}"
+	base_url="${url%#*}"
 	branch="${url#*#}"
-	if [[ "${branch}" == "${bare_url}" ]]; then
+	if [[ "${branch}" == "${base_url}" ]]; then
 		branch='master'
 	fi
 
@@ -28,7 +28,7 @@ halcyon_source_bashmenot () {
 
 	local commit_hash
 	commit_hash=$(
-		git clone -q "${bare_url}" "${HALCYON_TOP_DIR}/lib/bashmenot" &>'/dev/null' &&
+		git clone -q "${base_url}" "${HALCYON_TOP_DIR}/lib/bashmenot" &>'/dev/null' &&
 		cd "${HALCYON_TOP_DIR}/lib/bashmenot" &&
 		git checkout -q "${branch}" &>'/dev/null' &&
 		git log -n 1 --pretty='format:%h'
@@ -47,15 +47,15 @@ fi
 
 source "${HALCYON_TOP_DIR}/src/paths.sh"
 source "${HALCYON_TOP_DIR}/src/main.sh"
+source "${HALCYON_TOP_DIR}/src/tag.sh"
 source "${HALCYON_TOP_DIR}/src/deploy.sh"
 source "${HALCYON_TOP_DIR}/src/storage.sh"
-source "${HALCYON_TOP_DIR}/src/tag.sh"
+source "${HALCYON_TOP_DIR}/src/constraints.sh"
 source "${HALCYON_TOP_DIR}/src/ghc.sh"
 source "${HALCYON_TOP_DIR}/src/cabal.sh"
-source "${HALCYON_TOP_DIR}/src/constraints.sh"
-source "${HALCYON_TOP_DIR}/src/app.sh"
 source "${HALCYON_TOP_DIR}/src/sandbox.sh"
-source "${HALCYON_TOP_DIR}/src/slug.sh"
+source "${HALCYON_TOP_DIR}/src/build.sh"
+source "${HALCYON_TOP_DIR}/src/install.sh"
 source "${HALCYON_TOP_DIR}/src/help.sh"
 
 

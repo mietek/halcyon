@@ -1,13 +1,3 @@
-format_public_storage_url () {
-	expect_vars HALCYON_PUBLIC_STORAGE_URL
-
-	local object
-	expect_args object -- "$@"
-
-	echo "${HALCYON_PUBLIC_STORAGE_URL}/${object}"
-}
-
-
 private_storage () {
 	expect_vars HALCYON_NO_PRIVATE_STORAGE
 
@@ -20,6 +10,16 @@ private_storage () {
 	&& -n "${HALCYON_S3_BUCKET:+_}"
 	&& -n "${HALCYON_S3_ACL:+_}"
 	&& -n "${HALCYON_S3_HOST:+_}" ]] || return 1
+}
+
+
+format_public_storage_url () {
+	expect_vars HALCYON_PUBLIC_STORAGE_URL
+
+	local object
+	expect_args object -- "$@"
+
+	echo "${HALCYON_PUBLIC_STORAGE_URL}/${object}"
 }
 
 
@@ -77,29 +77,25 @@ touch_cached_file () {
 }
 
 
-delete_matching_cached_files () {
+touch_cached_env_files () {
 	expect_vars HALCYON_CACHE_DIR
 
-	local match_pattern save_name
-	expect_args match_pattern save_name -- "$@"
-
-	local old_name
-	find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
-		filter_matching "^${match_pattern}$" |
-		filter_not_matching "^${save_name//./\.}$" |
-		while read -r old_name; do
-			rm -f "${HALCYON_CACHE_DIR}/${old_name}" || die
-		done || die
+	local name
+	find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f |
+		filter_matching "^(halcyon-ghc-.*|halcyon-cabal-.*)$" |
+		while read -r name; do
+			touch "${HALCYON_CACHE_DIR}/${name}" || true
+		done || return 0
 }
 
 
 upload_cached_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD_ANY
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_UPLOAD )) || ! private_storage; then
+	if (( HALCYON_NO_UPLOAD_ANY )) || ! private_storage; then
 		return 1
 	fi
 
@@ -164,12 +160,12 @@ cache_original_stored_file () {
 
 
 delete_private_stored_file () {
-	expect_vars HALCYON_NO_DELETE
+	expect_vars HALCYON_NO_DELETE_ANY
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_DELETE )) || ! private_storage; then
+	if (( HALCYON_NO_DELETE_ANY )) || ! private_storage; then
 		return 0
 	fi
 
@@ -238,7 +234,7 @@ delete_matching_private_stored_files () {
 
 	local old_name
 	list_private_stored_files "${prefix}/${match_prefix}" |
-		sed "s:${prefix}/::" |
+		sed "s:^${prefix}/::" |
 		filter_matching "^${match_pattern}$" |
 		filter_not_matching "^${save_name//./\.}$" |
 		while read -r old_name; do
@@ -248,13 +244,13 @@ delete_matching_private_stored_files () {
 
 
 prepare_cache () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE HALCYON_NO_CACHE \
+	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE HALCYON_NO_CLEAN_CACHE \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local cache_dir
 	expect_args cache_dir -- "$@"
 
-	if (( HALCYON_NO_CACHE )) || (( HALCYON_INTERNAL_RECURSIVE )); then
+	if (( HALCYON_NO_CLEAN_CACHE )) || (( HALCYON_INTERNAL_RECURSIVE )); then
 		return 0
 	fi
 
@@ -270,7 +266,7 @@ prepare_cache () {
 	if ! (( HALCYON_PURGE_CACHE )); then
 		local files
 		if files=$(
-			find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
+			find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f |
 			sort_natural |
 			match_at_least_one
 		); then
@@ -288,13 +284,13 @@ prepare_cache () {
 
 
 clean_cache () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_CACHE \
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_CLEAN_CACHE \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local cache_dir
 	expect_args cache_dir -- "$@"
 
-	if (( HALCYON_NO_CACHE )) || (( HALCYON_INTERNAL_RECURSIVE )); then
+	if (( HALCYON_NO_CLEAN_CACHE )) || (( HALCYON_INTERNAL_RECURSIVE )); then
 		return 0
 	fi
 

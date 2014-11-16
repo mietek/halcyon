@@ -21,20 +21,20 @@ match_package_version () {
 
 
 filter_correct_constraints () {
-	local app_label
-	expect_args app_label -- "$@"
+	local label
+	expect_args label -- "$@"
 
 	# NOTE: Cabal includes the package itself in the list of frozen constraints.
 	# https://github.com/haskell/cabal/issues/1908
 
-	local app_name app_version
-	app_name="${app_label%-*}"
-	app_version="${app_label##*-}"
-	if [[ ${app_name} == 'base' ]]; then
-		app_name='halcyon-fake-base'
+	local name version
+	name="${label%-*}"
+	version="${label##*-}"
+	if [[ ${name} == 'base' ]]; then
+		name='halcyon-fake-base'
 	fi
 
-	filter_not_matching "^${app_name} ${app_version}$" || die
+	filter_not_matching "^${name} ${version}$" || die
 }
 
 
@@ -49,19 +49,19 @@ hash_constraints () {
 	local constraints
 	expect_args constraints -- "$@"
 
-	hash_do <<<"${constraints}" || die
+	get_hash <<<"${constraints}" || die
 }
 
 
 detect_constraints () {
-	local app_label source_dir
-	expect_args app_label source_dir -- "$@"
+	local label source_dir
+	expect_args label source_dir -- "$@"
 	expect_existing "${source_dir}/cabal.config"
 
 	local constraints
 	constraints=$(
 		read_constraints <"${source_dir}/cabal.config" |
-		filter_correct_constraints "${app_label}" |
+		filter_correct_constraints "${label}" |
 		sort_natural
 	) || die
 
@@ -94,10 +94,10 @@ validate_actual_constraints () {
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1
 
-	local app_label constraints_hash actual_constraints actual_hash
-	app_label=$( get_tag_app_label "${tag}" ) || die
+	local label constraints_hash actual_constraints actual_hash
+	label=$( get_tag_label "${tag}" ) || die
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
-	actual_constraints=$( cabal_freeze_actual_constraints "${app_label}" "${source_dir}" ) || die
+	actual_constraints=$( cabal_freeze_actual_constraints "${label}" "${source_dir}" ) || die
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
 	if [[ "${actual_hash}" == "${constraints_hash}" ]]; then
 		return 0
@@ -192,7 +192,7 @@ match_full_sandbox_layer () {
 		fi
 
 		local full_label full_tag
-		full_label=$( map_sandbox_constraints_file_name_to_app_label "${full_name}" ) || die
+		full_label=$( map_sandbox_constraints_file_name_to_label "${full_name}" ) || die
 		full_tag=$( derive_matching_sandbox_tag "${tag}" "${full_label}" "${full_hash}" ) || die
 
 		echo "${full_tag}"
@@ -234,7 +234,7 @@ list_partial_sandbox_layers () {
 		fi
 
 		local partial_label partial_tag
-		partial_label=$( map_sandbox_constraints_file_name_to_app_label "${partial_name}" ) || die
+		partial_label=$( map_sandbox_constraints_file_name_to_label "${partial_name}" ) || die
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" ) || die
 
 		echo "${partial_tag}"
@@ -299,7 +299,7 @@ score_partial_sandbox_layers () {
 
 
 match_sandbox_layer () {
-	expect_vars HALCYON_NO_BUILD_DEPENDENCIES
+	expect_vars HALCYON_NO_BUILD_DEPENDENCIES HALCYON_NO_BUILD_ANY
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
@@ -315,7 +315,7 @@ match_sandbox_layer () {
 	local all_names
 	all_names=$(
 		list_stored_files "${platform}/ghc-${ghc_version}/${name_prefix}" |
-		sed "s:${platform}/ghc-${ghc_version}/::" |
+		sed "s:^${platform}/ghc-${ghc_version}/::" |
 		filter_matching "^${partial_pattern}$" |
 		filter_not_matching "^${constraints_name}$" |
 		sort_natural -u |
@@ -328,7 +328,7 @@ match_sandbox_layer () {
 		return 0
 	fi
 
-	if (( HALCYON_NO_BUILD_DEPENDENCIES )); then
+	if (( HALCYON_NO_BUILD_DEPENDENCIES )) || (( HALCYON_NO_BUILD_ANY )); then
 		return 1
 	fi
 
