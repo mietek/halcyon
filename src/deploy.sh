@@ -455,24 +455,29 @@ deploy_app () {
 		fi
 	fi
 
-	local constraints warn_implicit
-	warn_implicit=0
+	local constraints
 	if [[ ! -f "${source_dir}/cabal.config" ]]; then
 		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 			deploy_env "${source_dir}" || return 1
 
-		log 'Deploying app'
-
 		# NOTE: This is the second out of the two moments when source_dir is modified.
 
 		constraints=$( cabal_freeze_implicit_constraints "${app_label}" "${source_dir}" ) || die
-		warn_implicit=1
+		log_warning 'Using implicit constraints'
+		log_warning 'Expected cabal.config with explicit constraints'
+		log
+		help_add_explicit_constraints "${constraints}"
+		log
 
 		format_constraints <<<"${constraints}" >"${source_dir}/cabal.config" || die
 		source_hash=$( hash_tree "${source_dir}" ) || die
-	else
-		log 'Deploying app'
 
+		if ! (( HALCYON_INTERNAL_FORCE_RESTORE_ALL )) &&
+			deploy_app_from_slug "${app_label}" "${source_hash}" "${source_dir}"
+		then
+			return 0
+		fi
+	else
 		constraints=$( detect_constraints "${app_label}" "${source_dir}" ) || die
 	fi
 
@@ -484,6 +489,8 @@ deploy_app () {
 		format_constraints <<<"${constraints}" || die
 		return 0
 	fi
+
+	log 'Deploying app'
 
 	local constraints_hash
 	constraints_hash=$( hash_constraints "${constraints}" ) || die
@@ -563,13 +570,6 @@ deploy_app () {
 	fi
 
 	describe_storage || die
-
-	if (( warn_implicit )); then
-		log_warning 'Using implicit constraints'
-		log_warning 'Expected cabal.config with explicit constraints'
-		log
-		help_add_explicit_constraints "${constraints}"
-	fi
 
 	local tag
 	tag=$(
