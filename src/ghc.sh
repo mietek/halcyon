@@ -220,7 +220,7 @@ prepare_ghc_layer () {
 
 	local libgmp_name libgmp_file libtinfo_file url
 	case "${platform}-ghc-${ghc_version}" in
-	'linux-ubuntu-14.10-x86_64-ghc-'*);&
+	'linux-ubuntu-14.10-x86_64-ghc-7.8.'*);&
 	'linux-ubuntu-14.04-x86_64-ghc-7.8.'*)
 		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
