@@ -257,6 +257,26 @@ prepare_ghc_layer () {
 		libgmp_name='libgmp.so.3'
 		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
 		;;
+	'linux-centos-7-x86_64-ghc-7.8.'*)
+		libgmp_file='/usr/lib64/libgmp.so.10'
+		libtinfo_file='/usr/lib64/libtinfo.so.5'
+		libgmp_name='libgmp.so.10'
+		url=$( map_ghc_version_to_linux_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+		;;
+	'linux-centos-7-x86_64-ghc-'*)
+		# NOTE: Same as with Ubuntu 14.
+
+		libgmp_file='/usr/lib64/libgmp.so.10'
+		libtinfo_file='/usr/lib64/libtinfo.so.5'
+		libgmp_name='libgmp.so.3'
+		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		;;
+	'linux-centos-6-x86_64-ghc-'*)
+		libgmp_file='/usr/lib64/libgmp.so.3'
+		libtinfo_file='/lib64/libtinfo.so.5'
+		libgmp_name='libgmp.so.3'
+		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+		;;
 	'osx-'*'-x86_64-ghc-'*)
 		# TODO: Improve cross-version compatibility.
 
