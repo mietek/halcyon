@@ -51,12 +51,30 @@ help_usage () {
 
 		GHC layer options:
 		    --ghc-version=STRING
+		    --ghc-pre-build-hook=PATH
+		    --ghc-post-build-hook=PATH
+		    --force-clean-rebuild-ghc
 
 		Cabal layer options:
 		    --cabal-version=STRING
 		    --cabal-repo=STRING
+		    --cabal-pre-build-hook=PATH
+		    --cabal-post-build-hook=PATH
+		    --cabal-pre-update-hook=PATH
+		    --cabal-post-update-hook=PATH
+		    --force-clean-rebuild-cabal
+		    --force-update-cabal
 
-		Non-recursive options:
+		Sandbox layer options:
+		    --sandbox-sources=STRINGS
+		    --sandbox-extra-libs=STRINGS
+		    --sandbox-extra-apps=STRINGS
+		    --sandbox-extra-apps-constraints-dir=PATH
+		    --sandbox-pre-build-hook=PATH
+		    --sandbox-post-build-hook=PATH
+		    --force-clean-rebuild-sandbox
+
+		App options:
 		    --constraints-file=PATH
 		    --constraints-dir=PATH
 		    --custom-prefix=PATH
@@ -70,27 +88,5 @@ help_usage () {
 		    --post-install-hook=PATH
 		    --force-configure
 		    --force-clean-rebuild
-
-		Non-recursive GHC layer options:
-		    --ghc-pre-build-hook=PATH
-		    --ghc-post-build-hook=PATH
-		    --force-clean-rebuild-ghc
-
-		Non-recursive Cabal layer options:
-		    --cabal-pre-build-hook=PATH
-		    --cabal-post-build-hook=PATH
-		    --cabal-pre-update-hook=PATH
-		    --cabal-post-update-hook=PATH
-		    --force-clean-rebuild-cabal
-		    --force-update-cabal
-
-		Non-recursive sandbox layer options:
-		    --sandbox-sources=STRINGS
-		    --sandbox-extra-libs=STRINGS
-		    --sandbox-extra-apps=STRINGS
-		    --sandbox-extra-apps-constraints-dir=PATH
-		    --sandbox-pre-build-hook=PATH
-		    --sandbox-post-build-hook=PATH
-		    --force-clean-rebuild-sandbox
 EOF
 }
