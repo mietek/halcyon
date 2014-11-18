@@ -23,7 +23,7 @@ help_usage () {
 
 		Options:
 		    --app-dir=PATH
-		    --root-dir=PATH
+		    --root=PATH
 		    --prefix=PATH
 		    --no-app
 		    --no-build-dependencies

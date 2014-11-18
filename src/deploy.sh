@@ -224,7 +224,7 @@ deploy_env () {
 
 
 do_deploy_app_from_install_dir () {
-	expect_vars HALCYON_ROOT_DIR
+	expect_vars HALCYON_ROOT
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -233,7 +233,7 @@ do_deploy_app_from_install_dir () {
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 
 	restore_install_dir "${tag}" "${install_dir}" || return 1
-	install_app "${tag}" "${source_dir}" "${install_dir}" "${HALCYON_ROOT_DIR}" || die
+	install_app "${tag}" "${source_dir}" "${install_dir}" "${HALCYON_ROOT}" || die
 
 	rm -rf "${install_dir}"
 }
@@ -379,7 +379,7 @@ prepare_source_dir () {
 
 
 do_deploy_app () {
-	expect_vars HALCYON_APP_DIR HALCYON_ROOT_DIR \
+	expect_vars HALCYON_APP_DIR HALCYON_ROOT \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir constraints
@@ -419,7 +419,7 @@ do_deploy_app () {
 		fi
 	fi
 
-	install_app "${tag}" "${source_dir}" "${install_dir}" "${HALCYON_ROOT_DIR}" || die
+	install_app "${tag}" "${source_dir}" "${install_dir}" "${HALCYON_ROOT}" || die
 
 	rm -rf "${build_dir}" "${install_dir}" || die
 }

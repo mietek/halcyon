@@ -98,7 +98,7 @@ deploy_extra_apps () {
 	constraints_dir="${source_dir}/.halcyon-magic/extra-apps-constraints"
 
 	local -a opts
-	opts+=( --root-dir="${install_dir}" )
+	opts+=( --root="${install_dir}" )
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
@@ -288,8 +288,8 @@ install_app () {
 	expect_vars HALCYON_APP_DIR \
 		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_NO_PURGE_APP_DIR
 
-	local tag source_dir install_dir root_dir
-	expect_args tag source_dir install_dir root_dir -- "$@"
+	local tag source_dir install_dir root
+	expect_args tag source_dir install_dir root -- "$@"
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )) &&
 		! (( HALCYON_INTERNAL_NO_PURGE_APP_DIR ))
@@ -309,7 +309,7 @@ install_app () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/pre-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${root_dir}" |& quote
+					"${tag}" "${source_dir}" "${install_dir}" "${root}" |& quote
 		); then
 			log_warning 'Cannot execute pre-install hook'
 			return 1
@@ -322,8 +322,8 @@ install_app () {
 	# NOTE: When / is read-only, but HALCYON_APP_DIR is not, cp -Rp fails, but cp -R succeeds.
 	# Copying .halcyon-tag is avoided for the same reason.
 
-	mkdir -p "${root_dir}" || die
-	cp -R "${install_dir}/." "${root_dir}" |& quote || die
+	mkdir -p "${root}" || die
+	cp -R "${install_dir}/." "${root}" |& quote || die
 
 	local installed_size
 	installed_size=$( get_size "${install_dir}" ) || die
@@ -334,7 +334,7 @@ install_app () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/post-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${root_dir}" |& quote
+					"${tag}" "${source_dir}" "${install_dir}" "${root}" |& quote
 		); then
 			log_warning 'Cannot execute post-install hook'
 			return 1

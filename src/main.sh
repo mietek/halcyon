@@ -6,7 +6,7 @@ set_halcyon_vars () {
 
 		# NOTE: HALCYON_APP_DIR is set in paths.sh.
 
-		export HALCYON_ROOT_DIR="${HALCYON_ROOT_DIR:-/}"
+		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_APP_DIR}}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
@@ -136,12 +136,12 @@ halcyon_main () {
 			export HALCYON_APP_DIR="${app_dir}";;
 		'--app-dir='*)
 			export HALCYON_APP_DIR="${1#*=}";;
-		'--root-dir')
+		'--root')
 			shift
-			expect_args root_dir -- "$@"
-			export HALCYON_ROOT_DIR="${root_dir}";;
-		'--root-dir='*)
-			export HALCYON_ROOT_DIR="${1#*=}";;
+			expect_args root -- "$@"
+			export HALCYON_ROOT="${root}";;
+		'--root='*)
+			export HALCYON_ROOT="${1#*=}";;
 		'--prefix')
 			shift
 			expect_args prefix -- "$@"
