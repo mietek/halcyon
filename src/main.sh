@@ -6,8 +6,8 @@ set_halcyon_vars () {
 
 		# NOTE: HALCYON_APP_DIR is set in paths.sh.
 
-		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_APP_DIR}}"
+		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
 		export HALCYON_NO_BUILD_ANY="${HALCYON_NO_BUILD_ANY:-0}"
@@ -82,8 +82,8 @@ set_halcyon_vars () {
 		export HALCYON_INCLUDE_SOURCE="${HALCYON_INCLUDE_SOURCE:-0}"
 		export HALCYON_INCLUDE_BUILD="${HALCYON_INCLUDE_BUILD:-0}"
 		export HALCYON_INCLUDE_ALL="${HALCYON_INCLUDE_ALL:-0}"
-		export HALCYON_FORCE_CONFIGURE="${HALCYON_FORCE_CONFIGURE:-0}"
 		export HALCYON_FORCE_CLEAN_REBUILD="${HALCYON_FORCE_CLEAN_REBUILD:-0}"
+		export HALCYON_FORCE_CONFIGURE="${HALCYON_FORCE_CONFIGURE:-0}"
 
 		export HALCYON_INTERNAL_FORCE_RESTORE_ALL="${HALCYON_INTERNAL_FORCE_RESTORE_ALL:-0}"
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
@@ -113,8 +113,8 @@ set_halcyon_vars () {
 		export HALCYON_INCLUDE_SOURCE=0
 		export HALCYON_INCLUDE_BUILD=0
 		export HALCYON_INCLUDE_ALL=0
-		export HALCYON_FORCE_CONFIGURE=0
 		export HALCYON_FORCE_CLEAN_REBUILD=0
+		export HALCYON_FORCE_CONFIGURE=0
 
 		export HALCYON_INTERNAL_FORCE_RESTORE_ALL=0
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=0
@@ -136,18 +136,18 @@ halcyon_main () {
 			export HALCYON_APP_DIR="${app_dir}";;
 		'--app-dir='*)
 			export HALCYON_APP_DIR="${1#*=}";;
-		'--root')
-			shift
-			expect_args root -- "$@"
-			export HALCYON_ROOT="${root}";;
-		'--root='*)
-			export HALCYON_ROOT="${1#*=}";;
 		'--prefix')
 			shift
 			expect_args prefix -- "$@"
 			export HALCYON_PREFIX="${prefix}";;
 		'--prefix='*)
 			export HALCYON_PREFIX="${1#*=}";;
+		'--root')
+			shift
+			expect_args root -- "$@"
+			export HALCYON_ROOT="${root}";;
+		'--root='*)
+			export HALCYON_ROOT="${1#*=}";;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
 		'--no-build-dependencies')
@@ -300,10 +300,10 @@ halcyon_main () {
 			export HALCYON_INCLUDE_BUILD=1;;
 		'--include-all')
 			export HALCYON_INCLUDE_ALL=1;;
-		'--force-configure')
-			export HALCYON_FORCE_CONFIGURE=1;;
 		'--force-clean-rebuild')
 			export HALCYON_FORCE_CLEAN_REBUILD=1;;
+		'--force-configure')
+			export HALCYON_FORCE_CONFIGURE=1;;
 
 	# Non-recursive GHC layer options:
 		'--ghc-pre-build-hook')
