@@ -302,6 +302,8 @@ install_sandbox_extra_libs () {
 
 
 deploy_sandbox_extra_apps () {
+	expect_vars HALCYON_APP_DIR
+
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
@@ -322,10 +324,10 @@ deploy_sandbox_extra_apps () {
 	constraints_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
 
 	local -a opts
-	opts+=( --target='sandbox' )
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
+	opts+=( --prefix="${HALCYON_APP_DIR}/sandbox" )
 	[[ -d "${constraints_dir}" ]] && opts+=( --constraints-dir="${constraints_dir}" )
 
 	log 'Deploying sandbox extra apps'

@@ -24,7 +24,7 @@ help_usage () {
 		Options:
 		    --app-dir=PATH
 		    --root-dir=PATH
-		    --target=sandbox or --target=custom
+		    --prefix=PATH
 		    --no-app
 		    --no-build-dependencies
 		    --no-build-any
@@ -77,7 +77,6 @@ help_usage () {
 		App options:
 		    --constraints-file=PATH
 		    --constraints-dir=PATH
-		    --custom-prefix=PATH
 		    --extra-configure-flags=STRINGS
 		    --extra-apps=STRINGS
 		    --extra-apps-constraints-dir=PATH

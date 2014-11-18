@@ -240,7 +240,8 @@ do_deploy_app_from_install_dir () {
 
 
 deploy_app_from_install_dir () {
-	expect_vars HALCYON_FORCE_CLEAN_REBUILD_GHC \
+	expect_vars HALCYON_PREFIX \
+		HALCYON_FORCE_CLEAN_REBUILD_GHC \
 		HALCYON_FORCE_CLEAN_REBUILD_CABAL HALCYON_FORCE_UPDATE_CABAL \
 		HALCYON_FORCE_CLEAN_REBUILD_SANDBOX \
 		HALCYON_FORCE_CLEAN_REBUILD \
@@ -263,7 +264,7 @@ deploy_app_from_install_dir () {
 
 	log 'Deploying app from install'
 
-	[[ -n "${HALCYON_TARGET}" ]] && log_indent_label 'Target:' "${HALCYON_TARGET}"
+	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 
@@ -272,7 +273,7 @@ deploy_app_from_install_dir () {
 
 	local tag
 	tag=$(
-		create_tag "${HALCYON_TARGET}" "${label}" "${source_hash}" '' '' \
+		create_tag "${HALCYON_PREFIX}" "${label}" "${source_hash}" '' '' \
 			'' '' \
 			'' '' '' '' \
 			''
@@ -345,9 +346,6 @@ prepare_source_dir () {
 	fi
 	if [[ -n "${HALCYON_CONSTRAINTS_DIR:+_}" ]]; then
 		copy_file "${HALCYON_CONSTRAINTS_DIR}/${label}.cabal.config" "${source_dir}/cabal.config" || die
-	fi
-	if [[ -n "${HALCYON_CUSTOM_PREFIX:+_}" ]]; then
-		copy_file <( echo "${HALCYON_CUSTOM_PREFIX}" ) "${source_dir}/.halcyon-magic/custom-prefix" || die
 	fi
 	if [[ -n "${HALCYON_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
 		copy_file <( echo "${HALCYON_EXTRA_CONFIGURE_FLAGS}" ) "${source_dir}/.halcyon-magic/extra-configure-flags" || die
@@ -428,7 +426,8 @@ do_deploy_app () {
 
 
 deploy_app () {
-	expect_vars HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
+	expect_vars HALCYON_PREFIX \
+		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE \
 		HALCYON_INTERNAL_ONLY_LABEL \
 		HALCYON_INTERNAL_ONLY_CONSTRAINTS \
@@ -512,7 +511,7 @@ deploy_app () {
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
 
-	[[ -n "${HALCYON_TARGET}" ]] && log_indent_label 'Target:' "${HALCYON_TARGET}"
+	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
@@ -576,7 +575,7 @@ deploy_app () {
 
 	local tag
 	tag=$(
-		create_tag "${HALCYON_TARGET}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
+		create_tag "${HALCYON_PREFIX}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 			"${ghc_version}" "${ghc_magic_hash}" \
 			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
 			"${sandbox_magic_hash}" || die

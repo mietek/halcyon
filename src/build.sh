@@ -1,12 +1,12 @@
 create_build_tag () {
-	local target label source_hash constraints_hash magic_hash \
+	local prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
 		sandbox_magic_hash
-	expect_args target label source_hash constraints_hash magic_hash \
+	expect_args prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
 		sandbox_magic_hash -- "$@"
 
-	create_tag "${target}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
+	create_tag "${prefix}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' ''  \
 		"${sandbox_magic_hash}" || die
@@ -33,10 +33,10 @@ derive_build_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local target label source_hash constraints_hash magic_hash \
+	local prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
 		sandbox_magic_hash
-	target=$( get_tag_target "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" ) || die
 	label=$( get_tag_label "${tag}" ) || die
 	source_hash=$( get_tag_source_hash "${tag}" ) || die
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
@@ -45,7 +45,7 @@ derive_build_tag () {
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	create_build_tag "${target}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
+	create_build_tag "${prefix}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		"${sandbox_magic_hash}" || die
 }
@@ -55,10 +55,10 @@ derive_configured_build_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
-	local target label constraints_hash magic_hash \
+	local prefix label constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
 		sandbox_magic_hash
-	target=$( get_tag_target "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" ) || die
 	label=$( get_tag_label "${tag}" ) || die
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
 	magic_hash=$( get_tag_magic_hash "${tag}" ) || die
@@ -66,7 +66,7 @@ derive_configured_build_tag_pattern () {
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	create_build_tag "${target}" "${label//./\.}" '.*' "${constraints_hash}" "${magic_hash}" \
+	create_build_tag "${prefix}" "${label//./\.}" '.*' "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version//./\.}" "${ghc_magic_hash}" \
 		"${sandbox_magic_hash}" || die
 }
@@ -101,13 +101,15 @@ build_app () {
 
 	local tag must_copy must_configure source_dir build_dir
 	expect_args tag must_copy must_configure source_dir build_dir -- "$@"
-
 	expect_existing "${source_dir}"
 	if (( must_copy )); then
 		copy_source_dir_over "${source_dir}" "${build_dir}" || die
 	else
 		expect_existing "${build_dir}/.halcyon-tag"
 	fi
+
+	local prefix
+	prefix=$( get_tag_prefix "${tag}" ) || die
 
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'
@@ -116,19 +118,7 @@ build_app () {
 		if [[ -f "${source_dir}/.halcyon-magic/extra-configure-flags" ]]; then
 			opts=( $( <"${source_dir}/.halcyon-magic/extra-configure-flags" ) ) || die
 		fi
-		if [[ -f "${source_dir}/.halcyon-magic/custom-prefix" ]]; then
-			if [[ "${HALCYON_TARGET}" != 'custom' ]]; then
-				log_error "Unexpected target for custom prefix: ${HALCYON_TARGET}"
-				die 'Expeected target: custom'
-			fi
-
-			local custom_prefix
-			custom_prefix=$( <"${source_dir}/.halcyon-magic/custom-prefix" ) || die
-
-			opts+=( --prefix="${custom_prefix}" )
-		else
-			opts+=( --prefix="${HALCYON_APP_DIR}${HALCYON_TARGET:+/${HALCYON_TARGET}}" )
-		fi
+		opts+=( --prefix="${prefix}" )
 
 		if ! sandboxed_cabal_do "${build_dir}" configure "${opts[@]}" |& quote; then
 			die 'Failed to configure app'
@@ -197,7 +187,6 @@ archive_build_dir () {
 
 	local build_dir
 	expect_args build_dir -- "$@"
-
 	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/cabal.config"
 
 	if (( HALCYON_NO_ARCHIVE_ANY )); then
@@ -278,7 +267,6 @@ restore_build_dir () {
 prepare_build_dir () {
 	local source_dir build_dir
 	expect_args source_dir build_dir -- "$@"
-
 	expect_existing "${source_dir}" "${build_dir}/.halcyon-tag"
 
 	local prepare_dir
@@ -344,7 +332,6 @@ link_sandbox_config () {
 
 	local build_dir
 	expect_args build_dir -- "$@"
-
 	expect_existing "${build_dir}/.halcyon-tag"
 
 	# NOTE: Copying the sandbox config is necessary to allow the user to easily run Cabal commands,

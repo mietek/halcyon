@@ -1,8 +1,8 @@
 create_install_tag () {
-	local target label source_hash
-	expect_args target label source_hash -- "$@"
+	local prefix label source_hash
+	expect_args prefix label source_hash -- "$@"
 
-	create_tag "${target}" "${label}" "${source_hash}" '' '' \
+	create_tag "${prefix}" "${label}" "${source_hash}" '' '' \
 		'' '' \
 		'' '' '' '' \
 		'' || die
@@ -29,12 +29,12 @@ derive_install_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local target label source_hash
-	target=$( get_tag_target "${tag}" ) || die
+	local prefix label source_hash
+	prefix=$( get_tag_prefix "${tag}" ) || die
 	label=$( get_tag_label "${tag}" ) || die
 	source_hash=$( get_tag_source_hash "${tag}" ) || die
 
-	create_install_tag "${target}" "${label}" "${source_hash}" || die
+	create_install_tag "${prefix}" "${label}" "${source_hash}" || die
 }
 
 
@@ -134,8 +134,10 @@ prepare_install_dir () {
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
-
 	expect_existing "${build_dir}/.halcyon-tag"
+
+	local prefix
+	prefix=$( get_tag_prefix "${tag}" ) || die
 
 	log 'Preparing install'
 
@@ -155,18 +157,8 @@ prepare_install_dir () {
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
-	local copy_path
-	if [[ "${HALCYON_TARGET}" != 'custom' ]]; then
-		copy_path="${install_dir}${HALCYON_APP_DIR}${HALCYON_TARGET:+/${HALCYON_TARGET}}"
-	else
-		local custom_prefix
-		custom_prefix=$( <"${source_dir}/.halcyon-magic/custom-prefix" ) || die
-
-		copy_path="${install_dir}${custom_prefix}"
-	fi
-
 	if ! (
-		PATH="${copy_path}:${PATH}" \
+		PATH="${install_dir}${prefix}:${PATH}" \
 			sandboxed_cabal_do "${build_dir}" copy --destdir="${install_dir}" --verbose=0 |& quote
 	); then
 		die 'Failed to copy app'

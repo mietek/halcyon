@@ -7,7 +7,7 @@ set_halcyon_vars () {
 		# NOTE: HALCYON_APP_DIR is set in paths.sh.
 
 		export HALCYON_ROOT_DIR="${HALCYON_ROOT_DIR:-/}"
-		export HALCYON_TARGET="${HALCYON_TARGET:-}"
+		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_APP_DIR}}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
 		export HALCYON_NO_BUILD_ANY="${HALCYON_NO_BUILD_ANY:-0}"
@@ -72,7 +72,6 @@ set_halcyon_vars () {
 
 		export HALCYON_CONSTRAINTS_FILE="${HALCYON_CONSTRAINTS_FILE:-}"
 		export HALCYON_CONSTRAINTS_DIR="${HALCYON_CONSTRAINTS_DIR:-}"
-		export HALCYON_CUSTOM_PREFIX="${HALCYON_CUSTOM_PREFIX:-}"
 		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_EXTRA_APPS_CONSTRAINTS_DIR:-}"
@@ -104,7 +103,6 @@ set_halcyon_vars () {
 
 		export HALCYON_CONSTRAINTS_FILE=''
 		export HALCYON_CONSTRAINTS_DIR=''
-		export HALCYON_CUSTOM_PREFIX=''
 		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
 		export HALCYON_EXTRA_APPS=''
 		export HALCYON_EXTRA_APPS_CONSTRAINTS_DIR=''
@@ -144,12 +142,12 @@ halcyon_main () {
 			export HALCYON_ROOT_DIR="${root_dir}";;
 		'--root-dir='*)
 			export HALCYON_ROOT_DIR="${1#*=}";;
-		'--target')
+		'--prefix')
 			shift
-			expect_args target -- "$@"
-			export HALCYON_TARGET="${target}";;
-		'--target='*)
-			export HALCYON_TARGET="${1#*=}";;
+			expect_args prefix -- "$@"
+			export HALCYON_PREFIX="${prefix}";;
+		'--prefix='*)
+			export HALCYON_PREFIX="${1#*=}";;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
 		'--no-build-dependencies')
@@ -254,12 +252,6 @@ halcyon_main () {
 			export HALCYON_CONSTRAINTS_DIR="${constraints_dir}";;
 		'--constraints-dir='*)
 			export HALCYON_CONSTRAINTS_DIR="${1#*=}";;
-		'--custom-prefix')
-			shift
-			expect_args custom_prefix -- "$@"
-			export HALCYON_CUSTOM_PREFIX="${custom_prefix}";;
-		'--custom-prefix='*)
-			export HALCYON_CUSTOM_PREFIX="${1#*=}";;
 		'--extra-configure-flags')
 			shift
 			expect_args extra_configure_flags -- "$@"
@@ -413,15 +405,6 @@ halcyon_main () {
 		shift
 	done
 
-	case "${HALCYON_TARGET}" in
-	'');&
-	'sandbox');&
-	'custom')
-		true;;
-	*)
-		die "Unexpected target: ${HALCYON_TARGET}"
-	esac
-
 	# NOTE: HALCYON_CACHE_DIR must not be /tmp, as the cache
 	# cleaning functionality will get confused.
 
@@ -436,10 +419,6 @@ halcyon_main () {
 			log_error "Unexpected Cabal repo: ${HALCYON_CABAL_REPO}"
 			die "Expected Cabal repo: RepoName:${HALCYON_CABAL_REPO}"
 		fi
-	fi
-
-	if [[ -n "${HALCYON_CUSTOM_PREFIX}" ]]; then
-		export HALCYON_TARGET='custom'
 	fi
 
 	if [[ -z "${cmd}" ]]; then
