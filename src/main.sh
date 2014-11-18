@@ -53,6 +53,7 @@ set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_NONRECURSIVE_VARS:-0} )); then
 		export HALCYON_INTERNAL_NONRECURSIVE_VARS=1
 
+		export HALCYON_CONSTRAINTS_FILE="${HALCYON_CONSTRAINTS_FILE:-}"
 		export HALCYON_CONSTRAINTS_DIR="${HALCYON_CONSTRAINTS_DIR:-}"
 		export HALCYON_CUSTOM_PREFIX="${HALCYON_CUSTOM_PREFIX:-}"
 		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
@@ -88,6 +89,7 @@ set_halcyon_vars () {
 		export HALCYON_INTERNAL_FORCE_RESTORE_ALL="${HALCYON_INTERNAL_FORCE_RESTORE_ALL:-0}"
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
 	else
+		export HALCYON_CONSTRAINTS_FILE=''
 		export HALCYON_CONSTRAINTS_DIR=''
 		export HALCYON_CUSTOM_PREFIX=''
 		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
@@ -244,6 +246,12 @@ halcyon_main () {
 			export HALCYON_CABAL_REPO="${1#*=}";;
 
 	# Non-recursive options:
+		'--constraints-file')
+			shift
+			expect_args constraints_file -- "$@"
+			export HALCYON_CONSTRAINTS_FILE="${constraints_file}";;
+		'--constraints-file='*)
+			export HALCYON_CONSTRAINTS_FILE="${1#*=}";;
 		'--constraints-dir')
 			shift
 			expect_args constraints_dir -- "$@"

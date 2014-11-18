@@ -57,6 +57,7 @@ help_usage () {
 		    --cabal-repo=STRING
 
 		Non-recursive options:
+		    --constraints-file=PATH
 		    --constraints-dir=PATH
 		    --custom-prefix=PATH
 		    --extra-configure-flags=STRINGS
