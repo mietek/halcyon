@@ -241,10 +241,10 @@ do_deploy_app_from_install_dir () {
 
 deploy_app_from_install_dir () {
 	expect_vars HALCYON_PREFIX \
-		HALCYON_FORCE_CLEAN_REBUILD_GHC \
-		HALCYON_FORCE_CLEAN_REBUILD_CABAL HALCYON_FORCE_UPDATE_CABAL \
-		HALCYON_FORCE_CLEAN_REBUILD_SANDBOX \
-		HALCYON_FORCE_CLEAN_REBUILD \
+		HALCYON_GHC_CLEAN_REBUILD \
+		HALCYON_CABAL_CLEAN_REBUILD HALCYON_CABAL_UPDATE \
+		HALCYON_SANDBOX_CLEAN_REBUILD \
+		HALCYON_CLEAN_REBUILD \
 		HALCYON_INTERNAL_RECURSIVE \
 		HALCYON_INTERNAL_FORCE_RESTORE_ALL
 
@@ -253,10 +253,10 @@ deploy_app_from_install_dir () {
 	expect_existing "${source_dir}"
 
 	if [[ ! -f "${source_dir}/cabal.config" ]] ||
-		(( HALCYON_FORCE_CLEAN_REBUILD_GHC )) ||
-		(( HALCYON_FORCE_CLEAN_REBUILD_CABAL )) || (( HALCYON_FORCE_UPDATE_CABAL )) ||
-		(( HALCYON_FORCE_CLEAN_REBUILD_SANDBOX )) ||
-		(( HALCYON_FORCE_CLEAN_REBUILD )) ||
+		(( HALCYON_GHC_CLEAN_REBUILD )) ||
+		(( HALCYON_CABAL_CLEAN_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
+		(( HALCYON_SANDBOX_CLEAN_REBUILD )) ||
+		(( HALCYON_CLEAN_REBUILD )) ||
 		(( HALCYON_INTERNAL_FORCE_RESTORE_ALL ))
 	then
 		return 1
@@ -428,14 +428,16 @@ do_deploy_app () {
 deploy_app () {
 	expect_vars HALCYON_PREFIX \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
-		HALCYON_INTERNAL_RECURSIVE \
-		HALCYON_INTERNAL_ONLY_LABEL \
-		HALCYON_INTERNAL_ONLY_CONSTRAINTS \
-		HALCYON_INTERNAL_ONLY_TAG
+		HALCYON_INTERNAL_RECURSIVE
 
 	local label source_dir
 	expect_args label source_dir -- "$@"
 	expect_existing "${source_dir}"
+
+	if [[ "${HALCYON_INTERNAL_ONLY:-}" == 'label' ]]; then
+		echo "${label}"
+		return 0
+	fi
 
 	# NOTE: This is the first out of the two moments when source_dir is modified.
 
@@ -445,15 +447,17 @@ deploy_app () {
 	if [[ -f "${source_dir}/cabal.config" ]]; then
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"; then
+		if [[ -z "${HALCYON_INTERNAL_ONLY:+_}" ]] &&
+			deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"
+		then
 			return 0
 		fi
 	fi
 
 	local constraints
 	if [[ ! -f "${source_dir}/cabal.config" ]]; then
-		HALCYON_FORCE_CLEAN_REBUILD_GHC=0 \
-		HALCYON_FORCE_CLEAN_REBUILD_CABAL=0 HALCYON_FORCE_UPDATE_CABAL=0 \
+		HALCYON_GHC_CLEAN_REBUILD=0 \
+		HALCYON_CABAL_CLEAN_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 			deploy_env "${source_dir}" || return 1
 
@@ -477,18 +481,16 @@ deploy_app () {
 		format_constraints <<<"${constraints}" >"${source_dir}/cabal.config" || die
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"; then
+		if [[ -z "${HALCYON_INTERNAL_ONLY:+_}" ]] &&
+			deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"
+		then
 			return 0
 		fi
 	else
 		constraints=$( detect_constraints "${label}" "${source_dir}" ) || die
 	fi
 
-	if (( HALCYON_INTERNAL_ONLY_LABEL )); then
-		echo "${label}"
-		return 0
-	fi
-	if (( HALCYON_INTERNAL_ONLY_CONSTRAINTS )); then
+	if [[ "${HALCYON_INTERNAL_ONLY:-}" == 'constraints' ]]; then
 		format_constraints <<<"${constraints}" || die
 		return 0
 	fi
@@ -581,7 +583,7 @@ deploy_app () {
 			"${sandbox_magic_hash}" || die
 	) || die
 
-	if (( HALCYON_INTERNAL_ONLY_TAG )); then
+	if [[ "${HALCYON_INTERNAL_ONLY:-}" == 'tag' ]]; then
 		echo "${tag}"
 		return 0
 	fi
@@ -666,8 +668,8 @@ deploy_unpacked_app () {
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
 	HALCYON_NO_APP=1 \
-	HALCYON_FORCE_CLEAN_REBUILD_GHC=0 \
-	HALCYON_FORCE_CLEAN_REBUILD_CABAL=0 HALCYON_FORCE_UPDATE_CABAL=0 \
+	HALCYON_GHC_CLEAN_REBUILD=0 \
+	HALCYON_CABAL_CLEAN_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 	HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 		deploy_env '/dev/null' || return 1
 

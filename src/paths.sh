@@ -16,5 +16,8 @@ if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 	export LD_LIBRARY_PATH="${HALCYON_APP_DIR}/ghc/usr/lib:${LD_LIBRARY_PATH:-}"
 	export LD_LIBRARY_PATH="${HALCYON_APP_DIR}/sandbox/usr/lib:${LD_LIBRARY_PATH}"
 
-	export LANG="${LANG:-en_US.UTF-8}"
+	# NOTE: A UTF-8 locale is needed to work around a Cabal issue.
+	# https://github.com/haskell/cabal/issues/1883
+
+	export LANG="${LANG:-C.UTF-8}"
 fi

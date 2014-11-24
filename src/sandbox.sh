@@ -380,6 +380,8 @@ build_sandbox_layer () {
 		mv "${HALCYON_APP_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
+	add_sandbox_sources "${tag}" "${source_dir}" || die
+
 	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the
 	# executables to be installed, but not to install the packages.
 	# https://github.com/haskell/cabal/issues/220
@@ -394,7 +396,6 @@ build_sandbox_layer () {
 	fi
 
 	install_sandbox_extra_libs "${tag}" "${source_dir}" || die
-	add_sandbox_sources "${tag}" "${source_dir}" || die
 
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
@@ -548,7 +549,6 @@ restore_sandbox_layer () {
 	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
-		log_label 'Using existing sandbox layer:' "${description}"
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
@@ -567,8 +567,6 @@ restore_sandbox_layer () {
 	else
 		touch_cached_file "${archive_name}" || die
 	fi
-
-	log_label 'Sandbox layer restored:' "${description}"
 }
 
 
@@ -604,12 +602,12 @@ install_matching_sandbox_layer () {
 
 install_sandbox_layer () {
 	expect_vars HALCYON_NO_BUILD_DEPENDENCIES HALCYON_NO_BUILD_ANY \
-		HALCYON_FORCE_CLEAN_REBUILD_SANDBOX
+		HALCYON_SANDBOX_CLEAN_REBUILD
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
-	if ! (( HALCYON_FORCE_CLEAN_REBUILD_SANDBOX )); then
+	if ! (( HALCYON_SANDBOX_CLEAN_REBUILD )); then
 		if restore_sandbox_layer "${tag}"; then
 			return 0
 		fi

@@ -126,15 +126,15 @@ build_app () {
 	fi
 
 	if [[ -f "${source_dir}/.halcyon-magic/pre-build-hook" ]]; then
-		log 'Executing pre-build hook'
+		log 'Executing app pre-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/pre-build-hook" \
+				"${source_dir}/.halcyon-magic/app-pre-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" |& quote
 		); then
-			die 'Failed to execute pre-build hook'
+			die 'Failed to execute app pre-build hook'
 		fi
-		log 'Pre-build hook executed'
+		log 'App pre-build hook executed'
 	fi
 
 	log 'Building app'
@@ -148,16 +148,16 @@ build_app () {
 
 	log "Built app, ${built_size}"
 
-	if [[ -f "${source_dir}/.halcyon-magic/post-build-hook" ]]; then
-		log 'Executing post-build hook'
+	if [[ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]]; then
+		log 'Executing app post-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/post-build-hook" \
+				"${source_dir}/.halcyon-magic/app-post-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" |& quote
 		); then
-			die 'Failed to execute post-build hook'
+			die 'Failed to execute app post-build hook'
 		fi
-		log 'Post-build hook executed'
+		log 'App post-build hook executed'
 	fi
 
 	if [[ -d "${build_dir}/share/doc" ]]; then
@@ -260,7 +260,7 @@ restore_build_dir () {
 		touch_cached_file "${archive_name}" || die
 	fi
 
-	log_label 'Build restored'
+	log 'Build restored'
 }
 
 
@@ -344,7 +344,7 @@ link_sandbox_config () {
 
 
 install_build_dir () {
-	expect_vars HALCYON_NO_BUILD_ANY HALCYON_FORCE_CLEAN_REBUILD HALCYON_FORCE_CONFIGURE
+	expect_vars HALCYON_NO_BUILD_ANY HALCYON_CLEAN_REBUILD HALCYON_RECONFIGURE
 
 	local tag source_dir build_dir
 	expect_args tag source_dir build_dir -- "$@"
@@ -354,7 +354,7 @@ install_build_dir () {
 		return 1
 	fi
 
-	if ! (( HALCYON_FORCE_CLEAN_REBUILD )) && restore_build_dir "${tag}" "${build_dir}"; then
+	if ! (( HALCYON_CLEAN_REBUILD )) && restore_build_dir "${tag}" "${build_dir}"; then
 		if validate_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
 			link_sandbox_config "${build_dir}" || die
 			return 0
@@ -362,7 +362,7 @@ install_build_dir () {
 
 		local must_copy must_configure
 		must_copy=0
-		must_configure="${HALCYON_FORCE_CONFIGURE}"
+		must_configure="${HALCYON_RECONFIGURE}"
 		if ! prepare_build_dir "${source_dir}" "${build_dir}" ||
 			! validate_configured_build_dir "${tag}" "${build_dir}" >'/dev/null'
 		then

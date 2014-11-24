@@ -21,71 +21,71 @@ help_usage () {
 		    URL
 		        Remote app in git repository at specified URL.
 
-		Options:
-		    --app-dir=PATH
-		    --prefix=PATH
-		    --root=PATH
+		General options:
+		    --app-dir=...
+		    --prefix=...
+		    --root=...
+		    --constraints=...
+		    --constraints-dir=...
+		    --extra-apps=...
+		    --extra-apps-constraints-dir=...
+		    --pre-install-hook=...
+		    --post-install-hook=...
 		    --no-app
+		    --no-build
 		    --no-build-dependencies
-		    --no-build-any
-		    --no-archive-any
-		    --no-upload-any
-		    --no-delete-any
+
+		Cache options:
+		    --cache-dir=...
+		    --purge-cache
+		    --no-archive
+		    --no-clean-cache
 
 		Public storage options:
-		    --public-storage-url=STRING
+		    --public-storage-url=...
 		    --no-public-storage
 
 		Private storage options:
-		    --aws-access-key-id=STRING
-		    --aws-secret-access-key=STRING
-		    --s3-bucket=STRING
-		    --s3-acl=STRING
-		    --s3-host=STRING
+		    --aws-access-key-id=...
+		    --aws-secret-access-key=...
+		    --s3-bucket=...
+		    --s3-acl=private or public-read
+		    --s3-host=...
 		    --no-private-storage
-
-		Cache options:
-		    --cache-dir=PATH
-		    --purge-cache
-		    --no-clean-cache
+		    --no-upload
+		    --no-clean-private-storage
 
 		GHC layer options:
-		    --ghc-version=STRING
-		    --ghc-pre-build-hook=PATH
-		    --ghc-post-build-hook=PATH
-		    --force-clean-rebuild-ghc
+		    --ghc-version=...
+		    --ghc-pre-build-hook=...
+		    --ghc-post-build-hook=...
+		    --ghc-rebuild
 
 		Cabal layer options:
-		    --cabal-version=STRING
-		    --cabal-repo=STRING
-		    --cabal-pre-build-hook=PATH
-		    --cabal-post-build-hook=PATH
-		    --cabal-pre-update-hook=PATH
-		    --cabal-post-update-hook=PATH
-		    --force-clean-rebuild-cabal
-		    --force-update-cabal
+		    --cabal-version=...
+		    --cabal-repo=...
+		    --cabal-pre-build-hook=...
+		    --cabal-post-build-hook=...
+		    --cabal-pre-update-hook=...
+		    --cabal-post-update-hook=...
+		    --cabal-rebuild
+		    --cabal-update
 
 		Sandbox layer options:
-		    --sandbox-sources=STRINGS
-		    --sandbox-extra-libs=STRINGS
-		    --sandbox-extra-apps=STRINGS
-		    --sandbox-extra-apps-constraints-dir=PATH
-		    --sandbox-pre-build-hook=PATH
-		    --sandbox-post-build-hook=PATH
-		    --force-clean-rebuild-sandbox
+		    --sandbox-sources=...
+		    --sandbox-extra-libs=...
+		    --sandbox-extra-apps=...
+		    --sandbox-extra-apps-constraints-dir=...
+		    --sandbox-pre-build-hook=...
+		    --sandbox-post-build-hook=...
+		    --sandbox-rebuild
 
 		App options:
-		    --constraints-file=PATH
-		    --constraints-dir=PATH
-		    --extra-configure-flags=STRINGS
-		    --extra-apps=STRINGS
-		    --extra-apps-constraints-dir=PATH
-		    --extra-copy=source or --extra-copy=build or --extra-copy=all
-		    --pre-build-hook=PATH
-		    --post-build-hook=PATH
-		    --pre-install-hook=PATH
-		    --post-install-hook=PATH
-		    --force-configure
-		    --force-clean-rebuild
+		    --app-extra-configure-flags=...
+		    --app-extra-copy=...
+		    --app-pre-build-hook=...
+		    --app-post-build-hook=...
+		    --app-rebuild
+		    --app-reconfigure
 EOF
 }

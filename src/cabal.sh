@@ -345,7 +345,9 @@ update_cabal_package_db () {
 	expect_args tag -- "$@"
 
 	local cabal_date
-	cabal_date=$( get_date ) || die
+	cabal_date=$( get_iso_date ) || die
+
+	log 'Updating Cabal layer'
 
 	format_cabal_config "${tag}" >"${HALCYON_APP_DIR}/cabal/.halcyon-cabal.config" || die
 
@@ -360,16 +362,16 @@ update_cabal_package_db () {
 		log 'Cabal pre-update hook executed'
 	fi
 
-	log 'Updating Cabal packages'
+	log 'Updating Cabal package database'
 
 	if ! cabal_do '.' update |& quote; then
-		die 'Failed to update Cabal packages'
+		die 'Failed to update Cabal package database'
 	fi
 
 	local updated_size
 	updated_size=$( get_size "${HALCYON_APP_DIR}/cabal" ) || die
 
-	log "Cabal packages updated, ${updated_size}"
+	log "Cabal package database updated, ${updated_size}"
 
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-update-hook" ]]; then
 		log 'Executing Cabal post-update hook'
@@ -437,7 +439,7 @@ validate_updated_cabal_date () {
 	expect_args candidate_date -- "$@"
 
 	local today_date
-	today_date=$( get_date ) || die
+	today_date=$( get_iso_date ) || die
 
 	if [[ "${candidate_date}" < "${today_date}" ]]; then
 		return 1
@@ -490,13 +492,11 @@ restore_base_cabal_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local platform base_name description
+	local platform base_name
 	platform=$( get_tag_platform "${tag}" ) || die
 	base_name=$( format_base_cabal_archive_name "${tag}" ) || die
-	description=$( format_cabal_description "${tag}" ) || die
 
 	if validate_base_cabal_layer "${tag}" >'/dev/null'; then
-		log_label 'Using existing base Cabal layer:' "${description}"
 		touch_cached_file "${base_name}" || die
 		return 0
 	fi
@@ -515,8 +515,6 @@ restore_base_cabal_layer () {
 	else
 		touch_cached_file "${base_name}" || die
 	fi
-
-	log_label 'Base Cabal layer restored:' "${description}"
 }
 
 
@@ -532,11 +530,7 @@ restore_cached_updated_cabal_layer () {
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 
-	local restored_tag description
-	if restored_tag=$( validate_updated_cabal_layer "${tag}" ); then
-		description=$( format_cabal_description "${restored_tag}" ) || die
-
-		log_label 'Using existing Cabal layer:' "${description}"
+	if ! validate_updated_cabal_layer "${tag}" >'/dev/null'; then
 		touch_cached_file "${updated_name}" || die
 		return 0
 	fi
@@ -548,15 +542,12 @@ restore_cached_updated_cabal_layer () {
 	log 'Restoring Cabal layer'
 
 	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_APP_DIR}/cabal" ||
-		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
+		validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
 		return 1
 	else
 		touch_cached_file "${updated_name}" || die
 	fi
-	description=$( format_cabal_description "${restored_tag}" ) || die
-
-	log_label 'Cabal layer restored:' "${description}"
 }
 
 
@@ -584,17 +575,13 @@ restore_updated_cabal_layer () {
 
 	log 'Restoring Cabal layer'
 
-	local restored_tag description
 	if ! cache_stored_file "${platform}" "${updated_name}" ||
 		! extract_cached_archive_over "${updated_name}" "${HALCYON_APP_DIR}/cabal" ||
-		! restored_tag=$( validate_updated_cabal_layer "${tag}" )
+		! validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_APP_DIR}/cabal" || die
 		return 1
 	fi
-	description=$( format_cabal_description "${restored_tag}" ) || die
-
-	log_label 'Cabal layer restored:' "${description}"
 }
 
 
@@ -622,13 +609,13 @@ link_cabal_config () {
 
 install_cabal_layer () {
 	expect_vars HALCYON_NO_BUILD_DEPENDENCIES HALCYON_NO_BUILD_ANY \
-		HALCYON_FORCE_CLEAN_REBUILD_CABAL HALCYON_FORCE_UPDATE_CABAL
+		HALCYON_CABAL_CLEAN_REBUILD HALCYON_CABAL_UPDATE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_CLEAN_REBUILD_CABAL )); then
-		if ! (( HALCYON_FORCE_UPDATE_CABAL )) &&
+	if ! (( HALCYON_CABAL_CLEAN_REBUILD )); then
+		if ! (( HALCYON_CABAL_UPDATE )) &&
 			restore_updated_cabal_layer "${tag}"
 		then
 			link_cabal_config || die

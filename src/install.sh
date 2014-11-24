@@ -78,8 +78,8 @@ format_install_archive_name_pattern () {
 
 
 deploy_extra_apps () {
-	local tag source_dir install_dir
-	expect_args tag source_dir install_dir -- "$@"
+	local tag source_dir install_dir root
+	expect_args tag source_dir install_dir root -- "$@"
 
 	if [[ ! -f "${source_dir}/.halcyon-magic/extra-apps" ]]; then
 		return 0
@@ -98,7 +98,7 @@ deploy_extra_apps () {
 	constraints_dir="${source_dir}/.halcyon-magic/extra-apps-constraints"
 
 	local -a opts
-	opts+=( --root="${install_dir}" )
+	opts+=( --root="${root}${install_dir}" )
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
@@ -129,8 +129,7 @@ deploy_extra_apps () {
 
 
 prepare_install_dir () {
-	expect_vars HALCYON_APP_DIR \
-		HALCYON_INCLUDE_SOURCE HALCYON_INCLUDE_BUILD HALCYON_INCLUDE_ALL
+	expect_vars HALCYON_APP_DIR
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
@@ -141,17 +140,28 @@ prepare_install_dir () {
 
 	log 'Preparing install'
 
-	if (( HALCYON_INCLUDE_SOURCE )) || (( HALCYON_INCLUDE_ALL )); then
+	case "${HALCYON_EXTRA_COPY}" in
+	'source');&
+	'build');&
+	'all')
 		log_indent 'Copying source'
 
 		copy_dir_into "${source_dir}" "${install_dir}${HALCYON_APP_DIR}" || die
-	fi
+		;;
+	*)
+		true
+	esac
 
-	if (( HALCYON_INCLUDE_BUILD )) || (( HALCYON_INCLUDE_ALL )); then
+	case "${HALCYON_EXTRA_COPY}" in
+	'build');&
+	'all')
 		log_indent 'Copying build'
 
 		copy_dir_into "${build_dir}" "${install_dir}${HALCYON_APP_DIR}" || die
-	fi
+		;;
+	*)
+		true
+	esac
 
 	log_indent 'Copying app'
 
@@ -164,12 +174,7 @@ prepare_install_dir () {
 		die 'Failed to copy app'
 	fi
 
-	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
-		log_warning 'Cannot deploy extra apps'
-		return 1
-	fi
-
-	if (( HALCYON_INCLUDE_ALL )); then
+	if [[ "${HALCYON_EXTRA_COPY}" == 'all' ]]; then
 		log_indent 'Copying GHC layer'
 
 		copy_dir_into "${HALCYON_APP_DIR}/ghc" "${install_dir}${HALCYON_APP_DIR}/ghc" || die
@@ -188,6 +193,8 @@ prepare_install_dir () {
 		if find_tree "${HALCYON_APP_DIR}/sandbox/share" -type f |
 			match_at_least_one >'/dev/null'
 		then
+			log_indent 'Copying sandbox layer data files'
+
 			copy_dir_into "${HALCYON_APP_DIR}/sandbox/share" "${install_dir}${HALCYON_APP_DIR}/sandbox/share" || die
 		fi
 	fi
@@ -291,6 +298,9 @@ install_app () {
 	local tag source_dir install_dir root
 	expect_args tag source_dir install_dir root -- "$@"
 
+	local prefix
+	prefix=$( get_tag_prefix "${tag}" ) || die
+
 	if ! (( HALCYON_INTERNAL_RECURSIVE )) &&
 		! (( HALCYON_INTERNAL_NO_PURGE_APP_DIR ))
 	then
@@ -302,6 +312,11 @@ install_app () {
 	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
 		saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || die
 		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
+	fi
+
+	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}" "${root}"; then
+		log_warning 'Cannot deploy extra apps'
+		return 1
 	fi
 
 	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then
@@ -317,7 +332,11 @@ install_app () {
 		log 'Pre-install hook executed'
 	fi
 
-	log_begin "Installing app in ${HALCYON_APP_DIR}..."
+	if [[ "${root}" == '/' ]]; then
+		log_begin "Installing app at ${prefix}..."
+	else
+		log_begin "Installing app at ${root}${prefix}..."
+	fi
 
 	# NOTE: When / is read-only, but HALCYON_APP_DIR is not, cp -Rp fails, but cp -R succeeds.
 	# Copying .halcyon-tag is avoided for the same reason.

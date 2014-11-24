@@ -11,7 +11,7 @@ map_ghc_version_to_linux_libgmp10_x86_64_original_url () {
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
-	*)		die "Unexpected GHC version for Linux/libgmp.so.10 (64-bit): ${ghc_version}"
+	*)		die "Unexpected GHC version for Linux/libgmp.so.10 (x86_64): ${ghc_version}"
 	esac
 }
 
@@ -42,7 +42,7 @@ map_ghc_version_to_linux_libgmp3_x86_64_original_url () {
 	'6.10.3')	echo 'https://downloads.haskell.org/~ghc/6.10.3/ghc-6.10.3-x86_64-unknown-linux-n.tar.bz2';;
 	'6.10.2')	echo 'https://downloads.haskell.org/~ghc/6.10.2/ghc-6.10.2-x86_64-unknown-linux-libedit2.tar.bz2';;
 	'6.10.1')	echo 'https://downloads.haskell.org/~ghc/6.10.1/ghc-6.10.1-x86_64-unknown-linux-libedit2.tar.bz2';;
-	*)		die "Unexpected GHC version for Linux/libgmp.so.3 (64-bit): ${ghc_version}"
+	*)		die "Unexpected GHC version for Linux/libgmp.so.3 (x86_64): ${ghc_version}"
 	esac
 }
 
@@ -67,7 +67,7 @@ map_ghc_version_to_osx_x86_64_original_url () {
 	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-apple-darwin.tar.bz2';; # 10.6+?
 	'7.0.3')	echo 'https://downloads.haskell.org/~ghc/7.0.3/ghc-7.0.3-x86_64-apple-darwin.tar.bz2';; # 10.6+?
 	'7.0.2')	echo 'https://downloads.haskell.org/~ghc/7.0.2/ghc-7.0.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
-	*)		die "Unexpected GHC version for OS X (64-bit): ${ghc_version}"
+	*)		die "Unexpected GHC version for OS X (x86_64): ${ghc_version}"
 	esac
 }
 
@@ -443,7 +443,6 @@ restore_ghc_layer () {
 	description=$( format_ghc_description "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
-		log_label 'Using existing GHC layer:' "${description}"
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
@@ -462,8 +461,6 @@ restore_ghc_layer () {
 	else
 		touch_cached_file "${archive_name}" || die
 	fi
-
-	log_label 'GHC layer restored:' "${description}"
 }
 
 
@@ -486,12 +483,12 @@ recache_ghc_package_db () {
 
 install_ghc_layer () {
 	expect_vars HALCYON_NO_BUILD_DEPENDENCIES HALCYON_NO_BUILD_ANY \
-		HALCYON_FORCE_CLEAN_REBUILD_GHC
+		HALCYON_GHC_CLEAN_REBUILD
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_FORCE_CLEAN_REBUILD_GHC )); then
+	if ! (( HALCYON_GHC_CLEAN_REBUILD )); then
 		if restore_ghc_layer "${tag}"; then
 			return 0
 		fi
