@@ -344,7 +344,7 @@ link_sandbox_config () {
 
 
 install_build_dir () {
-	expect_vars HALCYON_NO_BUILD HALCYON_CLEAN_REBUILD HALCYON_RECONFIGURE
+	expect_vars HALCYON_NO_BUILD HALCYON_REBUILD HALCYON_RECONFIGURE
 
 	local tag source_dir build_dir
 	expect_args tag source_dir build_dir -- "$@"
@@ -354,7 +354,7 @@ install_build_dir () {
 		return 1
 	fi
 
-	if ! (( HALCYON_CLEAN_REBUILD )) && restore_build_dir "${tag}" "${build_dir}"; then
+	if ! (( HALCYON_REBUILD )) && restore_build_dir "${tag}" "${build_dir}"; then
 		if validate_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
 			link_sandbox_config "${build_dir}" || die
 			return 0

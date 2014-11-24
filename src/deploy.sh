@@ -241,10 +241,10 @@ do_deploy_app_from_install_dir () {
 
 deploy_app_from_install_dir () {
 	expect_vars HALCYON_PREFIX \
-		HALCYON_GHC_CLEAN_REBUILD \
-		HALCYON_CABAL_CLEAN_REBUILD HALCYON_CABAL_UPDATE \
-		HALCYON_SANDBOX_CLEAN_REBUILD \
-		HALCYON_CLEAN_REBUILD \
+		HALCYON_GHC_REBUILD \
+		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
+		HALCYON_SANDBOX_REBUILD \
+		HALCYON_APP_REBUILD \
 		HALCYON_INTERNAL_RECURSIVE \
 		HALCYON_INTERNAL_FORCE_RESTORE_ALL
 
@@ -253,10 +253,10 @@ deploy_app_from_install_dir () {
 	expect_existing "${source_dir}"
 
 	if [[ ! -f "${source_dir}/cabal.config" ]] ||
-		(( HALCYON_GHC_CLEAN_REBUILD )) ||
-		(( HALCYON_CABAL_CLEAN_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
-		(( HALCYON_SANDBOX_CLEAN_REBUILD )) ||
-		(( HALCYON_CLEAN_REBUILD )) ||
+		(( HALCYON_GHC_REBUILD )) ||
+		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
+		(( HALCYON_SANDBOX_REBUILD )) ||
+		(( HALCYON_APP_REBUILD )) ||
 		(( HALCYON_INTERNAL_FORCE_RESTORE_ALL ))
 	then
 		return 1
@@ -456,8 +456,8 @@ deploy_app () {
 
 	local constraints
 	if [[ ! -f "${source_dir}/cabal.config" ]]; then
-		HALCYON_GHC_CLEAN_REBUILD=0 \
-		HALCYON_CABAL_CLEAN_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
+		HALCYON_GHC_REBUILD=0 \
+		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 			deploy_env "${source_dir}" || return 1
 
@@ -668,8 +668,8 @@ deploy_unpacked_app () {
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
 	HALCYON_NO_APP=1 \
-	HALCYON_GHC_CLEAN_REBUILD=0 \
-	HALCYON_CABAL_CLEAN_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
+	HALCYON_GHC_REBUILD=0 \
+	HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 	HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 		deploy_env '/dev/null' || return 1
 

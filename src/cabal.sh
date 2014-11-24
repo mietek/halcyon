@@ -609,12 +609,12 @@ link_cabal_config () {
 
 install_cabal_layer () {
 	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
-		HALCYON_CABAL_CLEAN_REBUILD HALCYON_CABAL_UPDATE
+		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_CABAL_CLEAN_REBUILD )); then
+	if ! (( HALCYON_CABAL_REBUILD )); then
 		if ! (( HALCYON_CABAL_UPDATE )) &&
 			restore_updated_cabal_layer "${tag}"
 		then

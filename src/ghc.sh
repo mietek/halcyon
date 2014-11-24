@@ -483,12 +483,12 @@ recache_ghc_package_db () {
 
 install_ghc_layer () {
 	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
-		HALCYON_GHC_CLEAN_REBUILD
+		HALCYON_GHC_REBUILD
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if ! (( HALCYON_GHC_CLEAN_REBUILD )); then
+	if ! (( HALCYON_GHC_REBUILD )); then
 		if restore_ghc_layer "${tag}"; then
 			return 0
 		fi

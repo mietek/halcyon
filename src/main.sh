@@ -55,9 +55,9 @@ set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_NONRECURSIVE_VARS:-0} )); then
 		export HALCYON_INTERNAL_NONRECURSIVE_VARS=1
 
-		export HALCYON_GHC_CLEAN_REBUILD="${HALCYON_GHC_CLEAN_REBUILD:-0}"
+		export HALCYON_GHC_REBUILD="${HALCYON_GHC_REBUILD:-0}"
 
-		export HALCYON_CABAL_CLEAN_REBUILD="${HALCYON_CABAL_CLEAN_REBUILD:-0}"
+		export HALCYON_CABAL_REBUILD="${HALCYON_CABAL_REBUILD:-0}"
 		export HALCYON_CABAL_UPDATE="${HALCYON_CABAL_UPDATE:-0}"
 
 		export HALCYON_SANDBOX_SOURCES="${HALCYON_SANDBOX_SOURCES:-}"
@@ -66,7 +66,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:-}"
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK="${HALCYON_SANDBOX_PRE_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
-		export HALCYON_SANDBOX_CLEAN_REBUILD="${HALCYON_SANDBOX_CLEAN_REBUILD:-0}"
+		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
 
 		export HALCYON_CONSTRAINTS_FILE="${HALCYON_CONSTRAINTS_FILE:-}"
 		export HALCYON_CONSTRAINTS_DIR="${HALCYON_CONSTRAINTS_DIR:-}"
@@ -78,15 +78,15 @@ set_halcyon_vars () {
 		export HALCYON_POST_BUILD_HOOK="${HALCYON_POST_BUILD_HOOK:-}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
-		export HALCYON_CLEAN_REBUILD="${HALCYON_CLEAN_REBUILD:-0}"
-		export HALCYON_RECONFIGURE="${HALCYON_RECONFIGURE:-0}"
+		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
+		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
 
 		export HALCYON_INTERNAL_FORCE_RESTORE_ALL="${HALCYON_INTERNAL_FORCE_RESTORE_ALL:-0}"
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
 	else
-		export HALCYON_GHC_CLEAN_REBUILD=0
+		export HALCYON_GHC_REBUILD=0
 
-		export HALCYON_CABAL_CLEAN_REBUILD=0
+		export HALCYON_CABAL_REBUILD=0
 		export HALCYON_CABAL_UPDATE=0
 
 		export HALCYON_SANDBOX_SOURCES=''
@@ -95,7 +95,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR=''
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK=''
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
-		export HALCYON_SANDBOX_CLEAN_REBUILD=0
+		export HALCYON_SANDBOX_REBUILD=0
 
 		export HALCYON_CONSTRAINTS_FILE=''
 		export HALCYON_CONSTRAINTS_DIR=''
@@ -107,8 +107,8 @@ set_halcyon_vars () {
 		export HALCYON_POST_BUILD_HOOK=''
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
-		export HALCYON_CLEAN_REBUILD=0
-		export HALCYON_RECONFIGURE=0
+		export HALCYON_APP_REBUILD=0
+		export HALCYON_APP_RECONFIGURE=0
 
 		export HALCYON_INTERNAL_FORCE_RESTORE_ALL=0
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=0
@@ -230,8 +230,8 @@ halcyon_main () {
 			export HALCYON_GHC_POST_BUILD_HOOK="${ghc_post_build_hook}";;
 		'--ghc-post-build-hook='*)
 			export HALCYON_GHC_POST_BUILD_HOOK="${1#*=}";;
-		'--ghc-clean-rebuild')
-			export HALCYON_GHC_CLEAN_REBUILD=1;;
+		'--ghc-rebuild')
+			export HALCYON_GHC_REBUILD=1;;
 
 	# Cabal layer options:
 		'--cabal-version')
@@ -270,8 +270,8 @@ halcyon_main () {
 			export HALCYON_CABAL_POST_UPDATE_HOOK="${cabal_post_update_hook}";;
 		'--cabal-post-update-hook='*)
 			export HALCYON_CABAL_POST_UPDATE_HOOK="${1#*=}";;
-		'--cabal-clean-rebuild')
-			export HALCYON_CABAL_CLEAN_REBUILD=1;;
+		'--cabal-rebuild')
+			export HALCYON_CABAL_REBUILD=1;;
 		'--cabal-update')
 			export HALCYON_CABAL_UPDATE=1;;
 
@@ -312,8 +312,8 @@ halcyon_main () {
 			export HALCYON_SANDBOX_POST_BUILD_HOOK="${sandbox_post_build_hook}";;
 		'--sandbox-post-build-hook='*)
 			export HALCYON_SANDBOX_POST_BUILD_HOOK="${1#*=}";;
-		'--sandbox-clean-rebuild')
-			export HALCYON_SANDBOX_CLEAN_REBUILD=1;;
+		'--sandbox-rebuild')
+			export HALCYON_SANDBOX_REBUILD=1;;
 
 	# App options:
 		'--constraints-file')
@@ -376,10 +376,10 @@ halcyon_main () {
 			export HALCYON_POST_INSTALL_HOOK="${post_install_hook}";;
 		'--post-install-hook='*)
 			export HALCYON_POST_INSTALL_HOOK="${1#*=}";;
-		'--clean-rebuild')
-			export HALCYON_CLEAN_REBUILD=1;;
-		'--reconfigure')
-			export HALCYON_RECONFIGURE=1;;
+		'--app-rebuild')
+			export HALCYON_APP_REBUILD=1;;
+		'--app-reconfigure')
+			export HALCYON_APP_RECONFIGURE=1;;
 
 		'--')
 			shift

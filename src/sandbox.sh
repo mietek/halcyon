@@ -602,12 +602,12 @@ install_matching_sandbox_layer () {
 
 install_sandbox_layer () {
 	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
-		HALCYON_SANDBOX_CLEAN_REBUILD
+		HALCYON_SANDBOX_REBUILD
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
-	if ! (( HALCYON_SANDBOX_CLEAN_REBUILD )); then
+	if ! (( HALCYON_SANDBOX_REBUILD )); then
 		if restore_sandbox_layer "${tag}"; then
 			return 0
 		fi
