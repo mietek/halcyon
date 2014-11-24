@@ -22,7 +22,7 @@ set_halcyon_vars () {
 		export HALCYON_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY:-}"
 		export HALCYON_S3_BUCKET="${HALCYON_S3_BUCKET:-}"
 		export HALCYON_S3_ACL="${HALCYON_S3_ACL:-private}"
-		export HALCYON_S3_HOST="${HALCYON_S3_HOST:-s3.amazonaws.com}"
+		export HALCYON_S3_ENDPOINT="${HALCYON_S3_ENDPOINT:-s3.amazonaws.com}"
 		export HALCYON_NO_PRIVATE_STORAGE="${HALCYON_NO_PRIVATE_STORAGE:-0}"
 
 		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon-cache}"
@@ -190,12 +190,12 @@ halcyon_main () {
 			export HALCYON_S3_ACL="${s3_acl}";;
 		'--s3-acl='*)
 			export HALCYON_S3_ACL="${1#*=}";;
-		'--s3-host')
+		'--s3-endpoint')
 			shift
-			expect_args s3_host -- "$@"
-			export HALCYON_S3_HOST="${s3_host}";;
-		'--s3-host='*)
-			export HALCYON_S3_HOST="${1#*=}";;
+			expect_args s3_endpoint -- "$@"
+			export HALCYON_S3_ENDPOINT="${s3_endpoint}";;
+		'--s3-endpoint='*)
+			export HALCYON_S3_ENDPOINT="${1#*=}";;
 		'--no-private-storage')
 			export HALCYON_NO_PRIVATE_STORAGE=1;;
 
