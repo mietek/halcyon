@@ -13,7 +13,7 @@ set_halcyon_vars () {
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
-		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
+		export HALCYON_NO_CLEAN_PRIVATE_STORAGE="${HALCYON_NO_CLEAN_PRIVATE_STORAGE:-0}"
 
 		export HALCYON_PUBLIC_STORAGE_URL="${HALCYON_PUBLIC_STORAGE_URL:-https://s3.halcyon.sh}"
 		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
@@ -152,8 +152,8 @@ halcyon_main () {
 			export HALCYON_NO_ARCHIVE=1;;
 		'--no-upload')
 			export HALCYON_NO_UPLOAD=1;;
-		'--no-delete')
-			export HALCYON_NO_DELETE=1;;
+		'--no-clean-private-storage')
+			export HALCYON_NO_CLEAN_PRIVATE_STORAGE=1;;
 
 	# Public storage options:
 		'--public-storage-url')

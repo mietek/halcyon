@@ -389,7 +389,7 @@ update_cabal_package_db () {
 
 
 archive_cabal_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
+	expect_vars HALCYON_APP_DIR HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
 	expect_existing "${HALCYON_APP_DIR}/cabal/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
@@ -410,7 +410,7 @@ archive_cabal_layer () {
 
 	local cabal_date
 	cabal_date=$( get_tag_cabal_date "${cabal_tag}" ) || die
-	if [[ -z "${cabal_date}" ]] || (( HALCYON_NO_DELETE )); then
+	if [[ -z "${cabal_date}" ]] || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
 		return 0
 	fi
 

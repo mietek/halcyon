@@ -219,7 +219,7 @@ prepare_install_dir () {
 
 
 archive_install_dir () {
-	expect_vars HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
+	expect_vars HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
 
 	local install_dir
 	expect_args install_dir -- "$@"
@@ -241,7 +241,7 @@ archive_install_dir () {
 		return 0
 	fi
 
-	if (( HALCYON_NO_DELETE )); then
+	if (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
 		return 0
 	fi
 

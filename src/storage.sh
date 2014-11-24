@@ -160,12 +160,12 @@ cache_original_stored_file () {
 
 
 delete_private_stored_file () {
-	expect_vars HALCYON_NO_DELETE
+	expect_vars HALCYON_NO_CLEAN_PRIVATE_STORAGE
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_DELETE )) || ! private_storage; then
+	if (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )) || ! private_storage; then
 		return 0
 	fi
 

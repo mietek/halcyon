@@ -483,7 +483,7 @@ build_sandbox_layer () {
 
 
 archive_sandbox_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
+	expect_vars HALCYON_APP_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
 	expect_existing "${HALCYON_APP_DIR}/sandbox/.halcyon-tag" \
 		"${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 
@@ -504,15 +504,15 @@ archive_sandbox_layer () {
 	copy_file "${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" \
 		"${HALCYON_CACHE_DIR}/${constraints_name}" || die
 
-	local no_delete
-	no_delete=0
+	local no_clean
+	no_clean=0
 	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${archive_name}"; then
-		no_delete=1
+		no_clean=1
 	fi
 	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${constraints_name}"; then
-		no_delete=1
+		no_clean=1
 	fi
-	if (( HALCYON_NO_DELETE )) || (( no_delete )); then
+	if (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )) || (( no_clean )); then
 		return 0
 	fi
 
