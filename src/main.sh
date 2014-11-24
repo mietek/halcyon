@@ -68,7 +68,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
 
-		export HALCYON_CONSTRAINTS_FILE="${HALCYON_CONSTRAINTS_FILE:-}"
+		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
 		export HALCYON_CONSTRAINTS_DIR="${HALCYON_CONSTRAINTS_DIR:-}"
 		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
@@ -97,7 +97,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
 		export HALCYON_SANDBOX_REBUILD=0
 
-		export HALCYON_CONSTRAINTS_FILE=''
+		export HALCYON_CONSTRAINTS=''
 		export HALCYON_CONSTRAINTS_DIR=''
 		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
 		export HALCYON_EXTRA_APPS=''
@@ -316,12 +316,12 @@ halcyon_main () {
 			export HALCYON_SANDBOX_REBUILD=1;;
 
 	# App options:
-		'--constraints-file')
+		'--constraints')
 			shift
-			expect_args constraints_file -- "$@"
-			export HALCYON_CONSTRAINTS_FILE="${constraints_file}";;
-		'--constraints-file='*)
-			export HALCYON_CONSTRAINTS_FILE="${1#*=}";;
+			expect_args constraints -- "$@"
+			export HALCYON_CONSTRAINTS="${constraints}";;
+		'--constraints='*)
+			export HALCYON_CONSTRAINTS="${1#*=}";;
 		'--constraints-dir')
 			shift
 			expect_args constraints_dir -- "$@"

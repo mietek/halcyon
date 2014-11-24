@@ -341,8 +341,8 @@ prepare_source_dir () {
 		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-post-build-hook" || die
 	fi
 
-	if [[ -n "${HALCYON_CONSTRAINTS_FILE:+_}" ]]; then
-		copy_file "${HALCYON_CONSTRAINTS_FILE}" "${source_dir}/cabal.config" || die
+	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
+		copy_file "${HALCYON_CONSTRAINTS}" "${source_dir}/cabal.config" || die
 	fi
 	if [[ -n "${HALCYON_CONSTRAINTS_DIR:+_}" ]]; then
 		copy_file "${HALCYON_CONSTRAINTS_DIR}/${label}.cabal.config" "${source_dir}/cabal.config" || die
@@ -467,7 +467,7 @@ deploy_app () {
 		log_warning 'Expected cabal.config with explicit constraints'
 		log
 		if (( HALCYON_INTERNAL_NONLOCAL_SOURCE )); then
-			log "To use explicit constraints, specify --constraints-file=cabal.config"
+			log "To use explicit constraints, specify --constraints=cabal.config"
 		else
 			log 'To use explicit constraints, add cabal.config'
 		fi
