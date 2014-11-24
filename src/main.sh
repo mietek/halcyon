@@ -9,11 +9,11 @@ set_halcyon_vars () {
 		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_APP_DIR}}"
 		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
+		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
-		export HALCYON_NO_BUILD_ANY="${HALCYON_NO_BUILD_ANY:-0}"
-		export HALCYON_NO_ARCHIVE_ANY="${HALCYON_NO_ARCHIVE_ANY:-0}"
-		export HALCYON_NO_UPLOAD_ANY="${HALCYON_NO_UPLOAD_ANY:-0}"
-		export HALCYON_NO_DELETE_ANY="${HALCYON_NO_DELETE_ANY:-0}"
+		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
+		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
+		export HALCYON_NO_DELETE="${HALCYON_NO_DELETE:-0}"
 
 		export HALCYON_PUBLIC_STORAGE_URL="${HALCYON_PUBLIC_STORAGE_URL:-https://s3.halcyon.sh}"
 		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
@@ -144,16 +144,16 @@ halcyon_main () {
 			export HALCYON_ROOT="${1#*=}";;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
+		'--no-build')
+			export HALCYON_NO_BUILD=1;;
 		'--no-build-dependencies')
 			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
-		'--no-build-any')
-			export HALCYON_NO_BUILD_ANY=1;;
-		'--no-archive-any')
-			export HALCYON_NO_ARCHIVE_ANY=1;;
-		'--no-upload-any')
-			export HALCYON_NO_UPLOAD_ANY=1;;
-		'--no-delete-any')
-			export HALCYON_NO_DELETE_ANY=1;;
+		'--no-archive')
+			export HALCYON_NO_ARCHIVE=1;;
+		'--no-upload')
+			export HALCYON_NO_UPLOAD=1;;
+		'--no-delete')
+			export HALCYON_NO_DELETE=1;;
 
 	# Public storage options:
 		'--public-storage-url')

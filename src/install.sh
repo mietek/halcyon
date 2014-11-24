@@ -219,13 +219,13 @@ prepare_install_dir () {
 
 
 archive_install_dir () {
-	expect_vars HALCYON_NO_ARCHIVE_ANY HALCYON_NO_DELETE_ANY
+	expect_vars HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 
 	local install_dir
 	expect_args install_dir -- "$@"
 	expect_existing "${install_dir}/.halcyon-tag"
 
-	if (( HALCYON_NO_ARCHIVE_ANY )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -241,7 +241,7 @@ archive_install_dir () {
 		return 0
 	fi
 
-	if (( HALCYON_NO_DELETE_ANY )); then
+	if (( HALCYON_NO_DELETE )); then
 		return 0
 	fi
 

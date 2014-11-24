@@ -183,13 +183,13 @@ build_app () {
 
 
 archive_build_dir () {
-	expect_vars HALCYON_NO_ARCHIVE_ANY
+	expect_vars HALCYON_NO_ARCHIVE
 
 	local build_dir
 	expect_args build_dir -- "$@"
 	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/cabal.config"
 
-	if (( HALCYON_NO_ARCHIVE_ANY )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -344,12 +344,12 @@ link_sandbox_config () {
 
 
 install_build_dir () {
-	expect_vars HALCYON_NO_BUILD_ANY HALCYON_CLEAN_REBUILD HALCYON_RECONFIGURE
+	expect_vars HALCYON_NO_BUILD HALCYON_CLEAN_REBUILD HALCYON_RECONFIGURE
 
 	local tag source_dir build_dir
 	expect_args tag source_dir build_dir -- "$@"
 
-	if (( HALCYON_NO_BUILD_ANY )); then
+	if (( HALCYON_NO_BUILD )); then
 		log_warning 'Cannot build app'
 		return 1
 	fi

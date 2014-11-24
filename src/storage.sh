@@ -90,12 +90,12 @@ touch_cached_env_files () {
 
 
 upload_cached_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD_ANY
+	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_UPLOAD_ANY )) || ! private_storage; then
+	if (( HALCYON_NO_UPLOAD )) || ! private_storage; then
 		return 1
 	fi
 
@@ -160,12 +160,12 @@ cache_original_stored_file () {
 
 
 delete_private_stored_file () {
-	expect_vars HALCYON_NO_DELETE_ANY
+	expect_vars HALCYON_NO_DELETE
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_DELETE_ANY )) || ! private_storage; then
+	if (( HALCYON_NO_DELETE )) || ! private_storage; then
 		return 0
 	fi
 

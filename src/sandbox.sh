@@ -483,11 +483,11 @@ build_sandbox_layer () {
 
 
 archive_sandbox_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE_ANY HALCYON_NO_DELETE_ANY
+	expect_vars HALCYON_APP_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 	expect_existing "${HALCYON_APP_DIR}/sandbox/.halcyon-tag" \
 		"${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 
-	if (( HALCYON_NO_ARCHIVE_ANY )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -512,7 +512,7 @@ archive_sandbox_layer () {
 	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${constraints_name}"; then
 		no_delete=1
 	fi
-	if (( HALCYON_NO_DELETE_ANY )) || (( no_delete )); then
+	if (( HALCYON_NO_DELETE )) || (( no_delete )); then
 		return 0
 	fi
 
@@ -601,7 +601,7 @@ install_matching_sandbox_layer () {
 
 
 install_sandbox_layer () {
-	expect_vars HALCYON_NO_BUILD_DEPENDENCIES HALCYON_NO_BUILD_ANY \
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
 		HALCYON_SANDBOX_CLEAN_REBUILD
 
 	local tag source_dir constraints
@@ -620,7 +620,7 @@ install_sandbox_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD_DEPENDENCIES )) || (( HALCYON_NO_BUILD_ANY )); then
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_warning 'Cannot build sandbox layer'
 			return 1
 		fi

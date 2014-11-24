@@ -389,10 +389,10 @@ update_cabal_package_db () {
 
 
 archive_cabal_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_NO_ARCHIVE_ANY HALCYON_NO_DELETE_ANY
+	expect_vars HALCYON_APP_DIR HALCYON_NO_ARCHIVE HALCYON_NO_DELETE
 	expect_existing "${HALCYON_APP_DIR}/cabal/.halcyon-tag"
 
-	if (( HALCYON_NO_ARCHIVE_ANY )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -410,7 +410,7 @@ archive_cabal_layer () {
 
 	local cabal_date
 	cabal_date=$( get_tag_cabal_date "${cabal_tag}" ) || die
-	if [[ -z "${cabal_date}" ]] || (( HALCYON_NO_DELETE_ANY )); then
+	if [[ -z "${cabal_date}" ]] || (( HALCYON_NO_DELETE )); then
 		return 0
 	fi
 
@@ -608,7 +608,7 @@ link_cabal_config () {
 
 
 install_cabal_layer () {
-	expect_vars HALCYON_NO_BUILD_DEPENDENCIES HALCYON_NO_BUILD_ANY \
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
 		HALCYON_CABAL_CLEAN_REBUILD HALCYON_CABAL_UPDATE
 
 	local tag source_dir
@@ -629,7 +629,7 @@ install_cabal_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD_DEPENDENCIES )) || (( HALCYON_NO_BUILD_ANY )); then
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_warning 'Cannot build Cabal layer'
 			return 1
 		fi

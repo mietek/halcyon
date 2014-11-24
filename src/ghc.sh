@@ -400,10 +400,10 @@ build_ghc_layer () {
 
 
 archive_ghc_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_NO_ARCHIVE_ANY
+	expect_vars HALCYON_APP_DIR HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_APP_DIR}/ghc/.halcyon-tag"
 
-	if (( HALCYON_NO_ARCHIVE_ANY )); then
+	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
@@ -482,7 +482,7 @@ recache_ghc_package_db () {
 
 
 install_ghc_layer () {
-	expect_vars HALCYON_NO_BUILD_DEPENDENCIES HALCYON_NO_BUILD_ANY \
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
 		HALCYON_GHC_CLEAN_REBUILD
 
 	local tag source_dir
@@ -493,7 +493,7 @@ install_ghc_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD_DEPENDENCIES )) || (( HALCYON_NO_BUILD_ANY )); then
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_warning 'Cannot build GHC layer'
 			return 1
 		fi
