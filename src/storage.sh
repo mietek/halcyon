@@ -8,8 +8,8 @@ private_storage () {
 	[[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}"
 	&& -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}"
 	&& -n "${HALCYON_S3_BUCKET:+_}"
-	&& -n "${HALCYON_S3_ACL:+_}"
-	&& -n "${HALCYON_S3_ENDPOINT:+_}" ]] || return 1
+	&& -n "${HALCYON_S3_ENDPOINT:+_}"
+	&& -n "${HALCYON_S3_ACL:+_}" ]] || return 1
 }
 
 
