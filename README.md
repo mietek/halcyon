@@ -9,9 +9,7 @@ Usage
 
 ```
 # git clone https://github.com/mietek/halcyon ~/halcyon
-# source <(~/halcyon/halcyon paths)
-```
-```
+# source <( ~/halcyon/halcyon paths )
 # halcyon deploy
 ```
 
