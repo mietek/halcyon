@@ -250,11 +250,7 @@ archive_install_dir () {
 	log 'Archiving install'
 
 	create_cached_archive "${install_dir}" "${archive_name}" || die
-	if ! upload_cached_file "${platform}" "${archive_name}"; then
-		return 0
-	fi
-
-	if (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
+	if ! upload_cached_file "${platform}" "${archive_name}" || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
 		return 0
 	fi
 

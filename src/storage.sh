@@ -165,7 +165,7 @@ delete_private_stored_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )) || ! private_storage; then
+	if ! private_storage; then
 		return 0
 	fi
 

@@ -404,13 +404,13 @@ archive_cabal_layer () {
 	log 'Archiving Cabal layer'
 
 	create_cached_archive "${HALCYON_BASE}/cabal" "${archive_name}" || die
-	if ! upload_cached_file "${platform}" "${archive_name}"; then
+	if ! upload_cached_file "${platform}" "${archive_name}" || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
 		return 0
 	fi
 
 	local cabal_date
 	cabal_date=$( get_tag_cabal_date "${cabal_tag}" ) || die
-	if [[ -z "${cabal_date}" ]] || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
+	if [[ -z "${cabal_date}" ]]; then
 		return 0
 	fi
 
