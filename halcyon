@@ -2,9 +2,9 @@
 
 set -eu
 
-export HALCYON_TOP_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
+export HALCYON_INTERNAL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
-source "${HALCYON_TOP_DIR}/src.sh"
+source "${HALCYON_INTERNAL_DIR}/src.sh"
 
 set_halcyon_vars
 halcyon_main "$@"

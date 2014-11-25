@@ -172,11 +172,11 @@ hash_sandbox_magic () {
 
 
 copy_sandbox_magic () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local source_dir
 	expect_args source_dir -- "$@"
-	expect_existing "${HALCYON_APP_DIR}/sandbox"
+	expect_existing "${HALCYON_BASE}/sandbox"
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
@@ -187,13 +187,13 @@ copy_sandbox_magic () {
 	find_tree "${source_dir}/.halcyon-magic" -type f \( -path './ghc*' -or -path './sandbox*' \) |
 		while read -r file; do
 			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_APP_DIR}/sandbox/.halcyon-magic/${file}" || die
+				"${HALCYON_BASE}/sandbox/.halcyon-magic/${file}" || die
 		done || die
 }
 
 
 add_sandbox_sources () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -215,7 +215,7 @@ add_sandbox_sources () {
 
 		local dir_name repo_dir
 		dir_name=$( basename "${sandbox_url%.git}" ) || die
-		repo_dir="${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-sources/${dir_name}"
+		repo_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${dir_name}"
 
 		local commit_hash
 		if [[ ! -d "${repo_dir}" ]]; then
@@ -241,14 +241,14 @@ add_sandbox_sources () {
 
 
 install_sandbox_extra_libs () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
 	# NOTE: The lib dir is always created to prevent spurious linker warnings on OS X.
 
-	mkdir -p "${HALCYON_APP_DIR}/sandbox/usr/lib" || die
+	mkdir -p "${HALCYON_BASE}/sandbox/usr/lib" || die
 
 	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		return 0
@@ -296,13 +296,13 @@ install_sandbox_extra_libs () {
 	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
 		while read -r file; do
 			dpkg --extract "${apt_dir}/cache/archives/${file}" \
-				"${HALCYON_APP_DIR}/sandbox" |& quote || die
+				"${HALCYON_BASE}/sandbox" |& quote || die
 		done || die
 }
 
 
 deploy_sandbox_extra_apps () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -327,7 +327,7 @@ deploy_sandbox_extra_apps () {
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
-	opts+=( --prefix="${HALCYON_APP_DIR}/sandbox" )
+	opts+=( --prefix="${HALCYON_BASE}/sandbox" )
 	[[ -d "${constraints_dir}" ]] && opts+=( --constraints-dir="${constraints_dir}" )
 
 	log 'Deploying sandbox extra apps'
@@ -355,16 +355,16 @@ deploy_sandbox_extra_apps () {
 
 
 build_sandbox_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag source_dir constraints must_create
 	expect_args tag source_dir constraints must_create -- "$@"
 
 	if (( must_create )); then
-		rm -rf "${HALCYON_APP_DIR}/sandbox" || die
+		rm -rf "${HALCYON_BASE}/sandbox" || die
 	else
-		expect_existing "${HALCYON_APP_DIR}/sandbox/.halcyon-tag" \
-			"${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
+		expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
+			"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 	fi
 	expect_existing "${source_dir}"
 
@@ -373,11 +373,11 @@ build_sandbox_layer () {
 	if (( must_create )); then
 		log 'Creating sandbox'
 
-		mkdir -p "${HALCYON_APP_DIR}/sandbox" || die
-		if ! cabal_do "${HALCYON_APP_DIR}/sandbox" sandbox init --sandbox '.' |& quote; then
+		mkdir -p "${HALCYON_BASE}/sandbox" || die
+		if ! cabal_do "${HALCYON_BASE}/sandbox" sandbox init --sandbox '.' |& quote; then
 			die 'Failed to create sandbox'
 		fi
-		mv "${HALCYON_APP_DIR}/sandbox/cabal.sandbox.config" "${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox.config" || die
+		mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
 	add_sandbox_sources "${tag}" "${source_dir}" || die
@@ -426,9 +426,9 @@ build_sandbox_layer () {
 		'linux-ubuntu-14.04-x86_64');&
 		'linux-ubuntu-12.04-x86_64');&
 		'linux-ubuntu-10.04-x86_64')
-			opts+=( --extra-lib-dirs="${HALCYON_APP_DIR}/sandbox/usr/lib" )
-			opts+=( --extra-include-dirs="${HALCYON_APP_DIR}/sandbox/usr/include" )
-			opts+=( --extra-include-dirs="${HALCYON_APP_DIR}/sandbox/usr/include/x86_64-linux-gnu" )
+			opts+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
+			opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
+			opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )
 			;;
 		*)
 			true
@@ -439,11 +439,11 @@ build_sandbox_layer () {
 		die 'Failed to build sandbox'
 	fi
 
-	format_constraints <<<"${constraints}" >"${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" || die
+	format_constraints <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config" || die
 	copy_sandbox_magic "${source_dir}" || die
 
 	local built_size
-	built_size=$( get_size "${HALCYON_APP_DIR}/sandbox" ) || die
+	built_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
 
 	log "Sandbox built, ${built_size}"
 
@@ -460,39 +460,39 @@ build_sandbox_layer () {
 		log 'Sandbox post-build hook executed'
 	fi
 
-	if [[ -d "${HALCYON_APP_DIR}/sandbox/logs" || -d "${HALCYON_APP_DIR}/sandbox/share/doc" ]]; then
+	if [[ -d "${HALCYON_BASE}/sandbox/logs" || -d "${HALCYON_BASE}/sandbox/share/doc" ]]; then
 		log_indent_begin 'Removing documentation from sandbox layer...'
 
-		rm -rf "${HALCYON_APP_DIR}/sandbox/logs" "${HALCYON_APP_DIR}/sandbox/share/doc" || die
+		rm -rf "${HALCYON_BASE}/sandbox/logs" "${HALCYON_BASE}/sandbox/share/doc" || die
 
 		local trimmed_size
-		trimmed_size=$( get_size "${HALCYON_APP_DIR}/sandbox" ) || die
+		trimmed_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
 		log_end "done, ${trimmed_size}"
 	fi
 
 	log_indent_begin 'Stripping sandbox layer...'
 
-	strip_tree "${HALCYON_APP_DIR}/sandbox" || die
+	strip_tree "${HALCYON_BASE}/sandbox" || die
 
 	local stripped_size
-	stripped_size=$( get_size "${HALCYON_APP_DIR}/sandbox" ) || die
+	stripped_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
 	log_end "done, ${stripped_size}"
 
-	derive_sandbox_tag "${tag}" >"${HALCYON_APP_DIR}/sandbox/.halcyon-tag" || die
+	derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag" || die
 }
 
 
 archive_sandbox_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
-	expect_existing "${HALCYON_APP_DIR}/sandbox/.halcyon-tag" \
-		"${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config"
+	expect_vars HALCYON_BASE HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
+	expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
+		"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
 	local sandbox_tag platform ghc_version archive_name constraints_name
-	sandbox_tag=$( detect_sandbox_tag "${HALCYON_APP_DIR}/sandbox/.halcyon-tag" ) || die
+	sandbox_tag=$( detect_sandbox_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" ) || die
 	platform=$( get_tag_platform "${sandbox_tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
@@ -500,8 +500,8 @@ archive_sandbox_layer () {
 
 	log 'Archiving sandbox layer'
 
-	create_cached_archive "${HALCYON_APP_DIR}/sandbox" "${archive_name}" || die
-	copy_file "${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox-constraints.cabal.config" \
+	create_cached_archive "${HALCYON_BASE}/sandbox" "${archive_name}" || die
+	copy_file "${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config" \
 		"${HALCYON_CACHE_DIR}/${constraints_name}" || die
 
 	local no_clean
@@ -525,19 +525,19 @@ archive_sandbox_layer () {
 
 
 validate_sandbox_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
 
 	local sandbox_tag
 	sandbox_tag=$( derive_sandbox_tag "${tag}" ) || die
-	detect_tag "${HALCYON_APP_DIR}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}" || return 1
+	detect_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}" || return 1
 }
 
 
 restore_sandbox_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
@@ -555,11 +555,11 @@ restore_sandbox_layer () {
 
 	log 'Restoring sandbox layer'
 
-	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_APP_DIR}/sandbox" ||
+	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
 		if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
-			! extract_cached_archive_over "${archive_name}" "${HALCYON_APP_DIR}/sandbox" ||
+			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
 			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then
 			return 1
@@ -571,7 +571,7 @@ restore_sandbox_layer () {
 
 
 install_matching_sandbox_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag source_dir constraints matching_tag
 	expect_args tag source_dir constraints matching_tag -- "$@"
@@ -586,7 +586,7 @@ install_matching_sandbox_layer () {
 
 		restore_sandbox_layer "${matching_tag}" || return 1
 
-		derive_sandbox_tag "${tag}" >"${HALCYON_APP_DIR}/sandbox/.halcyon-tag" || die
+		derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag" || die
 		return 0
 	fi
 

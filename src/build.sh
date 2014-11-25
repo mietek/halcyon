@@ -97,7 +97,7 @@ format_build_archive_name () {
 
 
 build_app () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag must_copy must_configure source_dir build_dir
 	expect_args tag must_copy must_configure source_dir build_dir -- "$@"
@@ -328,7 +328,7 @@ prepare_build_dir () {
 
 
 link_sandbox_config () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local build_dir
 	expect_args build_dir -- "$@"
@@ -338,7 +338,7 @@ link_sandbox_config () {
 	# without having to use cabal_do or sandboxed_cabal_do.
 
 	rm -f "${build_dir}/cabal.sandbox.config" || die
-	copy_file "${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox.config" \
+	copy_file "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" \
 		"${build_dir}/cabal.sandbox.config" || die
 }
 

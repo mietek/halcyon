@@ -4,9 +4,9 @@ set_halcyon_vars () {
 	if ! (( ${HALCYON_INTERNAL_RECURSIVE_VARS:-0} )); then
 		export HALCYON_INTERNAL_RECURSIVE_VARS=1
 
-		# NOTE: HALCYON_APP_DIR is set in paths.sh.
+		# NOTE: HALCYON_BASE is set in paths.sh.
 
-		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_APP_DIR}}"
+		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_BASE}}"
 		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
@@ -124,12 +124,12 @@ halcyon_main () {
 	while (( $# )); do
 		case "$1" in
 	# Options:
-		'--app-dir')
+		'--base')
 			shift
-			expect_args app_dir -- "$@"
-			export HALCYON_APP_DIR="${app_dir}";;
-		'--app-dir='*)
-			export HALCYON_APP_DIR="${1#*=}";;
+			expect_args base_dir -- "$@"
+			export HALCYON_BASE="${base_dir}";;
+		'--base='*)
+			export HALCYON_BASE="${1#*=}";;
 		'--prefix')
 			shift
 			expect_args prefix -- "$@"
@@ -457,9 +457,9 @@ halcyon_main () {
 			halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'paths')
-		echo -e "export HALCYON_TOP_DIR='${HALCYON_TOP_DIR}'\n"
+		echo -e "export HALCYON_INTERNAL_DIR='${HALCYON_INTERNAL_DIR}'\n"
 
-		cat "${HALCYON_TOP_DIR}/src/paths.sh" || die
+		cat "${HALCYON_INTERNAL_DIR}/src/paths.sh" || die
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args[*]:-}"

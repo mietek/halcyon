@@ -117,7 +117,7 @@ format_cabal_description () {
 
 
 format_cabal_config () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
@@ -127,7 +127,7 @@ format_cabal_config () {
 
 	cat <<-EOF
 		remote-repo:        ${cabal_repo}
-		remote-repo-cache:  ${HALCYON_APP_DIR}/cabal/remote-repo-cache
+		remote-repo-cache:  ${HALCYON_BASE}/cabal/remote-repo-cache
 		avoid-reinstalls:   True
 		reorder-goals:      True
 		require-sandbox:    True
@@ -204,11 +204,11 @@ hash_cabal_magic () {
 
 
 copy_cabal_magic () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local source_dir
 	expect_args source_dir -- "$@"
-	expect_existing "${HALCYON_APP_DIR}/cabal"
+	expect_existing "${HALCYON_BASE}/cabal"
 
 	local cabal_magic_hash
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
@@ -219,13 +219,13 @@ copy_cabal_magic () {
 	find_tree "${source_dir}/.halcyon-magic" -type f -path './cabal*' |
 		while read -r file; do
 			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_APP_DIR}/cabal/.halcyon-magic/${file}" || die
+				"${HALCYON_BASE}/cabal/.halcyon-magic/${file}" || die
 		done || die
 }
 
 
 build_cabal_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -240,7 +240,7 @@ build_cabal_layer () {
 
 	log 'Building Cabal layer'
 
-	rm -rf "${HALCYON_APP_DIR}/cabal" || die
+	rm -rf "${HALCYON_BASE}/cabal" || die
 
 	if ! extract_cached_archive_over "${original_name}" "${cabal_build_dir}"; then
 		if ! cache_original_stored_file "${original_url}"; then
@@ -280,7 +280,7 @@ build_cabal_layer () {
 				@@ -217,3 +217,3 @@ install_pkg () {
 
 				-  \${GHC} --make Setup -o Setup ||
-				+  \${GHC} -L"${HALCYON_APP_DIR}/ghc/usr/lib" --make Setup -o Setup ||
+				+  \${GHC} -L"${HALCYON_BASE}/ghc/usr/lib" --make Setup -o Setup ||
 				      die "Compiling the Setup script failed."
 EOF
 		) || die
@@ -297,17 +297,17 @@ EOF
 	if ! (
 		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
 		HOME="${cabal_home_dir}" \
-		EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_APP_DIR}/ghc/usr/lib" \
+		EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_BASE}/ghc/usr/lib" \
 			./bootstrap.sh --no-doc |& quote
 	); then
 		die 'Failed to bootstrap Cabal'
 	fi
 
-	copy_file "${cabal_home_dir}/.cabal/bin/cabal" "${HALCYON_APP_DIR}/cabal/bin/cabal" || die
+	copy_file "${cabal_home_dir}/.cabal/bin/cabal" "${HALCYON_BASE}/cabal/bin/cabal" || die
 	copy_cabal_magic "${source_dir}" || die
 
 	local bootstrapped_size
-	bootstrapped_size=$( get_size "${HALCYON_APP_DIR}/cabal" ) || die
+	bootstrapped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
 
 	log "Cabal bootstrapped, ${bootstrapped_size}"
 
@@ -326,20 +326,20 @@ EOF
 
 	log_indent_begin 'Stripping Cabal layer...'
 
-	strip_tree "${HALCYON_APP_DIR}/cabal" || die
+	strip_tree "${HALCYON_BASE}/cabal" || die
 
 	local stripped_size
-	stripped_size=$( get_size "${HALCYON_APP_DIR}/cabal" ) || die
+	stripped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
 	log_end "done, ${stripped_size}"
 
-	derive_base_cabal_tag "${tag}" >"${HALCYON_APP_DIR}/cabal/.halcyon-tag" || die
+	derive_base_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag" || die
 
 	rm -rf "${cabal_build_dir}" "${cabal_home_dir}" || die
 }
 
 
 update_cabal_package_db () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
@@ -349,7 +349,7 @@ update_cabal_package_db () {
 
 	log 'Updating Cabal layer'
 
-	format_cabal_config "${tag}" >"${HALCYON_APP_DIR}/cabal/.halcyon-cabal.config" || die
+	format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-cabal.config" || die
 
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-pre-update-hook" ]]; then
 		log 'Executing Cabal pre-update hook'
@@ -369,7 +369,7 @@ update_cabal_package_db () {
 	fi
 
 	local updated_size
-	updated_size=$( get_size "${HALCYON_APP_DIR}/cabal" ) || die
+	updated_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
 
 	log "Cabal package database updated, ${updated_size}"
 
@@ -384,26 +384,26 @@ update_cabal_package_db () {
 		log 'Cabal post-update hook executed'
 	fi
 
-	derive_updated_cabal_tag "${tag}" "${cabal_date}" >"${HALCYON_APP_DIR}/cabal/.halcyon-tag" || die
+	derive_updated_cabal_tag "${tag}" "${cabal_date}" >"${HALCYON_BASE}/cabal/.halcyon-tag" || die
 }
 
 
 archive_cabal_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
-	expect_existing "${HALCYON_APP_DIR}/cabal/.halcyon-tag"
+	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
+	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
 	local cabal_tag platform archive_name
-	cabal_tag=$( detect_cabal_tag "${HALCYON_APP_DIR}/cabal/.halcyon-tag" ) || die
+	cabal_tag=$( detect_cabal_tag "${HALCYON_BASE}/cabal/.halcyon-tag" ) || die
 	platform=$( get_tag_platform "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
 	log 'Archiving Cabal layer'
 
-	create_cached_archive "${HALCYON_APP_DIR}/cabal" "${archive_name}" || die
+	create_cached_archive "${HALCYON_BASE}/cabal" "${archive_name}" || die
 	if ! upload_cached_file "${platform}" "${archive_name}"; then
 		return 0
 	fi
@@ -423,14 +423,14 @@ archive_cabal_layer () {
 
 
 validate_base_cabal_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
 
 	local base_tag
 	base_tag=$( derive_base_cabal_tag "${tag}" ) || die
-	detect_tag "${HALCYON_APP_DIR}/cabal/.halcyon-tag" "${base_tag//./\.}" || return 1
+	detect_tag "${HALCYON_BASE}/cabal/.halcyon-tag" "${base_tag//./\.}" || return 1
 }
 
 
@@ -448,14 +448,14 @@ validate_updated_cabal_date () {
 
 
 validate_updated_cabal_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
 
 	local updated_pattern candidate_tag
 	updated_pattern=$( derive_updated_cabal_tag_pattern "${tag}" ) || die
-	candidate_tag=$( detect_tag "${HALCYON_APP_DIR}/cabal/.halcyon-tag" "${updated_pattern}" ) || return 1
+	candidate_tag=$( detect_tag "${HALCYON_BASE}/cabal/.halcyon-tag" "${updated_pattern}" ) || return 1
 
 	local candidate_date
 	candidate_date=$( get_tag_cabal_date "${candidate_tag}" ) || die
@@ -487,7 +487,7 @@ match_updated_cabal_archive_name () {
 
 
 restore_base_cabal_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
@@ -503,11 +503,11 @@ restore_base_cabal_layer () {
 
 	log 'Restoring base Cabal layer'
 
-	if ! extract_cached_archive_over "${base_name}" "${HALCYON_APP_DIR}/cabal" ||
+	if ! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_base_cabal_layer "${tag}" >'/dev/null'
 	then
 		if ! cache_stored_file "${platform}" "${base_name}" ||
-			! extract_cached_archive_over "${base_name}" "${HALCYON_APP_DIR}/cabal" ||
+			! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 			! validate_base_cabal_layer "${tag}" >'/dev/null'
 		then
 			return 1
@@ -519,7 +519,7 @@ restore_base_cabal_layer () {
 
 
 restore_cached_updated_cabal_layer () {
-	expect_vars HALCYON_APP_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_BASE HALCYON_CACHE_DIR
 
 	local tag
 	expect_args tag -- "$@"
@@ -541,7 +541,7 @@ restore_cached_updated_cabal_layer () {
 
 	log 'Restoring Cabal layer'
 
-	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_APP_DIR}/cabal" ||
+	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
 		validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
 		return 1
@@ -552,7 +552,7 @@ restore_cached_updated_cabal_layer () {
 
 
 restore_updated_cabal_layer () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag
 	expect_args tag -- "$@"
@@ -576,25 +576,25 @@ restore_updated_cabal_layer () {
 	log 'Restoring Cabal layer'
 
 	if ! cache_stored_file "${platform}" "${updated_name}" ||
-		! extract_cached_archive_over "${updated_name}" "${HALCYON_APP_DIR}/cabal" ||
+		! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_APP_DIR}/cabal" || die
+		rm -rf "${HALCYON_BASE}/cabal" || die
 		return 1
 	fi
 }
 
 
 link_cabal_config () {
-	expect_vars HOME HALCYON_APP_DIR
-	expect_existing "${HOME}" "${HALCYON_APP_DIR}/cabal/.halcyon-tag"
+	expect_vars HOME HALCYON_BASE
+	expect_existing "${HOME}" "${HALCYON_BASE}/cabal/.halcyon-tag"
 
 	if [[ -d "${HOME}/.cabal" && ! -h "${HOME}/.cabal/config" ]]; then
 		log_warning 'Unexpected existing Cabal config'
 		log
 		log 'To use recommended Cabal config:'
 		log_indent '$ rm ~/.cabal/config'
-		log_indent "$ ln -s ${HALCYON_APP_DIR}/cabal/.halcyon-cabal.config ~/.cabal/config"
+		log_indent "$ ln -s ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
 		log
 	fi
 
@@ -603,7 +603,7 @@ link_cabal_config () {
 
 	rm -f "${HOME}/.cabal/config" || die
 	mkdir -p "${HOME}/.cabal" || die
-	ln -s "${HALCYON_APP_DIR}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
+	ln -s "${HALCYON_BASE}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
 }
 
 
@@ -644,8 +644,8 @@ install_cabal_layer () {
 
 
 cabal_do () {
-	expect_vars HALCYON_APP_DIR
-	expect_existing "${HALCYON_APP_DIR}/cabal/.halcyon-tag"
+	expect_vars HALCYON_BASE
+	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag"
 
 	local work_dir
 	expect_args work_dir -- "$@"
@@ -654,17 +654,17 @@ cabal_do () {
 
 	(
 		cd "${work_dir}" &&
-		cabal --config-file="${HALCYON_APP_DIR}/cabal/.halcyon-cabal.config" "$@"
+		cabal --config-file="${HALCYON_BASE}/cabal/.halcyon-cabal.config" "$@"
 	) || return 1
 }
 
 
 sandboxed_cabal_do () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local work_dir
 	expect_args work_dir -- "$@"
-	expect_existing "${HALCYON_APP_DIR}/sandbox" "${work_dir}"
+	expect_existing "${HALCYON_BASE}/sandbox" "${work_dir}"
 	shift
 
 	# NOTE: Specifying a cabal.sandbox.config file changes where Cabal looks for
@@ -673,25 +673,25 @@ sandboxed_cabal_do () {
 
 	local saved_config
 	saved_config=''
-	if [[ -f "${HALCYON_APP_DIR}/sandbox/cabal.config" ]]; then
+	if [[ -f "${HALCYON_BASE}/sandbox/cabal.config" ]]; then
 		saved_config=$( get_tmp_file 'halcyon-saved-config' ) || die
-		mv "${HALCYON_APP_DIR}/sandbox/cabal.config" "${saved_config}" || die
+		mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}" || die
 	fi
 	if [[ -f "${work_dir}/cabal.config" ]]; then
-		copy_file "${work_dir}/cabal.config" "${HALCYON_APP_DIR}/sandbox/cabal.config" || die
+		copy_file "${work_dir}/cabal.config" "${HALCYON_BASE}/sandbox/cabal.config" || die
 	fi
 
 	local status
 	status=0
 	if ! (
-		cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_APP_DIR}/sandbox/.halcyon-sandbox.config" "$@"
+		cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" "$@"
 	); then
 		status=1
 	fi
 
-	rm -f "${HALCYON_APP_DIR}/sandbox/cabal.config" || die
+	rm -f "${HALCYON_BASE}/sandbox/cabal.config" || die
 	if [[ -n "${saved_config}" ]]; then
-		mv "${saved_config}" "${HALCYON_APP_DIR}/sandbox/cabal.config" || die
+		mv "${saved_config}" "${HALCYON_BASE}/sandbox/cabal.config" || die
 	fi
 
 	return "${status}"

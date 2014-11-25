@@ -341,45 +341,20 @@ prepare_source_dir () {
 		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-post-build-hook" || die
 	fi
 
-	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
-		copy_file "${HALCYON_CONSTRAINTS}" "${source_dir}/cabal.config" || die
+	if [[ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
+		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${source_dir}/.halcyon-magic/app-extra-configure-flags" || die
 	fi
-	if [[ -n "${HALCYON_CONSTRAINTS_DIR:+_}" ]]; then
-		copy_file "${HALCYON_CONSTRAINTS_DIR}/${label}.cabal.config" "${source_dir}/cabal.config" || die
+	if [[ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-pre-build-hook" || die
 	fi
-	if [[ -n "${HALCYON_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
-		copy_file <( echo "${HALCYON_EXTRA_CONFIGURE_FLAGS}" ) "${source_dir}/.halcyon-magic/extra-configure-flags" || die
-	fi
-	if [[ -n "${HALCYON_PRE_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/pre-build-hook" || die
-	fi
-	if [[ -n "${HALCYON_POST_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/post-build-hook" || die
-	fi
-
-	if [[ -n "${HALCYON_EXTRA_APPS:+_}" ]]; then
-		local -a extra_apps
-		extra_apps=( ${HALCYON_EXTRA_APPS} )
-
-		copy_file <( IFS=$'\n' && echo "${extra_apps[*]}" ) "${source_dir}/.halcyon-magic/extra-apps" || die
-	fi
-	if [[ -n "${HALCYON_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
-		local constraints_dir
-		constraints_dir="${source_dir}/.halcyon-magic/extra-apps-constraints"
-
-		copy_dir_over "${HALCYON_EXTRA_APPS_CONSTRAINTS_DIR}" "${constraints_dir}" || die
-	fi
-	if [[ -n "${HALCYON_PRE_INSTALL_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_PRE_INSTALL_HOOK}" "${source_dir}/.halcyon-magic/pre-install-hook" || die
-	fi
-	if [[ -n "${HALCYON_POST_INSTALL_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_POST_INSTALL_HOOK}" "${source_dir}/.halcyon-magic/post-install-hook" || die
+	if [[ -n "${HALCYON_APP_POST_BUILD_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_APP_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-post-build-hook" || die
 	fi
 }
 
 
 do_deploy_app () {
-	expect_vars HALCYON_APP_DIR HALCYON_ROOT \
+	expect_vars HALCYON_BASE HALCYON_ROOT \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir constraints
@@ -393,9 +368,9 @@ do_deploy_app () {
 	do_deploy_env "${tag}" "${source_dir}" || return 1
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
-		if [[ -d "${HALCYON_APP_DIR}/sandbox" ]]; then
+		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
 			saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
-			mv "${HALCYON_APP_DIR}/sandbox" "${saved_sandbox}" || die
+			mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}" || die
 		fi
 	fi
 
@@ -414,8 +389,8 @@ do_deploy_app () {
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -n "${saved_sandbox}" ]]; then
-			rm -rf "${HALCYON_APP_DIR}/sandbox" || die
-			mv "${saved_sandbox}" "${HALCYON_APP_DIR}/sandbox" || die
+			rm -rf "${HALCYON_BASE}/sandbox" || die
+			mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox" || die
 		fi
 	fi
 

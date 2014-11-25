@@ -129,7 +129,7 @@ deploy_extra_apps () {
 
 
 prepare_install_dir () {
-	expect_vars HALCYON_APP_DIR
+	expect_vars HALCYON_BASE
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
@@ -146,7 +146,7 @@ prepare_install_dir () {
 	'all')
 		log_indent 'Copying source'
 
-		copy_dir_into "${source_dir}" "${install_dir}${HALCYON_APP_DIR}" || die
+		copy_dir_into "${source_dir}" "${install_dir}${HALCYON_BASE}" || die
 		;;
 	*)
 		true
@@ -157,7 +157,7 @@ prepare_install_dir () {
 	'all')
 		log_indent 'Copying build'
 
-		copy_dir_into "${build_dir}" "${install_dir}${HALCYON_APP_DIR}" || die
+		copy_dir_into "${build_dir}" "${install_dir}${HALCYON_BASE}" || die
 		;;
 	*)
 		true
@@ -177,25 +177,25 @@ prepare_install_dir () {
 	if [[ "${HALCYON_EXTRA_COPY}" == 'all' ]]; then
 		log_indent 'Copying GHC layer'
 
-		copy_dir_into "${HALCYON_APP_DIR}/ghc" "${install_dir}${HALCYON_APP_DIR}/ghc" || die
+		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
 
 		log_indent 'Copying Cabal layer'
 
-		copy_dir_into "${HALCYON_APP_DIR}/cabal" "${install_dir}${HALCYON_APP_DIR}/cabal" || die
+		copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die
 
 		log_indent 'Copying sandbox layer'
 
-		copy_dir_into "${HALCYON_APP_DIR}/sandbox" "${install_dir}${HALCYON_APP_DIR}/sandbox" || die
+		copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || die
 	else
 		# NOTE: Cabal libraries may require data files at runtime.  See filestore for an example.
 		# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
 
-		if find_tree "${HALCYON_APP_DIR}/sandbox/share" -type f |
+		if find_tree "${HALCYON_BASE}/sandbox/share" -type f |
 			match_at_least_one >'/dev/null'
 		then
 			log_indent 'Copying sandbox layer data files'
 
-			copy_dir_into "${HALCYON_APP_DIR}/sandbox/share" "${install_dir}${HALCYON_APP_DIR}/sandbox/share" || die
+			copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
 		fi
 	fi
 
@@ -292,7 +292,7 @@ restore_install_dir () {
 
 
 install_app () {
-	expect_vars HALCYON_APP_DIR \
+	expect_vars HALCYON_BASE \
 		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_NO_PURGE_APP_DIR
 
 	local tag source_dir install_dir root
@@ -304,7 +304,7 @@ install_app () {
 	if ! (( HALCYON_INTERNAL_RECURSIVE )) &&
 		! (( HALCYON_INTERNAL_NO_PURGE_APP_DIR ))
 	then
-		rm -rf "${HALCYON_APP_DIR}" || die
+		rm -rf "${HALCYON_BASE}" || die
 	fi
 
 	local saved_tag
@@ -338,7 +338,7 @@ install_app () {
 		log_begin "Installing app at ${root}${prefix}..."
 	fi
 
-	# NOTE: When / is read-only, but HALCYON_APP_DIR is not, cp -Rp fails, but cp -R succeeds.
+	# NOTE: When / is read-only, but HALCYON_BASE is not, cp -Rp fails, but cp -R succeeds.
 	# Copying .halcyon-tag is avoided for the same reason.
 
 	mkdir -p "${root}" || die
