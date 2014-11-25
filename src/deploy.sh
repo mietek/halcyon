@@ -234,6 +234,7 @@ do_deploy_app_from_install_dir () {
 
 	restore_install_dir "${tag}" "${install_dir}" || return 1
 	install_app "${tag}" "${source_dir}" "${install_dir}" "${HALCYON_ROOT}" || die
+	link_cabal_config || die
 
 	rm -rf "${install_dir}"
 }

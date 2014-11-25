@@ -586,16 +586,26 @@ restore_updated_cabal_layer () {
 
 
 link_cabal_config () {
-	expect_vars HOME HALCYON_BASE
-	expect_existing "${HOME}" "${HALCYON_BASE}/cabal/.halcyon-tag"
+	expect_vars HOME HALCYON_BASE \
+		HALCYON_INTERNAL_RECURSIVE
+	expect_existing "${HOME}"
 
-	if [[ -d "${HOME}/.cabal" && ! -h "${HOME}/.cabal/config" ]]; then
-		log_warning 'Unexpected existing Cabal config'
-		log
-		log 'To use recommended Cabal config:'
-		log_indent '$ rm ~/.cabal/config'
-		log_indent "$ ln -s ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
-		log
+	if [[ ! -f "${HALCYON_BASE}/cabal/.halcyon-tag" ]] || (( HALCYON_INTERNAL_RECURSIVE )); then
+		return 0
+	fi
+
+	if [[ -d "${HOME}/.cabal" && -e "${HOME}/.cabal/config" ]]; then
+		local actual_config
+		actual_config=$( readlink "${HOME}/.cabal/config" ) || die
+		if [[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" ]]; then
+			log_warning 'Unexpected existing Cabal config'
+			log
+			log 'To use recommended Cabal config:'
+			log_indent '$ rm ~/.cabal/config'
+			log_indent "$ ln -s ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
+			log
+			return 0
+		fi
 	fi
 
 	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
