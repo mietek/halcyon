@@ -320,15 +320,15 @@ deploy_sandbox_extra_apps () {
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
-	local constraints_dir
-	constraints_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
+	local extra_constraints
+	extra_constraints="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
 
 	local -a opts
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
 	opts+=( --prefix="${HALCYON_BASE}/sandbox" )
-	[[ -d "${constraints_dir}" ]] && opts+=( --constraints-dir="${constraints_dir}" )
+	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${constraints}" )
 
 	log 'Deploying sandbox extra apps'
 

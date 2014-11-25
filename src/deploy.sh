@@ -301,10 +301,11 @@ prepare_source_dir () {
 
 # Standard files
 	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
-		copy_file "${HALCYON_CONSTRAINTS}" "${source_dir}/cabal.config" || die
-	fi
-	if [[ -n "${HALCYON_CONSTRAINTS_DIR:+_}" ]]; then
-		copy_file "${HALCYON_CONSTRAINTS_DIR}/${label}.cabal.config" "${source_dir}/cabal.config" || die
+		if [[ -d "${HALCYON_CONSTRAINTS}" ]]; then
+			copy_file "${HALCYON_CONSTRAINTS}/${label}.cabal.config" "${source_dir}/cabal.config" || die
+		else
+			copy_file "${HALCYON_CONSTRAINTS}" "${source_dir}/cabal.config" || die
+		fi
 	fi
 
 # General magic files
@@ -314,11 +315,12 @@ prepare_source_dir () {
 
 		copy_file <( IFS=$'\n' && echo "${extra_apps[*]}" ) "${magic_dir}/extra-apps" || die
 	fi
-	if [[ -n "${HALCYON_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
-		local constraints_dir
-		constraints_dir="${source_dir}/.halcyon-magic/extra-apps-constraints"
-
-		copy_dir_over "${HALCYON_EXTRA_APPS_CONSTRAINTS_DIR}" "${constraints_dir}" || die
+	if [[ -n "${HALCYON_EXTRA_APPS_CONSTRAINTS:+_}" ]]; then
+		if [[ -d "${HALCYON_EXTRA_APPS_CONSTRAINTS}" ]]; then
+			copy_dir_over "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
+		else
+			copy_file "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
+		fi
 	fi
 	if [[ -n "${HALCYON_PRE_INSTALL_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
@@ -362,11 +364,12 @@ prepare_source_dir () {
 
 		copy_file <( IFS=$'\n' && echo "${extra_apps[*]}" ) "${magic_dir}/sandbox-extra-apps" || die
 	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
-		local constraints_dir
-		constraints_dir="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
-
-		copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}" "${constraints_dir}" || die
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS:+_}" ]]; then
+		if [[ -d "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" ]]; then
+			copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
+		else
+			copy_file "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
+		fi
 	fi
 	if [[ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]]; then
 		local -a extra_libs
