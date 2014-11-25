@@ -342,9 +342,9 @@ install_app () {
 	fi
 
 	if [[ "${root}" == '/' ]]; then
-		log_begin "Installing app at ${prefix}..."
+		log_begin "Installing app into ${prefix}..."
 	else
-		log_begin "Installing app at ${root}${prefix}..."
+		log_begin "Installing app into ${root}${prefix}..."
 	fi
 
 	# NOTE: When / is read-only, but HALCYON_BASE is not, cp -Rp fails, but cp -R succeeds.
