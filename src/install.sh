@@ -302,7 +302,7 @@ restore_install_dir () {
 
 install_app () {
 	expect_vars HALCYON_BASE \
-		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_NO_PURGE_APP_DIR
+		HALCYON_INTERNAL_RECURSIVE HALCYON_NO_PURGE_BASE
 
 	local tag source_dir install_dir root
 	expect_args tag source_dir install_dir root -- "$@"
@@ -310,8 +310,8 @@ install_app () {
 	local prefix
 	prefix=$( get_tag_prefix "${tag}" ) || die
 
-	if ! (( HALCYON_INTERNAL_RECURSIVE )) &&
-		! (( HALCYON_INTERNAL_NO_PURGE_APP_DIR ))
+	if ! (( HALCYON_NO_PURGE_BASE )) && \
+		! (( HALCYON_INTERNAL_RECURSIVE ))
 	then
 		rm -rf "${HALCYON_BASE}" || die
 	fi
