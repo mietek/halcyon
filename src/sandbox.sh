@@ -213,7 +213,7 @@ add_sandbox_sources () {
 	local sandbox_source
 	for sandbox_source in "${sandbox_sources[@]}"; do
 		local src_name src_dir
-		if validate_git_source "${sandbox_source}"; then
+		if validate_git_url "${sandbox_source}"; then
 			src_name=$( basename "${sandbox_source%.git}" ) || die
 			src_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${src_name}"
 
