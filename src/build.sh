@@ -115,8 +115,8 @@ build_app () {
 		log 'Configuring app'
 
 		local -a opts
-		if [[ -f "${source_dir}/.halcyon-magic/extra-configure-flags" ]]; then
-			opts=( $( <"${source_dir}/.halcyon-magic/extra-configure-flags" ) ) || die
+		if [[ -f "${source_dir}/.halcyon-magic/app-extra-configure-flags" ]]; then
+			opts=( $( <"${source_dir}/.halcyon-magic/app-extra-configure-flags" ) ) || die
 		fi
 		opts+=( --prefix="${prefix}" )
 
@@ -125,7 +125,7 @@ build_app () {
 		fi
 	fi
 
-	if [[ -f "${source_dir}/.halcyon-magic/pre-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]]; then
 		log 'Executing app pre-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
@@ -317,7 +317,7 @@ prepare_build_dir () {
 
 	local must_configure
 	must_configure=0
-	if filter_matching "^. (.halcyon-magic/extra-configure-flags|cabal.config|Setup.hs|.*\.cabal)$" <<<"${changed_files}" |
+	if filter_matching "^. (.halcyon-magic/app-extra-configure-flags|cabal.config|Setup.hs|.*\.cabal)$" <<<"${changed_files}" |
 		match_at_least_one >'/dev/null'
 	then
 		must_configure=1
