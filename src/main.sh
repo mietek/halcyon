@@ -455,9 +455,9 @@ halcyon_main () {
 			halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'paths')
-		echo -e "export HALCYON_INTERNAL_DIR='${HALCYON_INTERNAL_DIR}'\n"
+		echo -e "export HALCYON_INSTALL='${HALCYON_INSTALL}'\n"
 
-		cat "${HALCYON_INTERNAL_DIR}/src/paths.sh" || die
+		cat "${HALCYON_INSTALL}/src/paths.sh" || die
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args[*]:-}"
