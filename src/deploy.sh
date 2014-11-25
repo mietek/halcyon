@@ -102,6 +102,29 @@ determine_cabal_magic_hash () {
 }
 
 
+describe_extra () {
+	local extra_label extra_file
+	expect_args extra_label extra_file -- "$@"
+
+	if [[ ! -f "${extra_file}" ]]; then
+		return 0
+	fi
+
+	local -a extra_lines
+	extra_lines=( $( <"${extra_file}" ) ) || die
+	if [[ -z "${extra_lines[@]:+_}" ]]; then
+		return 0
+	fi
+
+	local only_first extra_line
+	only_first="${extra_label}"
+	for extra_line in "${extra_lines[@]}"; do
+		log_indent_label "${only_first}" "${extra_line}"
+		only_first=''
+	done
+}
+
+
 hash_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -195,14 +218,14 @@ deploy_env () {
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		log 'Deploying environment'
 
+		describe_storage || die
+
 		log_indent_label 'GHC version:' "${ghc_version}"
 		[[ -n "${ghc_magic_hash}" ]] && log_indent_label 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
 		log_indent_label 'Cabal version:' "${cabal_version}"
 		[[ -n "${cabal_magic_hash}" ]] && log_indent_label 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
 		log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
-
-		describe_storage || die
 		log
 	fi
 
@@ -540,75 +563,25 @@ deploy_app () {
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 
-# General options
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
-	if [[ -f "${source_dir}/.halcyon-magic/extra-apps" ]]; then
-		local -a extra_apps
-		extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
-
-		local extra_app only_first
-		only_first='Extra apps:'
-		for extra_app in "${extra_apps[@]:-}"; do
-			log_indent_label "${only_first}" "${extra_app}"
-			only_first=''
-		done
-	fi
+	describe_extra 'Extra apps:' "${source_dir}/.halcyon-magic/extra-apps"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
-# GHC layer options
+	describe_storage || die
+
 	log_indent_label 'GHC version:' "${ghc_version}"
 	[[ -n "${ghc_magic_hash}" ]] && log_indent_label 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
-# Cabal layer options
 	log_indent_label 'Cabal version:' "${cabal_version}"
 	[[ -n "${cabal_magic_hash}" ]] && log_indent_label 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
 	log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
 
-# Sandbox layer options
 	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-sources" ]]; then
-		local -a extra_sources
-		extra_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
+	describe_extra 'Sandbox sources:' "${source_dir}/.halcyon-magic/sandbox-sources"
+	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon-magic/sandbox-extra-apps"
+	describe_extra 'Sandbox extra libs:' "${source_dir}/.halcyon-magic/sandbox-extra-libs"
 
-		local extra_source only_first
-		only_first='Sandbox sources:'
-		for extra_source in "${extra_sources[@]:-}"; do
-			log_indent_label "${only_first}" "${extra_source}"
-			only_first=''
-		done
-	fi
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]]; then
-		local -a extra_apps
-		extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
-
-		local extra_app only_first
-		only_first='Sandbox extra apps:'
-		for extra_app in "${extra_apps[@]:-}"; do
-			log_indent_label "${only_first}" "${extra_app}"
-			only_first=''
-		done
-	fi
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
-		local -a extra_libs
-		extra_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
-
-		local extra_lib only_first
-		only_first='Sandbox extra libs:'
-		for extra_lib in "${extra_libs[@]:-}"; do
-			log_indent_label "${only_first}" "${extra_lib}"
-			only_first=''
-		done
-	fi
-
-# App options
-	if [[ -f "${source_dir}/.halcyon-magic/app-extra-copy" ]]; then
-		local extra_copy
-		extra_copy=( $( <"${source_dir}/.halcyon-magic/app-extra-copy" ) ) || die
-
-		log_indent_label 'App extra copy:' "${extra_copy}"
-	fi
-
-	describe_storage || die
+	describe_extra 'App extra copy:' "${source_dir}/.halcyon-magic/app-extra-copy"
 
 	local tag
 	tag=$(
