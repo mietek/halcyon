@@ -210,35 +210,38 @@ add_sandbox_sources () {
 
 	log 'Adding sandbox sources'
 
-	local sandbox_url
-	for sandbox_url in "${sandbox_sources[@]}"; do
-		if ! validate_git_url "${sandbox_url}"; then
-			die 'Cannot validate sandbox source URL'
-		fi
+	local sandbox_source
+	for sandbox_source in "${sandbox_sources[@]}"; do
+		local src_name src_dir
+		if validate_git_source "${sandbox_source}"; then
+			src_name=$( basename "${sandbox_source%.git}" ) || die
+			src_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${src_name}"
 
-		local dir_name repo_dir
-		dir_name=$( basename "${sandbox_url%.git}" ) || die
-		repo_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${dir_name}"
+			local commit_hash
+			if [[ ! -d "${src_dir}" ]]; then
+				log_indent_begin "Cloning ${sandbox_source}..."
 
-		local commit_hash
-		if [[ ! -d "${repo_dir}" ]]; then
-			log_indent_begin "Cloning ${sandbox_url}..."
+				if ! commit_hash=$( git_clone_over "${sandbox_source}" "${src_dir}" ); then
+					log_end 'error'
+					die 'Cannot clone sandbox source'
+				fi
+			else
+				log_indent_begin "Updating ${sandbox_source}..."
 
-			if ! commit_hash=$( git_clone_over "${sandbox_url}" "${repo_dir}" ); then
-				log_end 'error'
-				die 'Cannot clone sandbox source'
+				if ! commit_hash=$( git_update_into "${sandbox_source}" "${src_dir}" ); then
+					log_end 'error'
+					die 'Cannot update sandbox source'
+				fi
 			fi
+			log_end "done, ${commit_hash:0:7}"
 		else
-			log_indent_begin "Updating ${sandbox_url}..."
+			src_name=$( basename "${sandbox_source}" ) || die
+			src_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${src_name}"
 
-			if ! commit_hash=$( git_update_into "${sandbox_url}" "${repo_dir}" ); then
-				log_end 'error'
-				die 'Cannot update sandbox source'
-			fi
+			copy_over "${sandbox_source}" "${src_dir}" || die
 		fi
-		log_end "done, ${commit_hash:0:7}"
 
-		sandboxed_cabal_do "${source_dir}" sandbox add-source "${repo_dir}" || die
+		sandboxed_cabal_do "${source_dir}" sandbox add-source "${src_dir}" || die
 	done
 }
 
