@@ -57,12 +57,12 @@ format_install_archive_name () {
 	local install_id
 	install_id=$( format_install_id "${tag}" ) || die
 
-	echo "halcyon-install-${install_id}.tar.gz"
+	echo "halcyon-app-install-${install_id}.tar.gz"
 }
 
 
 format_install_archive_name_prefix () {
-	echo 'halcyon-install-'
+	echo 'halcyon-app-install-'
 }
 
 
@@ -73,7 +73,7 @@ format_install_archive_name_pattern () {
 	local label
 	label=$( get_tag_label "${tag}" ) || die
 
-	echo "halcyon-install-.*-${label//./\.}.tar.gz"
+	echo "halcyon-app-install-.*-${label//./\.}.tar.gz"
 }
 
 

@@ -92,7 +92,7 @@ format_build_archive_name () {
 	local label
 	label=$( get_tag_label "${tag}" ) || die
 
-	echo "halcyon-build-${label}.tar.gz"
+	echo "halcyon-app-build-${label}.tar.gz"
 }
 
 

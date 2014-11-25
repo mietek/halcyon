@@ -253,7 +253,7 @@ do_deploy_app_from_install_dir () {
 	expect_args tag source_dir -- "$@"
 
 	local install_dir
-	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
+	install_dir=$( get_tmp_dir 'halcyon-app-install' ) || die
 
 	restore_install_dir "${tag}" "${install_dir}" || return 1
 	install_app "${tag}" "${source_dir}" "${install_dir}" "${HALCYON_ROOT}" || die
@@ -433,8 +433,8 @@ do_deploy_app () {
 
 	local saved_sandbox build_dir install_dir
 	saved_sandbox=''
-	build_dir=$( get_tmp_dir 'halcyon-build' ) || die
-	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
+	build_dir=$( get_tmp_dir 'halcyon-app-build' ) || die
+	install_dir=$( get_tmp_dir 'halcyon-app-install' ) || die
 
 	do_deploy_env "${tag}" "${source_dir}" || return 1
 
