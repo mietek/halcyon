@@ -343,7 +343,7 @@ deploy_sandbox_extra_apps () {
 	opts+=( --cabal-version="${cabal_version}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
 	opts+=( --prefix="${HALCYON_BASE}/sandbox" )
-	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${constraints}" )
+	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${extra_constraints}" )
 
 	log 'Deploying sandbox extra apps'
 
