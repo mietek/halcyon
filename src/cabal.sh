@@ -519,14 +519,14 @@ restore_base_cabal_layer () {
 
 
 restore_cached_updated_cabal_layer () {
-	expect_vars HALCYON_BASE HALCYON_CACHE_DIR
+	expect_vars HALCYON_BASE HALCYON_CACHE
 
 	local tag
 	expect_args tag -- "$@"
 
 	local updated_name
 	updated_name=$(
-		find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f |
+		find_tree "${HALCYON_CACHE}" -maxdepth 1 -type f |
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 

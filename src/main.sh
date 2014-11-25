@@ -11,6 +11,8 @@ set_halcyon_vars () {
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
+
+		export HALCYON_CACHE="${HALCYON_CACHE:-/var/tmp/halcyon-cache}"
 		export HALCYON_NO_ARCHIVE="${HALCYON_NO_ARCHIVE:-0}"
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 		export HALCYON_NO_CLEAN_PRIVATE_STORAGE="${HALCYON_NO_CLEAN_PRIVATE_STORAGE:-0}"
@@ -25,7 +27,6 @@ set_halcyon_vars () {
 		export HALCYON_S3_ENDPOINT="${HALCYON_S3_ENDPOINT:-s3.amazonaws.com}"
 		export HALCYON_NO_PRIVATE_STORAGE="${HALCYON_NO_PRIVATE_STORAGE:-0}"
 
-		export HALCYON_CACHE_DIR="${HALCYON_CACHE_DIR:-/var/tmp/halcyon-cache}"
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
 		export HALCYON_NO_CLEAN_CACHE="${HALCYON_NO_CLEAN_CACHE:-0}"
 
@@ -200,12 +201,12 @@ halcyon_main () {
 			export HALCYON_NO_PRIVATE_STORAGE=1;;
 
 	# Cache options:
-		'--cache-dir')
+		'--cache')
 			shift
 			expect_args cache_dir -- "$@"
-			export HALCYON_CACHE_DIR="${cache_dir}";;
-		'--cache-dir='*)
-			export HALCYON_CACHE_DIR="${1#*=}";;
+			export HALCYON_CACHE="${cache_dir}";;
+		'--cache='*)
+			export HALCYON_CACHE="${1#*=}";;
 		'--purge-cache')
 			export HALCYON_PURGE_CACHE=1;;
 		'--no-clean-cache')
@@ -407,11 +408,11 @@ halcyon_main () {
 		shift
 	done
 
-	# NOTE: HALCYON_CACHE_DIR must not be /tmp, as the cache
-	# cleaning functionality will get confused.
+	# NOTE: HALCYON_CACHE must not be /tmp, as the cache cleaning
+	# functionality will get confused.
 
-	if [[ "${HALCYON_CACHE_DIR}" == '/tmp' ]]; then
-		export HALCYON_CACHE_DIR='/tmp/halcyon-cache'
+	if [[ "${HALCYON_CACHE}" == '/tmp' ]]; then
+		export HALCYON_CACHE='/tmp/halcyon-cache'
 	fi
 
 	if [[ -n "${HALCYON_CABAL_REPO}" ]]; then

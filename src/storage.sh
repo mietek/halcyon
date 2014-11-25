@@ -39,58 +39,58 @@ describe_storage () {
 
 
 create_cached_archive () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE
 
 	local src_dir dst_file_name
 	expect_args src_dir dst_file_name -- "$@"
 	expect_existing "${src_dir}"
 
-	create_archive "${src_dir}" "${HALCYON_CACHE_DIR}/${dst_file_name}" || return 1
+	create_archive "${src_dir}" "${HALCYON_CACHE}/${dst_file_name}" || return 1
 }
 
 
 extract_cached_archive_over () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE
 
 	local src_file_name dst_dir
 	expect_args src_file_name dst_dir -- "$@"
 
-	if [[ ! -f "${HALCYON_CACHE_DIR}/${src_file_name}" ]]; then
+	if [[ ! -f "${HALCYON_CACHE}/${src_file_name}" ]]; then
 		return 1
 	fi
 
-	extract_archive_over "${HALCYON_CACHE_DIR}/${src_file_name}" "${dst_dir}" || return 1
+	extract_archive_over "${HALCYON_CACHE}/${src_file_name}" "${dst_dir}" || return 1
 }
 
 
 touch_cached_file () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE
 
 	local file_name
 	expect_args file_name -- "$@"
 
-	if [[ ! -f "${HALCYON_CACHE_DIR}/${file_name}" ]]; then
+	if [[ ! -f "${HALCYON_CACHE}/${file_name}" ]]; then
 		return 0
 	fi
 
-	touch "${HALCYON_CACHE_DIR}/${file_name}" || return 0
+	touch "${HALCYON_CACHE}/${file_name}" || return 0
 }
 
 
 touch_cached_env_files () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE
 
 	local name
-	find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f |
+	find_tree "${HALCYON_CACHE}" -maxdepth 1 -type f |
 		filter_matching "^(halcyon-ghc-.*|halcyon-cabal-.*)$" |
 		while read -r name; do
-			touch "${HALCYON_CACHE_DIR}/${name}" || true
+			touch "${HALCYON_CACHE}/${name}" || true
 		done || return 0
 }
 
 
 upload_cached_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_UPLOAD
+	expect_vars HALCYON_CACHE HALCYON_NO_UPLOAD
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
@@ -101,7 +101,7 @@ upload_cached_file () {
 
 	local object file
 	object="${prefix:+${prefix}/}${file_name}"
-	file="${HALCYON_CACHE_DIR}/${file_name}"
+	file="${HALCYON_CACHE}/${file_name}"
 
 	BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}" \
 	BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}" \
@@ -111,14 +111,14 @@ upload_cached_file () {
 
 
 cache_stored_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
+	expect_vars HALCYON_CACHE HALCYON_NO_PUBLIC_STORAGE
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
 	local object file
 	object="${prefix:+${prefix}/}${file_name}"
-	file="${HALCYON_CACHE_DIR}/${file_name}"
+	file="${HALCYON_CACHE}/${file_name}"
 
 	if private_storage &&
 		BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}" \
@@ -141,14 +141,14 @@ cache_stored_file () {
 
 
 cache_original_stored_file () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_PUBLIC_STORAGE
+	expect_vars HALCYON_CACHE HALCYON_NO_PUBLIC_STORAGE
 
 	local original_url
 	expect_args original_url -- "$@"
 
 	local file_name file
 	file_name=$( basename "${original_url}" ) || die
-	file="${HALCYON_CACHE_DIR}/${file_name}"
+	file="${HALCYON_CACHE}/${file_name}"
 
 	if cache_stored_file 'original' "${file_name}"; then
 		return 0
@@ -244,7 +244,7 @@ delete_matching_private_stored_files () {
 
 
 prepare_cache () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_PURGE_CACHE HALCYON_NO_CLEAN_CACHE \
+	expect_vars HALCYON_CACHE HALCYON_PURGE_CACHE HALCYON_NO_CLEAN_CACHE \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local cache_dir
@@ -258,21 +258,21 @@ prepare_cache () {
 		log 'Purging cache'
 		log
 
-		rm -rf "${HALCYON_CACHE_DIR}"
+		rm -rf "${HALCYON_CACHE}"
 	fi
 
-	mkdir -p "${HALCYON_CACHE_DIR}" "${cache_dir}" || die
+	mkdir -p "${HALCYON_CACHE}" "${cache_dir}" || die
 
 	if ! (( HALCYON_PURGE_CACHE )); then
 		local files
 		if files=$(
-			find_tree "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f |
+			find_tree "${HALCYON_CACHE}" -maxdepth 1 -type f |
 			sort_natural |
 			match_at_least_one
 		); then
 			log 'Examining cache contents'
 
-			copy_dir_over "${HALCYON_CACHE_DIR}" "${cache_dir}" || die
+			copy_dir_over "${HALCYON_CACHE}" "${cache_dir}" || die
 
 			quote <<<"${files}"
 			log
@@ -284,7 +284,7 @@ prepare_cache () {
 
 
 clean_cache () {
-	expect_vars HALCYON_CACHE_DIR HALCYON_NO_CLEAN_CACHE \
+	expect_vars HALCYON_CACHE HALCYON_NO_CLEAN_CACHE \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local cache_dir
@@ -298,10 +298,10 @@ clean_cache () {
 	mark_time=$( get_modification_time "${cache_dir}" ) || die
 	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
 
-	rm -f "${HALCYON_CACHE_DIR}/${name_prefix}"* || die
+	rm -f "${HALCYON_CACHE}/${name_prefix}"* || die
 
 	local file
-	find "${HALCYON_CACHE_DIR}" -maxdepth 1 -type f 2>'/dev/null' |
+	find "${HALCYON_CACHE}" -maxdepth 1 -type f 2>'/dev/null' |
 		while read -r file; do
 			local file_time
 			file_time=$( get_modification_time "${file}" ) || die
@@ -312,7 +312,7 @@ clean_cache () {
 
 	local changed_files
 	if changed_files=$(
-		compare_tree "${cache_dir}" "${HALCYON_CACHE_DIR}" |
+		compare_tree "${cache_dir}" "${HALCYON_CACHE}" |
 		filter_not_matching '^= ' |
 		match_at_least_one
 	); then
@@ -325,7 +325,7 @@ clean_cache () {
 
 
 install_pigz () {
-	expect_vars HALCYON_INTERNAL_DIR HALCYON_CACHE_DIR
+	expect_vars HALCYON_INTERNAL_DIR HALCYON_CACHE
 
 	if which 'pigz' &>'/dev/null'; then
 		return 0
@@ -356,10 +356,10 @@ install_pigz () {
 	original_name=$( basename "${original_url}" ) || die
 	pigz_dir=$( get_tmp_dir 'halcyon-pigz' ) || die
 
-	if ! dpkg --extract "${HALCYON_CACHE_DIR}/${original_name}" "${pigz_dir}" 2>'/dev/null'; then
+	if ! dpkg --extract "${HALCYON_CACHE}/${original_name}" "${pigz_dir}" 2>'/dev/null'; then
 		rm -rf "${pigz_dir}" || die
 		if ! cache_original_stored_file "${original_url}" ||
-			! dpkg --extract "${HALCYON_CACHE_DIR}/${original_name}" "${pigz_dir}" 2>'/dev/null'
+			! dpkg --extract "${HALCYON_CACHE}/${original_name}" "${pigz_dir}" 2>'/dev/null'
 		then
 			log_warning 'Cannot install pigz'
 			return 0

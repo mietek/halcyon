@@ -483,7 +483,7 @@ build_sandbox_layer () {
 
 
 archive_sandbox_layer () {
-	expect_vars HALCYON_BASE HALCYON_CACHE_DIR HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
+	expect_vars HALCYON_BASE HALCYON_CACHE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
 	expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
 		"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config"
 
@@ -502,7 +502,7 @@ archive_sandbox_layer () {
 
 	create_cached_archive "${HALCYON_BASE}/sandbox" "${archive_name}" || die
 	copy_file "${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config" \
-		"${HALCYON_CACHE_DIR}/${constraints_name}" || die
+		"${HALCYON_CACHE}/${constraints_name}" || die
 
 	local no_clean
 	no_clean=0

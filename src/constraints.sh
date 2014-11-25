@@ -162,7 +162,7 @@ validate_partial_constraints_file () {
 
 
 match_full_sandbox_layer () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE
 
 	local tag all_names
 	expect_args tag all_names -- "$@"
@@ -180,7 +180,7 @@ match_full_sandbox_layer () {
 
 	local full_name full_file full_hash
 	while read -r full_name; do
-		full_file="${HALCYON_CACHE_DIR}/${full_name}"
+		full_file="${HALCYON_CACHE}/${full_name}"
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
 			if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
@@ -204,7 +204,7 @@ match_full_sandbox_layer () {
 
 
 list_partial_sandbox_layers () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE
 
 	local tag constraints all_names
 	expect_args tag constraints all_names -- "$@"
@@ -222,7 +222,7 @@ list_partial_sandbox_layers () {
 
 	local partial_name partial_file partial_hash
 	while read -r partial_name; do
-		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
+		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
 			if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
@@ -243,7 +243,7 @@ list_partial_sandbox_layers () {
 
 
 score_partial_sandbox_layers () {
-	expect_vars HALCYON_CACHE_DIR
+	expect_vars HALCYON_CACHE
 
 	local constraints partial_tags
 	expect_args constraints partial_tags -- "$@"
@@ -259,7 +259,7 @@ score_partial_sandbox_layers () {
 	local partial_tag partial_name partial_file
 	while read -r partial_tag; do
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" ) || die
-		partial_file="${HALCYON_CACHE_DIR}/${partial_name}"
+		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! validate_partial_constraints_file "${partial_file}" >'/dev/null'; then
 			continue
 		fi
