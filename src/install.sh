@@ -114,7 +114,7 @@ deploy_extra_apps () {
 
 	local extra_app index
 	index=0
-	for extra_app in "${extra_apps[@]:-}"; do
+	for extra_app in "${extra_apps[@]}"; do
 		index=$(( index + 1 ))
 		if (( index > 1 )); then
 			log

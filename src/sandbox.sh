@@ -211,7 +211,7 @@ add_sandbox_sources () {
 	log 'Adding sandbox sources'
 
 	local sandbox_url
-	for sandbox_url in "${sandbox_sources[@]:-}"; do
+	for sandbox_url in "${sandbox_sources[@]}"; do
 		if ! validate_git_url "${sandbox_url}"; then
 			die 'Cannot validate sandbox source URL'
 		fi
@@ -346,7 +346,7 @@ deploy_sandbox_extra_apps () {
 
 	local extra_app index
 	index=0
-	for extra_app in "${extra_apps[@]:-}"; do
+	for extra_app in "${extra_apps[@]}"; do
 		index=$(( index + 1 ))
 		if (( index > 1 )); then
 			log
