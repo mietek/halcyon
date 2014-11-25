@@ -85,6 +85,12 @@ deploy_extra_apps () {
 		return 0
 	fi
 
+	local -a extra_apps
+	extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
+	if [[ -z "${extra_apps[@]:+_}" ]]; then
+		return 0
+	fi
+
 	local ghc_version ghc_magic_hash
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
@@ -105,9 +111,6 @@ deploy_extra_apps () {
 	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${extra_constraints}" )
 
 	log 'Deploying extra apps'
-
-	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
 
 	local extra_app index
 	index=0

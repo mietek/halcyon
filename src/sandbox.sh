@@ -202,10 +202,13 @@ add_sandbox_sources () {
 		return 0
 	fi
 
-	log 'Adding sandbox sources'
-
 	local -a sandbox_sources
 	sandbox_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
+	if [[ -z "${sandbox_sources[@]:+_}" ]]; then
+		return 0
+	fi
+
+	log 'Adding sandbox sources'
 
 	local sandbox_url
 	for sandbox_url in "${sandbox_sources[@]:-}"; do
@@ -254,6 +257,12 @@ install_sandbox_extra_libs () {
 		return 0
 	fi
 
+	local -a extra_libs
+	extra_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
+	if [[ -z "${extra_libs[@]:+_}" ]]; then
+		return 0
+	fi
+
 	local platform description apt_dir
 	platform=$( get_tag_platform "${tag}" ) || die
 	description=$( format_platform_description "${platform}" ) || die
@@ -285,11 +294,8 @@ install_sandbox_extra_libs () {
 
 	log_end 'done'
 
-	local -a extra_libs
-	extra_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
-
 	local extra_lib
-	for extra_lib in "${extra_libs[@]:-}"; do
+	for extra_lib in "${extra_libs[@]}"; do
 		apt-get "${opts[@]}" install --download-only --reinstall --yes "${extra_lib}" |& quote || die
 	done
 
@@ -308,6 +314,12 @@ deploy_sandbox_extra_apps () {
 	expect_args tag source_dir -- "$@"
 
 	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]]; then
+		return 0
+	fi
+
+	local -a extra_apps
+	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
+	if [[ -z "${extra_apps[@]:+_}" ]]; then
 		return 0
 	fi
 
@@ -331,9 +343,6 @@ deploy_sandbox_extra_apps () {
 	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${constraints}" )
 
 	log 'Deploying sandbox extra apps'
-
-	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
 
 	local extra_app index
 	index=0
