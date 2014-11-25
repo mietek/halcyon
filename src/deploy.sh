@@ -264,24 +264,23 @@ do_deploy_app_from_install_dir () {
 
 
 deploy_app_from_install_dir () {
-	expect_vars HALCYON_PREFIX \
+	expect_vars HALCYON_PREFIX HALCYON_KEEP_DEPENDENCIES \
 		HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
 		HALCYON_SANDBOX_REBUILD \
 		HALCYON_APP_REBUILD \
-		HALCYON_INTERNAL_RECURSIVE \
-		HALCYON_INTERNAL_FORCE_RESTORE_ALL
+		HALCYON_INTERNAL_RECURSIVE
 
 	local label source_hash source_dir
 	expect_args label source_hash source_dir -- "$@"
 	expect_existing "${source_dir}"
 
 	if [[ ! -f "${source_dir}/cabal.config" ]] ||
+		(( HALCYON_KEEP_DEPENDENCIES )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
 		(( HALCYON_SANDBOX_REBUILD )) ||
-		(( HALCYON_APP_REBUILD )) ||
-		(( HALCYON_INTERNAL_FORCE_RESTORE_ALL ))
+		(( HALCYON_APP_REBUILD ))
 	then
 		return 1
 	fi

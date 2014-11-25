@@ -25,10 +25,10 @@ help_usage () {
 		  --extra-apps-constraints=               file or directory path
 		  --pre-install-hook=                     file path
 		  --post-install-hook=                    file path
+		  --keep-dependencies
 		  --no-app
 		  --no-build
 		  --no-build-dependencies
-		  --no-purge-base
 
 		Cache options
 		  --cache=                                directory path

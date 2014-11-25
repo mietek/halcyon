@@ -11,7 +11,6 @@ set_halcyon_vars () {
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
-		export HALCYON_NO_PURGE_BASE="${HALCYON_NO_PURGE_BASE:-0}"
 
 		export HALCYON_CACHE="${HALCYON_CACHE:-/var/tmp/halcyon-cache}"
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
@@ -62,6 +61,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
+		export HALCYON_KEEP_DEPENDENCIES="${HALCYON_KEEP_DEPENDENCIES:-0}"
 
 		export HALCYON_GHC_REBUILD="${HALCYON_GHC_REBUILD:-0}"
 
@@ -83,7 +83,6 @@ set_halcyon_vars () {
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
 		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
 
-		export HALCYON_INTERNAL_FORCE_RESTORE_ALL="${HALCYON_INTERNAL_FORCE_RESTORE_ALL:-0}"
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
 	else
 		export HALCYON_CONSTRAINTS=''
@@ -91,6 +90,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
+		export HALCYON_KEEP_DEPENDENCIES=0
 
 		export HALCYON_GHC_REBUILD=0
 
@@ -112,7 +112,6 @@ set_halcyon_vars () {
 		export HALCYON_APP_REBUILD=0
 		export HALCYON_APP_RECONFIGURE=0
 
-		export HALCYON_INTERNAL_FORCE_RESTORE_ALL=0
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=0
 	fi
 }
@@ -175,14 +174,14 @@ halcyon_main () {
 			export HALCYON_POST_INSTALL_HOOK="${post_install_hook}";;
 		'--post-install-hook='*)
 			export HALCYON_POST_INSTALL_HOOK="${1#*=}";;
+		'--keep-dependencies')
+			export HALCYON_KEEP_DEPENDENCIES=1;;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
 		'--no-build-dependencies')
 			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
-		'--no-purge-base')
-			export HALCYON_NO_PURGE_BASE=1;;
 
 	# Cache options
 		'--cache')
