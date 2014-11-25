@@ -1,91 +1,85 @@
 help_usage () {
 	log
 	quote <<-EOF
-		Usage:
-		    halcyon COMMAND
+		Usage
+		  halcyon COMMAND
 
-		Commands:
-		    deploy APP OPTION*
-		    label APP OPTION*
-		    constraints APP OPTION*
-		    tag APP OPTION*
-		    paths
+		Commands
+		  deploy APP? OPTION*
+		  label APP? OPTION*
+		  constraints APP? OPTION*
+		  paths
 
-		App:
-		    (none)
-		        Local app in current directory, or only environment.
-		    PATH
-		        Local app in specified directory.
-		    LABEL
-		        Remote app with specified label in Cabal repository.
-		    URL
-		        Remote app in git repository at specified URL.
+		App
+		  directory path
+		  label
+		  git URL
+		  nothing
 
-		General options:
-		    --app-dir=...
-		    --prefix=...
-		    --root=...
-		    --constraints=...
-		    --constraints-dir=...
-		    --extra-apps=...
-		    --extra-apps-constraints-dir=...
-		    --pre-install-hook=...
-		    --post-install-hook=...
-		    --no-app
-		    --no-build
-		    --no-build-dependencies
+		General options
+		  --base=                                 directory path
+		  --prefix=                               directory path
+		  --root=                                 directory path
+		  --constraints=                          file or directory path
+		  --extra-apps=                           whitespace-separated apps
+		  --extra-apps-constraints=               file or directory path
+		  --pre-install-hook=                     file path
+		  --post-install-hook=                    file path
+		  --no-app
+		  --no-build
+		  --no-build-dependencies
 
-		Cache options:
-		    --cache-dir=...
-		    --purge-cache
-		    --no-archive
-		    --no-clean-cache
+		Cache options
+		  --cache=                                directory path
+		  --purge-cache
+		  --no-archive
+		  --no-clean-cache
 
-		Public storage options:
-		    --public-storage-url=...
-		    --no-public-storage
+		Public storage options
+		  --public-storage=                       S3 URL
+		  --no-public-storage
 
-		Private storage options:
-		    --aws-access-key-id=...
-		    --aws-secret-access-key=...
-		    --s3-bucket=...
-		    --s3-acl=private or public-read
-		    --s3-endpoint=...
-		    --no-private-storage
-		    --no-upload
-		    --no-clean-private-storage
+		Private storage options
+		  --aws-access-key-id=                    string
+		  --aws-secret-access-key=                string
+		  --s3-bucket=                            S3 bucket name
+		  --s3-endpoint=                          Internet address
+		  --s3-acl=                               private or public-read
+		  --no-private-storage
+		  --no-upload
+		  --no-clean-private-storage
 
-		GHC layer options:
-		    --ghc-version=...
-		    --ghc-pre-build-hook=...
-		    --ghc-post-build-hook=...
-		    --ghc-rebuild
+		GHC layer options
+		  --ghc-version=                          version number
+		  --ghc-pre-build-hook=                   file path
+		  --ghc-post-build-hook=                  file path
+		  --ghc-rebuild
 
-		Cabal layer options:
-		    --cabal-version=...
-		    --cabal-repo=...
-		    --cabal-pre-build-hook=...
-		    --cabal-post-build-hook=...
-		    --cabal-pre-update-hook=...
-		    --cabal-post-update-hook=...
-		    --cabal-rebuild
-		    --cabal-update
+		Cabal layer options
+		  --cabal-version=                        version number
+		  --cabal-repo=                           colon-separated name and URL
+		  --cabal-pre-build-hook=                 file path
+		  --cabal-post-build-hook=                file path
+		  --cabal-pre-update-hook=                file path
+		  --cabal-post-update-hook=               file path
+		  --cabal-rebuild
+		  --cabal-update
 
-		Sandbox layer options:
-		    --sandbox-sources=...
-		    --sandbox-extra-libs=...
-		    --sandbox-extra-apps=...
-		    --sandbox-extra-apps-constraints-dir=...
-		    --sandbox-pre-build-hook=...
-		    --sandbox-post-build-hook=...
-		    --sandbox-rebuild
+		Sandbox layer options
+		  --sandbox-sources=                      whitespace-separated sources
+		  --sandbox-extra-apps=                   whitespace-separated apps
+		  --sandbox-extra-apps-constraints=       file or directory path
+		  --sandbox-extra-libs=                   whitespace-separated strings
+		  --sandbox-pre-build-hook=               file path
+		  --sandbox-post-build-hook=              file path
+		  --sandbox-rebuild
 
-		App options:
-		    --app-extra-configure-flags=...
-		    --app-extra-copy=...
-		    --app-pre-build-hook=...
-		    --app-post-build-hook=...
-		    --app-rebuild
-		    --app-reconfigure
+		App options
+		  --app-extra-configure-flags=            whitespace-separated strings
+		  --app-extra-copy=                       source or build or all
+		  --app-pre-build-hook=                   file path
+		  --app-post-build-hook=                  file path
+		  --app-rebuild
+		  --app-reconfigure
 EOF
 }
