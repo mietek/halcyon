@@ -17,7 +17,7 @@ set_halcyon_vars () {
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 		export HALCYON_NO_CLEAN_PRIVATE_STORAGE="${HALCYON_NO_CLEAN_PRIVATE_STORAGE:-0}"
 
-		export HALCYON_PUBLIC_STORAGE_URL="${HALCYON_PUBLIC_STORAGE_URL:-https://s3.halcyon.sh}"
+		export HALCYON_PUBLIC_STORAGE="${HALCYON_PUBLIC_STORAGE:-https://s3.halcyon.sh}"
 		export HALCYON_NO_PUBLIC_STORAGE="${HALCYON_NO_PUBLIC_STORAGE:-0}"
 
 		export HALCYON_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID:-}"
@@ -157,12 +157,12 @@ halcyon_main () {
 			export HALCYON_NO_CLEAN_PRIVATE_STORAGE=1;;
 
 	# Public storage options:
-		'--public-storage-url')
+		'--public-storage')
 			shift
-			expect_args public_storage_url -- "$@"
-			export HALCYON_PUBLIC_STORAGE_URL="${public_storage_url}";;
-		'--public-storage-url='*)
-			export HALCYON_PUBLIC_STORAGE_URL="${1#*=}";;
+			expect_args public_storage -- "$@"
+			export HALCYON_PUBLIC_STORAGE="${public_storage}";;
+		'--public-storage='*)
+			export HALCYON_PUBLIC_STORAGE="${1#*=}";;
 		'--no-public-storage')
 			export HALCYON_NO_PUBLIC_STORAGE=1;;
 

@@ -14,12 +14,12 @@ private_storage () {
 
 
 format_public_storage_url () {
-	expect_vars HALCYON_PUBLIC_STORAGE_URL
+	expect_vars HALCYON_PUBLIC_STORAGE
 
 	local object
 	expect_args object -- "$@"
 
-	echo "${HALCYON_PUBLIC_STORAGE_URL}/${object}"
+	echo "${HALCYON_PUBLIC_STORAGE}/${object}"
 }
 
 
