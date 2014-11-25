@@ -539,36 +539,41 @@ deploy_app () {
 	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
+
+# General options
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
+	if [[ -f "${source_dir}/.halcyon-magic/extra-apps" ]]; then
+		local -a extra_apps
+		extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
+
+		local extra_app only_first
+		only_first='Extra apps:'
+		for extra_app in "${extra_apps[@]:-}"; do
+			log_indent_label "${only_first}" "${extra_app}"
+			only_first=''
+		done
+	fi
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
+# GHC layer options
 	log_indent_label 'GHC version:' "${ghc_version}"
 	[[ -n "${ghc_magic_hash}" ]] && log_indent_label 'GHC magic hash:' "${ghc_magic_hash:0:7}"
 
+# Cabal layer options
 	log_indent_label 'Cabal version:' "${cabal_version}"
 	[[ -n "${cabal_magic_hash}" ]] && log_indent_label 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
 	log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
 
+# Sandbox layer options
 	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-sources" ]]; then
-		local -a sandbox_sources
-		sandbox_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
+		local -a extra_sources
+		extra_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
 
-		local sandbox_url only_first
+		local extra_source only_first
 		only_first='Sandbox sources:'
-		for sandbox_url in "${sandbox_sources[@]:-}"; do
-			log_indent_label "${only_first}" "${sandbox_url}"
-			only_first=''
-		done
-	fi
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
-		local -a extra_libs
-		extra_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
-
-		local extra_lib only_first
-		only_first='Sandbox extra libs:'
-		for extra_lib in "${extra_libs[@]:-}"; do
-			log_indent_label "${only_first}" "${extra_lib}"
+		for extra_source in "${extra_sources[@]:-}"; do
+			log_indent_label "${only_first}" "${extra_source}"
 			only_first=''
 		done
 	fi
@@ -583,17 +588,24 @@ deploy_app () {
 			only_first=''
 		done
 	fi
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
+		local -a extra_libs
+		extra_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
 
-	if [[ -f "${source_dir}/.halcyon-magic/extra-apps" ]]; then
-		local -a extra_apps
-		extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
-
-		local extra_app only_first
-		only_first='Extra apps:'
-		for extra_app in "${extra_apps[@]:-}"; do
-			log_indent_label "${only_first}" "${extra_app}"
+		local extra_lib only_first
+		only_first='Sandbox extra libs:'
+		for extra_lib in "${extra_libs[@]:-}"; do
+			log_indent_label "${only_first}" "${extra_lib}"
 			only_first=''
 		done
+	fi
+
+# App options
+	if [[ -f "${source_dir}/.halcyon-magic/app-extra-copy" ]]; then
+		local extra_copy
+		extra_copy=( $( <"${source_dir}/.halcyon-magic/app-extra-copy" ) ) || die
+
+		log_indent_label 'App extra copy:' "${extra_copy}"
 	fi
 
 	describe_storage || die
