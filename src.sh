@@ -4,14 +4,14 @@ export HALCYON_INTERNAL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
 
 halcyon_source_bashmenot () {
-	local no_autoupdate
-	no_autoupdate="${HALCYON_NO_AUTOUPDATE:-0}"
+	local no_update
+	no_update="${HALCYON_NO_SELF_UPDATE:-0}"
 	if (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
-		no_autoupdate=1
+		no_update=1
 	fi
 
 	if [[ -d "${HALCYON_INTERNAL_DIR}/lib/bashmenot" ]]; then
-		BASHMENOT_NO_AUTOUPDATE="${no_autoupdate}" \
+		BASHMENOT_NO_SELF_UPDATE="${no_update}" \
 			source "${HALCYON_INTERNAL_DIR}/lib/bashmenot/src.sh" || return 1
 		return 0
 	fi
@@ -35,7 +35,7 @@ halcyon_source_bashmenot () {
 	) || return 1
 	echo " done, ${commit_hash:0:7}" >&2
 
-	BASHMENOT_NO_AUTOUPDATE=1 \
+	BASHMENOT_NO_SELF_UPDATE=1 \
 		source "${HALCYON_INTERNAL_DIR}/lib/bashmenot/src.sh" || return 1
 }
 
@@ -59,8 +59,8 @@ source "${HALCYON_INTERNAL_DIR}/src/install.sh"
 source "${HALCYON_INTERNAL_DIR}/src/help.sh"
 
 
-halcyon_autoupdate () {
-	if (( ${HALCYON_NO_AUTOUPDATE:-0} )) || (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+halcyon_self_update () {
+	if (( ${HALCYON_NO_SELF_UPDATE:-0} )) || (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
 		return 0
 	fi
 
@@ -71,7 +71,7 @@ halcyon_autoupdate () {
 	local url
 	url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
 
-	log_begin 'Auto-updating Halcyon...'
+	log_begin 'Self-updating Halcyon...'
 
 	local commit_hash
 	if ! commit_hash=$( git_update_into "${url}" "${HALCYON_INTERNAL_DIR}" ); then
@@ -80,11 +80,11 @@ halcyon_autoupdate () {
 	fi
 	log_end "done, ${commit_hash:0:7}"
 
-	HALCYON_NO_AUTOUPDATE=1 \
+	HALCYON_NO_SELF_UPDATE=1 \
 		source "${HALCYON_INTERNAL_DIR}/src.sh" || return 1
 }
 
 
-if ! halcyon_autoupdate; then
-	log_warning 'Cannot auto-update Halcyon'
+if ! halcyon_self_update; then
+	log_warning 'Cannot self-update Halcyon'
 fi
