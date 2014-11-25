@@ -530,7 +530,7 @@ restore_cached_updated_cabal_layer () {
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 
-	if ! validate_updated_cabal_layer "${tag}" >'/dev/null'; then
+	if validate_updated_cabal_layer "${tag}" >'/dev/null'; then
 		touch_cached_file "${updated_name}" || die
 		return 0
 	fi
@@ -542,7 +542,7 @@ restore_cached_updated_cabal_layer () {
 	log 'Restoring Cabal layer'
 
 	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
-		validate_updated_cabal_layer "${tag}" >'/dev/null'
+		! validate_updated_cabal_layer "${tag}" >'/dev/null'
 	then
 		return 1
 	else
