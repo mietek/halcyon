@@ -296,6 +296,35 @@ prepare_source_dir () {
 	expect_args label source_dir -- "$@"
 	expect_existing "${source_dir}"
 
+# Standard files
+	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
+		copy_file "${HALCYON_CONSTRAINTS}" "${source_dir}/cabal.config" || die
+	fi
+	if [[ -n "${HALCYON_CONSTRAINTS_DIR:+_}" ]]; then
+		copy_file "${HALCYON_CONSTRAINTS_DIR}/${label}.cabal.config" "${source_dir}/cabal.config" || die
+	fi
+
+# General magic files
+	if [[ -n "${HALCYON_EXTRA_APPS:+_}" ]]; then
+		local -a extra_apps
+		extra_apps=( ${HALCYON_EXTRA_APPS} )
+
+		copy_file <( IFS=$'\n' && echo "${extra_apps[*]}" ) "${source_dir}/.halcyon-magic/extra-apps" || die
+	fi
+	if [[ -n "${HALCYON_EXTRA_APPS_CONSTRAINTS_DIR:+_}" ]]; then
+		local constraints_dir
+		constraints_dir="${source_dir}/.halcyon-magic/extra-apps-constraints"
+
+		copy_dir_over "${HALCYON_EXTRA_APPS_CONSTRAINTS_DIR}" "${constraints_dir}" || die
+	fi
+	if [[ -n "${HALCYON_PRE_INSTALL_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_PRE_INSTALL_HOOK}" "${source_dir}/.halcyon-magic/pre-install-hook" || die
+	fi
+	if [[ -n "${HALCYON_POST_INSTALL_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_POST_INSTALL_HOOK}" "${source_dir}/.halcyon-magic/post-install-hook" || die
+	fi
+
+# GHC layer magic files
 	if [[ -n "${HALCYON_GHC_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_GHC_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/ghc-pre-build-hook" || die
 	fi
@@ -303,24 +332,26 @@ prepare_source_dir () {
 		copy_file "${HALCYON_GHC_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/ghc-post-build-hook" || die
 	fi
 
+# Cabal layer options
 	if [[ -n "${HALCYON_CABAL_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/cabal-pre-build-hook" || die
 	fi
 	if [[ -n "${HALCYON_CABAL_POST_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_CABAL_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/cabal-post-build-hook" || die
 	fi
+	if [[ -n "${HALCYON_CABAL_PRE_UPDATE_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_CABAL_PRE_UPDATE_HOOK}" "${source_dir}/.halcyon-magic/cabal-pre-update-hook" || die
+	fi
+	if [[ -n "${HALCYON_CABAL_POST_UPDATE_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${source_dir}/.halcyon-magic/cabal-post-update-hook" || die
+	fi
 
+# Sandbox layer magic files
 	if [[ -n "${HALCYON_SANDBOX_SOURCES:+_}" ]]; then
 		local -a sandbox_sources
 		sandbox_sources=( ${HALCYON_SANDBOX_SOURCES} )
 
 		copy_file <( IFS=$'\n' && echo "${sandbox_sources[*]}" ) "${source_dir}/.halcyon-magic/sandbox-sources" || die
-	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]]; then
-		local -a extra_libs
-		extra_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
-
-		copy_file <( IFS=$'\n' && echo "${extra_libs[*]}" ) "${source_dir}/.halcyon-magic/sandbox-extra-libs" || die
 	fi
 	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]]; then
 		local -a extra_apps
@@ -334,6 +365,12 @@ prepare_source_dir () {
 
 		copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS_DIR}" "${constraints_dir}" || die
 	fi
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]]; then
+		local -a extra_libs
+		extra_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
+
+		copy_file <( IFS=$'\n' && echo "${extra_libs[*]}" ) "${source_dir}/.halcyon-magic/sandbox-extra-libs" || die
+	fi
 	if [[ -n "${HALCYON_SANDBOX_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" || die
 	fi
@@ -341,8 +378,12 @@ prepare_source_dir () {
 		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${source_dir}/.halcyon-magic/sandbox-post-build-hook" || die
 	fi
 
+# Application magic files
 	if [[ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
 		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${source_dir}/.halcyon-magic/app-extra-configure-flags" || die
+	fi
+	if [[ -n "${HALCYON_APP_EXTRA_COPY:+_}" ]]; then
+		copy_file <( echo "${HALCYON_APP_EXTRA_COPY}" ) "${source_dir}/.halcyon-magic/app-extra-copy" || die
 	fi
 	if [[ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${source_dir}/.halcyon-magic/app-pre-build-hook" || die

@@ -140,7 +140,13 @@ prepare_install_dir () {
 
 	log 'Preparing install'
 
-	case "${HALCYON_EXTRA_COPY}" in
+	local extra_copy
+	extra_copy=''
+	if [[ -f "${source_dir}/.halcyon-magic/app-extra-copy" ]]; then
+		extra_copy=$( <"${source_dir}/.halcyon-magic/app-extra-copy" ) || die
+	fi
+
+	case "${extra_copy}" in
 	'source');&
 	'build');&
 	'all')
@@ -148,11 +154,15 @@ prepare_install_dir () {
 
 		copy_dir_into "${source_dir}" "${install_dir}${HALCYON_BASE}" || die
 		;;
-	*)
+	'')
 		true
+		;;
+	*)
+		log_error "Unexpected app extra copy: ${extra_copy}"
+		die "Expected app extra copy: source or build or all"
 	esac
 
-	case "${HALCYON_EXTRA_COPY}" in
+	case "${extra_copy}" in
 	'build');&
 	'all')
 		log_indent 'Copying build'
@@ -174,7 +184,7 @@ prepare_install_dir () {
 		die 'Failed to copy app'
 	fi
 
-	if [[ "${HALCYON_EXTRA_COPY}" == 'all' ]]; then
+	if [[ "${extra_copy}" == 'all' ]]; then
 		log_indent 'Copying GHC layer'
 
 		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
