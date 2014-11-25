@@ -497,6 +497,8 @@ restore_base_cabal_layer () {
 	base_name=$( format_base_cabal_archive_name "${tag}" ) || die
 
 	if validate_base_cabal_layer "${tag}" >'/dev/null'; then
+		log 'Using existing Cabal layer'
+
 		touch_cached_file "${base_name}" || die
 		return 0
 	fi
@@ -531,6 +533,8 @@ restore_cached_updated_cabal_layer () {
 	) || true
 
 	if validate_updated_cabal_layer "${tag}" >'/dev/null'; then
+		log 'Using existing Cabal layer'
+
 		touch_cached_file "${updated_name}" || die
 		return 0
 	fi

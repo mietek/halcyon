@@ -561,6 +561,8 @@ restore_sandbox_layer () {
 	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
+		log 'Using existing sandbox layer'
+
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi

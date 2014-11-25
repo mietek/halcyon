@@ -443,6 +443,8 @@ restore_ghc_layer () {
 	description=$( format_ghc_description "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
+		log 'Using existing GHC layer'
+
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
