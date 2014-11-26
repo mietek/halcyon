@@ -153,7 +153,7 @@ install_app_extra_files () {
 	local glob
 	while read -r glob; do
 		(
-			cd "${source_dir}"
+			cd "${build_dir}"
 			IFS=''
 
 			declare -a files
