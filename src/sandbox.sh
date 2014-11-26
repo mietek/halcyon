@@ -184,6 +184,7 @@ copy_sandbox_magic () {
 		return 0
 	fi
 
+	local file
 	find_tree "${source_dir}/.halcyon-magic" -type f \( -path './ghc*' -or -path './sandbox*' \) |
 		while read -r file; do
 			copy_file "${source_dir}/.halcyon-magic/${file}" \
@@ -302,6 +303,7 @@ install_sandbox_extra_libs () {
 		apt-get "${opts[@]}" install --download-only --reinstall --yes "${extra_lib}" |& quote || die
 	done
 
+	local file
 	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
 		while read -r file; do
 			dpkg --extract "${apt_dir}/cache/archives/${file}" \

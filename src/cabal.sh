@@ -216,6 +216,7 @@ copy_cabal_magic () {
 		return 0
 	fi
 
+	local file
 	find_tree "${source_dir}/.halcyon-magic" -type f -path './cabal*' |
 		while read -r file; do
 			copy_file "${source_dir}/.halcyon-magic/${file}" \
