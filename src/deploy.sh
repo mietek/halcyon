@@ -395,6 +395,9 @@ prepare_source_dir () {
 			copy_file "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
 		fi
 	fi
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
+		copy_file <( echo "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/sandbox-extra-configure-flags" || die
+	fi
 	if [[ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]]; then
 		local -a extra_libs
 		extra_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )

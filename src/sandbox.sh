@@ -429,6 +429,9 @@ build_sandbox_layer () {
 	# TODO: Improve cross-platform compatibility.
 
 	local -a opts
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-configure-flags" ]]; then
+		opts=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-configure-flags" ) ) || die
+	fi
 	opts+=( --dependencies-only )
 
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then

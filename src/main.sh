@@ -73,6 +73,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_SOURCES="${HALCYON_SANDBOX_SOURCES:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS:-}"
+		export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_SANDBOX_EXTRA_LIBS="${HALCYON_SANDBOX_EXTRA_LIBS:-}"
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK="${HALCYON_SANDBOX_PRE_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
@@ -105,6 +106,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_SOURCES=''
 		export HALCYON_SANDBOX_EXTRA_APPS=''
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS=''
+		export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS=''
 		export HALCYON_SANDBOX_EXTRA_LIBS=''
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK=''
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
@@ -338,6 +340,12 @@ halcyon_main () {
 			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS="${sandbox_extra_apps_constraints}";;
 		'--sandbox-extra-apps-constraints='*)
 			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS="${1#*=}";;
+		'--sandbox-extra-configure-flags')
+			shift
+			expect_args sandbox_extra_configure_flags -- "$@"
+			export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${sandbox_extra_configure_flags}";;
+		'--sandbox-extra-configure-flags='*)
+			export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
 		'--sandbox-extra-libs')
 			shift
 			expect_args sandbox_extra_libs -- "$@"

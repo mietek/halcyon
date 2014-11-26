@@ -72,6 +72,7 @@ help_usage () {
 		  --sandbox-sources=                      whitespace-separated sources
 		  --sandbox-extra-apps=                   whitespace-separated apps
 		  --sandbox-extra-apps-constraints=       file or directory path
+		  --sandbox-extra-configure-flags=	  whitespace-separated strings
 		  --sandbox-extra-libs=                   whitespace-separated strings
 		  --sandbox-pre-build-hook=               file path
 		  --sandbox-post-build-hook=              file path
