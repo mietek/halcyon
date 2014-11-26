@@ -310,12 +310,6 @@ install_app () {
 	local prefix
 	prefix=$( get_tag_prefix "${tag}" ) || die
 
-	if ! (( HALCYON_KEEP_DEPENDENCIES )) && \
-		! (( HALCYON_INTERNAL_RECURSIVE ))
-	then
-		rm -rf "${HALCYON_BASE}" || die
-	fi
-
 	local saved_tag
 	saved_tag=''
 	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
@@ -372,5 +366,17 @@ install_app () {
 
 	if [[ -n "${saved_tag}" ]]; then
 		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die
+	fi
+
+	local extra_copy
+	extra_copy=''
+	if [[ -f "${source_dir}/.halcyon-magic/app-extra-copy" ]]; then
+		extra_copy=$( <"${source_dir}/.halcyon-magic/app-extra-copy" ) || die
+	fi
+
+	if [[ "${extra_copy}" != 'all' ]] && ! (( HALCYON_KEEP_DEPENDENCIES )) && \
+		! (( HALCYON_INTERNAL_RECURSIVE ))
+	then
+		rm -rf "${HALCYON_BASE}/ghc" "${HALCYON_BASE}/cabal" "${HALCYON_BASE}/sandbox" || die
 	fi
 }
