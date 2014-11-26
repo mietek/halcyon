@@ -264,7 +264,8 @@ do_deploy_app_from_install_dir () {
 
 
 deploy_app_from_install_dir () {
-	expect_vars HALCYON_PREFIX HALCYON_RESTORE_DEPENDENCIES HALCYON_KEEP_DEPENDENCIES \
+	expect_vars HALCYON_PREFIX \
+		HALCYON_RESTORE_DEPENDENCIES HALCYON_NO_CLEAN_DEPENDENCIES \
 		HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
 		HALCYON_SANDBOX_REBUILD \
@@ -276,7 +277,7 @@ deploy_app_from_install_dir () {
 	expect_existing "${source_dir}"
 
 	if [[ ! -f "${source_dir}/cabal.config" ]] ||
-		(( HALCYON_RESTORE_DEPENDENCIES )) || (( HALCYON_KEEP_DEPENDENCIES )) ||
+		(( HALCYON_RESTORE_DEPENDENCIES )) || (( HALCYON_NO_CLEAN_DEPENDENCIES )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
 		(( HALCYON_SANDBOX_REBUILD )) ||
@@ -411,8 +412,8 @@ prepare_source_dir () {
 	if [[ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
 		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/app-extra-configure-flags" || die
 	fi
-	if [[ -n "${HALCYON_APP_EXTRA_COPY:+_}" ]]; then
-		copy_file <( echo "${HALCYON_APP_EXTRA_COPY}" ) "${magic_dir}/app-extra-copy" || die
+	if [[ -n "${HALCYON_APP_EXTRA_FILES:+_}" ]]; then
+		copy_file <( echo "${HALCYON_APP_EXTRA_FILES}" ) "${magic_dir}/app-extra-files" || die
 	fi
 	if [[ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${magic_dir}/app-pre-build-hook" || die
@@ -580,7 +581,7 @@ deploy_app () {
 	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon-magic/sandbox-extra-apps"
 	describe_extra 'Sandbox extra libs:' "${source_dir}/.halcyon-magic/sandbox-extra-libs"
 
-	describe_extra 'App extra copy:' "${source_dir}/.halcyon-magic/app-extra-copy"
+	describe_extra 'App extra files:' "${source_dir}/.halcyon-magic/app-extra-files"
 
 	local tag
 	tag=$(

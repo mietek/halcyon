@@ -121,10 +121,29 @@ build_app () {
 			opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
 		fi
 		opts+=( --prefix="${prefix}" )
+		opts+=( --verbose )
 
-		if ! sandboxed_cabal_do "${build_dir}" configure "${opts[@]}" |& quote; then
+		local stdout
+		stdout=$( get_tmp_file 'halcyon-cabal-configure-stdout' ) || die
+
+		if ! sandboxed_cabal_do "${build_dir}" configure "${opts[@]}" >"${stdout}" |& quote; then
 			die 'Failed to configure app'
 		fi
+
+		# NOTE: This helps implement HALCYON_APP_EXTRA_FILES, which
+		# works around unusual Cabal globbing for the data-files
+		# package description entry.
+		# https://github.com/haskell/cabal/issues/713
+
+		local extra_data
+		extra_data=$(
+			filter_matching '^Data files installed in: ' <"${stdout}" |
+			sed 's/^Data files installed in: //'
+		) || die
+
+		echo "${extra_data}" >"${build_dir}/dist/.halcyon-app-extra-files-data"
+
+		rm -f "${stdout}" || die
 	fi
 
 	if [[ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]]; then

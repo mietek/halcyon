@@ -25,10 +25,12 @@ help_usage () {
 		  --extra-apps-constraints=               file or directory path
 		  --pre-install-hook=                     file path
 		  --post-install-hook=                    file path
-		  --keep-dependencies
+		  --restore-dependencies
+		  --install-dependencies
 		  --no-app
 		  --no-build
 		  --no-build-dependencies
+		  --no-clean-dependencies
 
 		Cache options
 		  --cache=                                directory path
@@ -77,7 +79,7 @@ help_usage () {
 
 		App options
 		  --app-extra-configure-flags=            whitespace-separated strings
-		  --app-extra-copy=                       source or build or all
+		  --app-extra-files=                      whitespace-separated file or directory globs
 		  --app-pre-build-hook=                   file path
 		  --app-post-build-hook=                  file path
 		  --app-rebuild

@@ -62,7 +62,8 @@ set_halcyon_vars () {
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
 		export HALCYON_RESTORE_DEPENDENCIES="${HALCYON_RESTORE_DEPENDENCIES:-0}"
-		export HALCYON_KEEP_DEPENDENCIES="${HALCYON_KEEP_DEPENDENCIES:-0}"
+		export HALCYON_INSTALL_DEPENDENCIES="${HALCYON_INSTALL_DEPENDENCIES:-0}"
+		export HALCYON_NO_CLEAN_DEPENDENCIES="${HALCYON_NO_CLEAN_DEPENDENCIES:-0}"
 
 		export HALCYON_GHC_REBUILD="${HALCYON_GHC_REBUILD:-0}"
 
@@ -78,7 +79,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
 
 		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:-}"
-		export HALCYON_APP_EXTRA_COPY="${HALCYON_APP_EXTRA_COPY:-}"
+		export HALCYON_APP_EXTRA_FILES="${HALCYON_APP_EXTRA_FILES:-}"
 		export HALCYON_APP_PRE_BUILD_HOOK="${HALCYON_APP_PRE_BUILD_HOOK:-}"
 		export HALCYON_APP_POST_BUILD_HOOK="${HALCYON_APP_POST_BUILD_HOOK:-}"
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
@@ -92,7 +93,8 @@ set_halcyon_vars () {
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
 		export HALCYON_RESTORE_DEPENDENCIES=0
-		export HALCYON_KEEP_DEPENDENCIES=0
+		export HALCYON_INSTALL_DEPENDENCIES=0
+		export HALCYON_NO_CLEAN_DEPENDENCIES=0
 
 		export HALCYON_GHC_REBUILD=0
 
@@ -108,7 +110,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_REBUILD=0
 
 		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS=''
-		export HALCYON_APP_EXTRA_COPY=''
+		export HALCYON_APP_EXTRA_FILES=''
 		export HALCYON_APP_PRE_BUILD_HOOK=''
 		export HALCYON_APP_POST_BUILD_HOOK=''
 		export HALCYON_APP_REBUILD=0
@@ -178,14 +180,16 @@ halcyon_main () {
 			export HALCYON_POST_INSTALL_HOOK="${1#*=}";;
 		'--restore-dependencies')
 			export HALCYON_RESTORE_DEPENDENCIES=1;;
-		'--keep-dependencies')
-			export HALCYON_KEEP_DEPENDENCIES=1;;
+		'--install-dependencies')
+			export HALCYON_INSTALL_DEPENDENCIES=1;;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
 		'--no-build-dependencies')
 			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
+		'--no-clean-dependencies')
+			export HALCYON_NO_CLEAN_DEPENDENCIES=1;;
 
 	# Cache options
 		'--cache')
@@ -360,12 +364,12 @@ halcyon_main () {
 			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${app_extra_configure_flags}";;
 		'--app-extra-configure-flags='*)
 			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
-		'--app-extra-copy')
+		'--app-extra-files')
 			shift
-			expect_args app_extra_copy -- "$@"
-			export HALCYON_APP_EXTRA_COPY="${app_extra_copy}";;
-		'--app-extra-copy='*)
-			export HALCYON_APP_EXTRA_COPY="${1#*=}";;
+			expect_args app_extra_files -- "$@"
+			export HALCYON_APP_EXTRA_FILES="${app_extra_files}";;
+		'--app-extra-files='*)
+			export HALCYON_APP_EXTRA_FILES="${1#*=}";;
 		'--app-pre-build-hook')
 			shift
 			expect_args app_pre_build_hook -- "$@"
@@ -424,17 +428,6 @@ halcyon_main () {
 			die "Expected Cabal repo: RepoName:${HALCYON_CABAL_REPO}"
 		fi
 	fi
-
-	case "${HALCYON_APP_EXTRA_COPY}" in
-	'source');&
-	'build');&
-	'all');&
-	'')
-		true;;
-	*)
-		log_error "Unexpected app extra copy: ${HALCYON_APP_EXTRA_COPY}"
-		die "Expected app extra copy: source or build or all"
-	esac
 
 	if [[ -z "${cmd}" ]]; then
 		log_error 'Expected command'

@@ -131,8 +131,60 @@ deploy_extra_apps () {
 }
 
 
-prepare_install_dir () {
+install_app_extra_files () {
 	expect_vars HALCYON_BASE
+
+	local tag source_dir build_dir install_dir
+	expect_args tag source_dir build_dir install_dir -- "$@"
+	expect_existing "${build_dir}/dist/.halcyon-app-extra-files-data"
+
+	if [[ ! -f "${source_dir}/.halcyon-magic/app-extra-files" ]]; then
+		return 0
+	fi
+
+	local extra_files extra_dir
+	extra_files=$( <"${source_dir}/.halcyon-magic/app-extra-files" ) || die
+	extra_dir=$( <"${build_dir}/dist/.halcyon-app-extra-files-data" ) || die
+
+	# NOTE: "Extra files" ca be directories, and are actually bash globs.
+
+	log_indent 'Copying app extra files'
+
+	local glob
+	while read -r glob; do
+		log_debug "read glob: ${glob}"
+		(
+			cd "${source_dir}"
+			IFS=''
+
+			declare -a files
+			files=( ${glob} )
+			log_debug "expanded glob: ${files[*]:-}"
+
+			if [[ -z "${files[@]:+_}" ]]; then
+				return 0
+			fi
+
+			for file in "${files[@]}"; do
+				log_debug "examinining file: ${file}"
+
+				if [[ ! -e "${file}" ]]; then
+					continue
+				fi
+
+				log_debug "copying ${file} into ${extra_dir}"
+
+				dir=$( dirname "${extra_dir}/${file}" ) || die
+				mkdir -p "${dir}" || die
+				cp -Rp "${file}" "${extra_dir}/${file}" || die
+			done
+		) || die
+	done <<<"${extra_files}"
+}
+
+
+prepare_install_dir () {
+	expect_vars HALCYON_BASE HALCYON_INSTALL_DEPENDENCIES
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
@@ -142,39 +194,6 @@ prepare_install_dir () {
 	prefix=$( get_tag_prefix "${tag}" ) || die
 
 	log 'Preparing install'
-
-	local extra_copy
-	extra_copy=''
-	if [[ -f "${source_dir}/.halcyon-magic/app-extra-copy" ]]; then
-		extra_copy=$( <"${source_dir}/.halcyon-magic/app-extra-copy" ) || die
-	fi
-
-	case "${extra_copy}" in
-	'source');&
-	'build');&
-	'all')
-		log_indent 'Copying source'
-
-		copy_dir_into "${source_dir}" "${install_dir}${HALCYON_BASE}" || die
-		;;
-	'')
-		true
-		;;
-	*)
-		log_error "Unexpected app extra copy: ${extra_copy}"
-		die "Expected app extra copy: source or build or all"
-	esac
-
-	case "${extra_copy}" in
-	'build');&
-	'all')
-		log_indent 'Copying build'
-
-		copy_dir_into "${build_dir}" "${install_dir}${HALCYON_BASE}" || die
-		;;
-	*)
-		true
-	esac
 
 	log_indent 'Copying app'
 
@@ -187,27 +206,22 @@ prepare_install_dir () {
 		die 'Failed to copy app'
 	fi
 
-	if [[ "${extra_copy}" == 'all' ]]; then
-		log_indent 'Copying GHC layer'
+	install_app_extra_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
+
+	if (( HALCYON_INSTALL_DEPENDENCIES )); then
+		log_indent 'Copying dependencies'
 
 		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
-
-		log_indent 'Copying Cabal layer'
-
 		copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die
-
-		log_indent 'Copying sandbox layer'
-
 		copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || die
 	else
-		# NOTE: Cabal libraries may require data files at runtime.  See filestore for an example.
+		# NOTE: Cabal libraries may require data files at runtime.
+		# See filestore for an example.
 		# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
 
 		if find_tree "${HALCYON_BASE}/sandbox/share" -type f |
 			match_at_least_one >'/dev/null'
 		then
-			log_indent 'Copying sandbox layer data files'
-
 			copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
 		fi
 	fi
@@ -301,7 +315,7 @@ restore_install_dir () {
 
 
 install_app () {
-	expect_vars HALCYON_BASE HALCYON_KEEP_DEPENDENCIES \
+	expect_vars HALCYON_BASE HALCYON_NO_CLEAN_DEPENDENCIES \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir install_dir root
@@ -374,7 +388,7 @@ install_app () {
 		extra_copy=$( <"${source_dir}/.halcyon-magic/app-extra-copy" ) || die
 	fi
 
-	if [[ "${extra_copy}" != 'all' ]] && ! (( HALCYON_KEEP_DEPENDENCIES )) && \
+	if [[ "${extra_copy}" != 'all' ]] && ! (( HALCYON_NO_CLEAN_DEPENDENCIES )) && \
 		! (( HALCYON_INTERNAL_RECURSIVE ))
 	then
 		rm -rf "${HALCYON_BASE}/ghc" "${HALCYON_BASE}/cabal" "${HALCYON_BASE}/sandbox" || die
