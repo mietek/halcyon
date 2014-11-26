@@ -84,6 +84,7 @@ set_halcyon_vars () {
 		export HALCYON_APP_POST_BUILD_HOOK="${HALCYON_APP_POST_BUILD_HOOK:-}"
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
 		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
+		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
 
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
 	else
@@ -115,6 +116,7 @@ set_halcyon_vars () {
 		export HALCYON_APP_POST_BUILD_HOOK=''
 		export HALCYON_APP_REBUILD=0
 		export HALCYON_APP_RECONFIGURE=0
+		export HALCYON_APP_REINSTALL=0
 
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=0
 	fi
@@ -386,6 +388,8 @@ halcyon_main () {
 			export HALCYON_APP_REBUILD=1;;
 		'--app-reconfigure')
 			export HALCYON_APP_RECONFIGURE=1;;
+		'--app-reinstall')
+			export HALCYON_APP_REINSTALL=1;;
 
 		'--')
 			shift

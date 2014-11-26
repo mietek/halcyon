@@ -84,5 +84,6 @@ help_usage () {
 		  --app-post-build-hook=                  file path
 		  --app-rebuild
 		  --app-reconfigure
+		  --app-reinstall
 EOF
 }
