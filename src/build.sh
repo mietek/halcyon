@@ -116,7 +116,9 @@ build_app () {
 
 		local -a opts
 		if [[ -f "${source_dir}/.halcyon-magic/app-extra-configure-flags" ]]; then
-			opts=( $( <"${source_dir}/.halcyon-magic/app-extra-configure-flags" ) ) || die
+			local -a raw_opts
+			raw_opts=( $( <"${source_dir}/.halcyon-magic/app-extra-configure-flags" ) ) || die
+			opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
 		fi
 		opts+=( --prefix="${prefix}" )
 
