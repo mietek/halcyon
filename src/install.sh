@@ -148,7 +148,7 @@ install_app_extra_files () {
 
 	# NOTE: "Extra files" ca be directories, and are actually bash globs.
 
-	log_indent 'Copying app extra files'
+	log_indent 'Adding app extra files'
 
 	local glob
 	while read -r glob; do
@@ -188,7 +188,7 @@ prepare_install_dir () {
 
 	log 'Preparing install'
 
-	log_indent 'Copying app'
+	log_indent 'Adding app'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
@@ -202,7 +202,7 @@ prepare_install_dir () {
 	install_app_extra_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
 
 	if (( HALCYON_INSTALL_DEPENDENCIES )); then
-		log_indent 'Copying dependencies'
+		log_indent 'Adding dependencies'
 
 		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
 		copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die
