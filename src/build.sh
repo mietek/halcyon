@@ -376,7 +376,7 @@ install_build_dir () {
 	fi
 
 	if ! (( HALCYON_APP_REBUILD )) && restore_build_dir "${tag}" "${build_dir}"; then
-		if validate_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
+		if ! (( HALCYON_APP_RECONFIGURE )) && validate_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
 			link_sandbox_config "${build_dir}" || die
 			return 0
 		fi
