@@ -152,27 +152,20 @@ install_app_extra_files () {
 
 	local glob
 	while read -r glob; do
-		log_debug "read glob: ${glob}"
 		(
 			cd "${source_dir}"
 			IFS=''
 
 			declare -a files
 			files=( ${glob} )
-			log_debug "expanded glob: ${files[*]:-}"
-
 			if [[ -z "${files[@]:+_}" ]]; then
 				return 0
 			fi
-
 			for file in "${files[@]}"; do
-				log_debug "examinining file: ${file}"
 
 				if [[ ! -e "${file}" ]]; then
 					continue
 				fi
-
-				log_debug "copying ${file} into ${extra_dir}"
 
 				dir=$( dirname "${extra_dir}/${file}" ) || die
 				mkdir -p "${dir}" || die
@@ -215,7 +208,7 @@ prepare_install_dir () {
 		copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die
 		copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || die
 	else
-		# NOTE: Cabal libraries may require data files at runtime.
+		# NOTE: Cabal libraries may require data files at run-time.
 		# See filestore for an example.
 		# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
 
@@ -315,7 +308,8 @@ restore_install_dir () {
 
 
 install_app () {
-	expect_vars HALCYON_BASE HALCYON_NO_CLEAN_DEPENDENCIES \
+	expect_vars HALCYON_BASE \
+		HALCYON_INSTALL_DEPENDENCIES HALCYON_NO_CLEAN_DEPENDENCIES \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir install_dir root
@@ -382,13 +376,7 @@ install_app () {
 		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die
 	fi
 
-	local extra_copy
-	extra_copy=''
-	if [[ -f "${source_dir}/.halcyon-magic/app-extra-copy" ]]; then
-		extra_copy=$( <"${source_dir}/.halcyon-magic/app-extra-copy" ) || die
-	fi
-
-	if [[ "${extra_copy}" != 'all' ]] && ! (( HALCYON_NO_CLEAN_DEPENDENCIES )) && \
+	if ! (( HALCYON_INSTALL_DEPENDENCIES )) && ! (( HALCYON_NO_CLEAN_DEPENDENCIES )) && \
 		! (( HALCYON_INTERNAL_RECURSIVE ))
 	then
 		rm -rf "${HALCYON_BASE}/ghc" "${HALCYON_BASE}/cabal" "${HALCYON_BASE}/sandbox" || die
