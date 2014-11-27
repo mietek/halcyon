@@ -80,7 +80,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
 
 		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:-}"
-		export HALCYON_APP_EXTRA_FILES="${HALCYON_APP_EXTRA_FILES:-}"
+		export HALCYON_APP_EXTRA_DATA_FILES="${HALCYON_APP_EXTRA_DATA_FILES:-}"
 		export HALCYON_APP_PRE_BUILD_HOOK="${HALCYON_APP_PRE_BUILD_HOOK:-}"
 		export HALCYON_APP_POST_BUILD_HOOK="${HALCYON_APP_POST_BUILD_HOOK:-}"
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
@@ -113,7 +113,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_REBUILD=0
 
 		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS=''
-		export HALCYON_APP_EXTRA_FILES=''
+		export HALCYON_APP_EXTRA_DATA_FILES=''
 		export HALCYON_APP_PRE_BUILD_HOOK=''
 		export HALCYON_APP_POST_BUILD_HOOK=''
 		export HALCYON_APP_REBUILD=0
@@ -374,12 +374,12 @@ halcyon_main () {
 			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${app_extra_configure_flags}";;
 		'--app-extra-configure-flags='*)
 			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
-		'--app-extra-files')
+		'--app-extra-data-files')
 			shift
-			expect_args app_extra_files -- "$@"
-			export HALCYON_APP_EXTRA_FILES="${app_extra_files}";;
-		'--app-extra-files='*)
-			export HALCYON_APP_EXTRA_FILES="${1#*=}";;
+			expect_args app_extra_data_files -- "$@"
+			export HALCYON_APP_EXTRA_DATA_FILES="${app_extra_data_files}";;
+		'--app-extra-data-files='*)
+			export HALCYON_APP_EXTRA_DATA_FILES="${1#*=}";;
 		'--app-pre-build-hook')
 			shift
 			expect_args app_pre_build_hook -- "$@"

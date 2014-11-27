@@ -415,8 +415,8 @@ prepare_source_dir () {
 	if [[ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
 		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/app-extra-configure-flags" || die
 	fi
-	if [[ -n "${HALCYON_APP_EXTRA_FILES:+_}" ]]; then
-		copy_file <( echo "${HALCYON_APP_EXTRA_FILES}" ) "${magic_dir}/app-extra-files" || die
+	if [[ -n "${HALCYON_APP_EXTRA_DATA_FILES:+_}" ]]; then
+		copy_file <( echo "${HALCYON_APP_EXTRA_DATA_FILES}" ) "${magic_dir}/app-extra-data-files" || die
 	fi
 	if [[ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${magic_dir}/app-pre-build-hook" || die
@@ -584,7 +584,7 @@ deploy_app () {
 	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon-magic/sandbox-extra-apps"
 	describe_extra 'Sandbox extra libs:' "${source_dir}/.halcyon-magic/sandbox-extra-libs"
 
-	describe_extra 'App extra files:' "${source_dir}/.halcyon-magic/app-extra-files"
+	describe_extra 'App extra data files:' "${source_dir}/.halcyon-magic/app-extra-data-files"
 
 	local tag
 	tag=$(

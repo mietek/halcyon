@@ -80,7 +80,7 @@ help_usage () {
 
 		App options
 		  --app-extra-configure-flags=            whitespace-separated strings
-		  --app-extra-files=                      whitespace-separated file or directory globs
+		  --app-extra-data-files=                 whitespace-separated file or directory globs
 		  --app-pre-build-hook=                   file path
 		  --app-post-build-hook=                  file path
 		  --app-rebuild

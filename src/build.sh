@@ -130,18 +130,19 @@ build_app () {
 			die 'Failed to configure app'
 		fi
 
-		# NOTE: This helps implement HALCYON_APP_EXTRA_FILES, which
+		# NOTE: This helps implement HALCYON_APP_EXTRA_DATA_FILES, which
 		# works around unusual Cabal globbing for the data-files
 		# package description entry.
 		# https://github.com/haskell/cabal/issues/713
+		# https://github.com/haskell/cabal/issues/784
 
-		local extra_data
-		extra_data=$(
+		local data_dir
+		data_dir=$(
 			filter_matching '^Data files installed in: ' <"${stdout}" |
 			sed 's/^Data files installed in: //'
 		) || die
 
-		echo "${extra_data}" >"${build_dir}/dist/.halcyon-app-extra-files-data"
+		echo "${data_dir}" >"${build_dir}/dist/.halcyon-cabal-data-dir"
 
 		rm -f "${stdout}" || die
 	fi

@@ -131,24 +131,24 @@ deploy_extra_apps () {
 }
 
 
-install_app_extra_files () {
+install_app_extra_data_files () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
-	expect_existing "${build_dir}/dist/.halcyon-app-extra-files-data"
+	expect_existing "${build_dir}/dist/.halcyon-cabal-data-dir"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/app-extra-files" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon-magic/app-extra-data-files" ]]; then
 		return 0
 	fi
 
-	local extra_files extra_dir
-	extra_files=$( <"${source_dir}/.halcyon-magic/app-extra-files" ) || die
-	extra_dir=$( <"${build_dir}/dist/.halcyon-app-extra-files-data" ) || die
+	local extra_files data_dir
+	extra_files=$( <"${source_dir}/.halcyon-magic/app-extra-data-files" ) || die
+	data_dir=$( <"${build_dir}/dist/.halcyon-cabal-data-dir" ) || die
 
-	# NOTE: "Extra files" ca be directories, and are actually bash globs.
+	# NOTE: Extra data files may be directories, and are actually bash globs.
 
-	log_indent 'Adding app extra files'
+	log_indent 'Adding app extra data files'
 
 	local glob
 	while read -r glob; do
@@ -156,20 +156,20 @@ install_app_extra_files () {
 			cd "${build_dir}"
 			IFS=''
 
-			declare -a files
+			local -a files
 			files=( ${glob} )
 			if [[ -z "${files[@]:+_}" ]]; then
 				return 0
 			fi
-			for file in "${files[@]}"; do
 
+			local file
+			for file in "${files[@]}"; do
 				if [[ ! -e "${file}" ]]; then
 					continue
 				fi
-
-				dir=$( dirname "${extra_dir}/${file}" ) || die
+				dir=$( dirname "${data_dir}/${file}" ) || die
 				mkdir -p "${dir}" || die
-				cp -Rp "${file}" "${extra_dir}/${file}" || die
+				cp -Rp "${file}" "${data_dir}/${file}" || die
 			done
 		) || die
 	done <<<"${extra_files}"
@@ -199,7 +199,7 @@ prepare_install_dir () {
 		die 'Failed to copy app'
 	fi
 
-	install_app_extra_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
+	install_app_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
 
 	if (( HALCYON_INSTALL_DEPENDENCIES )); then
 		log_indent 'Adding dependencies'
