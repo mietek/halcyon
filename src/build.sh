@@ -66,7 +66,7 @@ derive_configured_build_tag_pattern () {
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	create_build_tag "${prefix}" "${label//./\.}" '.*' "${constraints_hash}" "${magic_hash}" \
+	create_build_tag "${prefix}" "${label//./\.}" '.*' "${constraints_hash}" '.*' \
 		"${ghc_version//./\.}" "${ghc_magic_hash}" \
 		"${sandbox_magic_hash}" || die
 }
@@ -339,7 +339,7 @@ prepare_build_dir () {
 
 	local must_configure
 	must_configure=0
-	if filter_matching "^. (.halcyon-magic/app-extra-configure-flags|cabal.config|Setup.hs|.*\.cabal)$" <<<"${changed_files}" |
+	if filter_matching "^. (\.halcyon-magic/app-extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
 		match_at_least_one >'/dev/null'
 	then
 		must_configure=1
