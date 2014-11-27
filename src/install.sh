@@ -167,9 +167,9 @@ install_app_extra_data_files () {
 				if [[ ! -e "${file}" ]]; then
 					continue
 				fi
-				dir=$( dirname "${data_dir}/${file}" ) || die
+				dir=$( dirname "${install_dir}${data_dir}/${file}" ) || die
 				mkdir -p "${dir}" || die
-				cp -Rp "${file}" "${data_dir}/${file}" || die
+				cp -Rp "${file}" "${install_dir}${data_dir}/${file}" || die
 			done
 		) || die
 	done <<<"${extra_files}"
