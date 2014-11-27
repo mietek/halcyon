@@ -360,7 +360,6 @@ build_ghc_layer () {
 
 	local installed_size
 	installed_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
-
 	log "GHC installed, ${installed_size}"
 
 	if [[ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]]; then

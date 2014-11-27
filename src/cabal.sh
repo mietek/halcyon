@@ -309,7 +309,6 @@ EOF
 
 	local bootstrapped_size
 	bootstrapped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
-
 	log "Cabal bootstrapped, ${bootstrapped_size}"
 
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]]; then
@@ -371,7 +370,6 @@ update_cabal_package_db () {
 
 	local updated_size
 	updated_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
-
 	log "Cabal package database updated, ${updated_size}"
 
 	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-update-hook" ]]; then

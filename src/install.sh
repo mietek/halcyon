@@ -221,7 +221,6 @@ prepare_install_dir () {
 
 	local prepared_size
 	prepared_size=$( get_size "${install_dir}" ) || die
-
 	log "Install prepared, ${prepared_size}"
 
 	if [[ -d "${install_dir}/share/doc" ]]; then

@@ -461,7 +461,6 @@ build_sandbox_layer () {
 
 	local built_size
 	built_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
-
 	log "Sandbox built, ${built_size}"
 
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]]; then
