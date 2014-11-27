@@ -193,24 +193,6 @@ prepare_install_dir () {
 
 	log 'Preparing install'
 
-	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then
-		log 'Executing pre-install hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/pre-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" |& quote
-		); then
-			log_warning 'Cannot execute pre-install hook'
-			return 1
-		fi
-		log 'Pre-install hook executed'
-	fi
-
-	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
-		log_warning 'Cannot deploy extra apps'
-		return 1
-	fi
-
 	log_indent 'Adding app'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
@@ -240,6 +222,24 @@ prepare_install_dir () {
 		then
 			copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
 		fi
+	fi
+
+	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
+		log_warning 'Cannot deploy extra apps'
+		return 1
+	fi
+
+	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then
+		log 'Executing pre-install hook'
+		if ! (
+			HALCYON_INTERNAL_RECURSIVE=1 \
+				"${source_dir}/.halcyon-magic/pre-install-hook" \
+					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" |& quote
+		); then
+			log_warning 'Cannot execute pre-install hook'
+			return 1
+		fi
+		log 'Pre-install hook executed'
 	fi
 
 	local prepared_size
@@ -340,13 +340,6 @@ install_app () {
 	local prefix
 	prefix=$( get_tag_prefix "${tag}" ) || die
 
-	local saved_tag
-	saved_tag=''
-	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
-		saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || die
-		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
-	fi
-
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
 		log_begin "Installing app into ${prefix}..."
 	else
@@ -356,12 +349,29 @@ install_app () {
 	# NOTE: When / is read-only, but HALCYON_BASE is not, cp -Rp fails, but cp -R succeeds.
 	# Copying .halcyon-tag is avoided for the same reason.
 
+	local saved_tag
+	saved_tag=''
+	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
+		saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || die
+		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
+	fi
+
 	mkdir -p "${HALCYON_ROOT}" || die
 	cp -R "${install_dir}/." "${HALCYON_ROOT}" |& quote || die
 
 	local installed_size
 	installed_size=$( get_size "${install_dir}" ) || die
 	log_end "done, ${installed_size}"
+
+	if [[ -n "${saved_tag}" ]]; then
+		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die
+	fi
+
+	if ! (( HALCYON_INSTALL_DEPENDENCIES )) && ! (( HALCYON_NO_CLEAN_DEPENDENCIES )) && \
+		! (( HALCYON_INTERNAL_RECURSIVE ))
+	then
+		rm -rf "${HALCYON_BASE}/ghc" "${HALCYON_BASE}/cabal" "${HALCYON_BASE}/sandbox" || die
+	fi
 
 	if [[ -f "${source_dir}/.halcyon-magic/post-install-hook" ]]; then
 		log 'Executing post-install hook'
@@ -374,15 +384,5 @@ install_app () {
 			return 1
 		fi
 		log 'Post-install hook executed'
-	fi
-
-	if [[ -n "${saved_tag}" ]]; then
-		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die
-	fi
-
-	if ! (( HALCYON_INSTALL_DEPENDENCIES )) && ! (( HALCYON_NO_CLEAN_DEPENDENCIES )) && \
-		! (( HALCYON_INTERNAL_RECURSIVE ))
-	then
-		rm -rf "${HALCYON_BASE}/ghc" "${HALCYON_BASE}/cabal" "${HALCYON_BASE}/sandbox" || die
 	fi
 }
