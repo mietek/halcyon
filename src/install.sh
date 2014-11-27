@@ -91,6 +91,9 @@ deploy_extra_apps () {
 		return 0
 	fi
 
+	local prefix
+	prefix=$( get_tag_prefix "${tag}" ) || die
+
 	local ghc_version ghc_magic_hash
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
@@ -104,6 +107,7 @@ deploy_extra_apps () {
 	extra_constraints="${source_dir}/.halcyon-magic/extra-apps-constraints"
 
 	local -a opts
+	opts+=( --prefix="${prefix}" )
 	opts+=( --root="${install_dir}" )
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
