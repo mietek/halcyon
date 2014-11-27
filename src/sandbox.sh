@@ -394,6 +394,19 @@ build_sandbox_layer () {
 		mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
+		log 'Executing sandbox pre-build hook'
+		if ! (
+			HALCYON_INTERNAL_RECURSIVE=1 \
+				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
+					"${tag}" "${source_dir}" "${constraints}" |& quote
+		); then
+			log_warning 'Cannot execute sandbox pre-build hook'
+			return 1
+		fi
+		log 'Sandbox pre-build hook executed'
+	fi
+
 	add_sandbox_sources "${tag}" "${source_dir}" || die
 
 	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the
@@ -410,19 +423,6 @@ build_sandbox_layer () {
 	fi
 
 	install_sandbox_extra_libs "${tag}" "${source_dir}" || die
-
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
-		log 'Executing sandbox pre-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
-					"${tag}" "${source_dir}" "${constraints}" |& quote
-		); then
-			log_warning 'Cannot execute sandbox pre-build hook'
-			return 1
-		fi
-		log 'Sandbox pre-build hook executed'
-	fi
 
 	log 'Building sandbox'
 

@@ -78,8 +78,8 @@ format_install_archive_name_pattern () {
 
 
 deploy_extra_apps () {
-	local tag source_dir install_dir root
-	expect_args tag source_dir install_dir root -- "$@"
+	local tag source_dir install_dir
+	expect_args tag source_dir install_dir -- "$@"
 
 	if [[ ! -f "${source_dir}/.halcyon-magic/extra-apps" ]]; then
 		return 0
@@ -104,7 +104,7 @@ deploy_extra_apps () {
 	extra_constraints="${source_dir}/.halcyon-magic/extra-apps-constraints"
 
 	local -a opts
-	opts+=( --root="${root}${install_dir}" )
+	opts+=( --root="${install_dir}" )
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
 	opts+=( --cabal-repo="${cabal_repo}" )
@@ -181,12 +181,31 @@ prepare_install_dir () {
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
-	expect_existing "${build_dir}/.halcyon-tag"
+	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-cabal-data-dir"
 
-	local prefix
+	local prefix data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
+	data_dir=$( <"${build_dir}/dist/.halcyon-cabal-data-dir" ) || die
 
 	log 'Preparing install'
+
+	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then
+		log 'Executing pre-install hook'
+		if ! (
+			HALCYON_INTERNAL_RECURSIVE=1 \
+				"${source_dir}/.halcyon-magic/pre-install-hook" \
+					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" |& quote
+		); then
+			log_warning 'Cannot execute pre-install hook'
+			return 1
+		fi
+		log 'Pre-install hook executed'
+	fi
+
+	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
+		log_warning 'Cannot deploy extra apps'
+		return 1
+	fi
 
 	log_indent 'Adding app'
 
@@ -322,24 +341,6 @@ install_app () {
 	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
 		saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || die
 		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
-	fi
-
-	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}" "${root}"; then
-		log_warning 'Cannot deploy extra apps'
-		return 1
-	fi
-
-	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then
-		log 'Executing pre-install hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/pre-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${root}" |& quote
-		); then
-			log_warning 'Cannot execute pre-install hook'
-			return 1
-		fi
-		log 'Pre-install hook executed'
 	fi
 
 	if [[ "${root}" == '/' ]]; then
