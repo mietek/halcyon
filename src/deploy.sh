@@ -433,6 +433,8 @@ prepare_source_dir () {
 
 do_deploy_app () {
 	expect_vars HALCYON_BASE HALCYON_ROOT \
+		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE \
+		HALCYON_APP_REINSTALL \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir constraints
@@ -459,11 +461,21 @@ do_deploy_app () {
 	install_build_dir "${tag}" "${source_dir}" "${build_dir}" || return 1
 	log
 
-	if ! prepare_install_dir "${tag}" "${source_dir}" "${build_dir}" "${install_dir}"; then
-		log_warning 'Cannot prepare install'
-		return 1
+	local must_prepare
+	must_prepare=1
+	if ! (( HALCYON_APP_REBUILD )) && ! (( HALCYON_APP_RECONFIGURE )) &&
+		! (( HALCYON_APP_REINSTALL )) &&
+		restore_install_dir "${tag}" "${install_dir}"
+	then
+		must_prepare=0
 	fi
-	archive_install_dir "${install_dir}" || die
+	if (( must_prepare )); then
+		if ! prepare_install_dir "${tag}" "${source_dir}" "${build_dir}" "${install_dir}"; then
+			log_warning 'Cannot prepare install'
+			return 1
+		fi
+		archive_install_dir "${install_dir}" || die
+	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -n "${saved_sandbox}" ]]; then
@@ -473,6 +485,7 @@ do_deploy_app () {
 	fi
 
 	install_app "${tag}" "${source_dir}" "${install_dir}" "${HALCYON_ROOT}" || die
+	link_cabal_config || die
 
 	rm -rf "${build_dir}" "${install_dir}" || die
 }
