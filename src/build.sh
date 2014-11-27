@@ -307,6 +307,7 @@ prepare_build_dir () {
 		filter_not_matching '^= ' <<<"${all_files}" |
 		match_at_least_one
 	); then
+		rm -rf "${prepare_dir}" || die
 		return 0
 	fi
 
