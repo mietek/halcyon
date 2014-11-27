@@ -326,12 +326,12 @@ restore_install_dir () {
 
 
 install_app () {
-	expect_vars HALCYON_BASE \
+	expect_vars HALCYON_BASE HALCYON_ROOT \
 		HALCYON_INSTALL_DEPENDENCIES HALCYON_NO_CLEAN_DEPENDENCIES \
 		HALCYON_INTERNAL_RECURSIVE
 
-	local tag source_dir install_dir root
-	expect_args tag source_dir install_dir root -- "$@"
+	local tag source_dir install_dir
+	expect_args tag source_dir install_dir -- "$@"
 
 	local prefix
 	prefix=$( get_tag_prefix "${tag}" ) || die
@@ -343,17 +343,17 @@ install_app () {
 		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
 	fi
 
-	if [[ "${root}" == '/' ]]; then
+	if [[ "${HALCYON_ROOT}" == '/' ]]; then
 		log_begin "Installing app into ${prefix}..."
 	else
-		log_begin "Installing app into ${root}${prefix}..."
+		log_begin "Installing app into ${HALCYON_ROOT}${prefix}..."
 	fi
 
 	# NOTE: When / is read-only, but HALCYON_BASE is not, cp -Rp fails, but cp -R succeeds.
 	# Copying .halcyon-tag is avoided for the same reason.
 
-	mkdir -p "${root}" || die
-	cp -R "${install_dir}/." "${root}" |& quote || die
+	mkdir -p "${HALCYON_ROOT}" || die
+	cp -R "${install_dir}/." "${HALCYON_ROOT}" |& quote || die
 
 	local installed_size
 	installed_size=$( get_size "${install_dir}" ) || die
@@ -364,7 +364,7 @@ install_app () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/post-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${root}" |& quote
+					"${tag}" "${source_dir}" "${install_dir}" |& quote
 		); then
 			log_warning 'Cannot execute post-install hook'
 			return 1
