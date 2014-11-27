@@ -599,8 +599,9 @@ link_cabal_config () {
 
 	if [[ -d "${HOME}/.cabal" && -e "${HOME}/.cabal/config" ]]; then
 		local actual_config
-		actual_config=$( readlink "${HOME}/.cabal/config" ) || die
-		if [[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" ]]; then
+		if ! actual_config=$( readlink "${HOME}/.cabal/config" ) ||
+			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" ]]
+		then
 			log_warning 'Unexpected existing Cabal config'
 			log
 			log 'To use recommended Cabal config:'
