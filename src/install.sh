@@ -211,13 +211,13 @@ prepare_install_dir () {
 
 	install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
 
-	local include_dependencies
-	include_dependencies=0
-	if [[ -f "${source_dir}/.halcyon-magic/include-dependencies" ]]; then
-		include_dependencies=$( <"${source_dir}/.halcyon-magic/include-dependencies" ) || die
+	local include_layers
+	include_layers=0
+	if [[ -f "${source_dir}/.halcyon-magic/include-layers" ]]; then
+		include_layers=$( <"${source_dir}/.halcyon-magic/include-layers" ) || die
 	fi
-	if (( include_dependencies )); then
-		log_indent 'Including dependencies'
+	if (( include_layers )); then
+		log_indent 'Including layers'
 
 		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
 		copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die

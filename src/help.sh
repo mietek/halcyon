@@ -20,10 +20,10 @@ help_usage () {
 		  --base=                                 directory path
 		  --root=                                 directory path
 		  --prefix=                               directory path
-		  --restore-dependencies
+		  --restore-layers
 		  --no-app
 		  --no-build
-		  --no-build-dependencies
+		  --no-build-layers
 
 		Build-time options
 		  --constraints=                          file or directory path
@@ -37,7 +37,7 @@ help_usage () {
 		  --extra-apps=                           whitespace-separated apps
 		  --extra-apps-constraints=               file or directory path
 		  --extra-data-files=                     whitespace-separated file or directory globs
-		  --include-dependencies
+		  --include-layers
 		  --pre-install-hook=                     file path
 		  --post-install-hook=                    file path
 		  --app-reinstall

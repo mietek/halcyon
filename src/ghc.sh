@@ -484,7 +484,7 @@ recache_ghc_package_db () {
 
 
 install_ghc_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_LAYERS \
 		HALCYON_GHC_REBUILD
 
 	local tag source_dir
@@ -495,7 +495,7 @@ install_ghc_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_LAYERS )); then
 			log_warning 'Cannot build GHC layer'
 			return 1
 		fi

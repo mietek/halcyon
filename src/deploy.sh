@@ -262,7 +262,7 @@ do_deploy_from_install_dir () {
 
 
 deploy_from_install_dir () {
-	expect_vars HALCYON_PREFIX HALCYON_RESTORE_DEPENDENCIES \
+	expect_vars HALCYON_PREFIX HALCYON_RESTORE_LAYERS \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
@@ -273,7 +273,7 @@ deploy_from_install_dir () {
 	expect_args label source_hash source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if [[ ! -f "${source_dir}/cabal.config" ]] || (( HALCYON_RESTORE_DEPENDENCIES )) ||
+	if [[ ! -f "${source_dir}/cabal.config" ]] || (( HALCYON_RESTORE_LAYERS )) ||
 		(( HALCYON_APP_REBUILD )) || (( HALCYON_APP_RECONFIGURE )) || (( HALCYON_APP_REINSTALL )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
@@ -356,8 +356,8 @@ prepare_source_dir () {
 	if [[ -n "${HALCYON_EXTRA_DATA_FILES:+_}" ]]; then
 		copy_file <( echo "${HALCYON_EXTRA_DATA_FILES}" ) "${magic_dir}/extra-data-files" || die
 	fi
-	if (( HALCYON_INCLUDE_DEPENDENCIES )); then
-		echo 1 >"${magic_dir}/include-dependencies" || die
+	if (( HALCYON_INCLUDE_LAYERS )); then
+		echo 1 >"${magic_dir}/include-layers" || die
 	fi
 	if [[ -n "${HALCYON_PRE_INSTALL_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die

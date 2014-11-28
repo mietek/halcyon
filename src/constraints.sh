@@ -299,7 +299,7 @@ score_partial_sandbox_layers () {
 
 
 match_sandbox_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_LAYERS
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
@@ -328,7 +328,7 @@ match_sandbox_layer () {
 		return 0
 	fi
 
-	if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
+	if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_LAYERS )); then
 		return 1
 	fi
 

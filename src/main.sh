@@ -6,10 +6,10 @@ set_halcyon_vars () {
 
 		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_BASE}}"
-		export HALCYON_RESTORE_DEPENDENCIES="${HALCYON_RESTORE_DEPENDENCIES:-0}"
+		export HALCYON_RESTORE_LAYERS="${HALCYON_RESTORE_LAYERS:-0}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
-		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
+		export HALCYON_NO_BUILD_LAYERS="${HALCYON_NO_BUILD_LAYERS:-0}"
 
 		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
@@ -21,7 +21,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_DATA_FILES="${HALCYON_EXTRA_DATA_FILES:-}"
-		export HALCYON_INCLUDE_DEPENDENCIES="${HALCYON_INCLUDE_DEPENDENCIES:-0}"
+		export HALCYON_INCLUDE_LAYERS="${HALCYON_INCLUDE_LAYERS:-0}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
 		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
@@ -79,7 +79,7 @@ set_halcyon_vars () {
 	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
-		export HALCYON_RESTORE_DEPENDENCIES=0
+		export HALCYON_RESTORE_LAYERS=0
 
 		export HALCYON_CONSTRAINTS=''
 		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
@@ -91,7 +91,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS=''
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_EXTRA_DATA_FILES=''
-		export HALCYON_INCLUDE_DEPENDENCIES=0
+		export HALCYON_INCLUDE_LAYERS=0
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
 		export HALCYON_APP_REINSTALL=0
@@ -142,14 +142,14 @@ halcyon_main () {
 			export HALCYON_PREFIX="${prefix}";;
 		'--prefix='*)
 			export HALCYON_PREFIX="${1#*=}";;
-		'--restore-dependencies')
-			export HALCYON_RESTORE_DEPENDENCIES=1;;
+		'--restore-layers')
+			export HALCYON_RESTORE_LAYERS=1;;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
-		'--no-build-dependencies')
-			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
+		'--no-build-layers')
+			export HALCYON_NO_BUILD_LAYERS=1;;
 
 	# Build-time options
 		'--constraints')
@@ -200,8 +200,8 @@ halcyon_main () {
 			export HALCYON_EXTRA_DATA_FILES="${extra_data_files}";;
 		'--extra-data-files='*)
 			export HALCYON_EXTRA_DATA_FILES="${1#*=}";;
-		'--include-dependencies')
-			export HALCYON_INCLUDE_DEPENDENCIES=1;;
+		'--include-layers')
+			export HALCYON_INCLUDE_LAYERS=1;;
 		'--pre-install-hook')
 			shift
 			expect_args pre_install_hook -- "$@"

@@ -622,7 +622,7 @@ link_cabal_config () {
 
 
 install_cabal_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_LAYERS \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE
 
 	local tag source_dir
@@ -643,7 +643,7 @@ install_cabal_layer () {
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_LAYERS )); then
 			log_warning 'Cannot build Cabal layer'
 			return 1
 		fi
