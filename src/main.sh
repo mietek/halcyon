@@ -180,10 +180,10 @@ halcyon_main () {
 			export HALCYON_POST_INSTALL_HOOK="${post_install_hook}";;
 		'--post-install-hook='*)
 			export HALCYON_POST_INSTALL_HOOK="${1#*=}";;
-		'--restore-dependencies')
-			export HALCYON_RESTORE_DEPENDENCIES=1;;
 		'--install-dependencies')
 			export HALCYON_INSTALL_DEPENDENCIES=1;;
+		'--restore-dependencies')
+			export HALCYON_RESTORE_DEPENDENCIES=1;;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
 		'--no-build')

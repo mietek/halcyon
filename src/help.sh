@@ -25,8 +25,8 @@ help_usage () {
 		  --extra-apps-constraints=               file or directory path
 		  --pre-install-hook=                     file path
 		  --post-install-hook=                    file path
-		  --restore-dependencies
 		  --install-dependencies
+		  --restore-dependencies
 		  --no-app
 		  --no-build
 		  --no-build-dependencies
