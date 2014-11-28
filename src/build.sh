@@ -187,16 +187,6 @@ build_app () {
 		log 'App post-build hook executed'
 	fi
 
-	if [[ -d "${build_dir}/share/doc" ]]; then
-		log_indent_begin 'Removing documentation from app...'
-
-		rm -rf "${build_dir}/share/doc" || die
-
-		local trimmed_size
-		trimmed_size=$( get_size "${build_dir}" ) || die
-		log_end "done, ${trimmed_size}"
-	fi
-
 	log_indent_begin 'Stripping app...'
 
 	strip_tree "${build_dir}" || die
