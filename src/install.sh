@@ -181,7 +181,7 @@ install_extra_data_files () {
 
 
 prepare_install_dir () {
-	expect_vars HALCYON_BASE HALCYON_INCLUDE_DEPENDENCIES
+	expect_vars HALCYON_BASE
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
@@ -204,9 +204,19 @@ prepare_install_dir () {
 		die 'Failed to copy app'
 	fi
 
+	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
+		log_warning 'Cannot deploy extra apps'
+		return 1
+	fi
+
 	install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
 
-	if (( HALCYON_INCLUDE_DEPENDENCIES )); then
+	local include_dependencies
+	include_dependencies=0
+	if [[ -f "${source_dir}/.halcyon-magic/include-dependencies" ]]; then
+		include_dependencies=$( <"${source_dir}/.halcyon-magic/include-dependencies" ) || die
+	fi
+	if (( include_dependencies )); then
 		log_indent 'Including dependencies'
 
 		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
@@ -222,11 +232,6 @@ prepare_install_dir () {
 		then
 			copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
 		fi
-	fi
-
-	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
-		log_warning 'Cannot deploy extra apps'
-		return 1
 	fi
 
 	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then

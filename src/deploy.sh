@@ -356,6 +356,9 @@ prepare_source_dir () {
 	if [[ -n "${HALCYON_EXTRA_DATA_FILES:+_}" ]]; then
 		copy_file <( echo "${HALCYON_EXTRA_DATA_FILES}" ) "${magic_dir}/extra-data-files" || die
 	fi
+	if (( HALCYON_INCLUDE_DEPENDENCIES )); then
+		echo 1 >"${magic_dir}/include-dependencies" || die
+	fi
 	if [[ -n "${HALCYON_PRE_INSTALL_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
 	fi

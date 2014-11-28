@@ -37,9 +37,9 @@ help_usage () {
 		  --extra-apps=                           whitespace-separated apps
 		  --extra-apps-constraints=               file or directory path
 		  --extra-data-files=                     whitespace-separated file or directory globs
+		  --include-dependencies
 		  --pre-install-hook=                     file path
 		  --post-install-hook=                    file path
-		  --include-dependencies
 		  --app-reinstall
 
 		Cache options

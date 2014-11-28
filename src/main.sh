@@ -21,9 +21,9 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_DATA_FILES="${HALCYON_EXTRA_DATA_FILES:-}"
+		export HALCYON_INCLUDE_DEPENDENCIES="${HALCYON_INCLUDE_DEPENDENCIES:-0}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
-		export HALCYON_INCLUDE_DEPENDENCIES="${HALCYON_INCLUDE_DEPENDENCIES:-0}"
 		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
 
 		export HALCYON_CACHE="${HALCYON_CACHE:-/var/tmp/halcyon-cache}"
@@ -91,9 +91,9 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS=''
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_EXTRA_DATA_FILES=''
+		export HALCYON_INCLUDE_DEPENDENCIES=0
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
-		export HALCYON_INCLUDE_DEPENDENCIES=0
 		export HALCYON_APP_REINSTALL=0
 
 		export HALCYON_GHC_REBUILD=0
@@ -200,6 +200,8 @@ halcyon_main () {
 			export HALCYON_EXTRA_DATA_FILES="${extra_data_files}";;
 		'--extra-data-files='*)
 			export HALCYON_EXTRA_DATA_FILES="${1#*=}";;
+		'--include-dependencies')
+			export HALCYON_INCLUDE_DEPENDENCIES=1;;
 		'--pre-install-hook')
 			shift
 			expect_args pre_install_hook -- "$@"
@@ -212,8 +214,6 @@ halcyon_main () {
 			export HALCYON_POST_INSTALL_HOOK="${post_install_hook}";;
 		'--post-install-hook='*)
 			export HALCYON_POST_INSTALL_HOOK="${1#*=}";;
-		'--include-dependencies')
-			export HALCYON_INCLUDE_DEPENDENCIES=1;;
 		'--app-reinstall')
 			export HALCYON_APP_REINSTALL=1;;
 
