@@ -140,7 +140,7 @@ install_app_extra_data_files () {
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
-	expect_existing "${build_dir}/dist/.halcyon-cabal-data-dir"
+	expect_existing "${build_dir}/dist/.halcyon-data-dir"
 
 	if [[ ! -f "${source_dir}/.halcyon-magic/app-extra-data-files" ]]; then
 		return 0
@@ -148,7 +148,7 @@ install_app_extra_data_files () {
 
 	local extra_files data_dir
 	extra_files=$( <"${source_dir}/.halcyon-magic/app-extra-data-files" ) || die
-	data_dir=$( <"${build_dir}/dist/.halcyon-cabal-data-dir" ) || die
+	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
 	# NOTE: Extra data files may be directories, and are actually bash globs.
 
@@ -185,11 +185,11 @@ prepare_install_dir () {
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
-	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-cabal-data-dir"
+	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-data-dir"
 
 	local prefix data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
-	data_dir=$( <"${build_dir}/dist/.halcyon-cabal-data-dir" ) || die
+	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
 	log 'Preparing install'
 
@@ -257,6 +257,7 @@ prepare_install_dir () {
 	fi
 
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
+	echo "${data_dir}" >"${install_dir}/.halcyon-data-dir" || die
 }
 
 
@@ -336,9 +337,11 @@ install_app () {
 
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
+	expect_existing "${install_dir}/.halcyon-data-dir"
 
-	local prefix
+	local prefix data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
+	data_dir=$( <"${install_dir}/.halcyon-data-dir" ) || die
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
 		log_begin "Installing app into ${prefix}..."
@@ -378,7 +381,7 @@ install_app () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/post-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" |& quote
+					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" |& quote
 		); then
 			log_warning 'Cannot execute post-install hook'
 			return 1

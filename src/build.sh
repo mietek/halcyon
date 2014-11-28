@@ -138,13 +138,19 @@ build_app () {
 
 		local data_dir
 		data_dir=$(
-			filter_matching '^Data files installed in: ' <"${stdout}" |
+			awk '	/Data files installed in:/ { i = 1 }
+				/Documentation installed in:/ { i = 0 }
+				i' <"${stdout}" |
+			strip_trailing_newline |
+			tr '\n' ' ' |
 			sed 's/^Data files installed in: //'
 		) || die
 
-		echo "${data_dir}" >"${build_dir}/dist/.halcyon-cabal-data-dir"
+		echo "${data_dir}" >"${build_dir}/dist/.halcyon-data-dir"
 
 		rm -f "${stdout}" || die
+	else
+		expect_existing "${build_dir}/dist/.halcyon-data-dir"
 	fi
 
 	if [[ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]]; then
