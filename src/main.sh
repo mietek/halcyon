@@ -1,8 +1,6 @@
 set_halcyon_vars () {
-	# NOTE: Recursive vars are set once and inherited.
-
-	if ! (( ${HALCYON_INTERNAL_RECURSIVE_VARS:-0} )); then
-		export HALCYON_INTERNAL_RECURSIVE_VARS=1
+	if ! (( ${HALCYON_INTERNAL_VARS:-0} )); then
+		export HALCYON_INTERNAL_VARS=1
 
 		# NOTE: HALCYON_BASE is set in paths.sh.
 
@@ -49,12 +47,6 @@ set_halcyon_vars () {
 		export HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE="${HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE:-0}"
 		export HALCYON_INTERNAL_GHC_MAGIC_HASH="${HALCYON_INTERNAL_GHC_MAGIC_HASH:-}"
 		export HALCYON_INTERNAL_CABAL_MAGIC_HASH="${HALCYON_INTERNAL_CABAL_MAGIC_HASH:-}"
-	fi
-
-	# NOTE: Non-recursive vars are inherited once, then reset to default.
-
-	if ! (( ${HALCYON_INTERNAL_NONRECURSIVE_VARS:-0} )); then
-		export HALCYON_INTERNAL_NONRECURSIVE_VARS=1
 
 		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
@@ -87,7 +79,9 @@ set_halcyon_vars () {
 		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
 
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
-	else
+	fi
+
+	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		export HALCYON_CONSTRAINTS=''
 		export HALCYON_EXTRA_APPS=''
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
