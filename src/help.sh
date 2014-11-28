@@ -30,7 +30,6 @@ help_usage () {
 		  --no-app
 		  --no-build
 		  --no-build-dependencies
-		  --no-clean-dependencies
 
 		Cache options
 		  --cache=                                directory path

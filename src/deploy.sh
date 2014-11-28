@@ -263,8 +263,7 @@ do_deploy_app_from_install_dir () {
 
 deploy_app_from_install_dir () {
 	expect_vars HALCYON_PREFIX \
-		HALCYON_RESTORE_DEPENDENCIES HALCYON_INSTALL_DEPENDENCIES \
-		HALCYON_NO_CLEAN_DEPENDENCIES \
+		HALCYON_RESTORE_DEPENDENCIES \
 		HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
 		HALCYON_SANDBOX_REBUILD \
@@ -277,8 +276,7 @@ deploy_app_from_install_dir () {
 	expect_existing "${source_dir}"
 
 	if [[ ! -f "${source_dir}/cabal.config" ]] ||
-		(( HALCYON_RESTORE_DEPENDENCIES )) || (( HALCYON_INSTALL_DEPENDENCIES )) ||
-		(( HALCYON_NO_CLEAN_DEPENDENCIES )) ||
+		(( HALCYON_RESTORE_DEPENDENCIES )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
 		(( HALCYON_SANDBOX_REBUILD )) ||

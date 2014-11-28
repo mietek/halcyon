@@ -332,7 +332,6 @@ restore_install_dir () {
 
 install_app () {
 	expect_vars HALCYON_BASE HALCYON_ROOT \
-		HALCYON_INSTALL_DEPENDENCIES HALCYON_NO_CLEAN_DEPENDENCIES \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir install_dir
@@ -368,12 +367,6 @@ install_app () {
 
 	if [[ -n "${saved_tag}" ]]; then
 		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die
-	fi
-
-	if ! (( HALCYON_INSTALL_DEPENDENCIES )) && ! (( HALCYON_NO_CLEAN_DEPENDENCIES )) && \
-		! (( HALCYON_INTERNAL_RECURSIVE ))
-	then
-		rm -rf "${HALCYON_BASE}/ghc" "${HALCYON_BASE}/cabal" "${HALCYON_BASE}/sandbox" || die
 	fi
 
 	if [[ -f "${source_dir}/.halcyon-magic/post-install-hook" ]]; then
