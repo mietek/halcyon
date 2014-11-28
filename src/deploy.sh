@@ -492,7 +492,7 @@ deploy_app () {
 	expect_args label source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if [[ "${HALCYON_INTERNAL_ONLY:-}" == 'label' ]]; then
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'label' ]]; then
 		echo "${label}"
 		return 0
 	fi
@@ -505,7 +505,7 @@ deploy_app () {
 	if [[ -f "${source_dir}/cabal.config" ]]; then
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if [[ -z "${HALCYON_INTERNAL_ONLY:+_}" ]] &&
+		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
 			deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"
 		then
 			return 0
@@ -524,7 +524,7 @@ deploy_app () {
 		log_warning 'Using implicit constraints'
 		log_warning 'Expected cabal.config with explicit constraints'
 		log
-		if (( HALCYON_INTERNAL_NONLOCAL_SOURCE )); then
+		if (( HALCYON_INTERNAL_REMOTE_SOURCE )); then
 			log "To use explicit constraints, specify --constraints=cabal.config"
 		else
 			log 'To use explicit constraints, add cabal.config'
@@ -539,7 +539,7 @@ deploy_app () {
 		format_constraints <<<"${constraints}" >"${source_dir}/cabal.config" || die
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if [[ -z "${HALCYON_INTERNAL_ONLY:+_}" ]] &&
+		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
 			deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"
 		then
 			return 0
@@ -548,7 +548,7 @@ deploy_app () {
 		constraints=$( detect_constraints "${label}" "${source_dir}" ) || die
 	fi
 
-	if [[ "${HALCYON_INTERNAL_ONLY:-}" == 'constraints' ]]; then
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'constraints' ]]; then
 		format_constraints <<<"${constraints}" || die
 		return 0
 	fi
@@ -603,7 +603,7 @@ deploy_app () {
 			"${sandbox_magic_hash}" || die
 	) || die
 
-	if [[ "${HALCYON_INTERNAL_ONLY:-}" == 'tag' ]]; then
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'tag' ]]; then
 		echo "${tag}"
 		return 0
 	fi
@@ -672,7 +672,7 @@ deploy_cloned_app () {
 		die 'Cannot detect label'
 	fi
 
-	HALCYON_INTERNAL_NONLOCAL_SOURCE=1 \
+	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		deploy_app "${label}" "${source_dir}" || return 1
 
 	rm -rf "${clone_dir}" "${source_dir}" || die
@@ -705,7 +705,7 @@ deploy_unpacked_app () {
 		log_warning 'Expected label with explicit version'
 	fi
 
-	HALCYON_INTERNAL_NONLOCAL_SOURCE=1 \
+	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		deploy_app "${label}" "${source_dir}" || return 1
 
 	rm -rf "${unpack_dir}" "${source_dir}" || die

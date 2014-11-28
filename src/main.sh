@@ -436,22 +436,20 @@ halcyon_main () {
 		help_usage
 		die
 	fi
+	export HALCYON_INTERNAL_COMMAND="${cmd}"
 
 	case "${cmd}" in
 	'deploy')
 		halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'label')
-		HALCYON_INTERNAL_ONLY='label' \
-			halcyon_deploy "${args[@]:-}" || return 1
+		halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'constraints')
-		HALCYON_INTERNAL_ONLY='constraints' \
-			halcyon_deploy "${args[@]:-}" || return 1
+		halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'tag')
-		HALCYON_INTERNAL_ONLY='tag' \
-			halcyon_deploy "${args[@]:-}" || return 1
+		halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'paths')
 		echo -e "export HALCYON_INSTALL='${HALCYON_INSTALL}'\n"
