@@ -57,12 +57,12 @@ format_install_archive_name () {
 	local install_id
 	install_id=$( format_install_id "${tag}" ) || die
 
-	echo "halcyon-app-install-${install_id}.tar.gz"
+	echo "halcyon-install-${install_id}.tar.gz"
 }
 
 
 format_install_archive_name_prefix () {
-	echo 'halcyon-app-install-'
+	echo 'halcyon-install-'
 }
 
 
@@ -73,7 +73,7 @@ format_install_archive_name_pattern () {
 	local label
 	label=$( get_tag_label "${tag}" ) || die
 
-	echo "halcyon-app-install-.*-${label//./\.}.tar.gz"
+	echo "halcyon-install-.*-${label//./\.}.tar.gz"
 }
 
 
@@ -135,24 +135,24 @@ deploy_extra_apps () {
 }
 
 
-install_app_extra_data_files () {
+install_extra_data_files () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
 	expect_existing "${build_dir}/dist/.halcyon-data-dir"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/app-extra-data-files" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon-magic/extra-data-files" ]]; then
 		return 0
 	fi
 
 	local extra_files data_dir
-	extra_files=$( <"${source_dir}/.halcyon-magic/app-extra-data-files" ) || die
+	extra_files=$( <"${source_dir}/.halcyon-magic/extra-data-files" ) || die
 	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
 	# NOTE: Extra data files may be directories, and are actually bash globs.
 
-	log_indent 'Adding app extra data files'
+	log_indent 'Including extra data files'
 
 	local glob
 	while read -r glob; do
@@ -181,7 +181,7 @@ install_app_extra_data_files () {
 
 
 prepare_install_dir () {
-	expect_vars HALCYON_BASE HALCYON_INSTALL_DEPENDENCIES
+	expect_vars HALCYON_BASE HALCYON_INCLUDE_DEPENDENCIES
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
@@ -193,7 +193,7 @@ prepare_install_dir () {
 
 	log 'Preparing install'
 
-	log_indent 'Adding app'
+	log_indent 'Including app'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
@@ -204,10 +204,10 @@ prepare_install_dir () {
 		die 'Failed to copy app'
 	fi
 
-	install_app_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
+	install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
 
-	if (( HALCYON_INSTALL_DEPENDENCIES )); then
-		log_indent 'Adding dependencies'
+	if (( HALCYON_INCLUDE_DEPENDENCIES )); then
+		log_indent 'Including dependencies'
 
 		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
 		copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die

@@ -246,12 +246,12 @@ deploy_env () {
 }
 
 
-do_deploy_app_from_install_dir () {
+do_deploy_from_install_dir () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
 	local install_dir
-	install_dir=$( get_tmp_dir 'halcyon-app-install' ) || die
+	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 
 	restore_install_dir "${tag}" "${install_dir}" || return 1
 	install_app "${tag}" "${source_dir}" "${install_dir}" || die
@@ -261,25 +261,23 @@ do_deploy_app_from_install_dir () {
 }
 
 
-deploy_app_from_install_dir () {
-	expect_vars HALCYON_PREFIX \
-		HALCYON_RESTORE_DEPENDENCIES \
+deploy_from_install_dir () {
+	expect_vars HALCYON_PREFIX HALCYON_RESTORE_DEPENDENCIES \
+		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
 		HALCYON_SANDBOX_REBUILD \
-		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local label source_hash source_dir
 	expect_args label source_hash source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if [[ ! -f "${source_dir}/cabal.config" ]] ||
-		(( HALCYON_RESTORE_DEPENDENCIES )) ||
+	if [[ ! -f "${source_dir}/cabal.config" ]] || (( HALCYON_RESTORE_DEPENDENCIES )) ||
+		(( HALCYON_APP_REBUILD )) || (( HALCYON_APP_RECONFIGURE )) || (( HALCYON_APP_REINSTALL )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
-		(( HALCYON_SANDBOX_REBUILD )) ||
-		(( HALCYON_APP_REBUILD )) || (( HALCYON_APP_RECONFIGURE )) || (( HALCYON_APP_REINSTALL ))
+		(( HALCYON_SANDBOX_REBUILD ))
 	then
 		return 1
 	fi
@@ -301,7 +299,7 @@ deploy_app_from_install_dir () {
 			''
 	) || die
 
-	if ! do_deploy_app_from_install_dir "${tag}" "${source_dir}"; then
+	if ! do_deploy_from_install_dir "${tag}" "${source_dir}"; then
 		log
 		return 1
 	fi
@@ -331,6 +329,17 @@ prepare_source_dir () {
 	fi
 
 # General magic files
+	if [[ -n "${HALCYON_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
+		copy_file <( echo "${HALCYON_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/extra-configure-flags" || die
+	fi
+	if [[ -n "${HALCYON_PRE_BUILD_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || die
+	fi
+	if [[ -n "${HALCYON_POST_BUILD_HOOK:+_}" ]]; then
+		copy_file "${HALCYON_POST_BUILD_HOOK}" "${magic_dir}/post-build-hook" || die
+	fi
+
+# Install-time magic files
 	if [[ -n "${HALCYON_EXTRA_APPS:+_}" ]]; then
 		local -a extra_apps
 		extra_apps=( ${HALCYON_EXTRA_APPS} )
@@ -343,6 +352,9 @@ prepare_source_dir () {
 		else
 			copy_file "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
 		fi
+	fi
+	if [[ -n "${HALCYON_EXTRA_DATA_FILES:+_}" ]]; then
+		copy_file <( echo "${HALCYON_EXTRA_DATA_FILES}" ) "${magic_dir}/extra-data-files" || die
 	fi
 	if [[ -n "${HALCYON_PRE_INSTALL_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
@@ -408,20 +420,6 @@ prepare_source_dir () {
 	if [[ -n "${HALCYON_SANDBOX_POST_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${magic_dir}/sandbox-post-build-hook" || die
 	fi
-
-# Application magic files
-	if [[ -n "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
-		copy_file <( echo "${HALCYON_APP_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/app-extra-configure-flags" || die
-	fi
-	if [[ -n "${HALCYON_APP_EXTRA_DATA_FILES:+_}" ]]; then
-		copy_file <( echo "${HALCYON_APP_EXTRA_DATA_FILES}" ) "${magic_dir}/app-extra-data-files" || die
-	fi
-	if [[ -n "${HALCYON_APP_PRE_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_APP_PRE_BUILD_HOOK}" "${magic_dir}/app-pre-build-hook" || die
-	fi
-	if [[ -n "${HALCYON_APP_POST_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_APP_POST_BUILD_HOOK}" "${magic_dir}/app-post-build-hook" || die
-	fi
 }
 
 
@@ -435,8 +433,8 @@ do_deploy_app () {
 
 	local saved_sandbox build_dir install_dir
 	saved_sandbox=''
-	build_dir=$( get_tmp_dir 'halcyon-app-build' ) || die
-	install_dir=$( get_tmp_dir 'halcyon-app-install' ) || die
+	build_dir=$( get_tmp_dir 'halcyon-build' ) || die
+	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 
 	do_deploy_env "${tag}" "${source_dir}" || return 1
 
@@ -506,7 +504,7 @@ deploy_app () {
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
 		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
-			deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"
+			deploy_from_install_dir "${label}" "${source_hash}" "${source_dir}"
 		then
 			return 0
 		fi
@@ -540,7 +538,7 @@ deploy_app () {
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
 		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
-			deploy_app_from_install_dir "${label}" "${source_hash}" "${source_dir}"
+			deploy_from_install_dir "${label}" "${source_hash}" "${source_dir}"
 		then
 			return 0
 		fi
@@ -577,6 +575,7 @@ deploy_app () {
 
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
 	describe_extra 'Extra apps:' "${source_dir}/.halcyon-magic/extra-apps"
+	describe_extra 'Extra data files:' "${source_dir}/.halcyon-magic/extra-data-files"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
 	describe_storage || die
@@ -592,8 +591,6 @@ deploy_app () {
 	describe_extra 'Sandbox sources:' "${source_dir}/.halcyon-magic/sandbox-sources"
 	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon-magic/sandbox-extra-apps"
 	describe_extra 'Sandbox extra libs:' "${source_dir}/.halcyon-magic/sandbox-extra-libs"
-
-	describe_extra 'App extra data files:' "${source_dir}/.halcyon-magic/app-extra-data-files"
 
 	local tag
 	tag=$(

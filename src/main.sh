@@ -4,11 +4,27 @@ set_halcyon_vars () {
 
 		# NOTE: HALCYON_BASE is set in paths.sh.
 
-		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_BASE}}"
 		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
+		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_BASE}}"
+		export HALCYON_RESTORE_DEPENDENCIES="${HALCYON_RESTORE_DEPENDENCIES:-0}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
+
+		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
+		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
+		export HALCYON_PRE_BUILD_HOOK="${HALCYON_PRE_BUILD_HOOK:-}"
+		export HALCYON_POST_BUILD_HOOK="${HALCYON_POST_BUILD_HOOK:-}"
+		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
+		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
+
+		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
+		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
+		export HALCYON_EXTRA_DATA_FILES="${HALCYON_EXTRA_DATA_FILES:-}"
+		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
+		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
+		export HALCYON_INCLUDE_DEPENDENCIES="${HALCYON_INCLUDE_DEPENDENCIES:-0}"
+		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
 
 		export HALCYON_CACHE="${HALCYON_CACHE:-/var/tmp/halcyon-cache}"
 		export HALCYON_PURGE_CACHE="${HALCYON_PURGE_CACHE:-0}"
@@ -30,6 +46,7 @@ set_halcyon_vars () {
 		export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-7.8.3}"
 		export HALCYON_GHC_PRE_BUILD_HOOK="${HALCYON_GHC_PRE_BUILD_HOOK:-}"
 		export HALCYON_GHC_POST_BUILD_HOOK="${HALCYON_GHC_POST_BUILD_HOOK:-}"
+		export HALCYON_GHC_REBUILD="${HALCYON_GHC_REBUILD:-0}"
 
 		# NOTE: Cabal does not support HTTPS repository URLs.
 		# https://github.com/haskell/cabal/issues/936
@@ -40,24 +57,6 @@ set_halcyon_vars () {
 		export HALCYON_CABAL_POST_BUILD_HOOK="${HALCYON_CABAL_POST_BUILD_HOOK:-}"
 		export HALCYON_CABAL_PRE_UPDATE_HOOK="${HALCYON_CABAL_PRE_UPDATE_HOOK:-}"
 		export HALCYON_CABAL_POST_UPDATE_HOOK="${HALCYON_CABAL_POST_UPDATE_HOOK:-}"
-
-		export HALCYON_INTERNAL_RECURSIVE="${HALCYON_INTERNAL_RECURSIVE:-0}"
-		export HALCYON_INTERNAL_NONLOCAL_SOURCE="${HALCYON_INTERNAL_NONLOCAL_SOURCE:-0}"
-		export HALCYON_INTERNAL_ONLY="${HALCYON_INTERNAL_ONLY:-}"
-		export HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE="${HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE:-0}"
-		export HALCYON_INTERNAL_GHC_MAGIC_HASH="${HALCYON_INTERNAL_GHC_MAGIC_HASH:-}"
-		export HALCYON_INTERNAL_CABAL_MAGIC_HASH="${HALCYON_INTERNAL_CABAL_MAGIC_HASH:-}"
-
-		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
-		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
-		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
-		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
-		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
-		export HALCYON_RESTORE_DEPENDENCIES="${HALCYON_RESTORE_DEPENDENCIES:-0}"
-		export HALCYON_INSTALL_DEPENDENCIES="${HALCYON_INSTALL_DEPENDENCIES:-0}"
-
-		export HALCYON_GHC_REBUILD="${HALCYON_GHC_REBUILD:-0}"
-
 		export HALCYON_CABAL_REBUILD="${HALCYON_CABAL_REBUILD:-0}"
 		export HALCYON_CABAL_UPDATE="${HALCYON_CABAL_UPDATE:-0}"
 
@@ -70,25 +69,32 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
 
-		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${HALCYON_APP_EXTRA_CONFIGURE_FLAGS:-}"
-		export HALCYON_APP_EXTRA_DATA_FILES="${HALCYON_APP_EXTRA_DATA_FILES:-}"
-		export HALCYON_APP_PRE_BUILD_HOOK="${HALCYON_APP_PRE_BUILD_HOOK:-}"
-		export HALCYON_APP_POST_BUILD_HOOK="${HALCYON_APP_POST_BUILD_HOOK:-}"
-		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
-		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
-		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
-
+		export HALCYON_INTERNAL_COMMAND="${HALCYON_INTERNAL_COMMAND:-}"
+		export HALCYON_INTERNAL_RECURSIVE="${HALCYON_INTERNAL_RECURSIVE:-0}"
+		export HALCYON_INTERNAL_REMOTE_SOURCE="${HALCYON_INTERNAL_REMOTE_SOURCE:-0}"
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
+		export HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE="${HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE:-0}"
+		export HALCYON_INTERNAL_CABAL_MAGIC_HASH="${HALCYON_INTERNAL_CABAL_MAGIC_HASH:-}"
+		export HALCYON_INTERNAL_GHC_MAGIC_HASH="${HALCYON_INTERNAL_GHC_MAGIC_HASH:-}"
 	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
+		export HALCYON_RESTORE_DEPENDENCIES=0
+
 		export HALCYON_CONSTRAINTS=''
+		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
+		export HALCYON_PRE_BUILD_HOOK=''
+		export HALCYON_POST_BUILD_HOOK=''
+		export HALCYON_APP_REBUILD=0
+		export HALCYON_APP_RECONFIGURE=0
+
 		export HALCYON_EXTRA_APPS=''
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
+		export HALCYON_EXTRA_DATA_FILES=''
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
-		export HALCYON_RESTORE_DEPENDENCIES=0
-		export HALCYON_INSTALL_DEPENDENCIES=0
+		export HALCYON_INCLUDE_DEPENDENCIES=0
+		export HALCYON_APP_REINSTALL=0
 
 		export HALCYON_GHC_REBUILD=0
 
@@ -103,14 +109,6 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK=''
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
 		export HALCYON_SANDBOX_REBUILD=0
-
-		export HALCYON_APP_EXTRA_CONFIGURE_FLAGS=''
-		export HALCYON_APP_EXTRA_DATA_FILES=''
-		export HALCYON_APP_PRE_BUILD_HOOK=''
-		export HALCYON_APP_POST_BUILD_HOOK=''
-		export HALCYON_APP_REBUILD=0
-		export HALCYON_APP_RECONFIGURE=0
-		export HALCYON_APP_REINSTALL=0
 
 		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=0
 	fi
@@ -132,24 +130,58 @@ halcyon_main () {
 			export HALCYON_BASE="${base_dir}";;
 		'--base='*)
 			export HALCYON_BASE="${1#*=}";;
-		'--prefix')
-			shift
-			expect_args prefix -- "$@"
-			export HALCYON_PREFIX="${prefix}";;
-		'--prefix='*)
-			export HALCYON_PREFIX="${1#*=}";;
 		'--root')
 			shift
 			expect_args root -- "$@"
 			export HALCYON_ROOT="${root}";;
 		'--root='*)
 			export HALCYON_ROOT="${1#*=}";;
+		'--prefix')
+			shift
+			expect_args prefix -- "$@"
+			export HALCYON_PREFIX="${prefix}";;
+		'--prefix='*)
+			export HALCYON_PREFIX="${1#*=}";;
+		'--restore-dependencies')
+			export HALCYON_RESTORE_DEPENDENCIES=1;;
+		'--no-app')
+			export HALCYON_NO_APP=1;;
+		'--no-build')
+			export HALCYON_NO_BUILD=1;;
+		'--no-build-dependencies')
+			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
+
+	# Build-time options
 		'--constraints')
 			shift
 			expect_args constraints -- "$@"
 			export HALCYON_CONSTRAINTS="${constraints}";;
 		'--constraints='*)
 			export HALCYON_CONSTRAINTS="${1#*=}";;
+		'--extra-configure-flags')
+			shift
+			expect_args extra_configure_flags -- "$@"
+			export HALCYON_EXTRA_CONFIGURE_FLAGS="${extra_configure_flags}";;
+		'--extra-configure-flags='*)
+			export HALCYON_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
+		'--pre-build-hook')
+			shift
+			expect_args pre_build_hook -- "$@"
+			export HALCYON_PRE_BUILD_HOOK="${pre_build_hook}";;
+		'--pre-build-hook='*)
+			export HALCYON_PRE_BUILD_HOOK="${1#*=}";;
+		'--post-build-hook')
+			shift
+			expect_args post_build_hook -- "$@"
+			export HALCYON_POST_BUILD_HOOK="${post_build_hook}";;
+		'--post-build-hook='*)
+			export HALCYON_POST_BUILD_HOOK="${1#*=}";;
+		'--app-rebuild')
+			export HALCYON_APP_REBUILD=1;;
+		'--app-reconfigure')
+			export HALCYON_APP_RECONFIGURE=1;;
+
+	# Install-time options
 		'--extra-apps')
 			shift
 			expect_args extra_apps -- "$@"
@@ -162,6 +194,12 @@ halcyon_main () {
 			export HALCYON_EXTRA_APPS_CONSTRAINTS="${extra_apps_constraints}";;
 		'--extra-apps-constraints='*)
 			export HALCYON_EXTRA_APPS_CONSTRAINTS="${1#*=}";;
+		'--extra-data-files')
+			shift
+			expect_args extra_data_files -- "$@"
+			export HALCYON_EXTRA_DATA_FILES="${extra_data_files}";;
+		'--extra-data-files='*)
+			export HALCYON_EXTRA_DATA_FILES="${1#*=}";;
 		'--pre-install-hook')
 			shift
 			expect_args pre_install_hook -- "$@"
@@ -174,16 +212,10 @@ halcyon_main () {
 			export HALCYON_POST_INSTALL_HOOK="${post_install_hook}";;
 		'--post-install-hook='*)
 			export HALCYON_POST_INSTALL_HOOK="${1#*=}";;
-		'--install-dependencies')
-			export HALCYON_INSTALL_DEPENDENCIES=1;;
-		'--restore-dependencies')
-			export HALCYON_RESTORE_DEPENDENCIES=1;;
-		'--no-app')
-			export HALCYON_NO_APP=1;;
-		'--no-build')
-			export HALCYON_NO_BUILD=1;;
-		'--no-build-dependencies')
-			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
+		'--include-dependencies')
+			export HALCYON_INCLUDE_DEPENDENCIES=1;;
+		'--app-reinstall')
+			export HALCYON_APP_REINSTALL=1;;
 
 	# Cache options
 		'--cache')
@@ -356,38 +388,6 @@ halcyon_main () {
 			export HALCYON_SANDBOX_POST_BUILD_HOOK="${1#*=}";;
 		'--sandbox-rebuild')
 			export HALCYON_SANDBOX_REBUILD=1;;
-
-	# App options
-		'--app-extra-configure-flags')
-			shift
-			expect_args app_extra_configure_flags -- "$@"
-			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${app_extra_configure_flags}";;
-		'--app-extra-configure-flags='*)
-			export HALCYON_APP_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
-		'--app-extra-data-files')
-			shift
-			expect_args app_extra_data_files -- "$@"
-			export HALCYON_APP_EXTRA_DATA_FILES="${app_extra_data_files}";;
-		'--app-extra-data-files='*)
-			export HALCYON_APP_EXTRA_DATA_FILES="${1#*=}";;
-		'--app-pre-build-hook')
-			shift
-			expect_args app_pre_build_hook -- "$@"
-			export HALCYON_APP_PRE_BUILD_HOOK="${app_pre_build_hook}";;
-		'--app-pre-build-hook='*)
-			export HALCYON_APP_PRE_BUILD_HOOK="${1#*=}";;
-		'--app-post-build-hook')
-			shift
-			expect_args app_post_build_hook -- "$@"
-			export HALCYON_APP_POST_BUILD_HOOK="${app_post_build_hook}";;
-		'--app-post-build-hook='*)
-			export HALCYON_APP_POST_BUILD_HOOK="${1#*=}";;
-		'--app-rebuild')
-			export HALCYON_APP_REBUILD=1;;
-		'--app-reconfigure')
-			export HALCYON_APP_RECONFIGURE=1;;
-		'--app-reinstall')
-			export HALCYON_APP_REINSTALL=1;;
 
 		'--')
 			shift

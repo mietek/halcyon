@@ -92,7 +92,7 @@ format_build_archive_name () {
 	local label
 	label=$( get_tag_label "${tag}" ) || die
 
-	echo "halcyon-app-build-${label}.tar.gz"
+	echo "halcyon-build-${label}.tar.gz"
 }
 
 
@@ -115,9 +115,9 @@ build_app () {
 		log 'Configuring app'
 
 		local -a opts
-		if [[ -f "${source_dir}/.halcyon-magic/app-extra-configure-flags" ]]; then
+		if [[ -f "${source_dir}/.halcyon-magic/extra-configure-flags" ]]; then
 			local -a raw_opts
-			raw_opts=( $( <"${source_dir}/.halcyon-magic/app-extra-configure-flags" ) ) || die
+			raw_opts=( $( <"${source_dir}/.halcyon-magic/extra-configure-flags" ) ) || die
 			opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
 		fi
 		opts+=( --prefix="${prefix}" )
@@ -130,7 +130,7 @@ build_app () {
 			die 'Failed to configure app'
 		fi
 
-		# NOTE: This helps implement HALCYON_APP_EXTRA_DATA_FILES, which
+		# NOTE: This helps implement HALCYON_EXTRA_DATA_FILES, which
 		# works around unusual Cabal globbing for the data-files
 		# package description entry.
 		# https://github.com/haskell/cabal/issues/713
@@ -153,16 +153,16 @@ build_app () {
 		expect_existing "${build_dir}/dist/.halcyon-data-dir"
 	fi
 
-	if [[ -f "${source_dir}/.halcyon-magic/app-pre-build-hook" ]]; then
-		log 'Executing app pre-build hook'
+	if [[ -f "${source_dir}/.halcyon-magic/pre-build-hook" ]]; then
+		log 'Executing pre-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/app-pre-build-hook" \
+				"${source_dir}/.halcyon-magic/pre-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" |& quote
 		); then
-			die 'Failed to execute app pre-build hook'
+			die 'Failed to execute pre-build hook'
 		fi
-		log 'App pre-build hook executed'
+		log 'Pre-build hook executed'
 	fi
 
 	log 'Building app'
@@ -175,16 +175,16 @@ build_app () {
 	built_size=$( get_size "${build_dir}" ) || die
 	log "Built app, ${built_size}"
 
-	if [[ -f "${source_dir}/.halcyon-magic/app-post-build-hook" ]]; then
-		log 'Executing app post-build hook'
+	if [[ -f "${source_dir}/.halcyon-magic/post-build-hook" ]]; then
+		log 'Executing post-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/app-post-build-hook" \
+				"${source_dir}/.halcyon-magic/post-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" |& quote
 		); then
-			die 'Failed to execute app post-build hook'
+			die 'Failed to execute post-build hook'
 		fi
-		log 'App post-build hook executed'
+		log 'Post-build hook executed'
 	fi
 
 	log_indent_begin 'Stripping app...'
@@ -335,7 +335,7 @@ prepare_build_dir () {
 
 	local must_configure
 	must_configure=0
-	if filter_matching "^. (\.halcyon-magic/app-extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
+	if filter_matching "^. (\.halcyon-magic/extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
 		match_at_least_one >'/dev/null'
 	then
 		must_configure=1

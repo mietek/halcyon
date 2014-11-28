@@ -18,18 +18,29 @@ help_usage () {
 
 		General options
 		  --base=                                 directory path
-		  --prefix=                               directory path
 		  --root=                                 directory path
-		  --constraints=                          file or directory path
-		  --extra-apps=                           whitespace-separated apps
-		  --extra-apps-constraints=               file or directory path
-		  --pre-install-hook=                     file path
-		  --post-install-hook=                    file path
-		  --install-dependencies
+		  --prefix=                               directory path
 		  --restore-dependencies
 		  --no-app
 		  --no-build
 		  --no-build-dependencies
+
+		Build-time options
+		  --constraints=                          file or directory path
+		  --extra-configure-flags=                whitespace-separated strings
+		  --pre-build-hook=                       file path
+		  --post-build-hook=                      file path
+		  --app-rebuild
+		  --app-reconfigure
+
+		Install-time options
+		  --extra-apps=                           whitespace-separated apps
+		  --extra-apps-constraints=               file or directory path
+		  --extra-data-files=                     whitespace-separated file or directory globs
+		  --pre-install-hook=                     file path
+		  --post-install-hook=                    file path
+		  --include-dependencies
+		  --app-reinstall
 
 		Cache options
 		  --cache=                                directory path
@@ -76,14 +87,5 @@ help_usage () {
 		  --sandbox-pre-build-hook=               file path
 		  --sandbox-post-build-hook=              file path
 		  --sandbox-rebuild
-
-		App options
-		  --app-extra-configure-flags=            whitespace-separated strings
-		  --app-extra-data-files=                 whitespace-separated file or directory globs
-		  --app-pre-build-hook=                   file path
-		  --app-post-build-hook=                  file path
-		  --app-rebuild
-		  --app-reconfigure
-		  --app-reinstall
 EOF
 }
