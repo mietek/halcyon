@@ -204,7 +204,7 @@ copy_ghc_magic () {
 }
 
 
-prepare_ghc_layer () {
+link_ghc_libs () {
 	expect_vars HALCYON_BASE
 	expect_no_existing "${HALCYON_BASE}/ghc/usr/lib"
 
@@ -316,7 +316,7 @@ build_ghc_layer () {
 
 	local ghc_version original_url original_name ghc_build_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	original_url=$( prepare_ghc_layer "${tag}" ) || die
+	original_url=$( link_ghc_libs "${tag}" ) || die
 	original_name=$( basename "${original_url}" ) || die
 	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || die
 

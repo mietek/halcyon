@@ -289,6 +289,8 @@ prepare_build_dir () {
 	local prepare_dir
 	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || die
 
+	log 'Preparing build directory'
+
 	copy_source_dir_over "${source_dir}" "${prepare_dir}" || die
 
 	local all_files
@@ -306,7 +308,7 @@ prepare_build_dir () {
 		return 0
 	fi
 
-	log 'Examining source changes'
+	log_indent 'Examining source changes'
 
 	quote <<<"${changed_files}"
 

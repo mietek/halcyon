@@ -191,7 +191,7 @@ prepare_install_dir () {
 	prefix=$( get_tag_prefix "${tag}" ) || die
 	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
-	log 'Preparing install'
+	log 'Preparing install directory'
 
 	log_indent 'Including app'
 

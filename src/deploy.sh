@@ -319,6 +319,8 @@ prepare_source_dir () {
 	local magic_dir
 	magic_dir="${source_dir}/.halcyon-magic"
 
+	log 'Preparing source directory'
+
 # Standard files
 	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
 		if [[ -d "${HALCYON_CONSTRAINTS}" ]]; then
