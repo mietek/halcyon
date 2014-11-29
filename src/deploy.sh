@@ -431,6 +431,7 @@ prepare_source_dir () {
 do_deploy_app () {
 	expect_vars HALCYON_BASE \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
+		HALCYON_SANDBOX_REBUILD \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir constraints
@@ -460,6 +461,7 @@ do_deploy_app () {
 	local must_prepare
 	must_prepare=1
 	if ! (( HALCYON_APP_REBUILD )) && ! (( HALCYON_APP_RECONFIGURE )) && ! (( HALCYON_APP_REINSTALL )) &&
+		! (( HALCYON_SANDBOX_REBUILD )) &&
 		restore_install_dir "${tag}" "${install_dir}"
 	then
 		must_prepare=0

@@ -364,7 +364,9 @@ link_sandbox_config () {
 
 
 install_build_dir () {
-	expect_vars HALCYON_NO_BUILD HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE
+	expect_vars HALCYON_NO_BUILD \
+		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE \
+		HALCYON_SANDBOX_REBUILD
 
 	local tag source_dir build_dir
 	expect_args tag source_dir build_dir -- "$@"
@@ -374,7 +376,9 @@ install_build_dir () {
 		return 1
 	fi
 
-	if ! (( HALCYON_APP_REBUILD )) && restore_build_dir "${tag}" "${build_dir}"; then
+	if ! (( HALCYON_APP_REBUILD )) && ! (( HALCYON_SANDBOX_REBUILD )) &&
+		restore_build_dir "${tag}" "${build_dir}"
+	then
 		if ! (( HALCYON_APP_RECONFIGURE )) && validate_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
 			link_sandbox_config "${build_dir}" || die
 			return 0
