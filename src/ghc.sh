@@ -382,7 +382,7 @@ build_ghc_layer () {
 
 		local trimmed_size
 		trimmed_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
-		log_end "done, ${trimmed_size}"
+		log_indent_end "done, ${trimmed_size}"
 	fi
 
 	log_indent_begin 'Stripping GHC layer...'
@@ -391,7 +391,7 @@ build_ghc_layer () {
 
 	local stripped_size
 	stripped_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
-	log_end "done, ${stripped_size}"
+	log_indent_end "done, ${stripped_size}"
 
 	derive_ghc_tag "${tag}" >"${HALCYON_BASE}/ghc/.halcyon-tag" || die
 

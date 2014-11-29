@@ -258,7 +258,7 @@ prepare_install_dir () {
 
 		local trimmed_size
 		trimmed_size=$( get_size "${install_dir}" ) || die
-		log_end "done, ${trimmed_size}"
+		log_indent_end "done, ${trimmed_size}"
 	fi
 
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die

@@ -330,7 +330,7 @@ EOF
 
 	local stripped_size
 	stripped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
-	log_end "done, ${stripped_size}"
+	log_indent_end "done, ${stripped_size}"
 
 	derive_base_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag" || die
 
@@ -345,7 +345,7 @@ update_cabal_package_db () {
 	expect_args tag -- "$@"
 
 	local cabal_date
-	cabal_date=$( get_iso_date ) || die
+	cabal_date=$( get_date '+%Y-%m-%d' ) || die
 
 	log 'Updating Cabal layer'
 
@@ -438,7 +438,7 @@ validate_updated_cabal_date () {
 	expect_args candidate_date -- "$@"
 
 	local today_date
-	today_date=$( get_iso_date ) || die
+	today_date=$( get_date '+%Y-%m-%d' ) || die
 
 	if [[ "${candidate_date}" < "${today_date}" ]]; then
 		return 1

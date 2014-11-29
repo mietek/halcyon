@@ -193,7 +193,7 @@ build_app () {
 
 	local stripped_size
 	stripped_size=$( get_size "${build_dir}" ) || die
-	log_end "done, ${stripped_size}"
+	log_indent_end "done, ${stripped_size}"
 
 	derive_build_tag "${tag}" >"${build_dir}/.halcyon-tag" || die
 }

@@ -223,18 +223,18 @@ add_sandbox_sources () {
 				log_indent_begin "Cloning ${sandbox_source}..."
 
 				if ! commit_hash=$( git_clone_over "${sandbox_source}" "${src_dir}" ); then
-					log_end 'error'
+					log_indent_end 'error'
 					die 'Cannot clone sandbox source'
 				fi
 			else
 				log_indent_begin "Updating ${sandbox_source}..."
 
 				if ! commit_hash=$( git_update_into "${sandbox_source}" "${src_dir}" ); then
-					log_end 'error'
+					log_indent_end 'error'
 					die 'Cannot update sandbox source'
 				fi
 			fi
-			log_end "done, ${commit_hash:0:7}"
+			log_indent_end "done, ${commit_hash:0:7}"
 		else
 			src_name=$( basename "${sandbox_source}" ) || die
 			src_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${src_name}"
@@ -296,7 +296,7 @@ install_sandbox_extra_libs () {
 
 	apt-get "${opts[@]}" update --quiet --quiet |& quote || die
 
-	log_end 'done'
+	log_indent_end 'done'
 
 	local extra_lib
 	for extra_lib in "${extra_libs[@]}"; do
@@ -483,7 +483,7 @@ build_sandbox_layer () {
 
 		local trimmed_size
 		trimmed_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
-		log_end "done, ${trimmed_size}"
+		log_indent_end "done, ${trimmed_size}"
 	fi
 
 	log_indent_begin 'Stripping sandbox layer...'
@@ -492,7 +492,7 @@ build_sandbox_layer () {
 
 	local stripped_size
 	stripped_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
-	log_end "done, ${stripped_size}"
+	log_indent_end "done, ${stripped_size}"
 
 	derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag" || die
 }
