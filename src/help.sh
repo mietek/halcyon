@@ -24,6 +24,7 @@ help_usage () {
 		  --no-app
 		  --no-build
 		  --no-build-layers
+		  --log-timestamp
 
 		Build-time options
 		  --constraints=                          file or directory path

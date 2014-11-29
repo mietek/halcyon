@@ -10,6 +10,7 @@ set_halcyon_vars () {
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_LAYERS="${HALCYON_NO_BUILD_LAYERS:-0}"
+		export HALCYON_LOG_TIMESTAMP="${HALCYON_LOG_TIMESTAMP:-0}"
 
 		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
@@ -80,6 +81,7 @@ set_halcyon_vars () {
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		export HALCYON_RESTORE_LAYERS=0
+		export HALCYON_LOG_TIMESTAMP=0
 
 		export HALCYON_CONSTRAINTS=''
 		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
@@ -150,6 +152,8 @@ halcyon_main () {
 			export HALCYON_NO_BUILD=1;;
 		'--no-build-layers')
 			export HALCYON_NO_BUILD_LAYERS=1;;
+		'--log-timestamp')
+			export HALCYON_LOG_TIMESTAMP=1;;
 
 	# Build-time options
 		'--constraints')
@@ -414,6 +418,11 @@ halcyon_main () {
 		esac
 		shift
 	done
+
+	if (( HALCYON_LOG_TIMESTAMP )); then
+		export BASHMENOT_LOG_TIMESTAMP=1
+		export BASHMENOT_TIMESTAMP_EPOCH=$( get_date '+%s' ) || true
+	fi
 
 	# NOTE: HALCYON_CACHE must not be /tmp, as the cache cleaning
 	# functionality will get confused.
