@@ -366,9 +366,7 @@ install_app () {
 	mkdir -p "${HALCYON_ROOT}" || die
 	cp -R "${install_dir}/." "${HALCYON_ROOT}" |& quote || die
 
-	local installed_size
-	installed_size=$( get_size "${install_dir}" ) || die
-	log_end "done, ${installed_size}"
+	log_end 'done'
 
 	if [[ -n "${saved_tag}" ]]; then
 		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die

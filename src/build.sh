@@ -173,7 +173,7 @@ build_app () {
 
 	local built_size
 	built_size=$( get_size "${build_dir}" ) || die
-	log "Built app, ${built_size}"
+	log "App built, ${built_size}"
 
 	if [[ -f "${source_dir}/.halcyon-magic/post-build-hook" ]]; then
 		log 'Executing post-build hook'
