@@ -1,16 +1,16 @@
 [Halcyon](https://halcyon.sh/)
 ==============================
 
-Halcyon is a system for deploying Haskell web and non-web applications.
+Halcyon is a system for deploying Haskell web and non-web applications, powering [Haskell on Heroku](https://haskellonheroku.com/).
 
 
 Usage
 -----
 
 ```
-# git clone https://github.com/mietek/halcyon ~/halcyon
-# source <( ~/halcyon/halcyon paths )
-# halcyon deploy
+$ git clone https://github.com/mietek/halcyon
+$ source <( halcyon/halcyon paths )
+$ halcyon deploy
 ```
 
 For more information, please refer to the [Halcyon website](https://halcyon.sh/).
