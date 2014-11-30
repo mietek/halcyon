@@ -289,8 +289,6 @@ prepare_build_dir () {
 	local prepare_dir
 	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || die
 
-	log 'Preparing build directory'
-
 	copy_source_dir_over "${source_dir}" "${prepare_dir}" || die
 
 	local all_files
