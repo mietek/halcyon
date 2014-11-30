@@ -6,7 +6,9 @@ read_constraints () {
 
 
 read_dry_frozen_constraints () {
-	tail -n +3 | sed 's/ == / /'
+	awk '/The following packages would be frozen:/ { i = 1 } i' |
+		filter_not_first |
+		sed 's/ == / /'
 }
 
 
