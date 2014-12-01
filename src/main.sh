@@ -4,12 +4,9 @@ set_halcyon_vars () {
 
 		# NOTE: HALCYON_BASE is set in paths.sh.
 
-		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_BASE}}"
-		export HALCYON_RESTORE_LAYERS="${HALCYON_RESTORE_LAYERS:-0}"
+		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
-		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
-		export HALCYON_NO_BUILD_LAYERS="${HALCYON_NO_BUILD_LAYERS:-0}"
 		export HALCYON_LOG_TIMESTAMP="${HALCYON_LOG_TIMESTAMP:-0}"
 
 		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
@@ -18,11 +15,14 @@ set_halcyon_vars () {
 		export HALCYON_POST_BUILD_HOOK="${HALCYON_POST_BUILD_HOOK:-}"
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
 		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
+		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
+		export HALCYON_NO_BUILD_LAYERS="${HALCYON_NO_BUILD_LAYERS:-0}"
 
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_DATA_FILES="${HALCYON_EXTRA_DATA_FILES:-}"
 		export HALCYON_INCLUDE_LAYERS="${HALCYON_INCLUDE_LAYERS:-0}"
+		export HALCYON_RESTORE_LAYERS="${HALCYON_RESTORE_LAYERS:-0}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
 		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
@@ -80,7 +80,6 @@ set_halcyon_vars () {
 	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
-		export HALCYON_RESTORE_LAYERS=0
 		export HALCYON_LOG_TIMESTAMP=0
 
 		export HALCYON_CONSTRAINTS=''
@@ -94,6 +93,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_EXTRA_DATA_FILES=''
 		export HALCYON_INCLUDE_LAYERS=0
+		export HALCYON_RESTORE_LAYERS=0
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
 		export HALCYON_APP_REINSTALL=0
@@ -132,26 +132,20 @@ halcyon_main () {
 			export HALCYON_BASE="${base_dir}";;
 		'--base='*)
 			export HALCYON_BASE="${1#*=}";;
-		'--root')
-			shift
-			expect_args root -- "$@"
-			export HALCYON_ROOT="${root}";;
-		'--root='*)
-			export HALCYON_ROOT="${1#*=}";;
 		'--prefix')
 			shift
 			expect_args prefix -- "$@"
 			export HALCYON_PREFIX="${prefix}";;
 		'--prefix='*)
 			export HALCYON_PREFIX="${1#*=}";;
-		'--restore-layers')
-			export HALCYON_RESTORE_LAYERS=1;;
+		'--root')
+			shift
+			expect_args root -- "$@"
+			export HALCYON_ROOT="${root}";;
+		'--root='*)
+			export HALCYON_ROOT="${1#*=}";;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
-		'--no-build')
-			export HALCYON_NO_BUILD=1;;
-		'--no-build-layers')
-			export HALCYON_NO_BUILD_LAYERS=1;;
 		'--log-timestamp')
 			export HALCYON_LOG_TIMESTAMP=1;;
 
@@ -184,6 +178,10 @@ halcyon_main () {
 			export HALCYON_APP_REBUILD=1;;
 		'--app-reconfigure')
 			export HALCYON_APP_RECONFIGURE=1;;
+		'--no-build')
+			export HALCYON_NO_BUILD=1;;
+		'--no-build-layers')
+			export HALCYON_NO_BUILD_LAYERS=1;;
 
 	# Install-time options
 		'--extra-apps')
@@ -206,6 +204,8 @@ halcyon_main () {
 			export HALCYON_EXTRA_DATA_FILES="${1#*=}";;
 		'--include-layers')
 			export HALCYON_INCLUDE_LAYERS=1;;
+		'--restore-layers')
+			export HALCYON_RESTORE_LAYERS=1;;
 		'--pre-install-hook')
 			shift
 			expect_args pre_install_hook -- "$@"

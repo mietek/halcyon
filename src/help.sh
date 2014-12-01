@@ -18,12 +18,9 @@ help_usage () {
 
 		General options
 		  --base=                                 directory path
-		  --root=                                 directory path
 		  --prefix=                               directory path
-		  --restore-layers
+		  --root=                                 directory path
 		  --no-app
-		  --no-build
-		  --no-build-layers
 		  --log-timestamp
 
 		Build-time options
@@ -33,12 +30,15 @@ help_usage () {
 		  --post-build-hook=                      file path
 		  --app-rebuild
 		  --app-reconfigure
+		  --no-build
+		  --no-build-layers
 
 		Install-time options
 		  --extra-apps=                           whitespace-separated apps
 		  --extra-apps-constraints=               file or directory path
 		  --extra-data-files=                     whitespace-separated file or directory globs
 		  --include-layers
+		  --restore-layers
 		  --pre-install-hook=                     file path
 		  --post-install-hook=                    file path
 		  --app-reinstall
