@@ -77,7 +77,7 @@ touch_cached_file () {
 }
 
 
-touch_cached_env_files () {
+touch_cached_ghc_and_cabal_files () {
 	expect_vars HALCYON_CACHE
 
 	local name

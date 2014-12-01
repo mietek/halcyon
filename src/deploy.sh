@@ -162,7 +162,7 @@ announce_deploy () {
 	fi
 
 	if (( HALCYON_NO_APP )); then
-		log_label 'Environment deployed'
+		log_label 'GHC and Cabal layers deployed'
 		return 0
 	fi
 
@@ -174,7 +174,7 @@ announce_deploy () {
 }
 
 
-do_deploy_env () {
+do_deploy_ghc_and_cabal_layers () {
 	expect_vars HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir
@@ -184,7 +184,7 @@ do_deploy_env () {
 		if ! validate_ghc_layer "${tag}" >'/dev/null' ||
 			! validate_updated_cabal_layer "${tag}" >'/dev/null'
 		then
-			die 'Cannot use existing environment'
+			die 'Cannot use existing GHC and Cabal layers'
 		fi
 		return 0
 	fi
@@ -198,7 +198,7 @@ do_deploy_env () {
 }
 
 
-deploy_env () {
+deploy_ghc_and_cabal_layers () {
 	expect_vars HALCYON_GHC_VERSION \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
@@ -216,7 +216,7 @@ deploy_env () {
 	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		log 'Deploying environment'
+		log 'Deploying GHC and Cabal layers'
 
 		describe_storage || die
 
@@ -237,8 +237,8 @@ deploy_env () {
 			''
 	) || die
 
-	if ! do_deploy_env "${tag}" "${source_dir}"; then
-		log_warning 'Cannot deploy environment'
+	if ! do_deploy_ghc_and_cabal_layers "${tag}" "${source_dir}"; then
+		log_warning 'Cannot deploy GHC and Cabal layers'
 		return 1
 	fi
 
@@ -306,7 +306,7 @@ deploy_from_install_dir () {
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		announce_deploy "${tag}" || die
-		touch_cached_env_files || die
+		touch_cached_ghc_and_cabal_files || die
 	fi
 }
 
@@ -440,7 +440,7 @@ do_deploy_app () {
 	build_dir=$( get_tmp_dir 'halcyon-build' ) || die
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 
-	do_deploy_env "${tag}" "${source_dir}" || return 1
+	do_deploy_ghc_and_cabal_layers "${tag}" "${source_dir}" || return 1
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
@@ -520,7 +520,7 @@ deploy_app () {
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
-			deploy_env "${source_dir}" || return 1
+			deploy_ghc_and_cabal_layers "${source_dir}" || return 1
 
 		constraints=$( cabal_freeze_implicit_constraints "${label}" "${source_dir}" ) || die
 
@@ -693,7 +693,7 @@ deploy_unpacked_app () {
 	HALCYON_GHC_REBUILD=0 \
 	HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 	HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
-		deploy_env '/dev/null' || return 1
+		deploy_ghc_and_cabal_layers '/dev/null' || return 1
 
 	log 'Unpacking app'
 
@@ -725,11 +725,11 @@ halcyon_deploy () {
 	install_pigz || die
 
 	if (( HALCYON_NO_APP )); then
-		deploy_env '/dev/null' || return 1
+		deploy_ghc_and_cabal_layers '/dev/null' || return 1
 	elif ! (( $# )) || [[ "$1" == '' ]]; then
 		if ! detect_label '.' >'/dev/null'; then
 			HALCYON_NO_APP=1 \
-				deploy_env '/dev/null' || return 1
+				deploy_ghc_and_cabal_layers '/dev/null' || return 1
 		else
 			deploy_local_app '.' || return 1
 		fi
