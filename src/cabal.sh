@@ -570,7 +570,8 @@ restore_updated_cabal_layer () {
 
 	log 'Locating Cabal layers'
 
-	local updated_name=$(
+	local updated_name
+	updated_name=$(
 		list_stored_files "${platform}/${archive_prefix}" |
 		sed "s:^${platform}/::" |
 		match_updated_cabal_archive_name "${tag}"
