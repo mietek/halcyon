@@ -262,7 +262,7 @@ prepare_install_dir () {
 	fi
 
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
-	echo "${data_dir}" >"${install_dir}/.halcyon-data-dir" || die
+	echo "${data_dir}" >"${install_dir}${prefix}/.halcyon-data-dir" || die
 }
 
 
@@ -341,11 +341,11 @@ install_app () {
 
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
-	expect_existing "${install_dir}/.halcyon-data-dir"
 
 	local prefix data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
-	data_dir=$( <"${install_dir}/.halcyon-data-dir" ) || die
+	expect_existing "${install_dir}${prefix}/.halcyon-data-dir"
+	data_dir=$( <"${install_dir}${prefix}/.halcyon-data-dir" ) || die
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
 		log_begin "Installing app into ${prefix}..."
