@@ -44,7 +44,6 @@ if ! halcyon_source_bashmenot; then
 	echo '   *** ERROR: Cannot source bashmenot' >&2
 fi
 
-
 source "${HALCYON_DIR}/src/paths.sh"
 source "${HALCYON_DIR}/src/main.sh"
 source "${HALCYON_DIR}/src/tag.sh"
@@ -63,7 +62,6 @@ halcyon_self_update () {
 	if (( ${HALCYON_NO_SELF_UPDATE:-0} )) || (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
 		return 0
 	fi
-
 	if [[ ! -d "${HALCYON_DIR}/.git" ]]; then
 		return 1
 	fi
