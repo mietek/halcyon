@@ -3,7 +3,7 @@ set -o pipefail
 export HALCYON_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
 
-halcyon_source_bashmenot () {
+halcyon_install_bashmenot () {
 	local no_update
 	no_update="${HALCYON_NO_SELF_UPDATE:-0}"
 	if (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
@@ -40,8 +40,8 @@ halcyon_source_bashmenot () {
 }
 
 
-if ! halcyon_source_bashmenot; then
-	echo '   *** ERROR: Cannot source bashmenot' >&2
+if ! halcyon_install_bashmenot; then
+	echo '   *** ERROR: Cannot install bashmenot' >&2
 fi
 
 source "${HALCYON_DIR}/src/paths.sh"
