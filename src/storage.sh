@@ -325,7 +325,7 @@ clean_cache () {
 
 
 install_pigz () {
-	expect_vars HALCYON_INSTALL HALCYON_CACHE
+	expect_vars HALCYON_DIR HALCYON_CACHE
 
 	if which 'pigz' &>'/dev/null'; then
 		return 0
@@ -368,7 +368,7 @@ install_pigz () {
 		touch_cached_file "${original_name}" || die
 	fi
 
-	copy_file "${pigz_dir}/usr/bin/pigz" "${HALCYON_INSTALL}/pigz" || die
+	copy_file "${pigz_dir}/usr/bin/pigz" "${HALCYON_DIR}/pigz" || die
 
 	rm -rf "${pigz_dir}" || die
 }
