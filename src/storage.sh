@@ -200,11 +200,8 @@ list_private_stored_files () {
 
 
 list_public_stored_files () {
-	local prefix
-	expect_args prefix -- "$@"
-
 	local public_url
-	public_url=$( format_public_storage_url "${prefix:+?prefix=${prefix}}" ) || die
+	public_url=$( format_public_storage_url '' ) || die
 
 	local listing
 	if (( HALCYON_NO_PUBLIC_STORAGE )) || ! listing=$( curl_list_s3 "${public_url}" ); then
@@ -220,7 +217,9 @@ list_stored_files () {
 	expect_args prefix -- "$@"
 
 	list_private_stored_files "${prefix}" || die
-	list_public_stored_files "${prefix}" || die
+
+	list_public_stored_files |
+		filter_matching "^${prefix//./\.}" || die
 }
 
 
