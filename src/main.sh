@@ -448,15 +448,10 @@ halcyon_main () {
 	export HALCYON_INTERNAL_COMMAND="${cmd}"
 
 	case "${cmd}" in
-	'deploy')
-		halcyon_deploy "${args[@]:-}" || return 1
-		;;
-	'label')
-		halcyon_deploy "${args[@]:-}" || return 1
-		;;
-	'constraints')
-		halcyon_deploy "${args[@]:-}" || return 1
-		;;
+	'deploy');&
+	'label');&
+	'executable');&
+	'constraints');&
 	'tag')
 		halcyon_deploy "${args[@]:-}" || return 1
 		;;

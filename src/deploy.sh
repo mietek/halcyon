@@ -551,6 +551,16 @@ deploy_app () {
 		constraints=$( detect_constraints "${label}" "${source_dir}" ) || die
 	fi
 
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'executable' ]]; then
+		local executable
+		if ! executable=$( detect_executable "${source_dir}" ); then
+			die 'Cannot detect executable'
+		fi
+
+		echo "${executable}"
+		return 0
+	fi
+
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'constraints' ]]; then
 		format_constraints <<<"${constraints}" || die
 		return 0
