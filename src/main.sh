@@ -448,12 +448,15 @@ halcyon_main () {
 	export HALCYON_INTERNAL_COMMAND="${cmd}"
 
 	case "${cmd}" in
-	'deploy');&
+	'deploy')
+		halcyon_deploy "${args[@]:-}" || return 1
+		;;
 	'label');&
 	'executable');&
 	'constraints');&
 	'tag')
-		halcyon_deploy "${args[@]:-}" || return 1
+		HALCYON_NO_CLEAN_CACHE=1 \
+			halcyon_deploy "${args[@]:-}" || return 1
 		;;
 	'paths')
 		echo -e "export HALCYON_DIR='${HALCYON_DIR}'\n"
