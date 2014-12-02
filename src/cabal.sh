@@ -604,11 +604,9 @@ link_cabal_config () {
 			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" ]]
 		then
 			log_warning 'Unexpected existing Cabal config'
-			log
-			log 'To use recommended Cabal config:'
+			log_warning 'Please review and replace with recommended Cabal config:'
 			log_indent '$ rm ~/.cabal/config'
 			log_indent "$ ln -s ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
-			log
 			return 0
 		fi
 	fi

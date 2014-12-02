@@ -525,17 +525,8 @@ deploy_app () {
 		constraints=$( cabal_freeze_implicit_constraints "${label}" "${source_dir}" ) || die
 
 		log_warning 'Using implicit constraints'
-		log_warning 'Expected cabal.config with explicit constraints'
-		log
-		if (( HALCYON_INTERNAL_REMOTE_SOURCE )); then
-			log "To use explicit constraints, specify --constraints=cabal.config"
-		else
-			log 'To use explicit constraints, add cabal.config'
-		fi
-		log_indent "$ cat >cabal.config <<EOF"
-		format_constraints <<<"${constraints}" >&2 || die
-		echo 'EOF' >&2
-		log
+		log_warning 'Please declare explicit constraints:'
+		format_constraints <<<"${constraints}" |& quote || die
 
 		# NOTE: This is the second out of the two moments when source_dir is modified.
 
@@ -714,7 +705,8 @@ deploy_unpacked_app () {
 
 	if [[ "${label}" != "${thing}" ]]; then
 		log_warning "Using implicit version of ${thing}"
-		log_warning 'Expected label with explicit version'
+		log_warning 'Please declare explicit version:'
+		log_indent "${label}"
 	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
