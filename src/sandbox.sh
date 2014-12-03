@@ -548,11 +548,10 @@ restore_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local platform ghc_version archive_name description
+	local platform ghc_version archive_name
 	platform=$( get_tag_platform "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
-	description=$( format_sandbox_description "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
 		log 'Using existing sandbox layer'

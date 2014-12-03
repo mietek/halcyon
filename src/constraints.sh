@@ -99,7 +99,11 @@ validate_actual_constraints () {
 	local label constraints_hash actual_constraints actual_hash
 	label=$( get_tag_label "${tag}" ) || die
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
-	actual_constraints=$( cabal_freeze_actual_constraints "${label}" "${source_dir}" ) || die
+	if ! actual_constraints=$( cabal_freeze_actual_constraints "${label}" "${source_dir}" ); then
+		log_warning 'Failed to freeze actual constraints'
+		return 0
+	fi
+
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
 	if [[ "${actual_hash}" == "${constraints_hash}" ]]; then
 		return 0

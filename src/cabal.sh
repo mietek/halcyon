@@ -721,7 +721,7 @@ cabal_freeze_implicit_constraints () {
 	# https://github.com/haskell/cabal/issues/2178
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || return 1
 
 	local constraints
 	if ! constraints=$(
@@ -730,11 +730,11 @@ cabal_freeze_implicit_constraints () {
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then
-		quote <"${stderr}" || die
-		die 'Failed to freeze implicit constraints'
+		quote <"${stderr}" || return 1
+		return 1
 	fi
 
-	rm -f "${stderr}" || die
+	rm -f "${stderr}" || return 1
 
 	echo "${constraints}"
 }
@@ -745,7 +745,7 @@ cabal_freeze_actual_constraints () {
 	expect_args label source_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || die
+	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || return 1
 
 	local constraints
 	if ! constraints=$(
@@ -754,11 +754,11 @@ cabal_freeze_actual_constraints () {
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then
-		quote <"${stderr}" || die
-		die 'Failed to freeze actual constraints'
+		quote <"${stderr}" || return 1
+		return 1
 	fi
 
-	rm -f "${stderr}" || die
+	rm -f "${stderr}" || return 1
 
 	echo "${constraints}"
 }

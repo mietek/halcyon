@@ -522,7 +522,9 @@ deploy_app () {
 		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 			deploy_ghc_and_cabal_layers "${source_dir}" || return 1
 
-		constraints=$( cabal_freeze_implicit_constraints "${label}" "${source_dir}" ) || die
+		if ! constraints=$( cabal_freeze_implicit_constraints "${label}" "${source_dir}" ); then
+			die 'Failed to freeze implicit constraints'
+		fi
 
 		log_warning 'Using implicit constraints'
 		log_warning 'Please declare explicit constraints:'
