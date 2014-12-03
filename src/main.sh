@@ -419,6 +419,13 @@ halcyon_main () {
 		shift
 	done
 
+	# NOTE: The lib dirs are always created on OS X to avoid spurious
+	# linker warnings.
+
+	if [[ $( detect_os ) == 'osx' ]]; then
+		mkdir -p "${HALCYON_BASE}/usr/lib" "${HALCYON_BASE}/ghc/usr/lib" "${HALCYON_BASE}/sandbox/usr/lib" || die
+	fi
+
 	if (( HALCYON_LOG_TIMESTAMP )); then
 		export BASHMENOT_LOG_TIMESTAMP=1
 		export BASHMENOT_TIMESTAMP_EPOCH=$( get_date '+%s' ) || true

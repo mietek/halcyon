@@ -206,7 +206,6 @@ copy_ghc_magic () {
 
 link_ghc_libs () {
 	expect_vars HALCYON_BASE
-	expect_no_existing "${HALCYON_BASE}/ghc/usr/lib"
 
 	local tag
 	expect_args tag -- "$@"
@@ -284,13 +283,10 @@ link_ghc_libs () {
 		die "Unexpected GHC version for ${description}: ${ghc_version}"
 	esac
 
-	# NOTE: The lib dir is always created to prevent spurious linker warnings on OS X.
-
-	mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
-
 	if [ -n "${libgmp_file:-}" ]; then
 		expect_existing "${libgmp_file}"
 
+		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
 		ln -s "${libgmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${libgmp_name}" || die
 		ln -s "${libgmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so" || die
 	fi
@@ -298,6 +294,7 @@ link_ghc_libs () {
 	if [ -n "${libtinfo_file:-}" ]; then
 		expect_existing "${libtinfo_file}"
 
+		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
 		ln -s "${libtinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" || die
 		ln -s "${libtinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so" || die
 	fi

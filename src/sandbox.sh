@@ -253,10 +253,6 @@ install_sandbox_extra_libs () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	# NOTE: The lib dir is always created to prevent spurious linker warnings on OS X.
-
-	mkdir -p "${HALCYON_BASE}/sandbox/usr/lib" || die
-
 	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
 		return 0
 	fi
@@ -290,7 +286,7 @@ install_sandbox_extra_libs () {
 	opts+=( -o dir::cache="${apt_dir}/cache" )
 	opts+=( -o dir::state="${apt_dir}/state" )
 
-	mkdir -p "${apt_dir}/cache/archives/partial" "${apt_dir}/state/lists/partial" || die
+	mkdir -p "${HALCYON_BASE}/sandbox/usr/lib" "${apt_dir}/cache/archives/partial" "${apt_dir}/state/lists/partial" || die
 
 	log_indent_begin 'Updating package lists...'
 
