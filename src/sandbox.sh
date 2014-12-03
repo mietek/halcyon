@@ -239,7 +239,7 @@ add_sandbox_sources () {
 			src_name=$( basename "${sandbox_source}" ) || die
 			src_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${src_name}"
 
-			copy_over "${sandbox_source}" "${src_dir}" || die
+			copy_dir_over "${sandbox_source}" "${src_dir}" || die
 		fi
 
 		sandboxed_cabal_do "${source_dir}" sandbox add-source "${src_dir}" || die
