@@ -271,10 +271,7 @@ install_sandbox_extra_libs () {
 	log 'Installing sandbox extra libs'
 
 	case "${platform}" in
-	'linux-ubuntu-14.10-x86_64');&
-	'linux-ubuntu-14.04-x86_64');&
-	'linux-ubuntu-12.04-x86_64');&
-	'linux-ubuntu-10.04-x86_64')
+	'linux-ubuntu-'*)
 		true;;
 	*)
 		log_warning "Cannot install sandbox extra libs on ${description}"
@@ -435,10 +432,7 @@ build_sandbox_layer () {
 		platform=$( get_tag_platform "${tag}" ) || die
 
 		case "${platform}" in
-		'linux-ubuntu-14.10-x86_64');&
-		'linux-ubuntu-14.04-x86_64');&
-		'linux-ubuntu-12.04-x86_64');&
-		'linux-ubuntu-10.04-x86_64')
+		'linux-ubuntu-'*)
 			opts+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
 			opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
 			opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )

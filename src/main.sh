@@ -458,10 +458,7 @@ halcyon_main () {
 	'deploy')
 		halcyon_deploy "${args[@]:-}" || return 1
 		;;
-	'label');&
-	'executable');&
-	'constraints');&
-	'tag')
+	'label'|'executable'|'constraints'|'tag')
 		HALCYON_NO_CLEAN_CACHE=1 \
 			halcyon_deploy "${args[@]:-}" || return 1
 		;;
