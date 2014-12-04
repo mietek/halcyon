@@ -37,6 +37,7 @@ help_usage () {
 		  --extra-apps=                           whitespace-separated apps
 		  --extra-apps-constraints=               file or directory path
 		  --extra-data-files=                     whitespace-separated file or directory globs
+		  --extra-os-packages=                    whitespace-separated strings
 		  --include-layers
 		  --restore-layers
 		  --pre-install-hook=                     file path
@@ -84,7 +85,7 @@ help_usage () {
 		  --sandbox-extra-apps=                   whitespace-separated apps
 		  --sandbox-extra-apps-constraints=       file or directory path
 		  --sandbox-extra-configure-flags=	  whitespace-separated strings
-		  --sandbox-extra-libs=                   whitespace-separated strings
+		  --sandbox-extra-os-packages=            whitespace-separated strings
 		  --sandbox-pre-build-hook=               file path
 		  --sandbox-post-build-hook=              file path
 		  --sandbox-rebuild

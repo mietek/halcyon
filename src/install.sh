@@ -180,6 +180,26 @@ install_extra_data_files () {
 }
 
 
+install_extra_os_packages () {
+	local tag source_dir install_dir
+	expect_args tag source_dir install_dir -- "$@"
+
+	if [[ ! -f "${source_dir}/.halcyon-magic/extra-os-packages" ]]; then
+		return 0
+	fi
+
+	local extra_packages
+	extra_packages=$( <"${source_dir}/.halcyon-magic/extra-os-packages" ) || die
+
+	log 'Installing extra OS packages'
+	if ! install_os_packages "${tag}" "${extra_packages}" "${install_dir}"; then
+		die 'Failed to install extra OS packages'
+	fi
+
+	log 'Extra OS packages installed'
+}
+
+
 prepare_install_dir () {
 	expect_vars HALCYON_BASE
 
@@ -210,6 +230,7 @@ prepare_install_dir () {
 	fi
 
 	install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
+	install_extra_os_packages "${tag}" "${source_dir}" "${install_dir}" || die
 
 	local include_layers
 	include_layers=0

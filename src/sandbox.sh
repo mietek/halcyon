@@ -247,61 +247,26 @@ add_sandbox_sources () {
 }
 
 
-install_sandbox_extra_libs () {
+install_sandbox_extra_os_packages () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-os-packages" ]]; then
 		return 0
 	fi
 
-	local -a extra_libs
-	extra_libs=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-libs" ) ) || die
-	if [[ -z "${extra_libs[@]:+_}" ]]; then
-		return 0
+	local extra_packages
+	extra_packages=$( <"${source_dir}/.halcyon-magic/sandbox-extra-os-packages" ) || die
+
+	log 'Installing sandbox extra OS packages'
+
+	if ! install_os_packages "${tag}" "${extra_packages}" "${HALCYON_BASE}/sandbox"; then
+		die 'Failed to install sandbox extra OS packages'
 	fi
 
-	local platform description apt_dir
-	platform=$( get_tag_platform "${tag}" ) || die
-	description=$( format_platform_description "${platform}" ) || die
-	apt_dir=$( get_tmp_dir 'halcyon-sandbox-extra-libs' ) || die
-
-	log 'Installing sandbox extra libs'
-
-	case "${platform}" in
-	'linux-ubuntu-'*)
-		true;;
-	*)
-		log_warning "Cannot install sandbox extra libs on ${description}"
-		return 0
-	esac
-
-	local -a opts
-	opts+=( -o debug::nolocking='true' )
-	opts+=( -o dir::cache="${apt_dir}/cache" )
-	opts+=( -o dir::state="${apt_dir}/state" )
-
-	mkdir -p "${HALCYON_BASE}/sandbox/usr/lib" "${apt_dir}/cache/archives/partial" "${apt_dir}/state/lists/partial" || die
-
-	log_indent_begin 'Updating package lists...'
-
-	apt-get "${opts[@]}" update --quiet --quiet |& quote || die
-
-	log_indent_end 'done'
-
-	local extra_lib
-	for extra_lib in "${extra_libs[@]}"; do
-		apt-get "${opts[@]}" install --download-only --reinstall --yes "${extra_lib}" |& quote || die
-	done
-
-	local file
-	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
-		while read -r file; do
-			dpkg --extract "${apt_dir}/cache/archives/${file}" \
-				"${HALCYON_BASE}/sandbox" |& quote || die
-		done || die
+	log 'Sandbox extra OS packages installed'
 }
 
 
@@ -415,7 +380,7 @@ build_sandbox_layer () {
 		return 1
 	fi
 
-	install_sandbox_extra_libs "${tag}" "${source_dir}" || die
+	install_sandbox_extra_os_packages "${tag}" "${source_dir}" || die
 
 	log 'Building sandbox'
 
@@ -427,7 +392,7 @@ build_sandbox_layer () {
 	fi
 	opts+=( --dependencies-only )
 
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-libs" ]]; then
+	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-os-packages" ]]; then
 		local platform
 		platform=$( get_tag_platform "${tag}" ) || die
 

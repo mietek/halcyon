@@ -189,6 +189,8 @@ do_deploy_ghc_and_cabal_layers () {
 		return 0
 	fi
 
+	install_pigz "${tag}" || return 1
+
 	install_ghc_layer "${tag}" "${source_dir}" || return 1
 	recache_ghc_package_db "${tag}" || die
 	log
@@ -356,6 +358,12 @@ prepare_source_dir () {
 	if [[ -n "${HALCYON_EXTRA_DATA_FILES:+_}" ]]; then
 		copy_file <( echo "${HALCYON_EXTRA_DATA_FILES}" ) "${magic_dir}/extra-data-files" || die
 	fi
+	if [[ -n "${HALCYON_EXTRA_OS_PACKAGES:+_}" ]]; then
+		local -a extra_packages
+		extra_packages=( ${HALCYON_EXTRA_OS_PACKAGES} )
+
+		copy_file <( IFS=$'\n' && echo "${extra_packages[*]}" ) "${magic_dir}/extra-os-packages" || die
+	fi
 	if (( HALCYON_INCLUDE_LAYERS )); then
 		echo 1 >"${magic_dir}/include-layers" || die
 	fi
@@ -411,11 +419,11 @@ prepare_source_dir () {
 	if [[ -n "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
 		copy_file <( echo "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/sandbox-extra-configure-flags" || die
 	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_LIBS:+_}" ]]; then
-		local -a extra_libs
-		extra_libs=( ${HALCYON_SANDBOX_EXTRA_LIBS} )
+	if [[ -n "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES:+_}" ]]; then
+		local -a extra_packages
+		extra_packages=( ${HALCYON_SANDBOX_EXTRA_OS_PACKAGES} )
 
-		copy_file <( IFS=$'\n' && echo "${extra_libs[*]}" ) "${magic_dir}/sandbox-extra-libs" || die
+		copy_file <( IFS=$'\n' && echo "${extra_packages[*]}" ) "${magic_dir}/sandbox-extra-os-packages" || die
 	fi
 	if [[ -n "${HALCYON_SANDBOX_PRE_BUILD_HOOK:+_}" ]]; then
 		copy_file "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${magic_dir}/sandbox-pre-build-hook" || die
@@ -584,6 +592,7 @@ deploy_app () {
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
 	describe_extra 'Extra apps:' "${source_dir}/.halcyon-magic/extra-apps"
 	describe_extra 'Extra data files:' "${source_dir}/.halcyon-magic/extra-data-files"
+	describe_extra 'Extra OS packages:' "${source_dir}/.halcyon-magic/extra-os-packages"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
 	describe_storage || die
@@ -598,7 +607,7 @@ deploy_app () {
 	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
 	describe_extra 'Sandbox sources:' "${source_dir}/.halcyon-magic/sandbox-sources"
 	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon-magic/sandbox-extra-apps"
-	describe_extra 'Sandbox extra libs:' "${source_dir}/.halcyon-magic/sandbox-extra-libs"
+	describe_extra 'Sandbox extra OS packages:' "${source_dir}/.halcyon-magic/sandbox-extra-os-packages"
 
 	local tag
 	tag=$(
@@ -725,8 +734,6 @@ halcyon_deploy () {
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
 
 	prepare_cache "${cache_dir}" || die
-
-	install_pigz || die
 
 	if (( HALCYON_NO_APP )); then
 		deploy_ghc_and_cabal_layers '/dev/null' || return 1

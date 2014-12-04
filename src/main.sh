@@ -21,6 +21,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_DATA_FILES="${HALCYON_EXTRA_DATA_FILES:-}"
+		export HALCYON_EXTRA_OS_PACKAGES="${HALCYON_EXTRA_OS_PACKAGES:-}"
 		export HALCYON_INCLUDE_LAYERS="${HALCYON_INCLUDE_LAYERS:-0}"
 		export HALCYON_RESTORE_LAYERS="${HALCYON_RESTORE_LAYERS:-0}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
@@ -65,7 +66,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_EXTRA_APPS="${HALCYON_SANDBOX_EXTRA_APPS:-}"
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS="${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS:-}"
-		export HALCYON_SANDBOX_EXTRA_LIBS="${HALCYON_SANDBOX_EXTRA_LIBS:-}"
+		export HALCYON_SANDBOX_EXTRA_OS_PACKAGES="${HALCYON_SANDBOX_EXTRA_OS_PACKAGES:-}"
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK="${HALCYON_SANDBOX_PRE_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
@@ -92,6 +93,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS=''
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_EXTRA_DATA_FILES=''
+		export HALCYON_EXTRA_OS_PACKAGES=''
 		export HALCYON_INCLUDE_LAYERS=0
 		export HALCYON_RESTORE_LAYERS=0
 		export HALCYON_PRE_INSTALL_HOOK=''
@@ -107,7 +109,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_EXTRA_APPS=''
 		export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS=''
-		export HALCYON_SANDBOX_EXTRA_LIBS=''
+		export HALCYON_SANDBOX_EXTRA_OS_PACKAGES=''
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK=''
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
 		export HALCYON_SANDBOX_REBUILD=0
@@ -202,6 +204,12 @@ halcyon_main () {
 			export HALCYON_EXTRA_DATA_FILES="${extra_data_files}";;
 		'--extra-data-files='*)
 			export HALCYON_EXTRA_DATA_FILES="${1#*=}";;
+		'--extra-os-packages')
+			shift
+			expect_args extra_os_packages -- "$@"
+			export HALCYON_EXTRA_OS_PACKAGES="${extra_os_packages}";;
+		'--extra-os-packages='*)
+			export HALCYON_EXTRA_OS_PACKAGES="${1#*=}";;
 		'--include-layers')
 			export HALCYON_INCLUDE_LAYERS=1;;
 		'--restore-layers')
@@ -372,12 +380,12 @@ halcyon_main () {
 			export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${sandbox_extra_configure_flags}";;
 		'--sandbox-extra-configure-flags='*)
 			export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
-		'--sandbox-extra-libs')
+		'--sandbox-extra-os-packages')
 			shift
-			expect_args sandbox_extra_libs -- "$@"
-			export HALCYON_SANDBOX_EXTRA_LIBS="${sandbox_extra_libs}";;
-		'--sandbox-extra-libs='*)
-			export HALCYON_SANDBOX_EXTRA_LIBS="${1#*=}";;
+			expect_args sandbox_extra_os_packages -- "$@"
+			export HALCYON_SANDBOX_EXTRA_OS_PACKAGES="${sandbox_extra_os_packages}";;
+		'--sandbox-extra-os-packages='*)
+			export HALCYON_SANDBOX_EXTRA_OS_PACKAGES="${1#*=}";;
 		'--sandbox-pre-build-hook')
 			shift
 			expect_args sandbox_pre_build_hook -- "$@"
