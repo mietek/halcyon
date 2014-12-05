@@ -384,28 +384,15 @@ build_sandbox_layer () {
 
 	log 'Building sandbox'
 
-	# TODO: Improve cross-platform compatibility.
-
 	local -a opts
 	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-configure-flags" ]]; then
-		opts=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-configure-flags" ) ) || die
+		local -a raw_opts
+		raw_opts=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-configure-flags" ) ) || die
+		opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
 	fi
 	opts+=( --dependencies-only )
-
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-os-packages" ]]; then
-		local platform
-		platform=$( get_tag_platform "${tag}" ) || die
-
-		case "${platform}" in
-		'linux-ubuntu-'*)
-			opts+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
-			opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
-			opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )
-			;;
-		*)
-			true
-		esac
-	fi
+	opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
+	opts+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
 
 	if ! sandboxed_cabal_do "${source_dir}" install "${opts[@]}" |& quote; then
 		die 'Failed to build sandbox'

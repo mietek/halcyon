@@ -63,8 +63,9 @@ install_linux_ubuntu_packages () {
 		return 0
 	fi
 
-	local apt_dir
+	local apt_dir dpkg_dir
 	apt_dir=$( get_tmp_dir 'halcyon-apt' ) || die
+	dpkg_dir=$( get_tmp_dir 'halcyon-dpkg' ) || die
 
 	local -a opts
 	opts+=( -o debug::nolocking='true' )
@@ -87,8 +88,23 @@ install_linux_ubuntu_packages () {
 	local file
 	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
 		while read -r file; do
-			dpkg --extract "${apt_dir}/cache/archives/${file}" "${dst_dir}" |& quote || die
+			dpkg --extract "${apt_dir}/cache/archives/${file}" "${dpkg_dir}" |& quote || die
 		done
+
+	# TODO: Is this really the best way?
+
+	if [[ -d "${dpkg_dir}/usr/include/x86_64-linux-gnu" ]] ; then
+		copy_dir_into "${dpkg_dir}/usr/include/x86_64-linux-gnu" "${dst_dir}/usr/include" || die
+	fi
+	if [[ -d "${dpkg_dir}/usr/lib/x86_64-linux-gnu" ]]; then
+		copy_dir_into "${dpkg_dir}/usr/lib/x86_64-linux-gnu" "${dst_dir}/usr/lib" || die
+	fi
+
+	rm -rf "${dpkg_dir}/usr/include/x86_64-linux-gnu" "${dpkg_dir}/usr/lib/x86_64-linux-gnu" || die
+
+	copy_dir_into "${dpkg_dir}" "${dst_dir}" || die
+
+	rm -rf "${dpkg_dir}" || die
 }
 
 
