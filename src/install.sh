@@ -188,11 +188,12 @@ install_extra_os_packages () {
 		return 0
 	fi
 
-	local extra_packages
+	local prefix extra_packages
+	prefix=$( get_tag_prefix "${tag}" ) || die
 	extra_packages=$( <"${source_dir}/.halcyon-magic/extra-os-packages" ) || die
 
 	log 'Installing extra OS packages'
-	if ! install_os_packages "${tag}" "${extra_packages}" "${install_dir}"; then
+	if ! install_os_packages "${tag}" "${extra_packages}" "${install_dir}${prefix}"; then
 		die 'Failed to install extra OS packages'
 	fi
 
