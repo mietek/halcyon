@@ -2,12 +2,12 @@ help_usage () {
 	log
 	quote <<-EOF
 		Usage
-		  halcyon COMMAND
+		  halcyon                                 COMMAND
 
 		Commands
-		  deploy APP? OPTION*
-		  label APP? OPTION*
-		  constraints APP? OPTION*
+		  deploy                                  APP? OPTION*
+		  label                                   APP? OPTION*
+		  constraints                             APP? OPTION*
 		  paths
 
 		App
@@ -17,35 +17,35 @@ help_usage () {
 		  nothing
 
 		General options
-		  --base=                                 directory path
-		  --prefix=                               directory path
-		  --root=                                 directory path
+		  --base=                                 DIR
+		  --prefix=                               DIR
+		  --root=                                 DIR
 		  --no-app
 		  --log-timestamp
 
 		Build-time options
-		  --constraints=                          file or directory path
-		  --extra-configure-flags=                whitespace-separated strings
-		  --pre-build-hook=                       file path
-		  --post-build-hook=                      file path
+		  --constraints=                          STRINGS | FILE | DIR
+		  --extra-configure-flags=                STRINGS | FILE
+		  --pre-build-hook=                       FILE
+		  --post-build-hook=                      FILE
 		  --app-rebuild
 		  --app-reconfigure
 		  --no-build
 		  --no-build-layers
 
 		Install-time options
-		  --extra-apps=                           whitespace-separated apps
-		  --extra-apps-constraints=               file or directory path
-		  --extra-data-files=                     whitespace-separated file or directory globs
-		  --extra-os-packages=                    whitespace-separated strings
+		  --extra-apps=                           STRINGS | FILE
+		  --extra-apps-constraints=               STRINGS | FILE | DIR
+		  --extra-data-files=                     STRINGS | FILE
+		  --extra-os-packages=                    SPECIAL STRINGS | FILE
 		  --include-layers
 		  --restore-layers
-		  --pre-install-hook=                     file path
-		  --post-install-hook=                    file path
+		  --pre-install-hook=                     FILE
+		  --post-install-hook=                    FILE
 		  --app-reinstall
 
 		Cache options
-		  --cache=                                directory path
+		  --cache=                                DIR
 		  --purge-cache
 		  --no-archive
 		  --no-clean-cache
@@ -55,39 +55,39 @@ help_usage () {
 		  --no-public-storage
 
 		Private storage options
-		  --aws-access-key-id=                    string
-		  --aws-secret-access-key=                string
-		  --s3-bucket=                            S3 bucket name
-		  --s3-endpoint=                          Internet address
-		  --s3-acl=                               private or public-read
+		  --aws-access-key-id=                    STRING
+		  --aws-secret-access-key=                STRING
+		  --s3-bucket=                            S3 NAME
+		  --s3-endpoint=                          S3 ADDRESS
+		  --s3-acl=                               S3 ACL
 		  --no-private-storage
 		  --no-upload
 		  --no-clean-private-storage
 
 		GHC layer options
-		  --ghc-version=                          version number
-		  --ghc-pre-build-hook=                   file path
-		  --ghc-post-build-hook=                  file path
+		  --ghc-version=                          VERSION
+		  --ghc-pre-build-hook=                   FILE
+		  --ghc-post-build-hook=                  FILE
 		  --ghc-rebuild
 
 		Cabal layer options
-		  --cabal-version=                        version number
-		  --cabal-repo=                           colon-separated name and URL
-		  --cabal-pre-build-hook=                 file path
-		  --cabal-post-build-hook=                file path
-		  --cabal-pre-update-hook=                file path
-		  --cabal-post-update-hook=               file path
+		  --cabal-version=                        VERSION
+		  --cabal-repo=                           SPECIAL STRING | FILE
+		  --cabal-pre-build-hook=                 FILE
+		  --cabal-post-build-hook=                FILE
+		  --cabal-pre-update-hook=                FILE
+		  --cabal-post-update-hook=               FILE
 		  --cabal-rebuild
 		  --cabal-update
 
 		Sandbox layer options
-		  --sandbox-sources=                      whitespace-separated sources
-		  --sandbox-extra-apps=                   whitespace-separated apps
-		  --sandbox-extra-apps-constraints=       file or directory path
-		  --sandbox-extra-configure-flags=	  whitespace-separated strings
-		  --sandbox-extra-os-packages=            whitespace-separated strings
-		  --sandbox-pre-build-hook=               file path
-		  --sandbox-post-build-hook=              file path
+		  --sandbox-sources=                      STRINGS | FILE
+		  --sandbox-extra-apps=                   STRINGS | FILE
+		  --sandbox-extra-apps-constraints=       STRINGS | FILE | DIR
+		  --sandbox-extra-configure-flags=	  STRINGS | FILE
+		  --sandbox-extra-os-packages=            SPECIAL STRINGS | FILE
+		  --sandbox-pre-build-hook=               FILE
+		  --sandbox-post-build-hook=              FILE
 		  --sandbox-rebuild
 EOF
 }
