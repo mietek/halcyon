@@ -313,6 +313,57 @@ deploy_from_install_dir () {
 }
 
 
+prepare_file_option () {
+	local magic_var magic_file
+	expect_args magic_var magic_file -- "$@"
+
+	if [[ -z "${magic_var}" ]]; then
+		return 0
+	fi
+
+	copy_file "${magic_var}" "${magic_file}" || die
+}
+
+
+prepare_file_strings_option () {
+	local magic_var magic_file
+	expect_args magic_var magic_file -- "$@"
+
+	if [[ -z "${magic_var}" ]]; then
+		return 0
+	fi
+	if [[ -f "${magic_var}" ]]; then
+		copy_file "${magic_var}" "${magic_file}" || die
+		return 0
+	fi
+
+	local -a strings
+	strings=( ${magic_var} )
+
+	copy_file <( IFS=$'\n' && echo "${strings[*]}" ) "${magic_file}" || die
+}
+
+
+prepare_constraints_option () {
+	local magic_var magic_file
+	expect_args magic_var magic_file -- "$@"
+
+	if [[ -z "${magic_var}" ]]; then
+		return 0
+	fi
+	if [[ -d "${magic_var}" ]]; then
+		copy_dir_over "${magic_var}" "${magic_file}" || die
+		return 0
+	fi
+	if [[ -f "${magic_var}" ]]; then
+		copy_file "${magic_var}" "${magic_file}" || die
+		return 0
+	fi
+
+	copy_file <( echo "${magic_var}" ) "${magic_file}" || die
+}
+
+
 prepare_source_dir () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
@@ -321,116 +372,51 @@ prepare_source_dir () {
 	local magic_dir
 	magic_dir="${source_dir}/.halcyon-magic"
 
-# Standard files
+# Build-time standard file
 	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
 		if [[ -d "${HALCYON_CONSTRAINTS}" ]]; then
 			copy_file "${HALCYON_CONSTRAINTS}/${label}.cabal.config" "${source_dir}/cabal.config" || die
-		else
+		elif [[ -f "${HALCYON_CONSTRAINTS}" ]]; then
 			copy_file "${HALCYON_CONSTRAINTS}" "${source_dir}/cabal.config" || die
+		else
+			copy_file <( echo "${HALCYON_CONSTRAINTS}" ) "${source_dir}/cabal.config" || die
 		fi
 	fi
 
-# General magic files
-	if [[ -n "${HALCYON_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
-		copy_file <( echo "${HALCYON_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/extra-configure-flags" || die
-	fi
-	if [[ -n "${HALCYON_PRE_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || die
-	fi
-	if [[ -n "${HALCYON_POST_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_POST_BUILD_HOOK}" "${magic_dir}/post-build-hook" || die
-	fi
+# Build-time magic files
+	prepare_file_strings_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || die
+	prepare_file_option "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || die
+	prepare_file_option "${HALCYON_POST_BUILD_HOOK}" "${magic_dir}/post-build-hook" || die
 
 # Install-time magic files
-	if [[ -n "${HALCYON_EXTRA_APPS:+_}" ]]; then
-		local -a extra_apps
-		extra_apps=( ${HALCYON_EXTRA_APPS} )
-
-		copy_file <( IFS=$'\n' && echo "${extra_apps[*]}" ) "${magic_dir}/extra-apps" || die
-	fi
-	if [[ -n "${HALCYON_EXTRA_APPS_CONSTRAINTS:+_}" ]]; then
-		if [[ -d "${HALCYON_EXTRA_APPS_CONSTRAINTS}" ]]; then
-			copy_dir_over "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
-		else
-			copy_file "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
-		fi
-	fi
-	if [[ -n "${HALCYON_EXTRA_DATA_FILES:+_}" ]]; then
-		copy_file <( echo "${HALCYON_EXTRA_DATA_FILES}" ) "${magic_dir}/extra-data-files" || die
-	fi
-	if [[ -n "${HALCYON_EXTRA_OS_PACKAGES:+_}" ]]; then
-		local -a extra_packages
-		extra_packages=( ${HALCYON_EXTRA_OS_PACKAGES} )
-
-		copy_file <( IFS=$'\n' && echo "${extra_packages[*]}" ) "${magic_dir}/extra-os-packages" || die
-	fi
+	prepare_file_strings_option "${HALCYON_EXTRA_APPS}" "${magic_dir}/extra-apps" || die
+	prepare_constraints_option "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
+	prepare_file_strings_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || die
+	prepare_file_strings_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || die
 	if (( HALCYON_INCLUDE_LAYERS )); then
 		echo 1 >"${magic_dir}/include-layers" || die
 	fi
-	if [[ -n "${HALCYON_PRE_INSTALL_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
-	fi
-	if [[ -n "${HALCYON_POST_INSTALL_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || die
-	fi
+	prepare_file_option "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
+	prepare_file_option "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || die
 
 # GHC layer magic files
-	if [[ -n "${HALCYON_GHC_PRE_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_GHC_PRE_BUILD_HOOK}" "${magic_dir}/ghc-pre-build-hook" || die
-	fi
-	if [[ -n "${HALCYON_GHC_POST_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_GHC_POST_BUILD_HOOK}" "${magic_dir}/ghc-post-build-hook" || die
-	fi
+	prepare_file_option "${HALCYON_GHC_PRE_BUILD_HOOK}" "${magic_dir}/ghc-pre-build-hook" || die
+	prepare_file_option "${HALCYON_GHC_POST_BUILD_HOOK}" "${magic_dir}/ghc-post-build-hook" || die
 
 # Cabal layer options
-	if [[ -n "${HALCYON_CABAL_PRE_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${magic_dir}/cabal-pre-build-hook" || die
-	fi
-	if [[ -n "${HALCYON_CABAL_POST_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_CABAL_POST_BUILD_HOOK}" "${magic_dir}/cabal-post-build-hook" || die
-	fi
-	if [[ -n "${HALCYON_CABAL_PRE_UPDATE_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_CABAL_PRE_UPDATE_HOOK}" "${magic_dir}/cabal-pre-update-hook" || die
-	fi
-	if [[ -n "${HALCYON_CABAL_POST_UPDATE_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${magic_dir}/cabal-post-update-hook" || die
-	fi
+	prepare_file_option "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${magic_dir}/cabal-pre-build-hook" || die
+	prepare_file_option "${HALCYON_CABAL_POST_BUILD_HOOK}" "${magic_dir}/cabal-post-build-hook" || die
+	prepare_file_option "${HALCYON_CABAL_PRE_UPDATE_HOOK}" "${magic_dir}/cabal-pre-update-hook" || die
+	prepare_file_option "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${magic_dir}/cabal-post-update-hook" || die
 
 # Sandbox layer magic files
-	if [[ -n "${HALCYON_SANDBOX_SOURCES:+_}" ]]; then
-		local -a sandbox_sources
-		sandbox_sources=( ${HALCYON_SANDBOX_SOURCES} )
-
-		copy_file <( IFS=$'\n' && echo "${sandbox_sources[*]}" ) "${magic_dir}/sandbox-sources" || die
-	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS:+_}" ]]; then
-		local -a extra_apps
-		extra_apps=( ${HALCYON_SANDBOX_EXTRA_APPS} )
-
-		copy_file <( IFS=$'\n' && echo "${extra_apps[*]}" ) "${magic_dir}/sandbox-extra-apps" || die
-	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS:+_}" ]]; then
-		if [[ -d "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" ]]; then
-			copy_dir_over "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
-		else
-			copy_file "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
-		fi
-	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS:+_}" ]]; then
-		copy_file <( echo "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" ) "${magic_dir}/sandbox-extra-configure-flags" || die
-	fi
-	if [[ -n "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES:+_}" ]]; then
-		local -a extra_packages
-		extra_packages=( ${HALCYON_SANDBOX_EXTRA_OS_PACKAGES} )
-
-		copy_file <( IFS=$'\n' && echo "${extra_packages[*]}" ) "${magic_dir}/sandbox-extra-os-packages" || die
-	fi
-	if [[ -n "${HALCYON_SANDBOX_PRE_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${magic_dir}/sandbox-pre-build-hook" || die
-	fi
-	if [[ -n "${HALCYON_SANDBOX_POST_BUILD_HOOK:+_}" ]]; then
-		copy_file "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${magic_dir}/sandbox-post-build-hook" || die
-	fi
+	prepare_file_strings_option "${HALCYON_SANDBOX_SOURCES}" "${magic_dir}/sandbox-sources" || die
+	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_APPS}" "${magic_dir}/sandbox-extra-apps" || die
+	prepare_constraints_option "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
+	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || die
+	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES}" "${magic_dir}/sandbox-extra-os-packages" || die
+	prepare_file_option "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${magic_dir}/sandbox-pre-build-hook" || die
+	prepare_file_option "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${magic_dir}/sandbox-post-build-hook" || die
 }
 
 
