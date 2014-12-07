@@ -22,7 +22,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_DATA_FILES="${HALCYON_EXTRA_DATA_FILES:-}"
 		export HALCYON_EXTRA_OS_PACKAGES="${HALCYON_EXTRA_OS_PACKAGES:-}"
-		export HALCYON_INCLUDE_LAYERS="${HALCYON_INCLUDE_LAYERS:-0}"
+		export HALCYON_EXTRA_LAYERS="${HALCYON_EXTRA_LAYERS:-}"
 		export HALCYON_RESTORE_LAYERS="${HALCYON_RESTORE_LAYERS:-0}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
@@ -94,7 +94,7 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_EXTRA_DATA_FILES=''
 		export HALCYON_EXTRA_OS_PACKAGES=''
-		export HALCYON_INCLUDE_LAYERS=0
+		export HALCYON_EXTRA_LAYERS=''
 		export HALCYON_RESTORE_LAYERS=0
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
@@ -210,8 +210,12 @@ halcyon_main () {
 			export HALCYON_EXTRA_OS_PACKAGES="${extra_os_packages}";;
 		'--extra-os-packages='*)
 			export HALCYON_EXTRA_OS_PACKAGES="${1#*=}";;
-		'--include-layers')
-			export HALCYON_INCLUDE_LAYERS=1;;
+		'--extra-layers')
+			shift
+			expect_args extra_layers -- "$@"
+			export HALCYON_EXTRA_LAYERS="${extra_layers}";;
+		'--extra-layers='*)
+			export HALCYON_EXTRA_LAYERS="${1#*=}";;
 		'--restore-layers')
 			export HALCYON_RESTORE_LAYERS=1;;
 		'--pre-install-hook')

@@ -201,6 +201,48 @@ install_extra_os_packages () {
 }
 
 
+install_extra_layers () {
+	local tag source_dir install_dir
+	expect_args tag source_dir install_dir -- "$@"
+
+	# NOTE: Cabal libraries may require data files at run-time.
+	# See filestore for an example.
+	# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
+
+	if find_tree "${HALCYON_BASE}/sandbox/share" -type f |
+		match_at_least_one >'/dev/null'
+	then
+		copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
+	fi
+
+	if [[ ! -f "${source_dir}/.halcyon-magic/extra-layers" ]]; then
+		return 0
+	fi
+
+	log_indent 'Including extra layers'
+
+	local extra_layers
+	extra_layers=$( <"${source_dir}/.halcyon-magic/extra-layers" ) || die
+
+	local layer
+	while read -r layer; do
+		case "${layer}" in
+		'ghc')
+			copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
+			;;
+		'cabal')
+			copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die
+			;;
+		'sandbox')
+			copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || die
+			;;
+		*)
+			die "Unexpected extra layer: ${layer}"
+		esac
+	done <<<"${extra_layers}"
+}
+
+
 prepare_install_dir () {
 	expect_vars HALCYON_BASE
 
@@ -232,29 +274,7 @@ prepare_install_dir () {
 
 	install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
 	install_extra_os_packages "${tag}" "${source_dir}" "${install_dir}" || die
-
-	local include_layers
-	include_layers=0
-	if [[ -f "${source_dir}/.halcyon-magic/include-layers" ]]; then
-		include_layers=$( <"${source_dir}/.halcyon-magic/include-layers" ) || die
-	fi
-	if (( include_layers )); then
-		log_indent 'Including layers'
-
-		copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
-		copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die
-		copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || die
-	else
-		# NOTE: Cabal libraries may require data files at run-time.
-		# See filestore for an example.
-		# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
-
-		if find_tree "${HALCYON_BASE}/sandbox/share" -type f |
-			match_at_least_one >'/dev/null'
-		then
-			copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
-		fi
-	fi
+	install_extra_layers "${tag}" "${source_dir}" "${install_dir}" || die
 
 	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then
 		log 'Executing pre-install hook'

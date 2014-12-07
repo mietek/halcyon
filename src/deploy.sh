@@ -393,9 +393,7 @@ prepare_source_dir () {
 	prepare_constraints_option "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
 	prepare_file_strings_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || die
 	prepare_file_strings_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || die
-	if (( HALCYON_INCLUDE_LAYERS )); then
-		echo 1 >"${magic_dir}/include-layers" || die
-	fi
+	prepare_file_strings_option "${HALCYON_EXTRA_LAYERS}" "${magic_dir}/extra-layers" || die
 	prepare_file_option "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
 	prepare_file_option "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || die
 

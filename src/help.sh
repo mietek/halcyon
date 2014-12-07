@@ -37,8 +37,8 @@ help_usage () {
 		  --extra-apps=                           STRINGS | FILE
 		  --extra-apps-constraints=               STRINGS | FILE | DIR
 		  --extra-data-files=                     STRINGS | FILE
-		  --extra-os-packages=                    SPECIAL STRINGS | FILE
-		  --include-layers
+		  --extra-os-packages=                    STRINGS | FILE
+		  --extra-layers=                         STRINGS | FILE
 		  --restore-layers
 		  --pre-install-hook=                     FILE
 		  --post-install-hook=                    FILE
@@ -72,7 +72,7 @@ help_usage () {
 
 		Cabal layer options
 		  --cabal-version=                        VERSION
-		  --cabal-repo=                           SPECIAL STRING | FILE
+		  --cabal-repo=                           STRING | FILE
 		  --cabal-pre-build-hook=                 FILE
 		  --cabal-post-build-hook=                FILE
 		  --cabal-pre-update-hook=                FILE
@@ -85,7 +85,7 @@ help_usage () {
 		  --sandbox-extra-apps=                   STRINGS | FILE
 		  --sandbox-extra-apps-constraints=       STRINGS | FILE | DIR
 		  --sandbox-extra-configure-flags=	  STRINGS | FILE
-		  --sandbox-extra-os-packages=            SPECIAL STRINGS | FILE
+		  --sandbox-extra-os-packages=            STRINGS | FILE
 		  --sandbox-pre-build-hook=               FILE
 		  --sandbox-post-build-hook=              FILE
 		  --sandbox-rebuild
