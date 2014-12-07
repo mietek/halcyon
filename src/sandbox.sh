@@ -320,7 +320,7 @@ deploy_sandbox_extra_apps () {
 			HALCYON_INTERNAL_RECURSIVE=1 \
 			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 			HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
-				halcyon deploy "${opts[@]}" "${extra_app}" |& quote
+				halcyon deploy "${opts[@]}" "${extra_app}" 2>&1 | quote
 		) || return 1
 	done
 }
@@ -346,7 +346,7 @@ build_sandbox_layer () {
 		log 'Creating sandbox'
 
 		mkdir -p "${HALCYON_BASE}/sandbox" || die
-		if ! cabal_do "${HALCYON_BASE}/sandbox" sandbox init --sandbox '.' |& quote; then
+		if ! cabal_do "${HALCYON_BASE}/sandbox" sandbox init --sandbox '.' 2>&1 | quote; then
 			die 'Failed to create sandbox'
 		fi
 		mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || die
@@ -357,7 +357,7 @@ build_sandbox_layer () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
-					"${tag}" "${source_dir}" "${constraints}" |& quote
+					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
 			log_warning 'Cannot execute sandbox pre-build hook'
 			return 1
@@ -394,7 +394,7 @@ build_sandbox_layer () {
 	opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
 	opts+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
 
-	if ! sandboxed_cabal_do "${source_dir}" install "${opts[@]}" |& quote; then
+	if ! sandboxed_cabal_do "${source_dir}" install "${opts[@]}" 2>&1 | quote; then
 		die 'Failed to build sandbox'
 	fi
 
@@ -410,7 +410,7 @@ build_sandbox_layer () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
-					"${tag}" "${source_dir}" "${constraints}" |& quote
+					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
 			log_warning 'Cannot execute sandbox post-build hook'
 			return 1

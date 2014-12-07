@@ -126,7 +126,7 @@ build_app () {
 		local stdout
 		stdout=$( get_tmp_file 'halcyon-cabal-configure-stdout' ) || die
 
-		if ! sandboxed_cabal_do "${build_dir}" configure "${opts[@]}" >"${stdout}" |& quote; then
+		if ! sandboxed_cabal_do "${build_dir}" configure "${opts[@]}" >"${stdout}" 2>&1 | quote; then
 			die 'Failed to configure app'
 		fi
 
@@ -158,7 +158,7 @@ build_app () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/pre-build-hook" \
-					"${tag}" "${source_dir}" "${build_dir}" |& quote
+					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		); then
 			die 'Failed to execute pre-build hook'
 		fi
@@ -167,7 +167,7 @@ build_app () {
 
 	log 'Building app'
 
-	if ! sandboxed_cabal_do "${build_dir}" build |& quote; then
+	if ! sandboxed_cabal_do "${build_dir}" build 2>&1 | quote; then
 		die 'Failed to build app'
 	fi
 
@@ -180,7 +180,7 @@ build_app () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/post-build-hook" \
-					"${tag}" "${source_dir}" "${build_dir}" |& quote
+					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		); then
 			die 'Failed to execute post-build hook'
 		fi

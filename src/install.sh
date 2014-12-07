@@ -129,7 +129,7 @@ deploy_extra_apps () {
 			HALCYON_INTERNAL_RECURSIVE=1 \
 			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 			HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
-				halcyon deploy "${opts[@]}" "${extra_app}" |& quote
+				halcyon deploy "${opts[@]}" "${extra_app}" 2>&1 | quote
 		) || return 1
 	done
 }
@@ -220,7 +220,7 @@ prepare_install_dir () {
 
 	if ! (
 		PATH="${install_dir}${prefix}:${PATH}" \
-			sandboxed_cabal_do "${build_dir}" copy --destdir="${install_dir}" --verbose=0 |& quote
+			sandboxed_cabal_do "${build_dir}" copy --destdir="${install_dir}" --verbose=0 2>&1 | quote
 	); then
 		die 'Failed to copy app'
 	fi
@@ -261,7 +261,7 @@ prepare_install_dir () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/pre-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" |& quote
+					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
 			log_warning 'Cannot execute pre-install hook'
 			return 1
@@ -386,7 +386,7 @@ install_app () {
 	fi
 
 	mkdir -p "${HALCYON_ROOT}" || die
-	cp -R "${install_dir}/." "${HALCYON_ROOT}" |& quote || die
+	cp -R "${install_dir}/." "${HALCYON_ROOT}" 2>&1 | quote || die
 
 	log_end 'done'
 
@@ -399,7 +399,7 @@ install_app () {
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/post-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" |& quote
+					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
 			log_warning 'Cannot execute post-install hook'
 			return 1

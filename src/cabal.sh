@@ -260,7 +260,7 @@ build_cabal_layer () {
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
 					"${tag}" "${source_dir}" \
-					"${cabal_build_dir}/cabal-install-${cabal_version}" |& quote
+					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
 		); then
 			die 'Failed to execute Cabal pre-build hook'
 		fi
@@ -299,7 +299,7 @@ EOF
 		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
 		HOME="${cabal_home_dir}" \
 		EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_BASE}/ghc/usr/lib" \
-			./bootstrap.sh --no-doc |& quote
+			./bootstrap.sh --no-doc 2>&1 | quote
 	); then
 		die 'Failed to bootstrap Cabal'
 	fi
@@ -317,7 +317,7 @@ EOF
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
 					"${tag}" "${source_dir}" \
-					"${cabal_build_dir}/cabal-install-${cabal_version}" |& quote
+					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
 		); then
 			die 'Failed to execute Cabal post-build hook'
 		fi
@@ -355,7 +355,7 @@ update_cabal_package_db () {
 		log 'Executing Cabal pre-update hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/cabal-pre-update-hook" |& quote
+				"${source_dir}/.halcyon-magic/cabal-pre-update-hook" 2>&1 | quote
 		); then
 			die 'Failed to execute Cabal pre-update hook'
 		fi
@@ -364,7 +364,7 @@ update_cabal_package_db () {
 
 	log 'Updating Cabal package database'
 
-	if ! cabal_do '.' update |& quote; then
+	if ! cabal_do '.' update 2>&1 | quote; then
 		die 'Failed to update Cabal package database'
 	fi
 
@@ -376,7 +376,7 @@ update_cabal_package_db () {
 		log 'Executing Cabal post-update hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/cabal-post-update-hook" |& quote
+				"${source_dir}/.halcyon-magic/cabal-post-update-hook" 2>&1 | quote
 		); then
 			die 'Failed to execute Cabal post-update hook'
 		fi

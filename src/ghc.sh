@@ -334,7 +334,7 @@ build_ghc_layer () {
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/ghc-pre-build-hook" \
 					"${tag}" "${source_dir}" \
-					"${ghc_build_dir}/ghc-${ghc-version}" |& quote
+					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
 		); then
 			die 'Failed to execute GHC pre-build hook'
 		fi
@@ -345,8 +345,8 @@ build_ghc_layer () {
 
 	if ! (
 		cd "${ghc_build_dir}/ghc-${ghc_version}" &&
-		./configure --prefix="${HALCYON_BASE}/ghc" |& quote &&
-		make install |& quote
+		./configure --prefix="${HALCYON_BASE}/ghc" 2>&1 | quote &&
+		make install 2>&1 | quote
 	); then
 		die 'Failed to install GHC'
 	fi
@@ -363,7 +363,7 @@ build_ghc_layer () {
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon-magic/ghc-post-build-hook" \
 					"${tag}" "${source_dir}" \
-					"${ghc_build_dir}/ghc-${ghc-version}" |& quote
+					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
 		); then
 			die 'Failed to execute GHC post-build hook'
 		fi

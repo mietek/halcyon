@@ -34,11 +34,11 @@ install_pigz () {
 	dpkg_dir=$( get_tmp_dir 'halcyon-dpkg' ) || die
 
 	if [[ ! -f "${HALCYON_CACHE}/${original_name}" ]] ||
-		! dpkg --extract "${HALCYON_CACHE}/${original_name}" "${dpkg_dir}" |& quote
+		! dpkg --extract "${HALCYON_CACHE}/${original_name}" "${dpkg_dir}" 2>&1 | quote
 	then
 		rm -rf "${dpkg_dir}" || die
 		if ! cache_original_stored_file "${original_url}" ||
-			! dpkg --extract "${HALCYON_CACHE}/${original_name}" "${dpkg_dir}" |& quote
+			! dpkg --extract "${HALCYON_CACHE}/${original_name}" "${dpkg_dir}" 2>&1 | quote
 		then
 			log_warning 'Cannot install pigz'
 			return 0
@@ -76,19 +76,19 @@ install_linux_ubuntu_packages () {
 
 	log 'Updating OS package database'
 
-	if ! apt-get "${opts[@]}" update --quiet --quiet |& quote; then
+	if ! apt-get "${opts[@]}" update --quiet --quiet 2>&1 | quote; then
 		die 'Failed to update OS package database'
 	fi
 
 	local name
 	for name in "${names[@]}"; do
-		apt-get "${opts[@]}" install --download-only --reinstall --yes "${name}" |& quote || die
+		apt-get "${opts[@]}" install --download-only --reinstall --yes "${name}" 2>&1 | quote || die
 	done
 
 	local file
 	find_tree "${apt_dir}/cache/archives" -type f -name '*.deb' |
 		while read -r file; do
-			dpkg --extract "${apt_dir}/cache/archives/${file}" "${dpkg_dir}" |& quote || die
+			dpkg --extract "${apt_dir}/cache/archives/${file}" "${dpkg_dir}" 2>&1 | quote || die
 		done
 
 	# TODO: Is this really the best way?
