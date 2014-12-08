@@ -52,7 +52,7 @@ install_pigz () {
 }
 
 
-install_linux_ubuntu_packages () {
+apt_install_packages () {
 	local package_names dst_dir
 	expect_args package_names dst_dir -- "$@"
 
@@ -104,7 +104,7 @@ install_linux_ubuntu_packages () {
 }
 
 
-install_linux_centos_packages () {
+yum_install_packages () {
 	local package_names dst_dir
 	expect_args package_names dst_dir -- "$@"
 
@@ -196,11 +196,11 @@ install_os_packages () {
 	done
 
 	case "${platform}" in
-	'linux-ubuntu-'*)
-		install_linux_ubuntu_packages "${names[*]:-}" "${dst_dir}" || die
+	'linux-debian-'*|'linux-ubuntu-'*)
+		apt_install_packages "${names[*]:-}" "${dst_dir}" || die
 		;;
-	'linux-centos-'*)
-		install_linux_centos_packages "${names[*]:-}" "${dst_dir}" || die
+	'linux-centos-'*|'linux-fedora-'*)
+		yum_install_packages "${names[*]:-}" "${dst_dir}" || die
 		;;
 	*)
 		log_error "Cannot install OS packages on ${description}"

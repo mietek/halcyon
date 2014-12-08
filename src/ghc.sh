@@ -223,7 +223,7 @@ link_ghc_libs () {
 
 	local gmp_name gmp_file tinfo_file url
 	case "${platform}" in
-	'linux-ubuntu-14'*'-x86_64'|'linux-debian-7-x86_64')
+	'linux-debian-7-x86_64'|'linux-ubuntu-14'*'-x86_64')
 		gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		if [[ "${ghc_version}" < '7.8' ]]; then
@@ -234,7 +234,7 @@ link_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
 		fi
 		;;
-	'linux-ubuntu-12'*'-x86_64'*)
+	'linux-ubuntu-12'*'-x86_64')
 		if [[ "${ghc_version}" < '7.8' ]]; then
 			gmp_file='/usr/lib/libgmp.so.3'
 			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
@@ -247,13 +247,13 @@ link_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
 		fi
 		;;
-	'linux-ubuntu-10'*'-x86_64'*|'linux-debian-6-x86_64')
+	'linux-debian-6-x86_64'|'linux-ubuntu-10'*'-x86_64')
 		gmp_file='/usr/lib/libgmp.so.3'
 		tinfo_file='/lib/libncurses.so.5'
 		gmp_name='libgmp.so.3'
 		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
 		;;
-	'linux-centos-7-x86_64'|'linux-fedora-20-x86_64'*|'linux-fedora-19-x86_64'*)
+	'linux-centos-7-x86_64'|'linux-fedora-20-x86_64'|'linux-fedora-19-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.10'
 		tinfo_file='/usr/lib64/libtinfo.so.5'
 		if [[ "${ghc_version}" < '7.8' ]]; then
@@ -264,13 +264,13 @@ link_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
 		fi
 		;;
-	'linux-centos-6-x86_64'*)
+	'linux-centos-6-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.3'
 		tinfo_file='/lib64/libtinfo.so.5'
 		gmp_name='libgmp.so.3'
 		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
 		;;
-	'osx-'*'-x86_64'*)
+	'osx-'*'-x86_64')
 		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" )
 		;;
 	*)
