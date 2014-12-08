@@ -91,15 +91,12 @@ install_linux_ubuntu_packages () {
 			dpkg --extract "${apt_dir}/cache/archives/${file}" "${dpkg_dir}" 2>&1 | quote || die
 		done
 
-	# TODO: Is this really the best way?
-
 	if [[ -d "${dpkg_dir}/usr/include/x86_64-linux-gnu" ]] ; then
 		copy_dir_into "${dpkg_dir}/usr/include/x86_64-linux-gnu" "${dst_dir}/usr/include" || die
 	fi
 	if [[ -d "${dpkg_dir}/usr/lib/x86_64-linux-gnu" ]]; then
 		copy_dir_into "${dpkg_dir}/usr/lib/x86_64-linux-gnu" "${dst_dir}/usr/lib" || die
 	fi
-
 	rm -rf "${dpkg_dir}/usr/include/x86_64-linux-gnu" "${dpkg_dir}/usr/lib/x86_64-linux-gnu" || die
 
 	copy_dir_into "${dpkg_dir}" "${dst_dir}" || die
