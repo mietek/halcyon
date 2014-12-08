@@ -115,13 +115,24 @@ install_linux_centos_packages () {
 		return 0
 	fi
 
-	local yum_dir cpio_dir
+	local platform yum_dir cpio_dir
+	platform=$( get_tag_platform "${tag}" ) || die
 	yum_dir=$( get_tmp_dir 'halcyon-yum' ) || die
 	cpio_dir=$( get_tmp_dir 'halcyon-cpio' ) || die
 
+	# NOTE: On CentOS 6, the --downloadonly option is provided by a
+	# plugin, which must be installed manually before using Halcyon,
+	# and which causes yum to return 1 even on success.
+	#
+	# $ yum install yum-plugin-downloadonly
+
 	local name
 	for name in "${names[@]}"; do
-		yum install --assumeyes --downloadonly --downloaddir="${yum_dir}" "${name}" 2>&1 | quote || die
+		if ! yum install --assumeyes --downloadonly --downloaddir="${yum_dir}" "${name}" 2>&1 | quote; then
+			if [[ ! "${platform}" =~ linux-centos-6-.* ]]; then
+				die
+			fi
+		fi
 	done
 
 	mkdir -p "${cpio_dir}" || die
