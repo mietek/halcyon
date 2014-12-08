@@ -23,7 +23,6 @@ install_pigz () {
 	'linux-ubuntu-10.04-x86_64')
 		original_url='https://mirrors.kernel.org/ubuntu/pool/universe/p/pigz/pigz_2.1.5-1_amd64.deb';;
 	*)
-		log_warning "Cannot install pigz on ${description}"
 		return 0
 	esac
 
