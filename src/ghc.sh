@@ -3,7 +3,7 @@ get_default_ghc_version () {
 }
 
 
-map_ghc_version_to_linux_libgmp10_x86_64_original_url () {
+map_ghc_version_to_linux_x86_64_gmp10_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -16,7 +16,7 @@ map_ghc_version_to_linux_libgmp10_x86_64_original_url () {
 }
 
 
-map_ghc_version_to_linux_libgmp3_x86_64_original_url () {
+map_ghc_version_to_linux_x86_64_gmp3_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -47,7 +47,7 @@ map_ghc_version_to_linux_libgmp3_x86_64_original_url () {
 }
 
 
-map_ghc_version_to_osx_x86_64_original_url () {
+map_ghc_version_to_osx_x86_64_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
 
@@ -215,86 +215,82 @@ link_ghc_libs () {
 	description=$( format_platform_description "${platform}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
-	local libgmp_name libgmp_file libtinfo_file url
-	case "${platform}-ghc-${ghc_version}" in
-	'linux-ubuntu-14.'*'-x86_64-ghc-7.8.'*)
-		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_name='libgmp.so.10'
-		url=$( map_ghc_version_to_linux_libgmp10_x86_64_original_url "${ghc_version}" ) || die
-		;;
-	'linux-ubuntu-14.'*'-x86_64-ghc-'*)
-		# NOTE: There is no libgmp.so.3 on Ubuntu 14.*, and there is no .10-flavoured
-		# binary distribution of GHC <7.8.*. However, GHC does not use the `mpn_bdivmod`
-		# function, which is the only difference between the ABI of .3 and .10. Hence,
-		# .10 is symlinked to .3, and the .3-flavoured binary distribution is used.
+	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
+	# .10-flavoured binary distribution of GHC < 7.8. However, GHC does
+	# not use the `mpn_bdivmod` function, which is the only difference
+	# between the ABI of .3 and .10. Hence, on some platforms, .10 is
+	# symlinked to .3, and the .3-flavoured binary distribution is used.
 
-		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+	local gmp_name gmp_file tinfo_file url
+	case "${platform}" in
+	'linux-ubuntu-14'*'-x86_64'|'linux-debian-7-x86_64')
+		gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
+		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
+		if [[ "${ghc_version}" < '7.8' ]]; then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+		fi
 		;;
-	'linux-ubuntu-12.04-x86_64-ghc-7.8.'*)
-		libgmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_name='libgmp.so.10'
-		url=$( map_ghc_version_to_linux_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+	'linux-ubuntu-12'*'-x86_64'*)
+		if [[ "${ghc_version}" < '7.8' ]]; then
+			gmp_file='/usr/lib/libgmp.so.3'
+			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+		else
+			gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
+			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+		fi
 		;;
-	'linux-ubuntu-12.04-x86_64-ghc-'*)
-		libgmp_file='/usr/lib/libgmp.so.3'
-		libtinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+	'linux-ubuntu-10'*'-x86_64'*|'linux-debian-6-x86_64')
+		gmp_file='/usr/lib/libgmp.so.3'
+		tinfo_file='/lib/libncurses.so.5'
+		gmp_name='libgmp.so.3'
+		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
 		;;
-	'linux-ubuntu-10.04-x86_64-ghc-'*)
-		libgmp_file='/usr/lib/libgmp.so.3'
-		libtinfo_file='/lib/libncurses.so.5'
-		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
+	'linux-centos-7-x86_64'|'linux-fedora-20-x86_64'*|'linux-fedora-19-x86_64'*)
+		gmp_file='/usr/lib64/libgmp.so.10'
+		tinfo_file='/usr/lib64/libtinfo.so.5'
+		if [[ "${ghc_version}" < '7.8' ]]; then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+		fi
 		;;
-	'linux-centos-7-x86_64-ghc-7.8.'*)
-		libgmp_file='/usr/lib64/libgmp.so.10'
-		libtinfo_file='/usr/lib64/libtinfo.so.5'
-		libgmp_name='libgmp.so.10'
-		url=$( map_ghc_version_to_linux_libgmp10_x86_64_original_url "${ghc_version}" ) || die
+	'linux-centos-6-x86_64'*)
+		gmp_file='/usr/lib64/libgmp.so.3'
+		tinfo_file='/lib64/libtinfo.so.5'
+		gmp_name='libgmp.so.3'
+		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
 		;;
-	'linux-centos-7-x86_64-ghc-'*)
-		# NOTE: Same as with Ubuntu 14.
-
-		libgmp_file='/usr/lib64/libgmp.so.10'
-		libtinfo_file='/usr/lib64/libtinfo.so.5'
-		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
-		;;
-	'linux-centos-6-x86_64-ghc-'*)
-		libgmp_file='/usr/lib64/libgmp.so.3'
-		libtinfo_file='/lib64/libtinfo.so.5'
-		libgmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_libgmp3_x86_64_original_url "${ghc_version}" ) || die
-		;;
-	'osx-'*'-x86_64-ghc-'*)
-		# TODO: Improve cross-version compatibility.
-
-		url=$( map_ghc_version_to_osx_x86_64_original_url "${ghc_version}" ) || die
+	'osx-'*'-x86_64'*)
+		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" )
 		;;
 	*)
 		die "Unexpected GHC version for ${description}: ${ghc_version}"
 	esac
 
-	if [ -n "${libgmp_file:-}" ]; then
-		expect_existing "${libgmp_file}"
+	if [ -n "${gmp_file:-}" ]; then
+		expect_existing "${gmp_file}"
 
 		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
-		ln -s "${libgmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${libgmp_name}" || die
-		ln -s "${libgmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so" || die
+		ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" || die
+		ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so" || die
 	fi
 
-	if [ -n "${libtinfo_file:-}" ]; then
-		expect_existing "${libtinfo_file}"
+	if [ -n "${tinfo_file:-}" ]; then
+		expect_existing "${tinfo_file}"
 
 		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
-		ln -s "${libtinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" || die
-		ln -s "${libtinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so" || die
+		ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" || die
+		ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so" || die
 	fi
 
 	echo "${url}"
