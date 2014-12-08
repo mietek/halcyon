@@ -105,6 +105,48 @@ install_linux_ubuntu_packages () {
 }
 
 
+install_linux_centos_packages () {
+	local package_names dst_dir
+	expect_args package_names dst_dir -- "$@"
+
+	local -a names
+	names=( ${package_names} )
+	if [[ -z "${names[@]:+_}" ]]; then
+		return 0
+	fi
+
+	local yum_dir cpio_dir
+	yum_dir=$( get_tmp_dir 'halcyon-yum' ) || die
+	cpio_dir=$( get_tmp_dir 'halcyon-cpio' ) || die
+
+	local name
+	for name in "${names[@]}"; do
+		yum install --assumeyes --downloadonly --downloaddir="${yum_dir}" "${name}" 2>&1 | quote || die
+	done
+
+	mkdir -p "${cpio_dir}" || die
+
+	local file
+	find_tree "${yum_dir}" -type f -name '*.rpm' |
+		while read -r file; do
+			(
+				cd "${cpio_dir}"
+				rpm2cpio "${yum_dir}/${file}" |
+					cpio --extract --make-directories 2>&1 | quote || die
+			) || die
+		done
+
+	if [[ -d "${cpio_dir}/usr/lib64" ]]; then
+		copy_dir_into "${cpio_dir}/usr/lib64" "${dst_dir}/usr/lib" || die
+	fi
+	rm -rf "${cpio_dir}/usr/lib64" || die
+
+	copy_dir_into "${cpio_dir}" "${dst_dir}" | die
+
+	rm -rf "${yum_dir}" || die
+}
+
+
 install_os_packages () {
 	local tag package_specs dst_dir
 	expect_args tag package_specs dst_dir -- "$@"
@@ -133,6 +175,9 @@ install_os_packages () {
 	case "${platform}" in
 	'linux-ubuntu-'*)
 		install_linux_ubuntu_packages "${names[*]:-}" "${dst_dir}" || die
+		;;
+	'linux-centos-'*)
+		install_linux_centos_packages "${names[*]:-}" "${dst_dir}" || die
 		;;
 	*)
 		log_error "Cannot install OS packages on ${description}"
