@@ -1,11 +1,11 @@
-read_constraints () {
+read_constraints_from_cabal_freeze () {
 	awk '/^ *[Cc]onstraints:/, !/[:,]/ { print }' |
 		tr -d '\r' |
 		sed 's/[Cc]onstraints://;s/[, ]//g;s/==/ /;/^$/d'
 }
 
 
-read_dry_frozen_constraints () {
+read_constraints_from_cabal_freeze_dry_run () {
 	awk '/The following packages would be frozen:/ { i = 1 } i' |
 		filter_not_first |
 		sed 's/ == / /'
@@ -62,7 +62,7 @@ detect_constraints () {
 
 	local constraints
 	constraints=$(
-		read_constraints <"${source_dir}/cabal.config" |
+		read_constraints_from_cabal_freeze <"${source_dir}/cabal.config" |
 		filter_correct_constraints "${label}" |
 		sort_natural
 	) || die
@@ -128,7 +128,7 @@ validate_full_constraints_file () {
 	fi
 
 	local candidate_constraints
-	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
+	candidate_constraints=$( read_constraints_from_cabal_freeze <"${candidate_file}" ) || die
 
 	local constraints_hash candidate_hash
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
@@ -151,7 +151,7 @@ validate_partial_constraints_file () {
 	fi
 
 	local candidate_constraints
-	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
+	candidate_constraints=$( read_constraints_from_cabal_freeze <"${candidate_file}" ) || die
 
 	local constraints_name short_hash_etc short_hash candidate_hash
 	constraints_name=$( basename "${candidate_file}" ) || die
@@ -271,7 +271,7 @@ score_partial_sandbox_layers () {
 		fi
 
 		local partial_constraints description
-		partial_constraints=$( read_constraints <"${partial_file}" ) || die
+		partial_constraints=$( read_constraints_from_cabal_freeze <"${partial_file}" ) || die
 		description=$( format_sandbox_description "${partial_tag}" ) || die
 
 		local partial_package partial_version version score

@@ -726,7 +726,7 @@ cabal_freeze_implicit_constraints () {
 	local constraints
 	if ! constraints=$(
 		cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
-		read_dry_frozen_constraints |
+		read_constraints_from_cabal_freeze_dry_run |
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then
@@ -750,7 +750,7 @@ cabal_freeze_actual_constraints () {
 	local constraints
 	if ! constraints=$(
 		sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
-		read_dry_frozen_constraints |
+		read_constraints_from_cabal_freeze_dry_run |
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then
