@@ -40,7 +40,7 @@ filter_correct_constraints () {
 }
 
 
-format_constraints () {
+format_constraints_to_cabal_freeze () {
 	awk 'BEGIN { printf "constraints:"; separator = " " }
 		!/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
 		END { printf "\n" }'
@@ -113,8 +113,8 @@ validate_actual_constraints () {
 	log_warning 'Please report on https://github.com/mietek/halcyon/issues/1'
 	log_indent "--- ${constraints_hash:0:7}/cabal.config"
 	log_indent "+++ ${actual_hash:0:7}/cabal.config"
-	diff -u <( format_constraints <<<"${constraints}" ) \
-		<( format_constraints <<<"${actual_constraints}" ) |
+	diff -u <( format_constraints_to_cabal_freeze <<<"${constraints}" ) \
+		<( format_constraints_to_cabal_freeze <<<"${actual_constraints}" ) |
 			tail -n +3 2>&1 | quote || true
 }
 

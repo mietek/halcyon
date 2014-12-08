@@ -398,7 +398,7 @@ build_sandbox_layer () {
 		die 'Failed to build sandbox'
 	fi
 
-	format_constraints <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config" || die
+	format_constraints_to_cabal_freeze <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config" || die
 	copy_sandbox_magic "${source_dir}" || die
 
 	local built_size

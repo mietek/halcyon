@@ -520,11 +520,11 @@ deploy_app () {
 
 		log_warning 'Using implicit constraints'
 		log_warning 'Please declare explicit constraints:'
-		format_constraints <<<"${constraints}" 2>&1 | quote || die
+		format_constraints_to_cabal_freeze <<<"${constraints}" 2>&1 | quote || die
 
 		# NOTE: This is the second out of the two moments when source_dir is modified.
 
-		format_constraints <<<"${constraints}" >"${source_dir}/cabal.config" || die
+		format_constraints_to_cabal_freeze <<<"${constraints}" >"${source_dir}/cabal.config" || die
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
 		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
@@ -547,7 +547,7 @@ deploy_app () {
 	fi
 
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'constraints' ]]; then
-		format_constraints <<<"${constraints}" || die
+		format_constraints_to_cabal_freeze <<<"${constraints}" || die
 		return 0
 	fi
 
