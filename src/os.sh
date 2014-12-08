@@ -126,12 +126,25 @@ install_linux_centos_packages () {
 	#
 	# $ yum install yum-plugin-downloadonly
 
+	local -a opts
+	opts+=( --assumeyes )
+	opts+=( --downloadonly )
+	opts+=( --downloaddir="${yum_dir}" )
+
 	local name
 	for name in "${names[@]}"; do
-		if ! yum install --assumeyes --downloadonly --downloaddir="${yum_dir}" "${name}" 2>&1 | quote; then
-			if [[ ! "${platform}" =~ linux-centos-6-.* ]]; then
-				die
+		local status
+		status=0
+		if ! yum list installed "${name}" >'/dev/null' 2>&1; then
+			if ! yum install "${opts[@]}" "${name}" 2>&1 | quote; then
+				status=1
 			fi
+		elif ! yum reinstall "${opts[@]}" "${name}" 2>&1 | quote; then
+			status=1
+		fi
+
+		if (( status )) && [[ ! "${platform}" =~ linux-centos-6-.* ]]; then
+			die
 		fi
 	done
 
