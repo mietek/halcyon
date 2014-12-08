@@ -28,9 +28,9 @@ halcyon_install_bashmenot () {
 
 	local commit_hash
 	commit_hash=$(
-		git clone -q "${base_url}" "${HALCYON_DIR}/lib/bashmenot" &>'/dev/null' &&
+		git clone -q "${base_url}" "${HALCYON_DIR}/lib/bashmenot" >'/dev/null' 2>&1 &&
 		cd "${HALCYON_DIR}/lib/bashmenot" &&
-		git checkout -q "${branch}" &>'/dev/null' &&
+		git checkout -q "${branch}" >'/dev/null' 2>&1 &&
 		git log -n 1 --pretty='format:%h'
 	) || return 1
 	echo " done, ${commit_hash:0:7}" >&2

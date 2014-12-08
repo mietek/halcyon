@@ -4,7 +4,7 @@ install_pigz () {
 	local tag
 	expect_args tag -- "$@"
 
-	if which 'pigz' &>'/dev/null'; then
+	if which 'pigz' >'/dev/null' 2>&1; then
 		return 0
 	fi
 
