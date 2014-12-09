@@ -210,9 +210,8 @@ link_ghc_libs () {
 	local tag
 	expect_args tag -- "$@"
 
-	local platform description ghc_version
+	local platform ghc_version
 	platform=$( get_tag_platform "${tag}" ) || die
-	description=$( format_platform_description "${platform}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
 	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
@@ -274,6 +273,9 @@ link_ghc_libs () {
 		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" )
 		;;
 	*)
+		local description
+		description=$( format_platform_description "${platform}" ) || die
+
 		die "Unexpected GHC version for ${description}: ${ghc_version}"
 	esac
 
@@ -428,10 +430,9 @@ restore_ghc_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local platform archive_name description
+	local platform archive_name
 	platform=$( get_tag_platform "${tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
-	description=$( format_ghc_description "${tag}" ) || die
 
 	if validate_ghc_layer "${tag}" >'/dev/null'; then
 		log 'Using existing GHC layer'
