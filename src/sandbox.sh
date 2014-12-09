@@ -262,7 +262,7 @@ install_sandbox_extra_os_packages () {
 
 	log 'Installing sandbox extra OS packages'
 
-	if ! install_os_packages "${tag}" "${extra_packages}" "${HALCYON_BASE}/sandbox"; then
+	if ! install_platform_packages "${extra_packages}" "${HALCYON_BASE}/sandbox"; then
 		die 'Failed to install sandbox extra OS packages'
 	fi
 

@@ -193,7 +193,8 @@ install_extra_os_packages () {
 	extra_packages=$( <"${source_dir}/.halcyon-magic/extra-os-packages" ) || die
 
 	log 'Installing extra OS packages'
-	if ! install_os_packages "${tag}" "${extra_packages}" "${install_dir}${prefix}"; then
+
+	if ! install_platform_packages "${extra_packages}" "${install_dir}${prefix}"; then
 		die 'Failed to install extra OS packages'
 	fi
 

@@ -189,8 +189,6 @@ do_deploy_ghc_and_cabal_layers () {
 		return 0
 	fi
 
-	install_pigz "${tag}" || return 1
-
 	install_ghc_layer "${tag}" "${source_dir}" || return 1
 	recache_ghc_package_db "${tag}" || die
 	log
