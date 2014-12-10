@@ -203,47 +203,36 @@ add_sandbox_sources () {
 		return 0
 	fi
 
-	local -a sandbox_sources
-	sandbox_sources=( $( <"${source_dir}/.halcyon-magic/sandbox-sources" ) ) || die
-	if [[ -z "${sandbox_sources[@]:+_}" ]]; then
+	local sandbox_sources
+	sandbox_sources=$( <"${source_dir}/.halcyon-magic/sandbox-sources" ) || die
+	if [[ -z "${sandbox_sources}" ]]; then
 		return 0
 	fi
 
+	local sources_dir
+	sources_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources"
+
 	log 'Adding sandbox sources'
 
-	local sandbox_source
-	for sandbox_source in "${sandbox_sources[@]}"; do
-		local src_name src_dir
-		if validate_git_url "${sandbox_source}"; then
-			src_name=$( basename "${sandbox_source%.git}" ) || die
-			src_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${src_name}"
+	local all_names
+	if ! all_names=$( git_all_over_here "${sandbox_sources}" "${sources_dir}" ); then
+		die 'Failed to add sandbox sources'
+	fi
 
-			local commit_hash
-			if [[ ! -d "${src_dir}" ]]; then
-				log_indent_begin "Cloning ${sandbox_source}..."
+	local -a names
+	names=( ${all_names} )
+	if [[ -z "${names[@]:+_}" ]]; then
+		return 0
+	fi
 
-				if ! commit_hash=$( git_clone_over "${sandbox_source}" "${src_dir}" ); then
-					log_indent_end 'error'
-					die 'Cannot clone sandbox source'
-				fi
-			else
-				log_indent_begin "Updating ${sandbox_source}..."
+	local name
+	for name in "${names[@]}"; do
+		log "Adding sandbox source: ${name}"
 
-				if ! commit_hash=$( git_update_into "${sandbox_source}" "${src_dir}" ); then
-					log_indent_end 'error'
-					die 'Cannot update sandbox source'
-				fi
-			fi
-			log_indent_end "done, ${commit_hash:0:7}"
-		else
-			src_name=$( basename "${sandbox_source}" ) || die
-			src_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources/${src_name}"
-
-			copy_dir_over "${sandbox_source}" "${src_dir}" || die
-		fi
-
-		sandboxed_cabal_do "${source_dir}" sandbox add-source "${src_dir}" || die
+		sandboxed_cabal_do "${source_dir}" sandbox add-source "${sources_dir}/${name}" || die
 	done
+
+	log 'Sandbox sources added'
 }
 
 
