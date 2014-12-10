@@ -315,13 +315,10 @@ deploy_sandbox_extra_apps () {
 			log
 			log
 		fi
-
-		(
-			HALCYON_INTERNAL_RECURSIVE=1 \
-			HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
-			HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
-				halcyon deploy "${opts[@]}" "${extra_app}" 2>&1 | quote
-		) || return 1
+		HALCYON_INTERNAL_RECURSIVE=1 \
+		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
+		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
+			halcyon deploy "${opts[@]}" "${extra_app}" 2>&1 | quote || return 1
 	done
 }
 
