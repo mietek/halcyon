@@ -124,7 +124,7 @@ detect_ghc_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Cannot detect GHC layer tag'
+		die 'Failed to detect GHC layer tag'
 	fi
 
 	echo "${tag}"
@@ -276,7 +276,7 @@ link_ghc_libs () {
 		local description
 		description=$( format_platform_description "${platform}" ) || die
 
-		die "Unexpected GHC version for ${description}: ${ghc_version}"
+		die "Unexpected platform: ${description}"
 	esac
 
 	if [ -n "${gmp_file:-}" ]; then
@@ -317,10 +317,10 @@ build_ghc_layer () {
 
 	if ! extract_cached_archive_over "${original_name}" "${ghc_build_dir}"; then
 		if ! cache_original_stored_file "${original_url}"; then
-			die 'Cannot download original GHC archive'
+			die 'Failed to download original GHC archive'
 		fi
 		if ! extract_cached_archive_over "${original_name}" "${ghc_build_dir}"; then
-			die 'Cannot install GHC'
+			die 'Failed to extract original GHC archive'
 		fi
 	else
 		touch_cached_file "${original_name}" || die

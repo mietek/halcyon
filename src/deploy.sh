@@ -184,7 +184,7 @@ do_deploy_ghc_and_cabal_layers () {
 		if ! validate_ghc_layer "${tag}" >'/dev/null' ||
 			! validate_updated_cabal_layer "${tag}" >'/dev/null'
 		then
-			die 'Cannot use existing GHC and Cabal layers'
+			die 'Failed to validate existing GHC and Cabal layers'
 		fi
 		return 0
 	fi
@@ -537,7 +537,7 @@ deploy_app () {
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'executable' ]]; then
 		local executable
 		if ! executable=$( detect_executable "${source_dir}" ); then
-			die 'Cannot detect executable'
+			die 'Failed to detect executable'
 		fi
 
 		echo "${executable}"
@@ -636,7 +636,7 @@ deploy_local_app () {
 
 	local label
 	if ! label=$( detect_label "${source_dir}" ); then
-		die 'Cannot detect label'
+		die 'Failed to detect label'
 	fi
 
 	deploy_app "${label}" "${source_dir}" || return 1
@@ -660,7 +660,7 @@ deploy_cloned_app () {
 	local commit_hash
 	if ! commit_hash=$( git_clone_over "${url}" "${clone_dir}" ); then
 		log_end 'error'
-		die 'Cannot clone app'
+		die 'Failed to clone app'
 	fi
 	log_end "done, ${commit_hash:0:7}"
 
@@ -668,7 +668,7 @@ deploy_cloned_app () {
 
 	local label
 	if ! label=$( detect_label "${source_dir}" ); then
-		die 'Cannot detect label'
+		die 'Failed to detect label'
 	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
@@ -700,9 +700,7 @@ deploy_unpacked_app () {
 	copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}" || die
 
 	if [[ "${label}" != "${thing}" ]]; then
-		log_warning "Using implicit version of ${thing}"
-		log_warning 'Please declare explicit version:'
-		log_indent "${label}"
+		log_warning "Using implicit version of ${thing} (${label})"
 	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \

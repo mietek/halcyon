@@ -22,7 +22,7 @@ detect_sandbox_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Cannot detect sandbox layer tag'
+		die 'Failed to detect sandbox layer tag'
 	fi
 
 	echo "${tag}"
@@ -339,8 +339,7 @@ build_sandbox_layer () {
 				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
 					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
-			log_warning 'Cannot execute sandbox pre-build hook'
-			return 1
+			die 'Failed to execute sandbox pre-build hook'
 		fi
 		log 'Sandbox pre-build hook executed'
 	fi
@@ -392,8 +391,7 @@ build_sandbox_layer () {
 				"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
 					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
-			log_warning 'Cannot execute sandbox post-build hook'
-			return 1
+			die 'Failed to execute sandbox post-build hook'
 		fi
 		log 'Sandbox post-build hook executed'
 	fi

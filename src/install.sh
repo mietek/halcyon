@@ -18,7 +18,7 @@ detect_install_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Cannot detect install tag'
+		die 'Failed to detect install tag'
 	fi
 
 	echo "${tag}"
@@ -279,8 +279,7 @@ prepare_install_dir () {
 				"${source_dir}/.halcyon-magic/pre-install-hook" \
 					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
-			log_warning 'Cannot execute pre-install hook'
-			return 1
+			die 'Failed to execute pre-install hook'
 		fi
 		log 'Pre-install hook executed'
 	fi
@@ -417,8 +416,7 @@ install_app () {
 				"${source_dir}/.halcyon-magic/post-install-hook" \
 					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
-			log_warning 'Cannot execute post-install hook'
-			return 1
+			die 'Failed to execute post-install hook'
 		fi
 		log 'Post-install hook executed'
 	fi

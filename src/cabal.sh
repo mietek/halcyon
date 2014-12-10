@@ -35,7 +35,7 @@ detect_cabal_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Cannot detect Cabal layer tag'
+		die 'Failed to detect Cabal layer tag'
 	fi
 
 	echo "${tag}"
@@ -245,10 +245,10 @@ build_cabal_layer () {
 
 	if ! extract_cached_archive_over "${original_name}" "${cabal_build_dir}"; then
 		if ! cache_original_stored_file "${original_url}"; then
-			die 'Cannot download original Cabal archive'
+			die 'Failed to download original Cabal archive'
 		fi
 		if ! extract_cached_archive_over "${original_name}" "${cabal_build_dir}"; then
-			die 'Cannot bootstrap Cabal'
+			die 'Failed to extract original Cabal archive'
 		fi
 	else
 		touch_cached_file "${original_name}" || die
@@ -604,9 +604,8 @@ link_cabal_config () {
 			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" ]]
 		then
 			log_warning 'Unexpected existing Cabal config'
-			log_warning 'Please review and replace with recommended Cabal config:'
-			log_indent '$ rm ~/.cabal/config'
-			log_indent "$ ln -s ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
+			log_warning 'To replace with recommended Cabal config:'
+			log_indent "$ ln -fs ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
 			return 0
 		fi
 	fi

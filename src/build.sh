@@ -22,7 +22,7 @@ detect_build_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Cannot detect build tag'
+		die 'Failed to detect build tag'
 	fi
 
 	echo "${tag}"

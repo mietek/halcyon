@@ -41,7 +41,7 @@ halcyon_install_bashmenot () {
 
 
 if ! halcyon_install_bashmenot; then
-	echo '   *** ERROR: Cannot install bashmenot' >&2
+	echo '   *** ERROR: Failed to install bashmenot' >&2
 fi
 
 source "${HALCYON_DIR}/src/paths.sh"
