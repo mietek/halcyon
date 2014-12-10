@@ -431,6 +431,8 @@ halcyon_main () {
 		shift
 	done
 
+	export HALCYON_INTERNAL_COMMAND="${cmd}"
+
 	# NOTE: The lib dirs are always created on OS X to avoid spurious
 	# linker warnings.
 
@@ -459,14 +461,7 @@ halcyon_main () {
 		fi
 	fi
 
-	if [[ -z "${cmd}" ]]; then
-		log_error 'Expected command'
-		help_usage
-		die
-	fi
-	export HALCYON_INTERNAL_COMMAND="${cmd}"
-
-	case "${cmd}" in
+	case "${HALCYON_INTERNAL_COMMAND}" in
 	'deploy')
 		halcyon_deploy "${args[@]:-}" || return 1
 		;;
@@ -478,6 +473,11 @@ halcyon_main () {
 		echo -e "export HALCYON_DIR='${HALCYON_DIR}'\n"
 
 		cat "${HALCYON_DIR}/src/paths.sh" || die
+		;;
+	'')
+		log_error 'Expected command'
+		help_usage
+		die
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args[*]:-}"
