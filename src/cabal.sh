@@ -710,22 +710,28 @@ sandboxed_cabal_do () {
 }
 
 
-cabal_freeze_implicit_constraints () {
+# NOTE: Cabal automatically sets global installed constraints for installed
+# packages, even during a freeze dry run.  Hence, if a local constraint
+# conflicts with an installed package, Cabal will fail to resolve
+# dependencies.
+# https://github.com/haskell/cabal/issues/2178
+
+# NOTE: Cabal freeze always ignores any constraints set both in the local
+# cabal.config file, and in the global ~/.cabal/config file.
+# https://github.com/haskell/cabal/issues/2265
+
+
+cabal_dry_freeze_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
 
-	# NOTE: Cabal automatically sets global installed constraints for installed packages, even
-	# during a dry run.  Hence, if a local constraint conflicts with an installed package,
-	# Cabal will fail to resolve dependencies.
-	# https://github.com/haskell/cabal/issues/2178
-
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || return 1
+	stderr=$( get_tmp_file 'halcyon-cabal-dry-freeze-stderr' ) || return 1
 
 	local constraints
 	if ! constraints=$(
 		cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
-		read_constraints_from_cabal_freeze_dry_run |
+		read_constraints_from_cabal_dry_freeze |
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then
@@ -739,17 +745,17 @@ cabal_freeze_implicit_constraints () {
 }
 
 
-cabal_freeze_actual_constraints () {
+sandboxed_cabal_dry_freeze_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-freeze-stderr' ) || return 1
+	stderr=$( get_tmp_file 'halcyon-cabal-dry-freeze-stderr' ) || return 1
 
 	local constraints
 	if ! constraints=$(
 		sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
-		read_constraints_from_cabal_freeze_dry_run |
+		read_constraints_from_cabal_dry_freeze |
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then

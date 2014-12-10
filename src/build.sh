@@ -204,7 +204,7 @@ archive_build_dir () {
 
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/cabal.config"
+	expect_existing "${build_dir}/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0

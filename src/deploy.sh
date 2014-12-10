@@ -273,7 +273,7 @@ deploy_from_install_dir () {
 	expect_args label source_hash source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if [[ ! -f "${source_dir}/cabal.config" ]] || (( HALCYON_RESTORE_LAYERS )) ||
+	if (( HALCYON_RESTORE_LAYERS )) ||
 		(( HALCYON_APP_REBUILD )) || (( HALCYON_APP_RECONFIGURE )) || (( HALCYON_APP_REINSTALL )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
@@ -370,17 +370,6 @@ prepare_source_dir () {
 	local magic_dir
 	magic_dir="${source_dir}/.halcyon-magic"
 
-# Build-time standard file
-	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
-		if [[ -d "${HALCYON_CONSTRAINTS}" ]]; then
-			copy_file "${HALCYON_CONSTRAINTS}/${label}.cabal.config" "${source_dir}/cabal.config" || die
-		elif [[ -f "${HALCYON_CONSTRAINTS}" ]]; then
-			copy_file "${HALCYON_CONSTRAINTS}" "${source_dir}/cabal.config" || die
-		else
-			copy_file <( echo "${HALCYON_CONSTRAINTS}" ) "${source_dir}/cabal.config" || die
-		fi
-	fi
-
 # Build-time magic files
 	prepare_file_strings_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || die
 	prepare_file_option "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || die
@@ -455,7 +444,7 @@ do_deploy_app () {
 		must_prepare=0
 	fi
 	if (( must_prepare )); then
-		if ! prepare_install_dir "${tag}" "${source_dir}" "${build_dir}" "${install_dir}"; then
+		if ! prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}" "${install_dir}"; then
 			log_warning 'Cannot prepare install'
 			return 1
 		fi
@@ -490,8 +479,9 @@ deploy_app () {
 		return 0
 	fi
 
-	# NOTE: This is the first out of the two moments when source_dir is modified.
+	# NOTE: This is the first of two moments when source_dir is modified.
 
+	prepare_constraints "${label}" "${source_dir}" || die
 	prepare_source_dir "${label}" "${source_dir}" || die
 
 	local source_hash
@@ -507,22 +497,27 @@ deploy_app () {
 
 	local constraints
 	if [[ ! -f "${source_dir}/cabal.config" ]]; then
+		# TODO: If there are any sandbox sources, create a sandbox before determining constraints.
+
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
 			deploy_ghc_and_cabal_layers "${source_dir}" || return 1
 
-		if ! constraints=$( cabal_freeze_implicit_constraints "${label}" "${source_dir}" ); then
-			die 'Failed to freeze implicit constraints'
+		log 'Determining constraints'
+
+		if ! constraints=$( cabal_dry_freeze_constraints "${label}" "${source_dir}" ); then
+			die 'Failed to determine constraints'
 		fi
 
-		log_warning 'Using implicit constraints'
-		log_warning 'Please declare explicit constraints:'
-		format_constraints_to_cabal_freeze <<<"${constraints}" 2>&1 | quote || die
+		log_warning 'Using newest versions of all packages'
+		format_constraints <<<"${constraints}" | quote || die
+		log
 
-		# NOTE: This is the second out of the two moments when source_dir is modified.
+		# NOTE: This is the second of two moments when source_dir is modified.
 
 		format_constraints_to_cabal_freeze <<<"${constraints}" >"${source_dir}/cabal.config" || die
+
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
 		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
@@ -531,10 +526,15 @@ deploy_app () {
 			return 0
 		fi
 	else
-		constraints=$( detect_constraints "${label}" "${source_dir}" ) || die
+		log 'Determining constraints'
+
+		if ! constraints=$( detect_constraints "${label}" "${source_dir}" ); then
+			die 'Failed to determine constraints'
+		fi
 	fi
 
-	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'executable' ]]; then
+	case "${HALCYON_INTERNAL_COMMAND}" in
+	'executable')
 		local executable
 		if ! executable=$( detect_executable "${source_dir}" ); then
 			die 'Failed to detect executable'
@@ -542,12 +542,12 @@ deploy_app () {
 
 		echo "${executable}"
 		return 0
-	fi
-
-	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'constraints' ]]; then
-		format_constraints_to_cabal_freeze <<<"${constraints}" || die
+		;;
+	'constraints')
+		format_constraints <<<"${constraints}" || die
 		return 0
-	fi
+		;;
+	esac
 
 	log 'Deploying app'
 
@@ -700,7 +700,7 @@ deploy_unpacked_app () {
 	copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}" || die
 
 	if [[ "${label}" != "${thing}" ]]; then
-		log_warning "Using implicit version of ${thing} (${label})"
+		log_warning "Using newest version of ${thing}: ${label}"
 	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \

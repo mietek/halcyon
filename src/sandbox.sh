@@ -105,12 +105,7 @@ format_sandbox_constraints_file_name () {
 	label=$( get_tag_label "${tag}" ) || die
 	sandbox_id=$( format_sandbox_id "${tag}" ) || die
 
-	echo "halcyon-sandbox-constraints-${sandbox_id}-${label}.cabal.config"
-}
-
-
-format_sandbox_constraints_file_name_prefix () {
-	echo "halcyon-sandbox-constraints-"
+	echo "halcyon-sandbox-${sandbox_id}-${label}.constraints"
 }
 
 
@@ -121,7 +116,7 @@ format_full_sandbox_constraints_file_name_pattern () {
 	local sandbox_id
 	sandbox_id=$( format_sandbox_id "${tag}" ) || die
 
-	echo "halcyon-sandbox-constraints-${sandbox_id}-.*.cabal.config"
+	echo "halcyon-sandbox-${sandbox_id}-.*.constraints"
 }
 
 
@@ -132,7 +127,7 @@ format_partial_sandbox_constraints_file_name_pattern () {
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
 
-	echo "halcyon-sandbox-constraints-.*${sandbox_magic_hash:+.${sandbox_magic_hash:0:7}}-.*.cabal.config"
+	echo "halcyon-sandbox-.*${sandbox_magic_hash:+.${sandbox_magic_hash:0:7}}-.*.constraints"
 }
 
 
@@ -148,7 +143,7 @@ format_sandbox_common_file_name_pattern () {
 	local label
 	label=$( get_tag_label "${tag}" ) || die
 
-	echo "halcyon-sandbox-.*-${label}.(tar.gz|cabal.config)"
+	echo "halcyon-sandbox-.*-${label}.(tar.gz|constraints)"
 }
 
 
@@ -157,9 +152,9 @@ map_sandbox_constraints_file_name_to_label () {
 	expect_args constraints_name -- "$@"
 
 	local label_etc
-	label_etc="${constraints_name#halcyon-sandbox-constraints-*-}"
+	label_etc="${constraints_name#halcyon-sandbox-*-}"
 
-	echo "${label_etc%.cabal.config}"
+	echo "${label_etc%.constraints}"
 }
 
 
@@ -316,7 +311,7 @@ build_sandbox_layer () {
 		rm -rf "${HALCYON_BASE}/sandbox" || die
 	else
 		expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
-			"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config"
+			"${HALCYON_BASE}/sandbox/.halcyon-constraints"
 	fi
 	expect_existing "${source_dir}"
 
@@ -377,7 +372,7 @@ build_sandbox_layer () {
 		die 'Failed to build sandbox'
 	fi
 
-	format_constraints_to_cabal_freeze <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config" || die
+	format_constraints <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-constraints" || die
 	copy_sandbox_magic "${source_dir}" || die
 
 	local built_size
@@ -421,7 +416,7 @@ build_sandbox_layer () {
 archive_sandbox_layer () {
 	expect_vars HALCYON_BASE HALCYON_CACHE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
 	expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
-		"${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config"
+		"${HALCYON_BASE}/sandbox/.halcyon-constraints"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
@@ -437,7 +432,7 @@ archive_sandbox_layer () {
 	log 'Archiving sandbox layer'
 
 	create_cached_archive "${HALCYON_BASE}/sandbox" "${archive_name}" || die
-	copy_file "${HALCYON_BASE}/sandbox/.halcyon-sandbox-constraints.cabal.config" \
+	copy_file "${HALCYON_BASE}/sandbox/.halcyon-constraints" \
 		"${HALCYON_CACHE}/${constraints_name}" || die
 
 	local no_clean

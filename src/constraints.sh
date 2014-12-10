@@ -1,3 +1,8 @@
+read_constraints () {
+	sed 's/^\(.*\)-\(.*\)$/\1 \2/'
+}
+
+
 read_constraints_from_cabal_freeze () {
 	awk '/^ *[Cc]onstraints:/, !/[:,]/ { print }' |
 		tr -d '\r' |
@@ -5,7 +10,7 @@ read_constraints_from_cabal_freeze () {
 }
 
 
-read_constraints_from_cabal_freeze_dry_run () {
+read_constraints_from_cabal_dry_freeze () {
 	awk '/The following packages would be frozen:/ { i = 1 } i' |
 		filter_not_first |
 		sed 's/ == / /'
@@ -40,6 +45,11 @@ filter_correct_constraints () {
 }
 
 
+format_constraints () {
+	sed 's/ /-/'
+}
+
+
 format_constraints_to_cabal_freeze () {
 	awk 'BEGIN { printf "constraints:"; separator = " " }
 		!/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
@@ -55,6 +65,31 @@ hash_constraints () {
 }
 
 
+prepare_constraints () {
+	local label source_dir
+	expect_args label source_dir -- "$@"
+
+	local magic_dir
+	magic_dir="${source_dir}/.halcyon-magic"
+
+	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
+		if [[ -d "${HALCYON_CONSTRAINTS}" ]]; then
+			copy_file "${HALCYON_CONSTRAINTS}/${label}.constraints" "${magic_dir}/constraints" || die
+		elif [[ -f "${HALCYON_CONSTRAINTS}" ]]; then
+			copy_file "${HALCYON_CONSTRAINTS}" "${magic_dir}/constraints" || die
+		else
+			copy_file <( echo "${HALCYON_CONSTRAINTS}" ) "${magic_dir}/constraints" || die
+		fi
+	fi
+
+	if [[ -f "${magic_dir}/constraints" ]]; then
+		read_constraints <"${magic_dir}/constraints" |
+			sort_natural |
+			format_constraints_to_cabal_freeze >"${source_dir}/cabal.config" || die
+	fi
+}
+
+
 detect_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
@@ -65,14 +100,15 @@ detect_constraints () {
 		read_constraints_from_cabal_freeze <"${source_dir}/cabal.config" |
 		filter_correct_constraints "${label}" |
 		sort_natural
-	) || die
+	) || return 1
 
 	local -A package_version_map
 	local base_version candidate_package candidate_version
 	base_version=''
 	while read -r candidate_package candidate_version; do
 		if [[ -n "${package_version_map[${candidate_package}]:+_}" ]]; then
-			die "Unexpected duplicate constraint: ${candidate_package}-${package_version_map[${candidate_package}]} and ${candidate_package}-${candidate-version}"
+			log_error "Unexpected duplicate constraint: ${candidate_package}-${candidate-version} (${package_version_map[${candidate_package}]})"
+			return 1
 		fi
 		package_version_map["${candidate_package}"]="${candidate_version}"
 		if [[ ${candidate_package} == 'base' ]]; then
@@ -80,7 +116,8 @@ detect_constraints () {
 		fi
 	done <<<"${constraints}"
 	if [[ -z "${base_version}" ]]; then
-		die 'Expected base package constraint'
+		log_error 'Expected base package constraint'
+		return 1
 	fi
 
 	echo "${constraints}"
@@ -96,26 +133,27 @@ validate_actual_constraints () {
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1
 
-	local label constraints_hash actual_constraints actual_hash
+	local label actual_constraints
 	label=$( get_tag_label "${tag}" ) || die
+	if ! actual_constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ); then
+		log_warning 'Failed to freeze constraints'
+		return 0
+	fi
+
+	local constraints_hash actual_hash
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
-	if ! actual_constraints=$( cabal_freeze_actual_constraints "${label}" "${source_dir}" ); then
-		log_warning 'Failed to freeze actual constraints'
-		return 0
-	fi
-
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
-	if [[ "${actual_hash}" == "${constraints_hash}" ]]; then
-		return 0
+	if [[ "${actual_hash}" != "${constraints_hash}" ]]; then
+		log_warning 'Unexpected constraints difference'
+		log_warning 'See https://github.com/mietek/halcyon/issues/1 for details'
+		diff --unified \
+			<( format_constraints <<<"${constraints}" ) \
+			<( format_constraints <<<"${actual_constraints}" ) |
+				filter_not_first |
+				filter_not_first |
+				quote || true
+		log
 	fi
-
-	log_warning 'Unexpected constraints difference'
-	log_warning 'Please report on https://github.com/mietek/halcyon/issues/1'
-	log_indent "--- ${constraints_hash:0:7}/cabal.config"
-	log_indent "+++ ${actual_hash:0:7}/cabal.config"
-	diff -u <( format_constraints_to_cabal_freeze <<<"${constraints}" ) \
-		<( format_constraints_to_cabal_freeze <<<"${actual_constraints}" ) |
-			tail -n +3 2>&1 | quote || true
 }
 
 
@@ -128,7 +166,7 @@ validate_full_constraints_file () {
 	fi
 
 	local candidate_constraints
-	candidate_constraints=$( read_constraints_from_cabal_freeze <"${candidate_file}" ) || die
+	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
 
 	local constraints_hash candidate_hash
 	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
@@ -151,11 +189,11 @@ validate_partial_constraints_file () {
 	fi
 
 	local candidate_constraints
-	candidate_constraints=$( read_constraints_from_cabal_freeze <"${candidate_file}" ) || die
+	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
 
 	local constraints_name short_hash_etc short_hash candidate_hash
 	constraints_name=$( basename "${candidate_file}" ) || die
-	short_hash_etc="${constraints_name#halcyon-sandbox-constraints-}"
+	short_hash_etc="${constraints_name#halcyon-sandbox-}"
 	short_hash="${short_hash_etc%%[-.]*}"
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
 
@@ -271,7 +309,7 @@ score_partial_sandbox_layers () {
 		fi
 
 		local partial_constraints description
-		partial_constraints=$( read_constraints_from_cabal_freeze <"${partial_file}" ) || die
+		partial_constraints=$( read_constraints <"${partial_file}" ) || die
 		description=$( format_sandbox_description "${partial_tag}" ) || die
 
 		local partial_package partial_version version score
@@ -313,7 +351,7 @@ match_sandbox_layer () {
 	platform=$( get_tag_platform "${tag}" ) || die
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	constraints_name=$( format_sandbox_constraints_file_name "${tag}" ) || die
-	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
+	name_prefix=$( format_sandbox_common_file_name_prefix ) || die
 	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" ) || die
 
 	log 'Locating sandbox layers'

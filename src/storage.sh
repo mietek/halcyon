@@ -295,7 +295,7 @@ clean_cache () {
 
 	local mark_time name_prefix
 	mark_time=$( get_modification_time "${cache_dir}" ) || die
-	name_prefix=$( format_sandbox_constraints_file_name_prefix ) || die
+	name_prefix=$( format_sandbox_common_file_name_prefix ) || die
 
 	rm -f "${HALCYON_CACHE}/${name_prefix}"* || die
 

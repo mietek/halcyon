@@ -242,12 +242,14 @@ install_extra_layers () {
 prepare_install_dir () {
 	expect_vars HALCYON_BASE
 
-	local tag source_dir build_dir install_dir
-	expect_args tag source_dir build_dir install_dir -- "$@"
+	local tag source_dir constraints build_dir install_dir
+	expect_args tag source_dir constraints build_dir install_dir -- "$@"
 	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-data-dir"
 
-	local prefix data_dir
+	local prefix label install_id label_dir data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
+	label=$( get_tag_label "${tag}" ) || die
+	label_dir="${install_dir}${prefix}/.halcyon-install-${label}"
 	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
 	log 'Preparing install'
@@ -298,8 +300,12 @@ prepare_install_dir () {
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
+	mkdir -p "${label_dir}" || die
+	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
+	derive_install_tag "${tag}" >"${label_dir}/.halcyon-tag" || die
+	echo "${data_dir}" >"${label_dir}/.halcyon-data-dir" || die
+
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
-	echo "${data_dir}" >"${install_dir}${prefix}/.halcyon-data-dir" || die
 }
 
 
@@ -379,10 +385,12 @@ install_app () {
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
 
-	local prefix data_dir
+	local prefix label install_id label_dir data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
-	expect_existing "${install_dir}${prefix}/.halcyon-data-dir"
-	data_dir=$( <"${install_dir}${prefix}/.halcyon-data-dir" ) || die
+	label=$( get_tag_label "${tag}" ) || die
+	label_dir="${install_dir}${prefix}/.halcyon-install-${label}"
+	expect_existing "${label_dir}/.halcyon-data-dir"
+	data_dir=$( <"${label_dir}/.halcyon-data-dir" ) || die
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
 		log_begin "Installing app into ${prefix}..."
