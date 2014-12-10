@@ -59,11 +59,11 @@ source "${HALCYON_DIR}/src/help.sh"
 
 
 halcyon_self_update () {
-	if (( ${HALCYON_NO_SELF_UPDATE:-0} )) || (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
+	if (( ${HALCYON_NO_SELF_UPDATE:-0} )) ||
+		(( ${HALCYON_INTERNAL_RECURSIVE:-0} )) ||
+		[[ ! -d "${HALCYON_DIR}/.git" ]]
+	then
 		return 0
-	fi
-	if [[ ! -d "${HALCYON_DIR}/.git" ]]; then
-		return 1
 	fi
 
 	local url
@@ -74,15 +74,13 @@ halcyon_self_update () {
 	local commit_hash
 	if ! commit_hash=$( git_update_into "${url}" "${HALCYON_DIR}" ); then
 		log_end 'error'
-		return 1
+		return 0
 	fi
 	log_end "done, ${commit_hash:0:7}"
 
 	HALCYON_NO_SELF_UPDATE=1 \
-		source "${HALCYON_DIR}/src.sh" || return 1
+		source "${HALCYON_DIR}/src.sh"
 }
 
 
-if ! halcyon_self_update; then
-	log_warning 'Cannot self-update Halcyon'
-fi
+halcyon_self_update
