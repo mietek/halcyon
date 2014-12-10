@@ -212,8 +212,6 @@ add_sandbox_sources () {
 	local sources_dir
 	sources_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources"
 
-	log 'Adding sandbox sources'
-
 	local all_names
 	if ! all_names=$( git_all_over_here "${sandbox_sources}" "${sources_dir}" ); then
 		die 'Failed to add sandbox sources'
@@ -231,8 +229,6 @@ add_sandbox_sources () {
 
 		sandboxed_cabal_do "${source_dir}" sandbox add-source "${sources_dir}/${name}" || die
 	done
-
-	log 'Sandbox sources added'
 }
 
 
@@ -254,8 +250,6 @@ install_sandbox_extra_os_packages () {
 	if ! install_platform_packages "${extra_packages}" "${HALCYON_BASE}/sandbox"; then
 		die 'Failed to install sandbox extra OS packages'
 	fi
-
-	log 'Sandbox extra OS packages installed'
 }
 
 

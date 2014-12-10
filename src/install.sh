@@ -194,8 +194,6 @@ install_extra_os_packages () {
 	if ! install_platform_packages "${extra_packages}" "${install_dir}${prefix}"; then
 		die 'Failed to install extra OS packages'
 	fi
-
-	log 'Extra OS packages installed'
 }
 
 
