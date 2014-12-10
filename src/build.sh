@@ -333,6 +333,9 @@ prepare_build_dir () {
 	# configure, as Cabal fails to detect the change.
 	# https://github.com/mietek/haskell-on-heroku/issues/29
 
+	# NOTE: Detecting changes in cabal.config works around a Cabal issue.
+	# https://github.com/haskell/cabal/issues/1992
+
 	local must_configure
 	must_configure=0
 	if filter_matching "^. (\.halcyon-magic/extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
