@@ -81,10 +81,10 @@ help_usage () {
 		  --cabal-update
 
 		Sandbox layer options
+		  --sandbox-extra-configure-flags=        STRINGS | FILE
 		  --sandbox-sources=                      STRINGS | FILE
 		  --sandbox-extra-apps=                   STRINGS | FILE
 		  --sandbox-extra-apps-constraints=       STRINGS | FILE | DIR
-		  --sandbox-extra-configure-flags=	  STRINGS | FILE
 		  --sandbox-extra-os-packages=            STRINGS | FILE
 		  --sandbox-pre-build-hook=               FILE
 		  --sandbox-post-build-hook=              FILE

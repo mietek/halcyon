@@ -406,10 +406,10 @@ prepare_source_dir () {
 	prepare_file_option "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${magic_dir}/cabal-post-update-hook" || die
 
 # Sandbox layer magic files
+	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || die
 	prepare_file_strings_option "${HALCYON_SANDBOX_SOURCES}" "${magic_dir}/sandbox-sources" || die
 	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_APPS}" "${magic_dir}/sandbox-extra-apps" || die
 	prepare_constraints_option "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
-	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || die
 	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES}" "${magic_dir}/sandbox-extra-os-packages" || die
 	prepare_file_option "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${magic_dir}/sandbox-pre-build-hook" || die
 	prepare_file_option "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${magic_dir}/sandbox-post-build-hook" || die
@@ -572,9 +572,11 @@ deploy_app () {
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
+	describe_extra 'Extra configure flags:' "${source_dir}/.halcyon-magic/extra-configure-flags"
 	describe_extra 'Extra apps:' "${source_dir}/.halcyon-magic/extra-apps"
 	describe_extra 'Extra data files:' "${source_dir}/.halcyon-magic/extra-data-files"
 	describe_extra 'Extra OS packages:' "${source_dir}/.halcyon-magic/extra-os-packages"
+	describe_extra 'Extra layers:' "${source_dir}/.halcyon-magic/extra-layers"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
 	describe_storage || die
@@ -587,6 +589,7 @@ deploy_app () {
 	log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
 
 	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
+	describe_extra 'Sandbox extra configure flags:' "${source_dir}/.halcyon-magic/sandbox-extra-configure-flags"
 	describe_extra 'Sandbox sources:' "${source_dir}/.halcyon-magic/sandbox-sources"
 	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon-magic/sandbox-extra-apps"
 	describe_extra 'Sandbox extra OS packages:' "${source_dir}/.halcyon-magic/sandbox-extra-os-packages"
