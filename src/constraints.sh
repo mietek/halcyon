@@ -66,6 +66,8 @@ hash_constraints () {
 
 
 prepare_constraints () {
+	expect_vars HALCYON_IGNORE_ALL_CONSTRAINTS
+
 	local label source_dir
 	expect_args label source_dir -- "$@"
 
@@ -80,6 +82,11 @@ prepare_constraints () {
 		else
 			copy_file <( echo "${HALCYON_CONSTRAINTS}" ) "${magic_dir}/constraints" || die
 		fi
+	fi
+
+	if (( HALCYON_IGNORE_ALL_CONSTRAINTS )); then
+		rm -f "${source_dir}/cabal.config" || die
+		return 0
 	fi
 
 	if [[ -f "${magic_dir}/constraints" ]]; then

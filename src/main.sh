@@ -10,6 +10,7 @@ set_halcyon_vars () {
 		export HALCYON_LOG_TIMESTAMP="${HALCYON_LOG_TIMESTAMP:-0}"
 
 		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
+		export HALCYON_IGNORE_ALL_CONSTRAINTS="${HALCYON_IGNORE_ALL_CONSTRAINTS:-0}"
 		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_PRE_BUILD_HOOK="${HALCYON_PRE_BUILD_HOOK:-}"
 		export HALCYON_POST_BUILD_HOOK="${HALCYON_POST_BUILD_HOOK:-}"
@@ -84,6 +85,7 @@ set_halcyon_vars () {
 		export HALCYON_LOG_TIMESTAMP=0
 
 		export HALCYON_CONSTRAINTS=''
+		export HALCYON_IGNORE_ALL_CONSTRAINTS=0
 		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
 		export HALCYON_PRE_BUILD_HOOK=''
 		export HALCYON_POST_BUILD_HOOK=''
@@ -158,6 +160,8 @@ halcyon_main () {
 			export HALCYON_CONSTRAINTS="${constraints}";;
 		'--constraints='*)
 			export HALCYON_CONSTRAINTS="${1#*=}";;
+		'--ignore-all-constraints')
+			export HALCYON_IGNORE_ALL_CONSTRAINTS=1;;
 		'--extra-configure-flags')
 			shift
 			expect_args extra_configure_flags -- "$@"

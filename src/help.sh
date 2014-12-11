@@ -25,6 +25,7 @@ help_usage () {
 
 		Build-time options
 		  --constraints=                          STRINGS | FILE | DIR
+		  --ignore-all-constraints
 		  --extra-configure-flags=                STRINGS | FILE
 		  --pre-build-hook=                       FILE
 		  --post-build-hook=                      FILE
