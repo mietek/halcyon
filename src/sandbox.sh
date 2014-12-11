@@ -162,7 +162,7 @@ hash_sandbox_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon-magic" \( -path './ghc*' -or -path './sandbox*' \) || die
+	hash_tree "${source_dir}/.halcyon" \( -path './ghc*' -or -path './sandbox*' \) || die
 }
 
 
@@ -180,10 +180,10 @@ copy_sandbox_magic () {
 	fi
 
 	local file
-	find_tree "${source_dir}/.halcyon-magic" -type f \( -path './ghc*' -or -path './sandbox*' \) |
+	find_tree "${source_dir}/.halcyon" -type f \( -path './ghc*' -or -path './sandbox*' \) |
 		while read -r file; do
-			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_BASE}/sandbox/.halcyon-magic/${file}" || die
+			copy_file "${source_dir}/.halcyon/${file}" \
+				"${HALCYON_BASE}/sandbox/.halcyon/${file}" || die
 		done || die
 }
 
@@ -194,12 +194,12 @@ add_sandbox_sources () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-sources" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/sandbox-sources" ]]; then
 		return 0
 	fi
 
 	local sandbox_sources
-	sandbox_sources=$( <"${source_dir}/.halcyon-magic/sandbox-sources" ) || die
+	sandbox_sources=$( <"${source_dir}/.halcyon/sandbox-sources" ) || die
 	if [[ -z "${sandbox_sources}" ]]; then
 		return 0
 	fi
@@ -233,12 +233,12 @@ install_sandbox_extra_os_packages () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-os-packages" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/sandbox-extra-os-packages" ]]; then
 		return 0
 	fi
 
 	local extra_packages
-	extra_packages=$( <"${source_dir}/.halcyon-magic/sandbox-extra-os-packages" ) || die
+	extra_packages=$( <"${source_dir}/.halcyon/sandbox-extra-os-packages" ) || die
 
 	log 'Installing sandbox extra OS packages'
 
@@ -254,12 +254,12 @@ deploy_sandbox_extra_apps () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/sandbox-extra-apps" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/sandbox-extra-apps" ]]; then
 		return 0
 	fi
 
 	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-apps" ) ) || die
+	extra_apps=( $( <"${source_dir}/.halcyon/sandbox-extra-apps" ) ) || die
 	if [[ -z "${extra_apps[@]:+_}" ]]; then
 		return 0
 	fi
@@ -274,7 +274,7 @@ deploy_sandbox_extra_apps () {
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
 	local extra_constraints
-	extra_constraints="${source_dir}/.halcyon-magic/sandbox-extra-apps-constraints"
+	extra_constraints="${source_dir}/.halcyon/sandbox-extra-apps-constraints"
 
 	local -a opts
 	opts+=( --prefix="${HALCYON_BASE}/sandbox" )
@@ -327,11 +327,11 @@ build_sandbox_layer () {
 		mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-pre-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/sandbox-pre-build-hook" \
+				"${source_dir}/.halcyon/sandbox-pre-build-hook" \
 					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
 			die 'Failed to execute sandbox pre-build hook'
@@ -359,9 +359,9 @@ build_sandbox_layer () {
 	log 'Building sandbox'
 
 	local -a opts
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-extra-configure-flags" ]]; then
+	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
 		local -a raw_opts
-		raw_opts=( $( <"${source_dir}/.halcyon-magic/sandbox-extra-configure-flags" ) ) || die
+		raw_opts=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || die
 		opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
 	fi
 	opts+=( --dependencies-only )
@@ -379,11 +379,11 @@ build_sandbox_layer () {
 	built_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
 	log "Sandbox built, ${built_size}"
 
-	if [[ -f "${source_dir}/.halcyon-magic/sandbox-post-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/sandbox-post-build-hook" \
+				"${source_dir}/.halcyon/sandbox-post-build-hook" \
 					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
 			die 'Failed to execute sandbox post-build hook'

@@ -178,7 +178,7 @@ hash_ghc_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon-magic" -path './ghc*' || die
+	hash_tree "${source_dir}/.halcyon" -path './ghc*' || die
 }
 
 
@@ -196,10 +196,10 @@ copy_ghc_magic () {
 	fi
 
 	local file
-	find_tree "${source_dir}/.halcyon-magic" -type f -path './ghc*' |
+	find_tree "${source_dir}/.halcyon" -type f -path './ghc*' |
 		while read -r file; do
-			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_BASE}/ghc/.halcyon-magic/${file}" || die
+			copy_file "${source_dir}/.halcyon/${file}" \
+				"${HALCYON_BASE}/ghc/.halcyon/${file}" || die
 		done || die
 }
 
@@ -326,11 +326,11 @@ build_ghc_layer () {
 		touch_cached_file "${original_name}" || die
 	fi
 
-	if [[ -f "${source_dir}/.halcyon-magic/ghc-pre-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/ghc-pre-build-hook" \
+				"${source_dir}/.halcyon/ghc-pre-build-hook" \
 					"${tag}" "${source_dir}" \
 					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
 		); then
@@ -355,11 +355,11 @@ build_ghc_layer () {
 	installed_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
 	log "GHC installed, ${installed_size}"
 
-	if [[ -f "${source_dir}/.halcyon-magic/ghc-post-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/ghc-post-build-hook" ]]; then
 		log 'Executing GHC post-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/ghc-post-build-hook" \
+				"${source_dir}/.halcyon/ghc-post-build-hook" \
 					"${tag}" "${source_dir}" \
 					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
 		); then

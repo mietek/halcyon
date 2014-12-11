@@ -72,7 +72,7 @@ prepare_constraints () {
 	expect_args label source_dir -- "$@"
 
 	local magic_dir
-	magic_dir="${source_dir}/.halcyon-magic"
+	magic_dir="${source_dir}/.halcyon"
 
 	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
 		if [[ -d "${HALCYON_CONSTRAINTS}" ]]; then

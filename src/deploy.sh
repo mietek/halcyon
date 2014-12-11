@@ -132,7 +132,7 @@ hash_magic () {
 	# NOTE: The version number of Cabal and the contents of its package
 	# database could conceivably be treated as dependencies.
 
-	hash_tree "${source_dir}/.halcyon-magic" -not -path './cabal*' || die
+	hash_tree "${source_dir}/.halcyon" -not -path './cabal*' || die
 }
 
 
@@ -368,7 +368,7 @@ prepare_source_dir () {
 	expect_existing "${source_dir}"
 
 	local magic_dir
-	magic_dir="${source_dir}/.halcyon-magic"
+	magic_dir="${source_dir}/.halcyon"
 
 # Build-time magic files
 	prepare_file_strings_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || die
@@ -572,11 +572,11 @@ deploy_app () {
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
-	describe_extra 'Extra configure flags:' "${source_dir}/.halcyon-magic/extra-configure-flags"
-	describe_extra 'Extra apps:' "${source_dir}/.halcyon-magic/extra-apps"
-	describe_extra 'Extra data files:' "${source_dir}/.halcyon-magic/extra-data-files"
-	describe_extra 'Extra OS packages:' "${source_dir}/.halcyon-magic/extra-os-packages"
-	describe_extra 'Extra layers:' "${source_dir}/.halcyon-magic/extra-layers"
+	describe_extra 'Extra configure flags:' "${source_dir}/.halcyon/extra-configure-flags"
+	describe_extra 'Extra apps:' "${source_dir}/.halcyon/extra-apps"
+	describe_extra 'Extra data files:' "${source_dir}/.halcyon/extra-data-files"
+	describe_extra 'Extra OS packages:' "${source_dir}/.halcyon/extra-os-packages"
+	describe_extra 'Extra layers:' "${source_dir}/.halcyon/extra-layers"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
 	describe_storage || die
@@ -589,10 +589,10 @@ deploy_app () {
 	log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
 
 	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
-	describe_extra 'Sandbox extra configure flags:' "${source_dir}/.halcyon-magic/sandbox-extra-configure-flags"
-	describe_extra 'Sandbox sources:' "${source_dir}/.halcyon-magic/sandbox-sources"
-	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon-magic/sandbox-extra-apps"
-	describe_extra 'Sandbox extra OS packages:' "${source_dir}/.halcyon-magic/sandbox-extra-os-packages"
+	describe_extra 'Sandbox extra configure flags:' "${source_dir}/.halcyon/sandbox-extra-configure-flags"
+	describe_extra 'Sandbox sources:' "${source_dir}/.halcyon/sandbox-sources"
+	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon/sandbox-extra-apps"
+	describe_extra 'Sandbox extra OS packages:' "${source_dir}/.halcyon/sandbox-extra-os-packages"
 
 	local tag
 	tag=$(

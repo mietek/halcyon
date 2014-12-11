@@ -115,9 +115,9 @@ build_app () {
 		log 'Configuring app'
 
 		local -a opts
-		if [[ -f "${source_dir}/.halcyon-magic/extra-configure-flags" ]]; then
+		if [[ -f "${source_dir}/.halcyon/extra-configure-flags" ]]; then
 			local -a raw_opts
-			raw_opts=( $( <"${source_dir}/.halcyon-magic/extra-configure-flags" ) ) || die
+			raw_opts=( $( <"${source_dir}/.halcyon/extra-configure-flags" ) ) || die
 			opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
 		fi
 		opts+=( --prefix="${prefix}" )
@@ -153,11 +153,11 @@ build_app () {
 		expect_existing "${build_dir}/dist/.halcyon-data-dir"
 	fi
 
-	if [[ -f "${source_dir}/.halcyon-magic/pre-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/pre-build-hook" ]]; then
 		log 'Executing pre-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/pre-build-hook" \
+				"${source_dir}/.halcyon/pre-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		); then
 			die 'Failed to execute pre-build hook'
@@ -175,11 +175,11 @@ build_app () {
 	built_size=$( get_size "${build_dir}" ) || die
 	log "App built, ${built_size}"
 
-	if [[ -f "${source_dir}/.halcyon-magic/post-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/post-build-hook" ]]; then
 		log 'Executing post-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/post-build-hook" \
+				"${source_dir}/.halcyon/post-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		); then
 			die 'Failed to execute post-build hook'
@@ -338,7 +338,7 @@ prepare_build_dir () {
 
 	local must_configure
 	must_configure=0
-	if filter_matching "^. (\.halcyon-magic/extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
+	if filter_matching "^. (\.halcyon/extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
 		match_at_least_one >'/dev/null'
 	then
 		must_configure=1

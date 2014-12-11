@@ -81,12 +81,12 @@ deploy_extra_apps () {
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/extra-apps" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/extra-apps" ]]; then
 		return 0
 	fi
 
 	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon-magic/extra-apps" ) ) || die
+	extra_apps=( $( <"${source_dir}/.halcyon/extra-apps" ) ) || die
 	if [[ -z "${extra_apps[@]:+_}" ]]; then
 		return 0
 	fi
@@ -104,7 +104,7 @@ deploy_extra_apps () {
 	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
 
 	local extra_constraints
-	extra_constraints="${source_dir}/.halcyon-magic/extra-apps-constraints"
+	extra_constraints="${source_dir}/.halcyon/extra-apps-constraints"
 
 	local -a opts
 	opts+=( --prefix="${prefix}" )
@@ -139,12 +139,12 @@ install_extra_data_files () {
 	expect_args tag source_dir build_dir install_dir -- "$@"
 	expect_existing "${build_dir}/dist/.halcyon-data-dir"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/extra-data-files" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/extra-data-files" ]]; then
 		return 0
 	fi
 
 	local extra_files data_dir
-	extra_files=$( <"${source_dir}/.halcyon-magic/extra-data-files" ) || die
+	extra_files=$( <"${source_dir}/.halcyon/extra-data-files" ) || die
 	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
 	# NOTE: Extra data files may be directories, and are actually bash globs.
@@ -181,13 +181,13 @@ install_extra_os_packages () {
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/extra-os-packages" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/extra-os-packages" ]]; then
 		return 0
 	fi
 
 	local prefix extra_packages
 	prefix=$( get_tag_prefix "${tag}" ) || die
-	extra_packages=$( <"${source_dir}/.halcyon-magic/extra-os-packages" ) || die
+	extra_packages=$( <"${source_dir}/.halcyon/extra-os-packages" ) || die
 
 	log 'Installing extra OS packages'
 
@@ -211,14 +211,14 @@ install_extra_layers () {
 		copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
 	fi
 
-	if [[ ! -f "${source_dir}/.halcyon-magic/extra-layers" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/extra-layers" ]]; then
 		return 0
 	fi
 
 	log_indent 'Including extra layers'
 
 	local extra_layers
-	extra_layers=$( <"${source_dir}/.halcyon-magic/extra-layers" ) || die
+	extra_layers=$( <"${source_dir}/.halcyon/extra-layers" ) || die
 
 	local layer
 	while read -r layer; do
@@ -274,11 +274,11 @@ prepare_install_dir () {
 	install_extra_os_packages "${tag}" "${source_dir}" "${install_dir}" || die
 	install_extra_layers "${tag}" "${source_dir}" "${install_dir}" || die
 
-	if [[ -f "${source_dir}/.halcyon-magic/pre-install-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/pre-install-hook" ]]; then
 		log 'Executing pre-install hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/pre-install-hook" \
+				"${source_dir}/.halcyon/pre-install-hook" \
 					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
 			die 'Failed to execute pre-install hook'
@@ -417,11 +417,11 @@ install_app () {
 		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die
 	fi
 
-	if [[ -f "${source_dir}/.halcyon-magic/post-install-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/post-install-hook" ]]; then
 		log 'Executing post-install hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/post-install-hook" \
+				"${source_dir}/.halcyon/post-install-hook" \
 					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
 			die 'Failed to execute post-install hook'

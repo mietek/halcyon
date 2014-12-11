@@ -199,7 +199,7 @@ hash_cabal_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon-magic" -path './cabal*' || die
+	hash_tree "${source_dir}/.halcyon" -path './cabal*' || die
 }
 
 
@@ -217,10 +217,10 @@ copy_cabal_magic () {
 	fi
 
 	local file
-	find_tree "${source_dir}/.halcyon-magic" -type f -path './cabal*' |
+	find_tree "${source_dir}/.halcyon" -type f -path './cabal*' |
 		while read -r file; do
-			copy_file "${source_dir}/.halcyon-magic/${file}" \
-				"${HALCYON_BASE}/cabal/.halcyon-magic/${file}" || die
+			copy_file "${source_dir}/.halcyon/${file}" \
+				"${HALCYON_BASE}/cabal/.halcyon/${file}" || die
 		done || die
 }
 
@@ -254,11 +254,11 @@ build_cabal_layer () {
 		touch_cached_file "${original_name}" || die
 	fi
 
-	if [[ -f "${source_dir}/.halcyon-magic/cabal-pre-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/cabal-pre-build-hook" \
+				"${source_dir}/.halcyon/cabal-pre-build-hook" \
 					"${tag}" "${source_dir}" \
 					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
 		); then
@@ -311,11 +311,11 @@ EOF
 	bootstrapped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
 	log "Cabal bootstrapped, ${bootstrapped_size}"
 
-	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-build-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/cabal-post-build-hook" ]]; then
 		log 'Executing Cabal post-build hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/cabal-post-build-hook" \
+				"${source_dir}/.halcyon/cabal-post-build-hook" \
 					"${tag}" "${source_dir}" \
 					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
 		); then
@@ -351,11 +351,11 @@ update_cabal_package_db () {
 
 	format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-cabal.config" || die
 
-	if [[ -f "${source_dir}/.halcyon-magic/cabal-pre-update-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/cabal-pre-update-hook" ]]; then
 		log 'Executing Cabal pre-update hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/cabal-pre-update-hook" 2>&1 | quote
+				"${source_dir}/.halcyon/cabal-pre-update-hook" 2>&1 | quote
 		); then
 			die 'Failed to execute Cabal pre-update hook'
 		fi
@@ -372,11 +372,11 @@ update_cabal_package_db () {
 	updated_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
 	log "Cabal package database updated, ${updated_size}"
 
-	if [[ -f "${source_dir}/.halcyon-magic/cabal-post-update-hook" ]]; then
+	if [[ -f "${source_dir}/.halcyon/cabal-post-update-hook" ]]; then
 		log 'Executing Cabal post-update hook'
 		if ! (
 			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon-magic/cabal-post-update-hook" 2>&1 | quote
+				"${source_dir}/.halcyon/cabal-post-update-hook" 2>&1 | quote
 		); then
 			die 'Failed to execute Cabal post-update hook'
 		fi
