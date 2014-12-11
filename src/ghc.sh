@@ -252,7 +252,7 @@ link_ghc_libs () {
 		gmp_name='libgmp.so.3'
 		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
 		;;
-	'linux-centos-7-x86_64'|'linux-fedora-20-x86_64'|'linux-fedora-19-x86_64')
+	'linux-centos-7-x86_64'|'linux-fedora-21-x86_64'|'linux-fedora-20-x86_64'|'linux-fedora-19-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.10'
 		tinfo_file='/usr/lib64/libtinfo.so.5'
 		if [[ "${ghc_version}" < '7.8' ]]; then
