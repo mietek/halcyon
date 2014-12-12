@@ -794,3 +794,31 @@ cabal_unpack_over () {
 
 	echo "${label}"
 }
+
+
+populate_cabal_setup_exe_cache () {
+	expect_vars HOME
+
+	# NOTE: Haste needs Cabal to generate HOME/.cabal/setup-exe-cache.
+	# https://github.com/valderman/haste-compiler/issues/257
+
+	if [[ -f "${HOME}/.cabal/setup-exe-cache" ]]; then
+		return 0
+	fi
+
+	log 'Populating Cabal setup-exe-cache'
+
+	local setup_dir
+	setup_dir="$( get_tmp_dir 'halcyon-setup-exe-cache' )" || die
+
+	mkdir -p "${setup_dir}" || die
+	cabal_do "${setup_dir}" sandbox init --sandbox '.' |& quote || die
+	if ! cabal_do "${setup_dir}" install 'populate-setup-exe-cache' |& quote; then
+		die 'Failed to populate Cabal setup-exe-cache'
+	fi
+	expect_existing "${HOME}/.cabal/setup-exe-cache"
+
+	log 'Cabal setup-exe-cache populated'
+
+	rm -rf "${setup_dir}" || die
+}
