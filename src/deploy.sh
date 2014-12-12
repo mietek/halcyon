@@ -284,9 +284,9 @@ deploy_from_install_dir () {
 
 	log 'Deploying app from install'
 
-	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
+	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 
 	describe_storage || die
 	log
@@ -567,9 +567,9 @@ deploy_app () {
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
 
-	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
+	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
 	describe_extra 'Extra configure flags:' "${source_dir}/.halcyon/extra-configure-flags"
