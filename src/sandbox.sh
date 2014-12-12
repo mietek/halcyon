@@ -277,6 +277,7 @@ deploy_sandbox_extra_apps () {
 	extra_constraints="${source_dir}/.halcyon/sandbox-extra-apps-constraints"
 
 	local -a opts
+	opts=()
 	opts+=( --prefix="${HALCYON_BASE}/sandbox" )
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
@@ -359,6 +360,7 @@ build_sandbox_layer () {
 	log 'Building sandbox'
 
 	local -a opts
+	opts=()
 	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
 		local -a raw_opts
 		raw_opts=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || die

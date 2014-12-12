@@ -107,6 +107,7 @@ deploy_extra_apps () {
 	extra_constraints="${source_dir}/.halcyon/extra-apps-constraints"
 
 	local -a opts
+	opts=()
 	opts+=( --prefix="${prefix}" )
 	opts+=( --root="${install_dir}" )
 	opts+=( --ghc-version="${ghc_version}" )

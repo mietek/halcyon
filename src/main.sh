@@ -125,6 +125,7 @@ halcyon_main () {
 	local cmd
 	local -a args
 	cmd=''
+	args=()
 
 	while (( $# )); do
 		case "$1" in

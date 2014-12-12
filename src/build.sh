@@ -115,6 +115,7 @@ build_app () {
 		log 'Configuring app'
 
 		local -a opts
+		opts=()
 		if [[ -f "${source_dir}/.halcyon/extra-configure-flags" ]]; then
 			local -a raw_opts
 			raw_opts=( $( <"${source_dir}/.halcyon/extra-configure-flags" ) ) || die
