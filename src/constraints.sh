@@ -159,7 +159,6 @@ validate_actual_constraints () {
 				filter_not_first |
 				filter_not_first |
 				quote || true
-		log
 	fi
 }
 
