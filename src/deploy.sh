@@ -511,8 +511,10 @@ deploy_app () {
 		fi
 
 		log_warning 'Using newest versions of all packages'
-		format_constraints <<<"${constraints}" | quote || die
-		log
+		if [[ "${HALCYON_INTERNAL_COMMAND}" != 'constraints' ]]; then
+			format_constraints <<<"${constraints}" | quote || die
+			log
+		fi
 
 		# NOTE: This is the second of two moments when source_dir is modified.
 
