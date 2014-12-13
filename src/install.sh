@@ -304,6 +304,7 @@ prepare_install_dir () {
 	mkdir -p "${label_dir}" || die
 	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
 	derive_install_tag "${tag}" >"${label_dir}/.halcyon-tag" || die
+	detect_executable "${source_dir}" >"${label_dir}/.halcyon-executable" || die
 	echo "${data_dir}" >"${label_dir}/.halcyon-data-dir" || die
 
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
