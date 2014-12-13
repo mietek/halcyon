@@ -3,7 +3,7 @@ set -o pipefail
 export HALCYON_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
 
 
-halcyon_install_bashmenot () {
+install_bashmenot () {
 	local no_update
 	no_update="${HALCYON_NO_SELF_UPDATE:-0}"
 	if (( ${HALCYON_INTERNAL_RECURSIVE:-0} )); then
@@ -27,12 +27,15 @@ halcyon_install_bashmenot () {
 	echo -n '-----> Installing bashmenot...' >&2
 
 	local commit_hash
-	commit_hash=$(
+	if ! commit_hash=$(
 		git clone -q "${base_url}" "${HALCYON_DIR}/lib/bashmenot" >'/dev/null' 2>&1 &&
 		cd "${HALCYON_DIR}/lib/bashmenot" &&
 		git checkout -q "${branch}" >'/dev/null' 2>&1 &&
 		git log -n 1 --pretty='format:%h'
-	) || return 1
+	); then
+		echo 'error' >&2
+		return 1
+	fi
 	echo " done, ${commit_hash:0:7}" >&2
 
 	BASHMENOT_NO_SELF_UPDATE=1 \
@@ -40,7 +43,7 @@ halcyon_install_bashmenot () {
 }
 
 
-if ! halcyon_install_bashmenot; then
+if ! install_bashmenot; then
 	echo '   *** ERROR: Failed to install bashmenot' >&2
 fi
 
