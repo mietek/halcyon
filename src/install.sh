@@ -304,8 +304,8 @@ prepare_install_dir () {
 	mkdir -p "${label_dir}" || die
 	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
 	derive_install_tag "${tag}" >"${label_dir}/.halcyon-tag" || die
-	detect_executable "${source_dir}" >"${label_dir}/.halcyon-executable" || die
-	echo "${data_dir}" >"${label_dir}/.halcyon-data-dir" || die
+	detect_executable "${source_dir}" >"${label_dir}/executable" || die
+	echo "${data_dir}" >"${label_dir}/data-dir" || die
 	ln -s ".halcyon-install-${label}" "${install_dir}${prefix}/.halcyon-install-newest" || die
 
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
@@ -392,8 +392,8 @@ install_app () {
 	prefix=$( get_tag_prefix "${tag}" ) || die
 	label=$( get_tag_label "${tag}" ) || die
 	label_dir="${install_dir}${prefix}/.halcyon-install-${label}"
-	expect_existing "${label_dir}/.halcyon-data-dir"
-	data_dir=$( <"${label_dir}/.halcyon-data-dir" ) || die
+	expect_existing "${label_dir}/data-dir"
+	data_dir=$( <"${label_dir}/data-dir" ) || die
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
 		log_begin "Installing app into ${prefix}..."
