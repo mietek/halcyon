@@ -150,19 +150,19 @@ copy_source_dir_over () {
 }
 
 
-announce_deploy () {
+announce_install () {
 	expect_vars HALCYON_NO_APP \
-		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY
+		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL
 
 	local tag
 	expect_args tag -- "$@"
 
-	if (( HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY )); then
+	if (( HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL )); then
 		return 0
 	fi
 
 	if (( HALCYON_NO_APP )); then
-		log_label 'GHC and Cabal layers deployed'
+		log_label 'GHC and Cabal layers installed'
 		return 0
 	fi
 
@@ -170,11 +170,11 @@ announce_deploy () {
 	label=$( get_tag_label "${tag}" ) || die
 
 	log
-	log_label 'App deployed:' "${label}"
+	log_label 'App installed:' "${label}"
 }
 
 
-do_deploy_ghc_and_cabal_layers () {
+do_install_ghc_and_cabal_layers () {
 	expect_vars HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir
@@ -198,7 +198,7 @@ do_deploy_ghc_and_cabal_layers () {
 }
 
 
-deploy_ghc_and_cabal_layers () {
+install_ghc_and_cabal_layers () {
 	expect_vars HALCYON_GHC_VERSION \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
@@ -216,7 +216,7 @@ deploy_ghc_and_cabal_layers () {
 	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		log 'Deploying GHC and Cabal layers'
+		log 'Installing GHC and Cabal layers'
 
 		describe_storage || die
 
@@ -237,16 +237,16 @@ deploy_ghc_and_cabal_layers () {
 			''
 	) || die
 
-	if ! do_deploy_ghc_and_cabal_layers "${tag}" "${source_dir}"; then
-		log_warning 'Cannot deploy GHC and Cabal layers'
+	if ! do_install_ghc_and_cabal_layers "${tag}" "${source_dir}"; then
+		log_warning 'Cannot install GHC and Cabal layers'
 		return 1
 	fi
 
-	announce_deploy "${tag}" || die
+	announce_install "${tag}" || die
 }
 
 
-do_deploy_from_install_dir () {
+do_fast_install_app () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
@@ -261,7 +261,7 @@ do_deploy_from_install_dir () {
 }
 
 
-deploy_from_install_dir () {
+fast_install_app () {
 	expect_vars HALCYON_PREFIX HALCYON_RESTORE_LAYERS \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_GHC_REBUILD \
@@ -282,7 +282,7 @@ deploy_from_install_dir () {
 		return 1
 	fi
 
-	log 'Deploying app from install'
+	log 'Installing app'
 
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
@@ -299,13 +299,13 @@ deploy_from_install_dir () {
 			''
 	) || die
 
-	if ! do_deploy_from_install_dir "${tag}" "${source_dir}"; then
+	if ! do_fast_install_app "${tag}" "${source_dir}"; then
 		log
 		return 1
 	fi
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		announce_deploy "${tag}" || die
+		announce_install "${tag}" || die
 		touch_cached_ghc_and_cabal_files || die
 	fi
 }
@@ -405,7 +405,7 @@ prepare_source_dir () {
 }
 
 
-do_deploy_app () {
+do_full_install_app () {
 	expect_vars HALCYON_BASE \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_SANDBOX_REBUILD \
@@ -419,7 +419,7 @@ do_deploy_app () {
 	build_dir=$( get_tmp_dir 'halcyon-build' ) || die
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 
-	do_deploy_ghc_and_cabal_layers "${tag}" "${source_dir}" || return 1
+	do_install_ghc_and_cabal_layers "${tag}" "${source_dir}" || return 1
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
@@ -465,7 +465,7 @@ do_deploy_app () {
 }
 
 
-deploy_app () {
+full_install_app () {
 	expect_vars HALCYON_PREFIX \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
@@ -488,8 +488,8 @@ deploy_app () {
 	if [[ -f "${source_dir}/cabal.config" ]]; then
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
-			deploy_from_install_dir "${label}" "${source_hash}" "${source_dir}"
+		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
+			fast_install_app "${label}" "${source_hash}" "${source_dir}"
 		then
 			return 0
 		fi
@@ -501,8 +501,8 @@ deploy_app () {
 
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
-		HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
-			deploy_ghc_and_cabal_layers "${source_dir}" || return 1
+		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
+			install_ghc_and_cabal_layers "${source_dir}" || return 1
 
 		log 'Determining constraints'
 
@@ -522,8 +522,8 @@ deploy_app () {
 
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
-		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'deploy' ]] &&
-			deploy_from_install_dir "${label}" "${source_hash}" "${source_dir}"
+		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
+			fast_install_app "${label}" "${source_hash}" "${source_dir}"
 		then
 			return 0
 		fi
@@ -551,7 +551,7 @@ deploy_app () {
 		;;
 	esac
 
-	log 'Deploying app'
+	log 'Installing app'
 
 	local constraints_hash magic_hash
 	constraints_hash=$( hash_constraints "${constraints}" ) || die
@@ -610,18 +610,18 @@ deploy_app () {
 	fi
 
 	log
-	if ! do_deploy_app "${tag}" "${source_dir}" "${constraints}"; then
-		log_warning 'Cannot deploy app'
+	if ! do_full_install_app "${tag}" "${source_dir}" "${constraints}"; then
+		log_warning 'Cannot install app'
 		return 1
 	fi
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		announce_deploy "${tag}" || die
+		announce_install "${tag}" || die
 	fi
 }
 
 
-deploy_local_app () {
+install_local_app () {
 	expect_vars HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE
 
 	local local_dir
@@ -641,7 +641,7 @@ deploy_local_app () {
 		die 'Failed to detect label'
 	fi
 
-	deploy_app "${label}" "${source_dir}" || return 1
+	full_install_app "${label}" "${source_dir}" || return 1
 
 	if ! (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
 		rm -rf "${source_dir}" || die
@@ -649,7 +649,7 @@ deploy_local_app () {
 }
 
 
-deploy_cloned_app () {
+install_cloned_app () {
 	local url
 	expect_args url -- "$@"
 
@@ -674,13 +674,13 @@ deploy_cloned_app () {
 	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		deploy_app "${label}" "${source_dir}" || return 1
+		full_install_app "${label}" "${source_dir}" || return 1
 
 	rm -rf "${clone_dir}" "${source_dir}" || die
 }
 
 
-deploy_unpacked_app () {
+install_unpacked_app () {
 	local thing
 	expect_args thing -- "$@"
 
@@ -691,8 +691,8 @@ deploy_unpacked_app () {
 	HALCYON_NO_APP=1 \
 	HALCYON_GHC_REBUILD=0 \
 	HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
-	HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=1 \
-		deploy_ghc_and_cabal_layers '/dev/null' || return 1
+	HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
+		install_ghc_and_cabal_layers '/dev/null' || return 1
 
 	log 'Unpacking app'
 
@@ -706,13 +706,13 @@ deploy_unpacked_app () {
 	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		deploy_app "${label}" "${source_dir}" || return 1
+		full_install_app "${label}" "${source_dir}" || return 1
 
 	rm -rf "${unpack_dir}" "${source_dir}" || die
 }
 
 
-halcyon_deploy () {
+halcyon_install () {
 	expect_vars HALCYON_NO_APP
 
 	local cache_dir
@@ -721,21 +721,21 @@ halcyon_deploy () {
 	prepare_cache "${cache_dir}" || die
 
 	if (( HALCYON_NO_APP )); then
-		deploy_ghc_and_cabal_layers '/dev/null' || return 1
+		install_ghc_and_cabal_layers '/dev/null' || return 1
 	elif ! (( $# )) || [[ "$1" == '' ]]; then
 		if ! detect_label '.' >'/dev/null'; then
 			HALCYON_NO_APP=1 \
-				deploy_ghc_and_cabal_layers '/dev/null' || return 1
+				install_ghc_and_cabal_layers '/dev/null' || return 1
 		else
-			deploy_local_app '.' || return 1
+			install_local_app '.' || return 1
 		fi
 	else
 		if validate_git_url "$1"; then
-			deploy_cloned_app "$1" || return 1
+			install_cloned_app "$1" || return 1
 		elif [[ -d "$1" ]]; then
-			deploy_local_app "${1%/}" || return 1
+			install_local_app "${1%/}" || return 1
 		else
-			deploy_unpacked_app "$1" || return 1
+			install_unpacked_app "$1" || return 1
 		fi
 
 		if (( $# > 1 )); then

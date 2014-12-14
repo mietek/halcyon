@@ -75,7 +75,7 @@ set_halcyon_vars () {
 		export HALCYON_INTERNAL_COMMAND="${HALCYON_INTERNAL_COMMAND:-}"
 		export HALCYON_INTERNAL_RECURSIVE="${HALCYON_INTERNAL_RECURSIVE:-0}"
 		export HALCYON_INTERNAL_REMOTE_SOURCE="${HALCYON_INTERNAL_REMOTE_SOURCE:-0}"
-		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY="${HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY:-0}"
+		export HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL="${HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL:-0}"
 		export HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE="${HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE:-0}"
 		export HALCYON_INTERNAL_CABAL_MAGIC_HASH="${HALCYON_INTERNAL_CABAL_MAGIC_HASH:-}"
 		export HALCYON_INTERNAL_GHC_MAGIC_HASH="${HALCYON_INTERNAL_GHC_MAGIC_HASH:-}"
@@ -116,7 +116,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_POST_BUILD_HOOK=''
 		export HALCYON_SANDBOX_REBUILD=0
 
-		export HALCYON_INTERNAL_NO_ANNOUNCE_DEPLOY=0
+		export HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=0
 	fi
 }
 
@@ -467,12 +467,15 @@ halcyon_main () {
 	fi
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
+	'install')
+		halcyon_install "${args[@]:-}" || return 1
+		;;
 	'deploy')
-		halcyon_deploy "${args[@]:-}" || return 1
+		die "Please use 'halcyon install' instead of 'halcyon deploy'"
 		;;
 	'label'|'executable'|'constraints'|'tag')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_deploy "${args[@]:-}" || return 1
+			halcyon_install "${args[@]:-}" || return 1
 		;;
 	'paths')
 		echo -e "export HALCYON_DIR='${HALCYON_DIR}'\n"

@@ -10,7 +10,8 @@ Usage
 ```
 $ git clone https://github.com/mietek/halcyon
 $ source <( halcyon/halcyon paths )
-$ halcyon deploy
+$ halcyon install https://github.com/mietek/hello
+$ hello
 ```
 
 For more information, please refer to the [Halcyon website](https://halcyon.sh/).

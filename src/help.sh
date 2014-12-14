@@ -5,7 +5,7 @@ help_usage () {
 		  halcyon                                 COMMAND
 
 		Commands
-		  deploy                                  APP? OPTION*
+		  install                                 APP? OPTION*
 		  label                                   APP? OPTION*
 		  constraints                             APP? OPTION*
 		  paths

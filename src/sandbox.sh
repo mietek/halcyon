@@ -248,7 +248,7 @@ install_sandbox_extra_os_packages () {
 }
 
 
-deploy_sandbox_extra_apps () {
+install_sandbox_extra_apps () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir
@@ -284,7 +284,7 @@ deploy_sandbox_extra_apps () {
 	opts+=( --cabal-repo="${cabal_repo}" )
 	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${extra_constraints}" )
 
-	log 'Deploying sandbox extra apps'
+	log 'Installing sandbox extra apps'
 
 	local extra_app index
 	index=0
@@ -297,7 +297,7 @@ deploy_sandbox_extra_apps () {
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
-			halcyon deploy "${opts[@]}" "${extra_app}" 2>&1 | quote || return 1
+			halcyon install "${opts[@]}" "${extra_app}" 2>&1 | quote || return 1
 	done
 }
 
@@ -350,8 +350,8 @@ build_sandbox_layer () {
 	# packages, and to fail to recognise the packages have been installed.
 	# https://github.com/haskell/cabal/issues/779
 
-	if ! deploy_sandbox_extra_apps "${tag}" "${source_dir}"; then
-		log_warning 'Cannot deploy sandbox extra apps'
+	if ! install_sandbox_extra_apps "${tag}" "${source_dir}"; then
+		log_warning 'Cannot install sandbox extra apps'
 		return 1
 	fi
 

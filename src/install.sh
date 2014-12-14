@@ -77,7 +77,7 @@ format_install_archive_name_pattern () {
 }
 
 
-deploy_extra_apps () {
+install_extra_apps () {
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
 
@@ -115,7 +115,7 @@ deploy_extra_apps () {
 	opts+=( --cabal-repo="${cabal_repo}" )
 	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${extra_constraints}" )
 
-	log 'Deploying extra apps'
+	log 'Installing extra apps'
 
 	local extra_app index
 	index=0
@@ -128,7 +128,7 @@ deploy_extra_apps () {
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
-			halcyon deploy "${opts[@]}" "${extra_app}" 2>&1 | quote || return 1
+			halcyon install "${opts[@]}" "${extra_app}" 2>&1 | quote || return 1
 	done
 }
 
@@ -266,8 +266,8 @@ prepare_install_dir () {
 		die 'Failed to copy app'
 	fi
 
-	if ! deploy_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
-		log_warning 'Cannot deploy extra apps'
+	if ! install_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
+		log_warning 'Cannot install extra apps'
 		return 1
 	fi
 
