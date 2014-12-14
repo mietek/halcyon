@@ -304,6 +304,7 @@ install_sandbox_extra_apps () {
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
+		HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE=1 \
 			halcyon install "${opts[@]}" "${thing}" 2>&1 | quote || return 1
 	done
 }
