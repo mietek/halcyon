@@ -710,6 +710,25 @@ sandboxed_cabal_do () {
 }
 
 
+cabal_create_sandbox () {
+	expect_vars HALCYON_BASE
+
+	local stderr
+	stderr=$( get_tmp_file 'halcyon-cabal-dry-freeze-stderr' ) || return 1
+
+	mkdir -p "${HALCYON_BASE}/sandbox" || return 1
+
+	if ! cabal_do "${HALCYON_BASE}/sandbox" sandbox init --sandbox '.' >"${stderr}" 2>&1; then
+		quote <"${stderr}"
+		return 1
+	fi
+
+	mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || return 1
+
+	rm -rf "${stderr}" || return 1
+}
+
+
 # NOTE: Cabal automatically sets global installed constraints for installed
 # packages, even during a freeze dry run.  Hence, if a local constraint
 # conflicts with an installed package, Cabal will fail to resolve

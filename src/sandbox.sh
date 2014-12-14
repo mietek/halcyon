@@ -321,11 +321,9 @@ build_sandbox_layer () {
 	if (( must_create )); then
 		log 'Creating sandbox'
 
-		mkdir -p "${HALCYON_BASE}/sandbox" || die
-		if ! cabal_do "${HALCYON_BASE}/sandbox" sandbox init --sandbox '.' 2>&1 | quote; then
+		if ! cabal_create_sandbox; then
 			die 'Failed to create sandbox'
 		fi
-		mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
 	add_sandbox_sources "${source_dir}" || die
