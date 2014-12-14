@@ -5,6 +5,7 @@ if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 
 	export PATH="${HALCYON_DIR}:${PATH:-}"
 	export PATH="${HALCYON_BASE}/bin:${PATH}"
+	export PATH="${HALCYON_BASE}/usr/bin:${PATH}"
 	export PATH="${HALCYON_BASE}/ghc/bin:${PATH}"
 	export PATH="${HALCYON_BASE}/cabal/bin:${PATH}"
 	export PATH="${HALCYON_BASE}/sandbox/bin:${PATH}"
