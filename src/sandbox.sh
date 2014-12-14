@@ -278,6 +278,7 @@ install_sandbox_extra_apps () {
 
 	local -a opts
 	opts=()
+	opts+=( --root='/' )
 	opts+=( --prefix="${HALCYON_BASE}/sandbox" )
 	opts+=( --ghc-version="${ghc_version}" )
 	opts+=( --cabal-version="${cabal_version}" )
