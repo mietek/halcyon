@@ -111,6 +111,7 @@ detect_constraints () {
 
 	local -A package_version_map
 	local base_version candidate_package candidate_version
+	package_version_map=()
 	base_version=''
 	while read -r candidate_package candidate_version; do
 		if [[ -n "${package_version_map[${candidate_package}]:+_}" ]]; then
@@ -300,6 +301,7 @@ score_partial_sandbox_layers () {
 
 	local -A package_version_map
 	local package version
+	package_version_map=()
 	while read -r package version; do
 		package_version_map["${package}"]="${version}"
 	done <<<"${constraints}"

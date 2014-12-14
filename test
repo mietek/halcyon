@@ -9,6 +9,7 @@ source "${HALCYON_DIR}/src.sh"
 
 test_ghc () {
 	local -a versions
+	versions=()
 	versions+=( '7.8.3' )
 	versions+=( '7.8.2' )
 	versions+=( '7.6.3' )
@@ -27,6 +28,7 @@ test_ghc () {
 
 test_sandbox_apps () {
 	local -a names
+	names=()
 	names+=( 'alex' )
 	names+=( 'happy' )
 	names+=( 'c2hs' )
@@ -41,6 +43,7 @@ test_sandbox_apps () {
 	mkdir -p "${constraints_dir}" || return 1
 
 	local -A labels
+	labels=()
 	for name in "${names[@]}"; do
 		local label
 		label=$( halcyon label "${name}" 2>'/dev/null' ) || return 1
@@ -65,6 +68,7 @@ test_sandbox_apps () {
 
 test_apps () {
 	local -a names
+	names=()
 	names+=( 'keter' )
 	names+=( 'pandoc' )
 
@@ -74,6 +78,7 @@ test_apps () {
 	mkdir -p "${constraints_dir}" || return 1
 
 	local -A labels
+	labels=()
 	for name in "${names[@]}"; do
 		local label
 		label=$( halcyon label "${name}" 2>'/dev/null' ) || return 1
@@ -126,6 +131,7 @@ test_shootout () {
 	# sandbox can be reused to speed up the other builds.
 
 	local -a urls
+	urls=()
 	if ! (( ${HALCYON_INTERNAL_BENCH:-0} )); then
 		urls+=( 'https://github.com/mietek/hello-wai' )
 	fi
@@ -167,6 +173,7 @@ test_shootout () {
 
 test_examples () {
 	local -a urls
+	urls=()
 	urls+=( 'https://github.com/mietek/howistart' )
 	urls+=( 'https://github.com/mietek/hl' )
 	urls+=( 'https://github.com/mietek/tryhaskell' )
