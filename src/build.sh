@@ -128,6 +128,7 @@ build_app () {
 		stdout=$( get_tmp_file 'halcyon-cabal-configure-stdout' ) || die
 
 		if ! sandboxed_cabal_do "${build_dir}" configure "${opts[@]}" >"${stdout}" 2>&1 | quote; then
+			quote <"${stdout}"
 			die 'Failed to configure app'
 		fi
 
