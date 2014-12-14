@@ -1,0 +1,248 @@
+#!/usr/bin/env bash
+
+set -eu
+
+export HALCYON_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )
+
+source "${HALCYON_DIR}/src.sh"
+
+
+test_ghc () {
+	local -a versions
+	versions+=( '7.8.3' )
+	versions+=( '7.8.2' )
+	versions+=( '7.6.3' )
+	versions+=( '7.6.1' )
+	versions+=( '7.4.2' )
+	versions+=( '7.2.2' )
+	versions+=( '7.0.4' )
+
+	for version in "${versions[@]}"; do
+		log
+		log
+		halcyon install --ghc-version="${version}" "$@" || return 1
+	done
+}
+
+
+test_sandbox_apps () {
+	local -a names
+	names+=( 'alex' )
+	names+=( 'happy' )
+	names+=( 'c2hs' )
+	names+=( 'cpphs' )
+	names+=( 'hscolour' )
+	names+=( 'haddock' )
+	names+=( 'greencard' )
+
+	local constraints_dir
+	constraints_dir=$( get_tmp_dir 'halcyon-constraints' ) || return 1
+
+	mkdir -p "${constraints_dir}" || return 1
+
+	local -A labels
+	for name in "${names[@]}"; do
+		local label
+		label=$( halcyon label "${name}" 2>'/dev/null' ) || return 1
+		labels[${name}]="${label}"
+		halcyon constraints "${label}" >"${constraints_dir}/${label}.constraints" 2>'/dev/null' || return 1
+
+		local -a opts
+		opts=()
+		opts+=( --constraints="${constraints_dir}" )
+		opts+=( --prefix="${HALCYON_BASE}/sandbox" )
+		if [[ "${name}" == 'c2hs' ]]; then
+			opts+=( --sandbox-extra-apps="${labels[alex]} ${labels[happy]}" )
+			opts+=( --sandbox-extra-apps-constraints="${constraints_dir}" )
+		fi
+
+		log
+		log
+		halcyon install "${opts[@]}" "${label}" "$@" || return 1
+	done
+}
+
+
+test_apps () {
+	local -a names
+	names+=( 'keter' )
+	names+=( 'pandoc' )
+
+	local constraints_dir
+	constraints_dir=$( get_tmp_dir 'halcyon-constraints' ) || return 1
+
+	mkdir -p "${constraints_dir}" || return 1
+
+	local -A labels
+	for name in "${names[@]}"; do
+		local label
+		label=$( halcyon label "${name}" 2>'/dev/null' ) || return 1
+		labels[${name}]="${label}"
+		halcyon constraints "${label}" >"${constraints_dir}/${label}.constraints" 2>'/dev/null' || return 1
+
+		local -a opts
+		opts=()
+		opts+=( --constraints="${constraints_dir}" )
+		opts+=( --prefix="${HALCYON_BASE}/sandbox" )
+
+		log
+		log
+		halcyon install "${label}" --constraints="${constraints_dir}" "$@" || return 1
+	done
+}
+
+
+bench_first_build () {
+	local url
+	expect_args url -- "$@"
+	shift
+
+	local name log_file csv_file
+	name=$( basename "${url}" ) || return 1
+	log_file=$( get_tmp_file 'halcyon-shootout' )'.log' || return 1
+	csv_file=$( get_tmp_file 'halcyon-shootout' )'.csv' || return 1
+
+	rm -rf "${HALCYON_BASE}"
+
+	HALCYON_SANDBOX_REBUILD=1 \
+	HALCYON_NO_UPLOAD=1 \
+		halcyon install "${url}" "$@" 2>&1 | tee "${log_file}" || return 1
+
+	local restore_time sandbox_time build_time install_time
+	restore_time=$( filter_matching 'Building sandbox layer' <"${log_file}" | awk '{ print $2 }' )
+	sandbox_time=$( filter_matching 'Configuring app' <"${log_file}" | awk '{ print $2 }' )
+	build_time=$( filter_matching 'Preparing install' <"${log_file}" | awk '{ print $2 }' )
+	install_time=$( filter_matching 'App installed' <"${log_file}" | awk '{ print $2 }' )
+
+	local sandbox_size app_size
+	sandbox_size=$( filter_matching 'Sandbox built' <"${log_file}" | awk '{ print $6 }' )
+	app_size=$( filter_matching 'App built' <"${log_file}" | awk '{ print $6 }' )
+
+	echo "${name},${restore_time},${sandbox_time},${build_time},${install_time},${sandbox_size},${app_size}" >>"${csv_file}"
+}
+
+
+test_shootout () {
+	# NOTE: When not benchmarking, hello-wai goes first, so that the
+	# sandbox can be reused to speed up the other builds.
+
+	local -a urls
+	if ! (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+		urls+=( 'https://github.com/mietek/hello-wai' )
+	fi
+	urls+=( 'https://github.com/mietek/hello-apiary' )
+	urls+=( 'https://github.com/mietek/hello-happstack' )
+	urls+=( 'https://github.com/mietek/hello-mflow' )
+	urls+=( 'https://github.com/mietek/hello-miku' )
+	urls+=( 'https://github.com/mietek/hello-scotty' )
+	urls+=( 'https://github.com/mietek/hello-simple' )
+	urls+=( 'https://github.com/mietek/hello-snap' )
+	urls+=( 'https://github.com/mietek/hello-spock' )
+	if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+		urls+=( 'https://github.com/mietek/hello-wai' )
+	fi
+	urls+=( 'https://github.com/mietek/hello-wheb' )
+	urls+=( 'https://github.com/mietek/hello-yesod' )
+
+	for url in "${urls[@]}"; do
+		log
+		log
+		if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+			bench_first_build "${url}" "$@" || return 1
+		else
+			halcyon install "${url}" "$@" || return 1
+		fi
+	done
+}
+
+
+test_examples () {
+	local -a urls
+	urls+=( 'https://github.com/mietek/howistart' )
+	urls+=( 'https://github.com/mietek/hl' )
+	urls+=( 'https://github.com/mietek/tryhaskell' )
+	urls+=( 'https://github.com/mietek/tryidris' )
+	urls+=( 'https://github.com/mietek/trypurescript' )
+	urls+=( 'https://github.com/mietek/tryhaste' )
+	urls+=( 'https://github.com/mietek/gitit' )
+
+	for url in "${urls[@]}"; do
+		log
+		log
+		halcyon install "${url}" "$@" || return 1
+	done
+}
+
+
+test_main () {
+	local cmd
+	expect_args cmd -- "$@"
+	shift
+
+	case "${cmd}" in
+	'ghc'|'sandbox-apps'|'apps'|'shootout'|'bench-shootout'|'examples'|'all')
+		true
+		;;
+	*)
+		log_error "Unexpected command: ${cmd}"
+		quote <<-EOF
+			Usage
+			  test COMMAND
+
+			Commands
+			  ghc
+			  sandbox-apps
+			  apps
+			  shootout
+			  bench-shootout
+			  examples
+			  all
+EOF
+		return 1
+	esac
+
+	local cache_dir
+	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || return 1
+
+	export HALCYON_CACHE="${cache_dir}"
+
+	rm -rf "${HALCYON_BASE}" '/tmp/halcyon-'* || return 1
+
+	halcyon install "$@" || return 1
+
+	case "${cmd}" in
+	'ghc')
+		test_ghc "$@" || return 1
+		;;
+	'sandbox-apps')
+		test_sandbox_apps "$@" || return 1
+		;;
+	'apps')
+		test_apps "$@" || return 1
+		;;
+	'shootout')
+		test_shootout "$@" || return 1
+		;;
+	'bench-shootout')
+		HALCYON_INTERNAL_BENCH=1 \
+			test_shootout "$@" || return 1
+		;;
+	'examples')
+		test_examples "$@" || return 1
+		;;
+	'all')
+		test_ghc "$@" || return 1
+		test_sandbox_apps "$@" || return 1
+		test_apps "$@" || return 1
+		test_shootout "$@" || return 1
+		test_examples "$@" || return 1
+	esac
+
+	rm -rf "${HALCYON_BASE}" '/tmp/halcyon-'* || return 1
+}
+
+
+HALCYON_LOG_TIMESTAMP=1 \
+HALCYON_NO_SELF_UPDATE=1 \
+HALCYON_NO_CLEAN_CACHE=1 \
+	test_main "$@"
