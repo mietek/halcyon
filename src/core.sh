@@ -497,8 +497,6 @@ full_install_app () {
 
 	local constraints
 	if [[ ! -f "${source_dir}/cabal.config" ]]; then
-		# TODO: If there are any sandbox sources, create a sandbox before determining constraints.
-
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
@@ -506,7 +504,7 @@ full_install_app () {
 
 		log 'Determining constraints'
 
-		if ! constraints=$( cabal_dry_freeze_constraints "${label}" "${source_dir}" ); then
+		if ! constraints=$( cabal_determine_constraints "${label}" "${source_dir}" ); then
 			die 'Failed to determine constraints'
 		fi
 

@@ -788,6 +788,55 @@ sandboxed_cabal_dry_freeze_constraints () {
 }
 
 
+temporarily_sandboxed_cabal_dry_freeze_constraints () {
+	expect_vars HALCYON_BASE
+
+	local label source_dir
+	expect_args label source_dir -- "$@"
+
+	local saved_sandbox
+	saved_sandbox=''
+
+	if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
+		saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
+		mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}" || die
+	fi
+
+	log 'Creating temporary sandbox'
+
+	if ! cabal_create_sandbox; then
+		die 'Failed to create temporary sandbox'
+	fi
+
+	add_sandbox_sources "${source_dir}" || die
+
+	local constraints
+	constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || die
+
+	if [[ -n "${saved_sandbox}" ]]; then
+		rm -rf "${HALCYON_BASE}/sandbox" || die
+		mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox" || die
+	fi
+
+	echo "${constraints}"
+}
+
+
+cabal_determine_constraints () {
+	local label source_dir
+	expect_args label source_dir -- "$@"
+
+	local constraints
+	if [[ -f "${source_dir}/.halcyon/sandbox-sources" ]]; then
+		constraints=$( temporarily_sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || return 1
+	else
+		constraints=$( cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || return 1
+	fi
+
+	echo "${constraints}"
+}
+
+
 cabal_unpack_over () {
 	local thing unpack_dir
 	expect_args thing unpack_dir -- "$@"
