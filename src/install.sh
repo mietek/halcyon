@@ -120,6 +120,13 @@ install_extra_apps () {
 	local extra_app index
 	index=0
 	for extra_app in "${extra_apps[@]}"; do
+		local thing
+		if [[ -d "${source_dir}/${extra_app}" ]]; then
+			thing="${source_dir}/${extra_app}"
+		else
+			thing="${extra_app}"
+		fi
+
 		index=$(( index + 1 ))
 		if (( index > 1 )); then
 			log
@@ -128,7 +135,7 @@ install_extra_apps () {
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
-			halcyon install "${opts[@]}" "${extra_app}" 2>&1 | quote || return 1
+			halcyon install "${opts[@]}" "${thing}" 2>&1 | quote || return 1
 	done
 }
 
