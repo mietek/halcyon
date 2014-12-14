@@ -93,14 +93,13 @@ test_apps () {
 
 
 bench_first_build () {
-	local url
-	expect_args url -- "$@"
-	shift
+	local url csv_file
+	expect_args url csv_file -- "$@"
+	shift 2
 
-	local name log_file csv_file
+	local name log_file
 	name=$( basename "${url}" ) || return 1
 	log_file=$( get_tmp_file 'halcyon-shootout' )'.log' || return 1
-	csv_file=$( get_tmp_file 'halcyon-shootout' )'.csv' || return 1
 
 	rm -rf "${HALCYON_BASE}"
 
@@ -144,15 +143,25 @@ test_shootout () {
 	urls+=( 'https://github.com/mietek/hello-wheb' )
 	urls+=( 'https://github.com/mietek/hello-yesod' )
 
+	local csv_file
+	csv_file=''
+	if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+		csv_file=$( get_tmp_file 'halcyon-shootout' )'.csv' || return 1
+	fi
+
 	for url in "${urls[@]}"; do
 		log
 		log
 		if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
-			bench_first_build "${url}" "$@" || return 1
+			bench_first_build "${url}" "${csv_file}" "$@" || return 1
 		else
 			halcyon install "${url}" "$@" || return 1
 		fi
 	done
+
+	if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+		cat "${csv_file}"
+	fi
 }
 
 
