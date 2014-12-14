@@ -191,8 +191,8 @@ copy_sandbox_magic () {
 add_sandbox_sources () {
 	expect_vars HALCYON_BASE
 
-	local tag source_dir
-	expect_args tag source_dir -- "$@"
+	local source_dir
+	expect_args source_dir -- "$@"
 
 	if [[ ! -f "${source_dir}/.halcyon/sandbox-sources" ]]; then
 		return 0
@@ -328,7 +328,7 @@ build_sandbox_layer () {
 		mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || die
 	fi
 
-	add_sandbox_sources "${tag}" "${source_dir}" || die
+	add_sandbox_sources "${source_dir}" || die
 
 	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the
 	# executables to be installed, but not to install the packages.
