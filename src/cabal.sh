@@ -735,7 +735,7 @@ cabal_dry_freeze_constraints () {
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then
-		quote <"${stderr}" || return 1
+		quote <"${stderr}"
 		return 1
 	fi
 
@@ -759,7 +759,7 @@ sandboxed_cabal_dry_freeze_constraints () {
 		filter_correct_constraints "${label}" |
 		sort_natural
 	); then
-		quote <"${stderr}" || return 1
+		quote <"${stderr}"
 		return 1
 	fi
 
@@ -786,7 +786,7 @@ cabal_unpack_over () {
 		match_exactly_one |
 		sed 's:^Unpacking to \(.*\)/$:\1:'
 	); then
-		quote <"${stderr}" || die
+		quote <"${stderr}"
 		die 'Failed to unpack app'
 	fi
 
