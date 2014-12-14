@@ -310,11 +310,15 @@ prepare_install_dir () {
 	fi
 
 	mkdir -p "${label_dir}" || die
-	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
-	derive_install_tag "${tag}" >"${label_dir}/.halcyon-tag" || die
-	detect_executable "${source_dir}" >"${label_dir}/executable" || die
-	echo "${data_dir}" >"${label_dir}/data-dir" || die
 	ln -s ".halcyon-install-${label}" "${install_dir}${prefix}/.halcyon-install-newest" || die
+	derive_install_tag "${tag}" >"${label_dir}/.halcyon-tag" || die
+	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
+	echo "${data_dir}" >"${label_dir}/data-dir" || die
+
+	local executable
+	if executable=$( detect_executable "${source_dir}" ); then
+		echo "${executable}" >"${label_dir}/executable" || die
+	fi
 
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
 }
