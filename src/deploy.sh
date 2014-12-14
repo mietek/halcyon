@@ -715,6 +715,11 @@ install_unpacked_app () {
 halcyon_install () {
 	expect_vars HALCYON_NO_APP
 
+	if (( $# > 1 )); then
+		shift
+		die "Unexpected args: $*"
+	fi
+
 	local cache_dir
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
 
@@ -736,12 +741,6 @@ halcyon_install () {
 			install_local_app "${1%/}" || return 1
 		else
 			install_unpacked_app "$1" || return 1
-		fi
-
-		if (( $# > 1 )); then
-			shift
-			log
-			log_warning "Unexpected args: $*"
 		fi
 	fi
 
