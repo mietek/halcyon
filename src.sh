@@ -50,7 +50,7 @@ fi
 source "${HALCYON_DIR}/src/paths.sh"
 source "${HALCYON_DIR}/src/main.sh"
 source "${HALCYON_DIR}/src/tag.sh"
-source "${HALCYON_DIR}/src/deploy.sh"
+source "${HALCYON_DIR}/src/core.sh"
 source "${HALCYON_DIR}/src/storage.sh"
 source "${HALCYON_DIR}/src/constraints.sh"
 source "${HALCYON_DIR}/src/ghc.sh"
