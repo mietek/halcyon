@@ -69,6 +69,14 @@ halcyon_self_update () {
 		return 0
 	fi
 
+	local now candidate_time
+	now=$( get_current_time )
+	if candidate_time=$( get_modification_time "${HALCYON_DIR}" ) &&
+		(( candidate_time + 60 >= now ))
+	then
+		return 0
+	fi
+
 	local url
 	url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
 
@@ -80,6 +88,8 @@ halcyon_self_update () {
 		return 0
 	fi
 	log_end "done, ${commit_hash:0:7}"
+
+	touch "${HALCYON_DIR}" || return 1
 
 	HALCYON_NO_SELF_UPDATE=1 \
 		source "${HALCYON_DIR}/src.sh"
