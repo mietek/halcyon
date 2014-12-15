@@ -269,6 +269,17 @@ link_ghc_libs () {
 		gmp_name='libgmp.so.3'
 		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
 		;;
+	'linux-arch-x86_64')
+		gmp_file='/usr/lib/libgmp.so.10'
+		tinfo_file='/usr/lib/libncurses.so.5'
+		if [[ "${ghc_version}" < '7.8' ]]; then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+		fi
+		;;
 	'osx-'*'-x86_64')
 		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" )
 		;;
