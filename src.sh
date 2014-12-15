@@ -47,6 +47,8 @@ if ! install_bashmenot; then
 	echo '   *** ERROR: Failed to install bashmenot' >&2
 fi
 
+export HALCYON_INTERNAL_PLATFORM=$( detect_platform )
+
 source "${HALCYON_DIR}/src/paths.sh"
 source "${HALCYON_DIR}/src/main.sh"
 source "${HALCYON_DIR}/src/tag.sh"

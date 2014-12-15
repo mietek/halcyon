@@ -484,7 +484,8 @@ halcyon_main () {
 			halcyon_install "${args[@]:-}" || return 1
 		;;
 	'paths')
-		echo -e "export HALCYON_DIR='${HALCYON_DIR}'\n"
+		echo -e "export HALCYON_DIR='${HALCYON_DIR}'"
+		echo -e "export HALCYON_INTERNAL_PLATFORM='${HALCYON_INTERNAL_PLATFORM}'\n"
 
 		cat "${HALCYON_DIR}/src/paths.sh" || die
 		;;
