@@ -623,25 +623,24 @@ install_local_app () {
 	local local_dir
 	expect_args local_dir -- "$@"
 
-	local source_dir
-	if ! (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
-		source_dir=$( get_tmp_dir 'halcyon-source' ) || die
-
-		copy_source_dir_over "${local_dir}" "${source_dir}" || die
-	else
-		source_dir="${local_dir}"
-	fi
-
 	local label
-	if ! label=$( detect_label "${source_dir}" ); then
+	if ! label=$( detect_label "${local_dir}" ); then
 		die 'Failed to detect label'
 	fi
 
-	full_install_app "${label}" "${source_dir}" || return 1
-
-	if ! (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
-		rm -rf "${source_dir}" || die
+	if (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
+		full_install_app "${label}" "${local_dir}" || return 1
+		return 0
 	fi
+
+	local source_dir
+	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
+
+	copy_source_dir_over "${local_dir}" "${source_dir}/${label}" || die
+
+	full_install_app "${label}" "${source_dir}/${label}" || return 1
+
+	rm -rf "${source_dir}" || die
 }
 
 
@@ -662,15 +661,15 @@ install_cloned_app () {
 	fi
 	log_end "done, ${commit_hash:0:7}"
 
-	copy_source_dir_over "${clone_dir}" "${source_dir}" || die
-
 	local label
-	if ! label=$( detect_label "${source_dir}" ); then
+	if ! label=$( detect_label "${clone_dir}" ); then
 		die 'Failed to detect label'
 	fi
 
+	copy_source_dir_over "${clone_dir}" "${source_dir}/${label}" || die
+
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		full_install_app "${label}" "${source_dir}" || return 1
+		full_install_app "${label}" "${source_dir}/${label}" || return 1
 
 	rm -rf "${clone_dir}" "${source_dir}" || die
 }
@@ -695,14 +694,14 @@ install_unpacked_app () {
 	local label
 	label=$( cabal_unpack_over "${thing}" "${unpack_dir}" ) || die
 
-	copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}" || die
+	copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}/${label}" || die
 
 	if [[ "${label}" != "${thing}" ]]; then
 		log_warning "Using newest version of ${thing}: ${label}"
 	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		full_install_app "${label}" "${source_dir}" || return 1
+		full_install_app "${label}" "${source_dir}/${label}" || return 1
 
 	rm -rf "${unpack_dir}" "${source_dir}" || die
 }
