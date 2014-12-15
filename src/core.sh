@@ -250,11 +250,12 @@ do_fast_install_app () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	local install_dir
+	local label install_dir
+	label=$( get_tag_label "${tag}" ) || die
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 
-	restore_install_dir "${tag}" "${install_dir}" || return 1
-	install_app "${tag}" "${source_dir}" "${install_dir}" || die
+	restore_install_dir "${tag}" "${install_dir}/${label}" || return 1
+	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
 	link_cabal_config || die
 
 	rm -rf "${install_dir}"
@@ -412,10 +413,11 @@ do_full_install_app () {
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
-	local saved_sandbox build_dir install_dir
-	saved_sandbox=''
+	local label build_dir install_dir saved_sandbox
+	label=$( get_tag_label "${tag}" ) || die
 	build_dir=$( get_tmp_dir 'halcyon-build' ) || die
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
+	saved_sandbox=''
 
 	do_install_ghc_and_cabal_layers "${tag}" "${source_dir}" || return 1
 
@@ -430,23 +432,23 @@ do_full_install_app () {
 	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
 	log
 
-	install_build_dir "${tag}" "${source_dir}" "${build_dir}" || return 1
+	install_build_dir "${tag}" "${source_dir}" "${build_dir}/${label}" || return 1
 	log
 
 	local must_prepare
 	must_prepare=1
 	if ! (( HALCYON_APP_REBUILD )) && ! (( HALCYON_APP_RECONFIGURE )) && ! (( HALCYON_APP_REINSTALL )) &&
 		! (( HALCYON_SANDBOX_REBUILD )) &&
-		restore_install_dir "${tag}" "${install_dir}"
+		restore_install_dir "${tag}" "${install_dir}/${label}"
 	then
 		must_prepare=0
 	fi
 	if (( must_prepare )); then
-		if ! prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}" "${install_dir}"; then
+		if ! prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}"; then
 			log_warning 'Cannot prepare install'
 			return 1
 		fi
-		archive_install_dir "${install_dir}" || die
+		archive_install_dir "${install_dir}/${label}" || die
 	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
@@ -456,7 +458,7 @@ do_full_install_app () {
 		fi
 	fi
 
-	install_app "${tag}" "${source_dir}" "${install_dir}" || die
+	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
 	link_cabal_config || die
 
 	rm -rf "${build_dir}" "${install_dir}" || die
