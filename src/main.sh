@@ -447,7 +447,7 @@ halcyon_main () {
 
 	if (( HALCYON_LOG_TIMESTAMP )); then
 		export BASHMENOT_LOG_TIMESTAMP=1
-		export BASHMENOT_TIMESTAMP_EPOCH=$( get_date '+%s' ) || true
+		export BASHMENOT_TIMESTAMP_EPOCH=$( get_current_time )
 	fi
 
 	# NOTE: HALCYON_CACHE must not be /tmp, as the cache cleaning

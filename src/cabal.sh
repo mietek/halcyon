@@ -345,7 +345,7 @@ update_cabal_package_db () {
 	expect_args tag -- "$@"
 
 	local cabal_date
-	cabal_date=$( get_date '+%Y-%m-%d' ) || die
+	cabal_date=$( get_date '+%Y-%m-%d' )
 
 	log 'Updating Cabal layer'
 
@@ -438,7 +438,7 @@ validate_updated_cabal_date () {
 	expect_args candidate_date -- "$@"
 
 	local today_date
-	today_date=$( get_date '+%Y-%m-%d' ) || die
+	today_date=$( get_date '+%Y-%m-%d' )
 
 	if [[ "${candidate_date}" < "${today_date}" ]]; then
 		return 1
