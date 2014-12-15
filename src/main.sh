@@ -457,6 +457,8 @@ halcyon_main () {
 		export HALCYON_CACHE='/tmp/halcyon-cache'
 	fi
 
+	export BASHMENOT_APT_DIR="${HALCYON_CACHE}/apt"
+
 	if [[ -n "${HALCYON_CABAL_REPO}" ]]; then
 		local repo_name
 		repo_name="${HALCYON_CABAL_REPO%%:*}"
