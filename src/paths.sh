@@ -19,10 +19,9 @@ if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 	export LD_LIBRARY_PATH="${HALCYON_BASE}/ghc/usr/lib:${LD_LIBRARY_PATH}"
 	export LD_LIBRARY_PATH="${HALCYON_BASE}/sandbox/usr/lib:${LD_LIBRARY_PATH}"
 
-	export PKG_CONFIG_PATH="${HALCYON_BASE}/usr/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
-	export PKG_CONFIG_PATH="${HALCYON_BASE}/usr/share/pkgconfig:${PKG_CONFIG_PATH}"
-	export PKG_CONFIG_PATH="${HALCYON_BASE}/sandbox/usr/lib/pkgconfig:${PKG_CONFIG_PATH}"
+	export PKG_CONFIG_PATH="${HALCYON_BASE}/sandbox/usr/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 	export PKG_CONFIG_PATH="${HALCYON_BASE}/sandbox/usr/share/pkgconfig:${PKG_CONFIG_PATH}"
+	export PKG_CONFIG_SYSROOT_DIR="${HALCYON_BASE}/sandbox"
 
 	# NOTE: A UTF-8 locale is needed to work around a Cabal issue.
 	# https://github.com/haskell/cabal/issues/1883
