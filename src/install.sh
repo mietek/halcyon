@@ -443,4 +443,6 @@ install_app () {
 		fi
 		log 'Post-install hook executed'
 	fi
+
+	log "Installed ${label}"
 }

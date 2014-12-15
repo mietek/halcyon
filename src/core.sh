@@ -282,8 +282,6 @@ fast_install_app () {
 		return 1
 	fi
 
-	log 'Installing app'
-
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
@@ -479,6 +477,8 @@ full_install_app () {
 		return 0
 	fi
 
+	log "Installing ${label}"
+
 	# NOTE: This is the first of two moments when source_dir is modified.
 
 	prepare_constraints "${label}" "${source_dir}" || die
@@ -548,8 +548,6 @@ full_install_app () {
 		return 0
 		;;
 	esac
-
-	log 'Installing app'
 
 	local constraints_hash magic_hash
 	constraints_hash=$( hash_constraints "${constraints}" ) || die
