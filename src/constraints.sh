@@ -75,7 +75,7 @@ prepare_constraints () {
 	magic_dir="${source_dir}/.halcyon"
 
 	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
-		if [[ -d "${HALCYON_CONSTRAINTS}" ]]; then
+		if [[ -d "${HALCYON_CONSTRAINTS}" && -f "${HALCYON_CONSTRAINTS}/${label}.constraints" ]]; then
 			copy_file "${HALCYON_CONSTRAINTS}/${label}.constraints" "${magic_dir}/constraints" || die
 		elif [[ -f "${HALCYON_CONSTRAINTS}" ]]; then
 			copy_file "${HALCYON_CONSTRAINTS}" "${magic_dir}/constraints" || die
