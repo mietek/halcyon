@@ -267,13 +267,15 @@ prepare_install_dir () {
 
 	if ! (
 		PATH="${install_dir}${prefix}:${PATH}" \
-			sandboxed_cabal_do "${build_dir}" copy --destdir="${install_dir}" --verbose=0 2>&1 | quote
+			sandboxed_cabal_do "${build_dir}" copy \
+				--destdir="${install_dir}" --verbose=0 2>&1 | quote
 	); then
 		die 'Failed to copy app'
 	fi
 
 	mkdir -p "${label_dir}" || die
-	sandboxed_cabal_do "${build_dir}" register --gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote || die
+	sandboxed_cabal_do "${build_dir}" register \
+		--gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote || die
 
 	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
 	echo "${data_dir}" >"${label_dir}/data-dir" || die
