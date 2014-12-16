@@ -295,7 +295,7 @@ clean_cache () {
 	local changed_files
 	if changed_files=$(
 		compare_tree "${cache_dir}" "${HALCYON_CACHE}" |
-		filter_not_matching '^(=|. apt/) ' |
+		filter_not_matching '^(= |. apt/)' |
 		match_at_least_one
 	); then
 		log
