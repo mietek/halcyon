@@ -350,22 +350,6 @@ prepare_build_dir () {
 }
 
 
-link_sandbox_config () {
-	expect_vars HALCYON_BASE
-
-	local build_dir
-	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}/.halcyon-tag"
-
-	# NOTE: Copying the sandbox config is necessary to allow the user to easily run Cabal commands,
-	# without having to use cabal_do or sandboxed_cabal_do.
-
-	rm -f "${build_dir}/cabal.sandbox.config" || die
-	copy_file "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" \
-		"${build_dir}/cabal.sandbox.config" || die
-}
-
-
 install_build_dir () {
 	expect_vars HALCYON_NO_BUILD \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE \
@@ -383,7 +367,6 @@ install_build_dir () {
 		restore_build_dir "${tag}" "${build_dir}"
 	then
 		if ! (( HALCYON_APP_RECONFIGURE )) && validate_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
-			link_sandbox_config "${build_dir}" || die
 			return 0
 		fi
 
@@ -397,7 +380,6 @@ install_build_dir () {
 		fi
 		build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
 		archive_build_dir "${build_dir}" || die
-		link_sandbox_config "${build_dir}" || die
 		return 0
 	fi
 
@@ -406,5 +388,4 @@ install_build_dir () {
 	must_configure=1
 	build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
 	archive_build_dir "${build_dir}" || die
-	link_sandbox_config "${build_dir}" || die
 }

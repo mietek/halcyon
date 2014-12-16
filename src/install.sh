@@ -277,6 +277,8 @@ prepare_install_dir () {
 	sandboxed_cabal_do "${build_dir}" register \
 		--gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote || die
 
+	ln -s "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" "${install_dir}${prefix}/cabal.sandbox.config" || die
+
 	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
 	echo "${data_dir}" >"${label_dir}/data-dir" || die
 
