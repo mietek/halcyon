@@ -190,7 +190,6 @@ do_install_ghc_and_cabal_layers () {
 	fi
 
 	install_ghc_layer "${tag}" "${source_dir}" || return 1
-	recache_ghc_package_db "${tag}" || die
 	log
 
 	install_cabal_layer "${tag}" "${source_dir}" || return 1

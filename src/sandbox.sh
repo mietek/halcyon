@@ -511,6 +511,23 @@ restore_sandbox_layer () {
 }
 
 
+get_sandbox_package_db () {
+	expect_vars HALCYON_BASE
+
+	filter_matching '^package-db: ' <"${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" |
+		match_exactly_one |
+		awk '{ print $2 }' || return 1
+}
+
+
+recache_sandbox_package_db () {
+	local package_db
+	package_db=$( get_sandbox_package_db ) || die
+
+	ghc-pkg recache --package-db="${package_db}" 2>&1 | quote || die
+}
+
+
 install_matching_sandbox_layer () {
 	expect_vars HALCYON_BASE
 
@@ -526,6 +543,7 @@ install_matching_sandbox_layer () {
 		log_label 'Using fully matching sandbox layer:' "${matching_description}"
 
 		restore_sandbox_layer "${matching_tag}" || return 1
+		recache_sandbox_package_db || die
 
 		derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag" || die
 		return 0
@@ -534,6 +552,7 @@ install_matching_sandbox_layer () {
 	log_label 'Using partially matching sandbox layer:' "${matching_description}"
 
 	restore_sandbox_layer "${matching_tag}" || return 1
+	recache_sandbox_package_db || die
 
 	local must_create
 	must_create=0
@@ -550,6 +569,7 @@ install_sandbox_layer () {
 
 	if ! (( HALCYON_SANDBOX_REBUILD )); then
 		if restore_sandbox_layer "${tag}"; then
+			recache_sandbox_package_db || die
 			return 0
 		fi
 

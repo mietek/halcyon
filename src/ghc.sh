@@ -470,19 +470,7 @@ restore_ghc_layer () {
 
 
 recache_ghc_package_db () {
-	local tag
-	expect_args tag -- "$@"
-
-	local ghc_version
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-
-	case "${ghc_version}" in
-	'7.'*)
-		ghc-pkg recache || die
-		;;
-	*)
-		true
-	esac
+	ghc-pkg recache --global 2>&1 | quote || die
 }
 
 
@@ -495,6 +483,7 @@ install_ghc_layer () {
 
 	if ! (( HALCYON_GHC_REBUILD )); then
 		if restore_ghc_layer "${tag}"; then
+			recache_ghc_package_db || die
 			return 0
 		fi
 
