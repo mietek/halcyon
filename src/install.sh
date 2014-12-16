@@ -311,7 +311,7 @@ prepare_install_dir () {
 
 	mkdir -p "${label_dir}" || die
 	ln -s ".halcyon-install-${label}" "${install_dir}${prefix}/.halcyon-install-newest" || die
-	derive_install_tag "${tag}" >"${label_dir}/.halcyon-tag" || die
+	derive_install_tag "${tag}" >"${label_dir}/tag" || die
 	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
 	echo "${data_dir}" >"${label_dir}/data-dir" || die
 
