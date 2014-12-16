@@ -258,12 +258,10 @@ prepare_install_dir () {
 	local prefix label install_id label_dir data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
 	label=$( get_tag_label "${tag}" ) || die
-	label_dir="${install_dir}${prefix}/.halcyon-install-${label}"
+	label_dir="${install_dir}${prefix}/.halcyon/${label}"
 	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
 	log 'Preparing install'
-
-	log_indent 'Including app'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
@@ -273,6 +271,19 @@ prepare_install_dir () {
 	); then
 		die 'Failed to copy app'
 	fi
+
+	mkdir -p "${label_dir}" || die
+	sandboxed_cabal_do "${build_dir}" register --gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote || die
+
+	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
+	echo "${data_dir}" >"${label_dir}/data-dir" || die
+
+	local executable
+	if executable=$( detect_executable "${source_dir}" ); then
+		echo "${executable}" >"${label_dir}/executable" || die
+	fi
+
+	derive_install_tag "${tag}" >"${label_dir}/tag" || die
 
 	if ! install_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
 		log_warning 'Cannot install extra apps'
@@ -307,17 +318,6 @@ prepare_install_dir () {
 		local trimmed_size
 		trimmed_size=$( get_size "${install_dir}" ) || die
 		log_indent_end "done, ${trimmed_size}"
-	fi
-
-	mkdir -p "${label_dir}" || die
-	ln -s ".halcyon-install-${label}" "${install_dir}${prefix}/.halcyon-install-newest" || die
-	derive_install_tag "${tag}" >"${label_dir}/tag" || die
-	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
-	echo "${data_dir}" >"${label_dir}/data-dir" || die
-
-	local executable
-	if executable=$( detect_executable "${source_dir}" ); then
-		echo "${executable}" >"${label_dir}/executable" || die
 	fi
 
 	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
@@ -403,7 +403,7 @@ install_app () {
 	local prefix label install_id label_dir data_dir
 	prefix=$( get_tag_prefix "${tag}" ) || die
 	label=$( get_tag_label "${tag}" ) || die
-	label_dir="${install_dir}${prefix}/.halcyon-install-${label}"
+	label_dir="${install_dir}${prefix}/.halcyon/${label}"
 	expect_existing "${label_dir}/data-dir"
 	data_dir=$( <"${label_dir}/data-dir" ) || die
 
