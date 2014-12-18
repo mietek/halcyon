@@ -169,8 +169,15 @@ announce_install () {
 	local label
 	label=$( get_tag_label "${tag}" ) || die
 
-	log
-	log_label 'App installed:' "${label}"
+	case "${HALCYON_INTERNAL_COMMAND}" in
+	'install')
+		log
+		log_label 'App installed:' "${label}"
+		;;
+	'build')
+		log
+		log_label 'App built:' "${label}"
+	esac
 }
 
 
@@ -432,9 +439,10 @@ do_full_install_app () {
 	log
 
 	build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return 1
-	log
 
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]]; then
+		log
+
 		local must_prepare
 		must_prepare=1
 		if ! (( HALCYON_APP_REBUILD )) &&
