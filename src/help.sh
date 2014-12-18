@@ -7,7 +7,9 @@ help_usage () {
 		Commands
 		  install                                 APP? OPTION*
 		  label                                   APP? OPTION*
+		  executable                              APP? OPTION*
 		  constraints                             APP? OPTION*
+		  tag                                     APP? OPTION*
 		  paths
 
 		App
