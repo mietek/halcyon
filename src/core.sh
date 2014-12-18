@@ -487,10 +487,21 @@ full_install_app () {
 	expect_args label source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'label' ]]; then
+	case "${HALCYON_INTERNAL_COMMAND}" in
+	'label')
 		echo "${label}"
 		return 0
-	fi
+		;;
+	'executable')
+		local executable
+		if ! executable=$( detect_executable "${source_dir}" ); then
+			die 'Failed to detect executable'
+		fi
+
+		echo "${executable}"
+		return 0
+		;;
+	esac
 
 	log "Installing ${label}"
 
@@ -548,21 +559,10 @@ full_install_app () {
 		fi
 	fi
 
-	case "${HALCYON_INTERNAL_COMMAND}" in
-	'executable')
-		local executable
-		if ! executable=$( detect_executable "${source_dir}" ); then
-			die 'Failed to detect executable'
-		fi
-
-		echo "${executable}"
-		return 0
-		;;
-	'constraints')
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'constraints' ]]; then
 		format_constraints <<<"${constraints}" || die
 		return 0
-		;;
-	esac
+	fi
 
 	local constraints_hash magic_hash
 	constraints_hash=$( hash_constraints "${constraints}" ) || die
