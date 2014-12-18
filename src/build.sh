@@ -96,7 +96,7 @@ format_build_archive_name () {
 }
 
 
-build_app () {
+do_build_app () {
 	expect_vars HALCYON_BASE
 
 	local tag must_copy must_configure source_dir build_dir
@@ -350,7 +350,7 @@ prepare_build_dir () {
 }
 
 
-install_build_dir () {
+build_app () {
 	expect_vars HALCYON_NO_BUILD \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE \
 		HALCYON_SANDBOX_REBUILD
@@ -378,7 +378,7 @@ install_build_dir () {
 		then
 			must_configure=1
 		fi
-		build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
+		do_build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
 		archive_build_dir "${build_dir}" || die
 		return 0
 	fi
@@ -386,6 +386,6 @@ install_build_dir () {
 	local must_copy must_configure
 	must_copy=1
 	must_configure=1
-	build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
+	do_build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
 	archive_build_dir "${build_dir}" || die
 }

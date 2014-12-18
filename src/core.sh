@@ -431,23 +431,27 @@ do_full_install_app () {
 	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
 	log
 
-	install_build_dir "${tag}" "${source_dir}" "${build_dir}/${label}" || return 1
+	build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return 1
 	log
 
-	local must_prepare
-	must_prepare=1
-	if ! (( HALCYON_APP_REBUILD )) && ! (( HALCYON_APP_RECONFIGURE )) && ! (( HALCYON_APP_REINSTALL )) &&
-		! (( HALCYON_SANDBOX_REBUILD )) &&
-		restore_install_dir "${tag}" "${install_dir}/${label}"
-	then
-		must_prepare=0
-	fi
-	if (( must_prepare )); then
-		if ! prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}"; then
-			log_warning 'Cannot prepare install'
-			return 1
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]]; then
+		local must_prepare
+		must_prepare=1
+		if ! (( HALCYON_APP_REBUILD )) &&
+			! (( HALCYON_APP_RECONFIGURE )) &&
+			! (( HALCYON_APP_REINSTALL )) &&
+			! (( HALCYON_SANDBOX_REBUILD )) &&
+			restore_install_dir "${tag}" "${install_dir}/${label}"
+		then
+			must_prepare=0
 		fi
-		archive_install_dir "${install_dir}/${label}" || die
+		if (( must_prepare )); then
+			if ! prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}"; then
+				log_warning 'Cannot prepare install'
+				return 1
+			fi
+			archive_install_dir "${install_dir}/${label}" || die
+		fi
 	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
@@ -457,8 +461,10 @@ do_full_install_app () {
 		fi
 	fi
 
-	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
-	link_cabal_config || die
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]]; then
+		install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
+		link_cabal_config || die
+	fi
 
 	rm -rf "${build_dir}" "${install_dir}" || die
 }

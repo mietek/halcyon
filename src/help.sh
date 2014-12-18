@@ -6,6 +6,7 @@ help_usage () {
 
 		Commands
 		  install                                 APP? OPTION*
+		  build                                   APP? OPTION*
 		  label                                   APP? OPTION*
 		  executable                              APP? OPTION*
 		  constraints                             APP? OPTION*
