@@ -8,6 +8,7 @@ map_ghc_version_to_linux_x86_64_gmp10_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
@@ -21,6 +22,7 @@ map_ghc_version_to_linux_x86_64_gmp3_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-centos65.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-centos65.tar.xz';;
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-centos65.tar.xz';;
 	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-unknown-linux-centos65.tar.xz';;
@@ -77,6 +79,7 @@ map_base_package_version_to_ghc_version () {
 	expect_args base_version -- "$@"
 
 	case "${base_version}" in
+	'4.7.0.2')	echo '7.8.4';;
 	'4.7.0.1')	echo '7.8.3';;
 	'4.7.0.0')	echo '7.8.2';;
 	'4.6.0.1')	echo '7.6.3';;
