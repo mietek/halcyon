@@ -218,9 +218,9 @@ match_full_sandbox_layer () {
 	local tag all_names
 	expect_args tag all_names -- "$@"
 
-	local platform ghc_version full_pattern full_names
+	local platform ghc_id full_pattern full_names
 	platform=$( get_tag_platform "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" ) || die
 	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
 	full_names=$(
 		filter_matching "^${full_pattern}$" <<<"${all_names}" |
@@ -233,7 +233,7 @@ match_full_sandbox_layer () {
 	while read -r full_name; do
 		full_file="${HALCYON_CACHE}/${full_name}"
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
-			if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${full_name}" ||
+			if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
 			then
 				continue
@@ -260,9 +260,9 @@ list_partial_sandbox_layers () {
 	local tag constraints all_names
 	expect_args tag constraints all_names -- "$@"
 
-	local platform ghc_version full_pattern partial_names
+	local platform ghc_id full_pattern partial_names
 	platform=$( get_tag_platform "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" ) || die
 	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
 	partial_names=$(
 		filter_not_matching "^${full_pattern}$" <<<"${all_names}" |
@@ -275,7 +275,7 @@ list_partial_sandbox_layers () {
 	while read -r partial_name; do
 		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
-			if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${partial_name}" ||
+			if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
 			then
 				continue
@@ -355,9 +355,9 @@ match_sandbox_layer () {
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
-	local platform ghc_version constraints_name name_prefix partial_pattern
+	local platform ghc_id constraints_name name_prefix partial_pattern
 	platform=$( get_tag_platform "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" ) || die
 	constraints_name=$( format_sandbox_constraints_file_name "${tag}" ) || die
 	name_prefix=$( format_sandbox_common_file_name_prefix ) || die
 	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" ) || die
@@ -366,8 +366,8 @@ match_sandbox_layer () {
 
 	local all_names
 	all_names=$(
-		list_stored_files "${platform}/ghc-${ghc_version}/${name_prefix}" |
-		sed "s:^${platform}/ghc-${ghc_version}/::" |
+		list_stored_files "${platform}/ghc-${ghc_id}/${name_prefix}" |
+		sed "s:^${platform}/ghc-${ghc_id}/::" |
 		filter_matching "^${partial_pattern}$" |
 		filter_not_matching "^${constraints_name}$" |
 		sort_natural -u |

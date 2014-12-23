@@ -344,16 +344,16 @@ archive_install_dir () {
 		return 0
 	fi
 
-	local install_tag platform ghc_version archive_name
+	local install_tag platform ghc_id archive_name
 	install_tag=$( detect_install_tag "${install_dir}/.halcyon-tag" ) || die
 	platform=$( get_tag_platform "${install_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${install_tag}" ) || die
+	ghc_id=$( format_ghc_id "${install_tag}" ) || die
 	archive_name=$( format_install_archive_name "${install_tag}" ) || die
 
 	log 'Archiving install'
 
 	create_cached_archive "${install_dir}" "${archive_name}" || die
-	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
+	if ! upload_cached_file "${platform}/ghc-${ghc_id}" "${archive_name}" ||
 		(( HALCYON_NO_CLEAN_PRIVATE_STORAGE ))
 	then
 		return 0
@@ -363,7 +363,7 @@ archive_install_dir () {
 	archive_prefix=$( format_install_archive_name_prefix ) || die
 	archive_pattern=$( format_install_archive_name_pattern "${install_tag}" ) || die
 
-	delete_matching_private_stored_files "${platform}/ghc-${ghc_version}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${platform}/ghc-${ghc_id}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
 
 
@@ -381,9 +381,9 @@ restore_install_dir () {
 	local tag install_dir
 	expect_args tag install_dir -- "$@"
 
-	local platform ghc_version archive_name archive_pattern
+	local platform ghc_id archive_name archive_pattern
 	platform=$( get_tag_platform "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" ) || die
 	archive_name=$( format_install_archive_name "${tag}" ) || die
 	archive_pattern=$( format_install_archive_name_pattern "${tag}" ) || die
 
@@ -392,7 +392,7 @@ restore_install_dir () {
 	if ! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 		! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
 	then
-		if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 			! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
 		then

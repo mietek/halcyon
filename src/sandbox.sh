@@ -431,10 +431,10 @@ archive_sandbox_layer () {
 		return 0
 	fi
 
-	local sandbox_tag platform ghc_version archive_name constraints_name
+	local sandbox_tag platform ghc_id archive_name constraints_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" ) || die
 	platform=$( get_tag_platform "${sandbox_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${sandbox_tag}" ) || die
+	ghc_id=$( format_ghc_id "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	constraints_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
 
@@ -446,10 +446,10 @@ archive_sandbox_layer () {
 
 	local no_clean
 	no_clean=0
-	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${archive_name}"; then
+	if ! upload_cached_file "${platform}/ghc-${ghc_id}" "${archive_name}"; then
 		no_clean=1
 	fi
-	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${constraints_name}"; then
+	if ! upload_cached_file "${platform}/ghc-${ghc_id}" "${constraints_name}"; then
 		no_clean=1
 	fi
 	if (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )) || (( no_clean )); then
@@ -460,7 +460,7 @@ archive_sandbox_layer () {
 	common_prefix=$( format_sandbox_common_file_name_prefix ) || die
 	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" ) || die
 
-	delete_matching_private_stored_files "${platform}/ghc-${ghc_version}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || die
+	delete_matching_private_stored_files "${platform}/ghc-${ghc_id}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || die
 }
 
 
@@ -482,9 +482,9 @@ restore_sandbox_layer () {
 	local tag
 	expect_args tag -- "$@"
 
-	local platform ghc_version archive_name
+	local platform ghc_id archive_name
 	platform=$( get_tag_platform "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
 
 	if validate_sandbox_layer "${tag}" >'/dev/null'; then
@@ -499,7 +499,7 @@ restore_sandbox_layer () {
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
 		! validate_sandbox_layer "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
 			! validate_sandbox_layer "${tag}" >'/dev/null'
 		then

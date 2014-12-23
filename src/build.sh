@@ -212,16 +212,16 @@ archive_build_dir () {
 		return 0
 	fi
 
-	local build_tag platform ghc_version archive_name
+	local build_tag platform ghc_id archive_name
 	build_tag=$( detect_build_tag "${build_dir}/.halcyon-tag" ) || die
 	platform=$( get_tag_platform "${build_tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${build_tag}" ) || die
+	ghc_id=$( format_ghc_id "${build_tag}" ) || die
 	archive_name=$( format_build_archive_name "${build_tag}" ) || die
 
 	log 'Archiving build'
 
 	create_cached_archive "${build_dir}" "${archive_name}" || die
-	upload_cached_file "${platform}/ghc-${ghc_version}" "${archive_name}" || true
+	upload_cached_file "${platform}/ghc-${ghc_id}" "${archive_name}" || true
 }
 
 
@@ -259,9 +259,9 @@ restore_build_dir () {
 	local tag build_dir
 	expect_args tag build_dir -- "$@"
 
-	local platform ghc_version archive_name
+	local platform ghc_id archive_name
 	platform=$( get_tag_platform "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" ) || die
 	archive_name=$( format_build_archive_name "${tag}" ) || die
 
 	log 'Restoring build'
@@ -269,7 +269,7 @@ restore_build_dir () {
 	if ! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 		! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
 	then
-		if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 			! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
 		then
