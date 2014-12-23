@@ -271,7 +271,7 @@ do_fast_install_app () {
 fast_install_app () {
 	expect_vars HALCYON_PREFIX HALCYON_RESTORE_LAYERS \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
-		HALCYON_GHC_REBUILD \
+		HALCYON_GHC_VERSION HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
 		HALCYON_SANDBOX_REBUILD \
 		HALCYON_INTERNAL_RECURSIVE
@@ -292,6 +292,7 @@ fast_install_app () {
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
+	log_indent_label 'GHC version:' "${HALCYON_GHC_VERSION}"
 
 	describe_storage || die
 	log
@@ -299,7 +300,7 @@ fast_install_app () {
 	local tag
 	tag=$(
 		create_tag "${HALCYON_PREFIX}" "${label}" "${source_hash}" '' '' \
-			'' '' \
+			"${HALCYON_GHC_VERSION}" '' \
 			'' '' '' '' \
 			''
 	) || die

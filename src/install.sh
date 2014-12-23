@@ -1,9 +1,11 @@
 create_install_tag () {
-	local prefix label source_hash
-	expect_args prefix label source_hash -- "$@"
+	local prefix label source_hash \
+		ghc_version ghc_magic_hash
+	expect_args prefix label source_hash \
+		ghc_version ghc_magic_hash -- "$@"
 
 	create_tag "${prefix}" "${label}" "${source_hash}" '' '' \
-		'' '' \
+		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' '' \
 		'' || die
 }
@@ -14,7 +16,7 @@ detect_install_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_install_tag '.*' '.*' '.*' ) || die
+	tag_pattern=$( create_install_tag '.*' '.*' '.*' '.*' '.*' ) || die
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
@@ -29,12 +31,15 @@ derive_install_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local prefix label source_hash
+	local prefix label source_hash ghc_version ghc_magic_hash
 	prefix=$( get_tag_prefix "${tag}" ) || die
 	label=$( get_tag_label "${tag}" ) || die
 	source_hash=$( get_tag_source_hash "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
 
-	create_install_tag "${prefix}" "${label}" "${source_hash}" || die
+	create_install_tag "${prefix}" "${label}" "${source_hash}" \
+		"${ghc_version}" "${ghc_magic_hash}" || die
 }
 
 
@@ -339,15 +344,18 @@ archive_install_dir () {
 		return 0
 	fi
 
-	local install_tag platform archive_name
+	local install_tag platform ghc_version archive_name
 	install_tag=$( detect_install_tag "${install_dir}/.halcyon-tag" ) || die
 	platform=$( get_tag_platform "${install_tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${install_tag}" ) || die
 	archive_name=$( format_install_archive_name "${install_tag}" ) || die
 
 	log 'Archiving install'
 
 	create_cached_archive "${install_dir}" "${archive_name}" || die
-	if ! upload_cached_file "${platform}" "${archive_name}" || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
+	if ! upload_cached_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
+		(( HALCYON_NO_CLEAN_PRIVATE_STORAGE ))
+	then
 		return 0
 	fi
 
@@ -355,7 +363,7 @@ archive_install_dir () {
 	archive_prefix=$( format_install_archive_name_prefix ) || die
 	archive_pattern=$( format_install_archive_name_pattern "${install_tag}" ) || die
 
-	delete_matching_private_stored_files "${platform}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${platform}/ghc-${ghc_version}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
 
 
@@ -373,8 +381,9 @@ restore_install_dir () {
 	local tag install_dir
 	expect_args tag install_dir -- "$@"
 
-	local platform archive_name archive_pattern
+	local platform ghc_version archive_name archive_pattern
 	platform=$( get_tag_platform "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	archive_name=$( format_install_archive_name "${tag}" ) || die
 	archive_pattern=$( format_install_archive_name_pattern "${tag}" ) || die
 
@@ -383,7 +392,7 @@ restore_install_dir () {
 	if ! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 		! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
 	then
-		if ! cache_stored_file "${platform}" "${archive_name}" ||
+		if ! cache_stored_file "${platform}/ghc-${ghc_version}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 			! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
 		then
