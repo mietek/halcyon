@@ -1,8 +1,3 @@
-get_default_ghc_version () {
-	echo '7.8.3'
-}
-
-
 map_ghc_version_to_linux_x86_64_gmp10_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
