@@ -45,6 +45,7 @@ install_bashmenot () {
 
 if ! install_bashmenot; then
 	echo '   *** ERROR: Failed to install bashmenot' >&2
+	exit 1
 fi
 
 export HALCYON_INTERNAL_PLATFORM=$( detect_platform )
@@ -98,4 +99,7 @@ halcyon_self_update () {
 }
 
 
-halcyon_self_update
+if ! halcyon_self_update; then
+	log_error 'Failed to self-update Halcyon'
+	exit 1
+fi
