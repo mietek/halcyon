@@ -375,7 +375,11 @@ update_cabal_package_db () {
 
 	log 'Updating Cabal package database'
 
-	if ! cabal_do '.' update 2>&1 | quote; then
+	# NOTE: cabal-install 1.20.0.5 enforces the require-sandbox option
+	# even for the update command.
+	# https://github.com/haskell/cabal/issues/2309
+
+	if ! cabal_do '.' --no-require-sandbox update 2>&1 | quote; then
 		die 'Failed to update Cabal package database'
 	fi
 
