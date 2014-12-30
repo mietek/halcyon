@@ -3,6 +3,7 @@ map_cabal_version_to_original_url () {
 	expect_args cabal_version -- "$@"
 
 	case "${cabal_version}" in
+	'1.20.0.6')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.6/cabal-install-1.20.0.6.tar.gz';;
 	'1.20.0.5')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.5/cabal-install-1.20.0.5.tar.gz';;
 	'1.20.0.4')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.4/cabal-install-1.20.0.4.tar.gz';;
 	'1.20.0.3')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.3/cabal-install-1.20.0.3.tar.gz';;
