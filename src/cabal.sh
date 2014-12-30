@@ -275,6 +275,9 @@ build_cabal_layer () {
 
 	# NOTE: Bootstrapping cabal-install 1.20.0.0 with GHC 7.6.* fails.
 
+	# NOTE: Bootstrapping cabal-install 1.20.0.4 does not work.
+	# https://www.haskell.org/pipermail/cabal-devel/2014-December/009959.html
+
 	case "${ghc_version}-${cabal_version}" in
 	'7.8.'*'-1.20.0.'*)
 		(
@@ -289,6 +292,10 @@ build_cabal_layer () {
 				      die "Compiling the Setup script failed."
 EOF
 		) || die
+		;;
+	*'-1.20.0.4')
+		rm -rf "${cabal_build_dir}" || die
+		die "Unsupported Cabal version: ${cabal-version}"
 		;;
 	*)
 		rm -rf "${cabal_build_dir}" || die
