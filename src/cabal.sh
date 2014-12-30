@@ -883,8 +883,8 @@ populate_cabal_setup_exe_cache () {
 	setup_dir="$( get_tmp_dir 'halcyon-setup-exe-cache' )" || die
 
 	mkdir -p "${setup_dir}" || die
-	cabal_do "${setup_dir}" sandbox init --sandbox '.' |& quote || die
-	if ! cabal_do "${setup_dir}" install 'populate-setup-exe-cache' |& quote; then
+	cabal_do "${setup_dir}" sandbox init --sandbox '.' 2>&1 | quote || die
+	if ! cabal_do "${setup_dir}" install 'populate-setup-exe-cache' 2>&1 | quote; then
 		die 'Failed to populate Cabal setup-exe-cache'
 	fi
 	expect_existing "${HOME}/.cabal/setup-exe-cache"
