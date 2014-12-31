@@ -266,7 +266,7 @@ prepare_install_dir () {
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
 	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
-	log 'Preparing install'
+	log 'Preparing install directory'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
@@ -317,10 +317,10 @@ prepare_install_dir () {
 
 	local prepared_size
 	prepared_size=$( get_size "${install_dir}" ) || die
-	log "Install prepared, ${prepared_size}"
+	log "Install directory prepared, ${prepared_size}"
 
 	if [[ -d "${install_dir}${prefix}/share/doc" ]]; then
-		log_indent_begin 'Removing documentation from install...'
+		log_indent_begin 'Removing documentation from install directory...'
 
 		rm -rf "${install_dir}${prefix}/share/doc" || die
 
@@ -350,7 +350,7 @@ archive_install_dir () {
 	ghc_id=$( format_ghc_id "${install_tag}" ) || die
 	archive_name=$( format_install_archive_name "${install_tag}" ) || die
 
-	log 'Archiving install'
+	log 'Archiving install directory'
 
 	create_cached_archive "${install_dir}" "${archive_name}" || die
 	if ! upload_cached_file "${platform}/ghc-${ghc_id}" "${archive_name}" ||
@@ -387,7 +387,7 @@ restore_install_dir () {
 	archive_name=$( format_install_archive_name "${tag}" ) || die
 	archive_pattern=$( format_install_archive_name_pattern "${tag}" ) || die
 
-	log 'Restoring install'
+	log 'Restoring install directory'
 
 	if ! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 		! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
@@ -401,8 +401,6 @@ restore_install_dir () {
 	else
 		touch_cached_file "${archive_name}" || die
 	fi
-
-	log 'Install restored'
 }
 
 

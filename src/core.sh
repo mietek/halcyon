@@ -456,7 +456,7 @@ do_full_install_app () {
 		fi
 		if (( must_prepare )); then
 			if ! prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}"; then
-				log_warning 'Cannot prepare install'
+				log_warning 'Cannot prepare install directory'
 				return 1
 			fi
 			archive_install_dir "${install_dir}/${label}" || die

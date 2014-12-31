@@ -218,7 +218,7 @@ archive_build_dir () {
 	ghc_id=$( format_ghc_id "${build_tag}" ) || die
 	archive_name=$( format_build_archive_name "${build_tag}" ) || die
 
-	log 'Archiving build'
+	log 'Archiving build directory'
 
 	create_cached_archive "${build_dir}" "${archive_name}" || die
 	upload_cached_file "${platform}/ghc-${ghc_id}" "${archive_name}" || true
@@ -264,7 +264,7 @@ restore_build_dir () {
 	ghc_id=$( format_ghc_id "${tag}" ) || die
 	archive_name=$( format_build_archive_name "${tag}" ) || die
 
-	log 'Restoring build'
+	log 'Restoring build directory'
 
 	if ! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 		! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
@@ -278,8 +278,6 @@ restore_build_dir () {
 	else
 		touch_cached_file "${archive_name}" || die
 	fi
-
-	log 'Build restored'
 }
 
 
