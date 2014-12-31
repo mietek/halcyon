@@ -212,7 +212,7 @@ validate_partial_constraints_file () {
 }
 
 
-match_full_sandbox_layer () {
+match_full_sandbox_dir () {
 	expect_vars HALCYON_CACHE
 
 	local tag all_names
@@ -227,7 +227,7 @@ match_full_sandbox_layer () {
 		match_at_least_one
 	) || return 1
 
-	log 'Examining fully matching sandbox layers'
+	log 'Examining fully matching sandbox directories'
 
 	local full_name full_file full_hash
 	while read -r full_name; do
@@ -254,7 +254,7 @@ match_full_sandbox_layer () {
 }
 
 
-list_partial_sandbox_layers () {
+list_partial_sandbox_dirs () {
 	expect_vars HALCYON_CACHE
 
 	local tag constraints all_names
@@ -269,7 +269,7 @@ list_partial_sandbox_layers () {
 		match_at_least_one
 	) || return 0
 
-	log 'Examining partially matching sandbox layers'
+	log 'Examining partially matching sandbox directories'
 
 	local partial_name partial_file partial_hash
 	while read -r partial_name; do
@@ -293,7 +293,7 @@ list_partial_sandbox_layers () {
 }
 
 
-score_partial_sandbox_layers () {
+score_partial_sandbox_dirs () {
 	expect_vars HALCYON_CACHE
 
 	local constraints partial_tags
@@ -306,7 +306,7 @@ score_partial_sandbox_layers () {
 		package_version_map["${package}"]="${version}"
 	done <<<"${constraints}"
 
-	log 'Scoring partially matching sandbox layers'
+	log 'Scoring partially matching sandbox directories'
 
 	local partial_tag partial_name partial_file
 	while read -r partial_tag; do
@@ -350,8 +350,8 @@ score_partial_sandbox_layers () {
 }
 
 
-match_sandbox_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_LAYERS
+match_sandbox_dir () {
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
@@ -362,7 +362,7 @@ match_sandbox_layer () {
 	name_prefix=$( format_sandbox_common_file_name_prefix ) || die
 	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" ) || die
 
-	log 'Locating sandbox layers'
+	log 'Locating sandbox directories'
 
 	local all_names
 	all_names=$(
@@ -375,19 +375,19 @@ match_sandbox_layer () {
 	) || return 1
 
 	local full_tag
-	if full_tag=$( match_full_sandbox_layer "${tag}" "${all_names}" ); then
+	if full_tag=$( match_full_sandbox_dir "${tag}" "${all_names}" ); then
 		echo "${full_tag}"
 		return 0
 	fi
 
-	if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_LAYERS )); then
+	if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 		return 1
 	fi
 
 	local partial_tags result
-	partial_tags=$( list_partial_sandbox_layers "${tag}" "${constraints}" "${all_names}" ) || die
+	partial_tags=$( list_partial_sandbox_dirs "${tag}" "${constraints}" "${all_names}" ) || die
 	if result=$(
-		score_partial_sandbox_layers "${constraints}" "${partial_tags}" |
+		score_partial_sandbox_dirs "${constraints}" "${partial_tags}" |
 		sort_natural |
 		filter_last |
 		match_exactly_one

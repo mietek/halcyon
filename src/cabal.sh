@@ -40,7 +40,7 @@ detect_cabal_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect Cabal layer tag'
+		die 'Failed to detect Cabal tag'
 	fi
 
 	echo "${tag}"
@@ -230,7 +230,7 @@ copy_cabal_magic () {
 }
 
 
-build_cabal_layer () {
+build_cabal_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir
@@ -244,7 +244,7 @@ build_cabal_layer () {
 	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
 	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || die
 
-	log 'Building Cabal layer'
+	log 'Building Cabal directory'
 
 	rm -rf "${HALCYON_BASE}/cabal" || die
 
@@ -336,7 +336,7 @@ EOF
 		log 'Cabal post-build hook executed'
 	fi
 
-	log_indent_begin 'Stripping Cabal layer...'
+	log_indent_begin 'Stripping Cabal directory...'
 
 	strip_tree "${HALCYON_BASE}/cabal" || die
 
@@ -359,7 +359,7 @@ update_cabal_package_db () {
 	local cabal_date
 	cabal_date=$( get_date '+%Y-%m-%d' )
 
-	log 'Updating Cabal layer'
+	log 'Updating Cabal directory'
 
 	format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-cabal.config" || die
 
@@ -403,7 +403,7 @@ update_cabal_package_db () {
 }
 
 
-archive_cabal_layer () {
+archive_cabal_dir () {
 	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
 	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag"
 
@@ -416,7 +416,7 @@ archive_cabal_layer () {
 	platform=$( get_tag_platform "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
-	log 'Archiving Cabal layer'
+	log 'Archiving Cabal directory'
 
 	create_cached_archive "${HALCYON_BASE}/cabal" "${archive_name}" || die
 	if ! upload_cached_file "${platform}" "${archive_name}" || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
@@ -437,7 +437,7 @@ archive_cabal_layer () {
 }
 
 
-validate_base_cabal_layer () {
+validate_base_cabal_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -462,7 +462,7 @@ validate_updated_cabal_date () {
 }
 
 
-validate_updated_cabal_layer () {
+validate_updated_cabal_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -501,7 +501,7 @@ match_updated_cabal_archive_name () {
 }
 
 
-restore_base_cabal_layer () {
+restore_base_cabal_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -511,21 +511,21 @@ restore_base_cabal_layer () {
 	platform=$( get_tag_platform "${tag}" ) || die
 	base_name=$( format_base_cabal_archive_name "${tag}" ) || die
 
-	if validate_base_cabal_layer "${tag}" >'/dev/null'; then
-		log 'Using existing Cabal layer'
+	if validate_base_cabal_dir "${tag}" >'/dev/null'; then
+		log 'Using existing Cabal directory'
 
 		touch_cached_file "${base_name}" || die
 		return 0
 	fi
 
-	log 'Restoring base Cabal layer'
+	log 'Restoring base Cabal directory'
 
 	if ! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
-		! validate_base_cabal_layer "${tag}" >'/dev/null'
+		! validate_base_cabal_dir "${tag}" >'/dev/null'
 	then
 		if ! cache_stored_file "${platform}" "${base_name}" ||
 			! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
-			! validate_base_cabal_layer "${tag}" >'/dev/null'
+			! validate_base_cabal_dir "${tag}" >'/dev/null'
 		then
 			return 1
 		fi
@@ -535,7 +535,7 @@ restore_base_cabal_layer () {
 }
 
 
-restore_cached_updated_cabal_layer () {
+restore_cached_updated_cabal_dir () {
 	expect_vars HALCYON_BASE HALCYON_CACHE
 
 	local tag
@@ -547,8 +547,8 @@ restore_cached_updated_cabal_layer () {
 		match_updated_cabal_archive_name "${tag}"
 	) || true
 
-	if validate_updated_cabal_layer "${tag}" >'/dev/null'; then
-		log 'Using existing Cabal layer'
+	if validate_updated_cabal_dir "${tag}" >'/dev/null'; then
+		log 'Using existing Cabal directory'
 
 		touch_cached_file "${updated_name}" || die
 		return 0
@@ -558,10 +558,10 @@ restore_cached_updated_cabal_layer () {
 		return 1
 	fi
 
-	log 'Restoring Cabal layer'
+	log 'Restoring Cabal directory'
 
 	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
-		! validate_updated_cabal_layer "${tag}" >'/dev/null'
+		! validate_updated_cabal_dir "${tag}" >'/dev/null'
 	then
 		return 1
 	else
@@ -570,7 +570,7 @@ restore_cached_updated_cabal_layer () {
 }
 
 
-restore_updated_cabal_layer () {
+restore_updated_cabal_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -580,11 +580,11 @@ restore_updated_cabal_layer () {
 	platform=$( get_tag_platform "${tag}" ) || die
 	archive_prefix=$( format_updated_cabal_archive_name_prefix "${tag}" ) || die
 
-	if restore_cached_updated_cabal_layer "${tag}"; then
+	if restore_cached_updated_cabal_dir "${tag}"; then
 		return 0
 	fi
 
-	log 'Locating Cabal layers'
+	log 'Locating Cabal directories'
 
 	local updated_name
 	updated_name=$(
@@ -593,11 +593,11 @@ restore_updated_cabal_layer () {
 		match_updated_cabal_archive_name "${tag}"
 	) || return 1
 
-	log 'Restoring Cabal layer'
+	log 'Restoring Cabal directory'
 
 	if ! cache_stored_file "${platform}" "${updated_name}" ||
 		! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
-		! validate_updated_cabal_layer "${tag}" >'/dev/null'
+		! validate_updated_cabal_dir "${tag}" >'/dev/null'
 	then
 		rm -rf "${HALCYON_BASE}/cabal" || die
 		return 1
@@ -635,8 +635,8 @@ link_cabal_config () {
 }
 
 
-install_cabal_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_LAYERS \
+install_cabal_dir () {
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE
 
 	local tag source_dir
@@ -644,29 +644,29 @@ install_cabal_layer () {
 
 	if ! (( HALCYON_CABAL_REBUILD )); then
 		if ! (( HALCYON_CABAL_UPDATE )) &&
-			restore_updated_cabal_layer "${tag}"
+			restore_updated_cabal_dir "${tag}"
 		then
 			link_cabal_config || die
 			return 0
 		fi
 
-		if restore_base_cabal_layer "${tag}"; then
+		if restore_base_cabal_dir "${tag}"; then
 			update_cabal_package_db "${tag}" || die
-			archive_cabal_layer || die
+			archive_cabal_dir || die
 			link_cabal_config || die
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_LAYERS )); then
-			log_warning 'Cannot build Cabal layer'
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
+			log_warning 'Cannot build Cabal directory'
 			return 1
 		fi
 	fi
 
-	build_cabal_layer "${tag}" "${source_dir}" || die
-	archive_cabal_layer || die
+	build_cabal_dir "${tag}" "${source_dir}" || die
+	archive_cabal_dir || die
 	update_cabal_package_db "${tag}" || die
-	archive_cabal_layer || die
+	archive_cabal_dir || die
 	link_cabal_config || die
 }
 

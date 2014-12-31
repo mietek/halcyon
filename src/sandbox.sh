@@ -22,7 +22,7 @@ detect_sandbox_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect sandbox layer tag'
+		die 'Failed to detect sandbox tag'
 	fi
 
 	echo "${tag}"
@@ -311,7 +311,7 @@ install_sandbox_extra_apps () {
 }
 
 
-build_sandbox_layer () {
+build_sandbox_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir constraints must_create
@@ -325,7 +325,7 @@ build_sandbox_layer () {
 	fi
 	expect_existing "${source_dir}"
 
-	log 'Building sandbox layer'
+	log 'Building sandbox directory'
 
 	if (( must_create )); then
 		log 'Creating sandbox'
@@ -401,7 +401,7 @@ build_sandbox_layer () {
 	fi
 
 	if [[ -d "${HALCYON_BASE}/sandbox/logs" || -d "${HALCYON_BASE}/sandbox/share/doc" ]]; then
-		log_indent_begin 'Removing documentation from sandbox layer...'
+		log_indent_begin 'Removing documentation from sandbox directory...'
 
 		rm -rf "${HALCYON_BASE}/sandbox/logs" "${HALCYON_BASE}/sandbox/share/doc" || die
 
@@ -410,7 +410,7 @@ build_sandbox_layer () {
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
-	log_indent_begin 'Stripping sandbox layer...'
+	log_indent_begin 'Stripping sandbox directory...'
 
 	strip_tree "${HALCYON_BASE}/sandbox" || die
 
@@ -422,7 +422,7 @@ build_sandbox_layer () {
 }
 
 
-archive_sandbox_layer () {
+archive_sandbox_dir () {
 	expect_vars HALCYON_BASE HALCYON_CACHE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
 	expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
 		"${HALCYON_BASE}/sandbox/.halcyon-constraints"
@@ -438,7 +438,7 @@ archive_sandbox_layer () {
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	constraints_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
 
-	log 'Archiving sandbox layer'
+	log 'Archiving sandbox directory'
 
 	create_cached_archive "${HALCYON_BASE}/sandbox" "${archive_name}" || die
 	copy_file "${HALCYON_BASE}/sandbox/.halcyon-constraints" \
@@ -464,7 +464,7 @@ archive_sandbox_layer () {
 }
 
 
-validate_sandbox_layer () {
+validate_sandbox_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -476,7 +476,7 @@ validate_sandbox_layer () {
 }
 
 
-restore_sandbox_layer () {
+restore_sandbox_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -487,21 +487,21 @@ restore_sandbox_layer () {
 	ghc_id=$( format_ghc_id "${tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
 
-	if validate_sandbox_layer "${tag}" >'/dev/null'; then
-		log 'Using existing sandbox layer'
+	if validate_sandbox_dir "${tag}" >'/dev/null'; then
+		log 'Using existing sandbox directory'
 
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
 
-	log 'Restoring sandbox layer'
+	log 'Restoring sandbox directory'
 
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
-		! validate_sandbox_layer "${tag}" >'/dev/null'
+		! validate_sandbox_dir "${tag}" >'/dev/null'
 	then
 		if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
-			! validate_sandbox_layer "${tag}" >'/dev/null'
+			! validate_sandbox_dir "${tag}" >'/dev/null'
 		then
 			return 1
 		fi
@@ -528,7 +528,7 @@ recache_sandbox_package_db () {
 }
 
 
-install_matching_sandbox_layer () {
+install_matching_sandbox_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir constraints matching_tag
@@ -540,58 +540,58 @@ install_matching_sandbox_layer () {
 	matching_description=$( format_sandbox_description "${matching_tag}" ) || die
 
 	if [[ "${matching_hash}" == "${constraints_hash}" ]]; then
-		log_label 'Using fully matching sandbox layer:' "${matching_description}"
+		log "Using fully matching sandbox directory: ${matching_description}"
 
-		restore_sandbox_layer "${matching_tag}" || return 1
+		restore_sandbox_dir "${matching_tag}" || return 1
 		recache_sandbox_package_db || die
 
 		derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag" || die
 		return 0
 	fi
 
-	log_label 'Using partially matching sandbox layer:' "${matching_description}"
+	log "Using partially matching sandbox directory: ${matching_description}"
 
-	restore_sandbox_layer "${matching_tag}" || return 1
+	restore_sandbox_dir "${matching_tag}" || return 1
 	recache_sandbox_package_db || die
 
 	local must_create
 	must_create=0
-	build_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return 1
+	build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return 1
 }
 
 
-install_sandbox_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_LAYERS \
+install_sandbox_dir () {
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
 		HALCYON_SANDBOX_REBUILD
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
 	if ! (( HALCYON_SANDBOX_REBUILD )); then
-		if restore_sandbox_layer "${tag}"; then
+		if restore_sandbox_dir "${tag}"; then
 			recache_sandbox_package_db || die
 			return 0
 		fi
 
 		local matching_tag
-		if matching_tag=$( match_sandbox_layer "${tag}" "${constraints}" ) &&
-			install_matching_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${matching_tag}"
+		if matching_tag=$( match_sandbox_dir "${tag}" "${constraints}" ) &&
+			install_matching_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${matching_tag}"
 		then
-			archive_sandbox_layer || die
+			archive_sandbox_dir || die
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_LAYERS )); then
-			log_warning 'Cannot build sandbox layer'
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
+			log_warning 'Cannot build sandbox directory'
 			return 1
 		fi
 	fi
 
 	local must_create
 	must_create=1
-	if ! build_sandbox_layer "${tag}" "${source_dir}" "${constraints}" "${must_create}"; then
-		log_warning 'Cannot build sandbox layer'
+	if ! build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}"; then
+		log_warning 'Cannot build sandbox directory'
 		return 1
 	fi
-	archive_sandbox_layer || die
+	archive_sandbox_dir || die
 }

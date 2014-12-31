@@ -211,7 +211,7 @@ install_extra_os_packages () {
 }
 
 
-install_extra_layers () {
+install_extra_dependencies () {
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
 
@@ -225,18 +225,18 @@ install_extra_layers () {
 		copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
 	fi
 
-	if [[ ! -f "${source_dir}/.halcyon/extra-layers" ]]; then
+	if [[ ! -f "${source_dir}/.halcyon/extra-dependencies" ]]; then
 		return 0
 	fi
 
-	log_indent 'Including extra layers'
+	log_indent 'Including extra dependencies'
 
-	local extra_layers
-	extra_layers=$( <"${source_dir}/.halcyon/extra-layers" ) || die
+	local extra_dependencies
+	extra_dependencies=$( <"${source_dir}/.halcyon/extra-dependencies" ) || die
 
-	local layer
-	while read -r layer; do
-		case "${layer}" in
+	local dependency
+	while read -r dependency; do
+		case "${dependency}" in
 		'ghc')
 			copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
 			;;
@@ -247,9 +247,9 @@ install_extra_layers () {
 			copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || die
 			;;
 		*)
-			die "Unexpected extra layer: ${layer}"
+			die "Unexpected extra dependency: ${dependency}"
 		esac
-	done <<<"${extra_layers}"
+	done <<<"${extra_dependencies}"
 }
 
 
@@ -301,7 +301,7 @@ prepare_install_dir () {
 
 	install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
 	install_extra_os_packages "${tag}" "${source_dir}" "${install_dir}" || die
-	install_extra_layers "${tag}" "${source_dir}" "${install_dir}" || die
+	install_extra_dependencies "${tag}" "${source_dir}" "${install_dir}" || die
 
 	if [[ -f "${source_dir}/.halcyon/pre-install-hook" ]]; then
 		log 'Executing pre-install hook'

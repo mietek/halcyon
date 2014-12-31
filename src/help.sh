@@ -35,15 +35,15 @@ help_usage () {
 		  --app-rebuild
 		  --app-reconfigure
 		  --no-build
-		  --no-build-layers
+		  --no-build-dependencies
 
 		Install-time options
 		  --extra-apps=                           STRINGS | FILE
 		  --extra-apps-constraints=               STRINGS | FILE | DIR
 		  --extra-data-files=                     STRINGS | FILE
 		  --extra-os-packages=                    STRINGS | FILE
-		  --extra-layers=                         STRINGS | FILE
-		  --restore-layers
+		  --extra-dependencies=                   STRINGS | FILE
+		  --restore-dependencies
 		  --pre-install-hook=                     FILE
 		  --post-install-hook=                    FILE
 		  --app-reinstall
@@ -68,13 +68,13 @@ help_usage () {
 		  --no-upload
 		  --no-clean-private-storage
 
-		GHC layer options
+		GHC options
 		  --ghc-version=                          VERSION
 		  --ghc-pre-build-hook=                   FILE
 		  --ghc-post-build-hook=                  FILE
 		  --ghc-rebuild
 
-		Cabal layer options
+		Cabal options
 		  --cabal-version=                        VERSION
 		  --cabal-repo=                           STRING | FILE
 		  --cabal-pre-build-hook=                 FILE
@@ -84,7 +84,7 @@ help_usage () {
 		  --cabal-rebuild
 		  --cabal-update
 
-		Sandbox layer options
+		Sandbox options
 		  --sandbox-extra-configure-flags=        STRINGS | FILE
 		  --sandbox-sources=                      STRINGS | FILE
 		  --sandbox-extra-apps=                   STRINGS | FILE

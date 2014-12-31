@@ -162,7 +162,7 @@ announce_install () {
 	fi
 
 	if (( HALCYON_NO_APP )); then
-		log_label 'GHC and Cabal layers installed'
+		log_label 'GHC and Cabal directories installed'
 		return 0
 	fi
 
@@ -181,30 +181,30 @@ announce_install () {
 }
 
 
-do_install_ghc_and_cabal_layers () {
+do_install_ghc_and_cabal_dirs () {
 	expect_vars HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
-		if ! validate_ghc_layer "${tag}" >'/dev/null' ||
-			! validate_updated_cabal_layer "${tag}" >'/dev/null'
+		if ! validate_ghc_dir "${tag}" >'/dev/null' ||
+			! validate_updated_cabal_dir "${tag}" >'/dev/null'
 		then
-			die 'Failed to validate existing GHC and Cabal layers'
+			die 'Failed to validate existing GHC and Cabal directories'
 		fi
 		return 0
 	fi
 
-	install_ghc_layer "${tag}" "${source_dir}" || return 1
+	install_ghc_dir "${tag}" "${source_dir}" || return 1
 	log
 
-	install_cabal_layer "${tag}" "${source_dir}" || return 1
+	install_cabal_dir "${tag}" "${source_dir}" || return 1
 	log
 }
 
 
-install_ghc_and_cabal_layers () {
+install_ghc_and_cabal_dirs () {
 	expect_vars HALCYON_GHC_VERSION \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
@@ -222,7 +222,7 @@ install_ghc_and_cabal_layers () {
 	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		log 'Installing GHC and Cabal layers'
+		log 'Installing GHC and Cabal directories'
 
 		describe_storage || die
 
@@ -243,8 +243,8 @@ install_ghc_and_cabal_layers () {
 			''
 	) || die
 
-	if ! do_install_ghc_and_cabal_layers "${tag}" "${source_dir}"; then
-		log_warning 'Cannot install GHC and Cabal layers'
+	if ! do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}"; then
+		log_warning 'Cannot install GHC and Cabal directories'
 		return 1
 	fi
 
@@ -269,7 +269,7 @@ do_fast_install_app () {
 
 
 fast_install_app () {
-	expect_vars HALCYON_PREFIX HALCYON_RESTORE_LAYERS \
+	expect_vars HALCYON_PREFIX HALCYON_RESTORE_DEPENDENCIES \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_GHC_VERSION HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
@@ -280,7 +280,7 @@ fast_install_app () {
 	expect_args label source_hash source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if (( HALCYON_RESTORE_LAYERS )) ||
+	if (( HALCYON_RESTORE_DEPENDENCIES )) ||
 		(( HALCYON_APP_REBUILD )) || (( HALCYON_APP_RECONFIGURE )) || (( HALCYON_APP_REINSTALL )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
@@ -386,21 +386,21 @@ prepare_source_dir () {
 	prepare_constraints_option "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
 	prepare_file_strings_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || die
 	prepare_file_strings_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || die
-	prepare_file_strings_option "${HALCYON_EXTRA_LAYERS}" "${magic_dir}/extra-layers" || die
+	prepare_file_strings_option "${HALCYON_EXTRA_DEPENDENCIES}" "${magic_dir}/extra-dependencies" || die
 	prepare_file_option "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
 	prepare_file_option "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || die
 
-# GHC layer magic files
+# GHC magic files
 	prepare_file_option "${HALCYON_GHC_PRE_BUILD_HOOK}" "${magic_dir}/ghc-pre-build-hook" || die
 	prepare_file_option "${HALCYON_GHC_POST_BUILD_HOOK}" "${magic_dir}/ghc-post-build-hook" || die
 
-# Cabal layer options
+# Cabal magic files
 	prepare_file_option "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${magic_dir}/cabal-pre-build-hook" || die
 	prepare_file_option "${HALCYON_CABAL_POST_BUILD_HOOK}" "${magic_dir}/cabal-post-build-hook" || die
 	prepare_file_option "${HALCYON_CABAL_PRE_UPDATE_HOOK}" "${magic_dir}/cabal-pre-update-hook" || die
 	prepare_file_option "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${magic_dir}/cabal-post-update-hook" || die
 
-# Sandbox layer magic files
+# Sandbox magic files
 	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || die
 	prepare_file_strings_option "${HALCYON_SANDBOX_SOURCES}" "${magic_dir}/sandbox-sources" || die
 	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_APPS}" "${magic_dir}/sandbox-extra-apps" || die
@@ -426,7 +426,7 @@ do_full_install_app () {
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 	saved_sandbox=''
 
-	do_install_ghc_and_cabal_layers "${tag}" "${source_dir}" || return 1
+	do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}" || return 1
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
@@ -435,7 +435,7 @@ do_full_install_app () {
 		fi
 	fi
 
-	install_sandbox_layer "${tag}" "${source_dir}" "${constraints}" || return 1
+	install_sandbox_dir "${tag}" "${source_dir}" "${constraints}" || return 1
 	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
 	log
 
@@ -527,7 +527,7 @@ full_install_app () {
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
-			install_ghc_and_cabal_layers "${source_dir}" || return 1
+			install_ghc_and_cabal_dirs "${source_dir}" || return 1
 
 		log 'Determining constraints'
 
@@ -590,7 +590,7 @@ full_install_app () {
 	describe_extra 'Extra apps:' "${source_dir}/.halcyon/extra-apps"
 	describe_extra 'Extra data files:' "${source_dir}/.halcyon/extra-data-files"
 	describe_extra 'Extra OS packages:' "${source_dir}/.halcyon/extra-os-packages"
-	describe_extra 'Extra layers:' "${source_dir}/.halcyon/extra-layers"
+	describe_extra 'Extra dependencies:' "${source_dir}/.halcyon/extra-dependencies"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
 	describe_storage || die
@@ -703,7 +703,7 @@ install_unpacked_app () {
 	HALCYON_GHC_REBUILD=0 \
 	HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 	HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
-		install_ghc_and_cabal_layers '/dev/null' || return 1
+		install_ghc_and_cabal_dirs '/dev/null' || return 1
 
 	log 'Unpacking app'
 
@@ -737,11 +737,11 @@ halcyon_install () {
 	prepare_cache "${cache_dir}" || die
 
 	if (( HALCYON_NO_APP )); then
-		install_ghc_and_cabal_layers '/dev/null' || return 1
+		install_ghc_and_cabal_dirs '/dev/null' || return 1
 	elif ! (( $# )) || [[ "$1" == '' ]]; then
 		if ! detect_label '.' >'/dev/null'; then
 			HALCYON_NO_APP=1 \
-				install_ghc_and_cabal_layers '/dev/null' || return 1
+				install_ghc_and_cabal_dirs '/dev/null' || return 1
 		else
 			install_local_app '.' || return 1
 		fi

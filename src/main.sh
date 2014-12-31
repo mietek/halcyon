@@ -17,14 +17,14 @@ set_halcyon_vars () {
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
 		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
-		export HALCYON_NO_BUILD_LAYERS="${HALCYON_NO_BUILD_LAYERS:-0}"
+		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
 
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
 		export HALCYON_EXTRA_DATA_FILES="${HALCYON_EXTRA_DATA_FILES:-}"
 		export HALCYON_EXTRA_OS_PACKAGES="${HALCYON_EXTRA_OS_PACKAGES:-}"
-		export HALCYON_EXTRA_LAYERS="${HALCYON_EXTRA_LAYERS:-}"
-		export HALCYON_RESTORE_LAYERS="${HALCYON_RESTORE_LAYERS:-0}"
+		export HALCYON_EXTRA_DEPENDENCIES="${HALCYON_EXTRA_DEPENDENCIES:-}"
+		export HALCYON_RESTORE_DEPENDENCIES="${HALCYON_RESTORE_DEPENDENCIES:-0}"
 		export HALCYON_PRE_INSTALL_HOOK="${HALCYON_PRE_INSTALL_HOOK:-}"
 		export HALCYON_POST_INSTALL_HOOK="${HALCYON_POST_INSTALL_HOOK:-}"
 		export HALCYON_APP_REINSTALL="${HALCYON_APP_REINSTALL:-0}"
@@ -102,8 +102,8 @@ set_halcyon_vars () {
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
 		export HALCYON_EXTRA_DATA_FILES=''
 		export HALCYON_EXTRA_OS_PACKAGES=''
-		export HALCYON_EXTRA_LAYERS=''
-		export HALCYON_RESTORE_LAYERS=0
+		export HALCYON_EXTRA_DEPENDENCIES=''
+		export HALCYON_RESTORE_DEPENDENCIES=0
 		export HALCYON_PRE_INSTALL_HOOK=''
 		export HALCYON_POST_INSTALL_HOOK=''
 		export HALCYON_APP_REINSTALL=0
@@ -193,8 +193,8 @@ halcyon_main () {
 			export HALCYON_APP_RECONFIGURE=1;;
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
-		'--no-build-layers')
-			export HALCYON_NO_BUILD_LAYERS=1;;
+		'--no-build-dependencies')
+			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
 
 	# Install-time options
 		'--extra-apps')
@@ -221,14 +221,14 @@ halcyon_main () {
 			export HALCYON_EXTRA_OS_PACKAGES="${extra_os_packages}";;
 		'--extra-os-packages='*)
 			export HALCYON_EXTRA_OS_PACKAGES="${1#*=}";;
-		'--extra-layers')
+		'--extra-dependencies')
 			shift
-			expect_args extra_layers -- "$@"
-			export HALCYON_EXTRA_LAYERS="${extra_layers}";;
-		'--extra-layers='*)
-			export HALCYON_EXTRA_LAYERS="${1#*=}";;
-		'--restore-layers')
-			export HALCYON_RESTORE_LAYERS=1;;
+			expect_args extra_dependencies -- "$@"
+			export HALCYON_EXTRA_DEPENDENCIES="${extra_dependencies}";;
+		'--extra-dependencies='*)
+			export HALCYON_EXTRA_DEPENDENCIES="${1#*=}";;
+		'--restore-dependencies')
+			export HALCYON_RESTORE_DEPENDENCIES=1;;
 		'--pre-install-hook')
 			shift
 			expect_args pre_install_hook -- "$@"
@@ -306,7 +306,7 @@ halcyon_main () {
 		'--no-clean-private-storage')
 			export HALCYON_NO_CLEAN_PRIVATE_STORAGE=1;;
 
-	# GHC layer options
+	# GHC options
 		'--ghc-version')
 			shift
 			expect_args ghc_version -- "$@"
@@ -328,7 +328,7 @@ halcyon_main () {
 		'--ghc-rebuild')
 			export HALCYON_GHC_REBUILD=1;;
 
-	# Cabal layer options
+	# Cabal options
 		'--cabal-version')
 			shift
 			expect_args cabal_version -- "$@"
@@ -370,7 +370,7 @@ halcyon_main () {
 		'--cabal-update')
 			export HALCYON_CABAL_UPDATE=1;;
 
-	# Sandbox layer options
+	# Sandbox options
 		'--sandbox-extra-configure-flags')
 			shift
 			expect_args sandbox_extra_configure_flags -- "$@"

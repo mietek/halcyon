@@ -122,7 +122,7 @@ detect_ghc_tag () {
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect GHC layer tag'
+		die 'Failed to detect GHC tag'
 	fi
 
 	echo "${tag}"
@@ -308,7 +308,7 @@ link_ghc_libs () {
 }
 
 
-build_ghc_layer () {
+build_ghc_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag source_dir
@@ -322,7 +322,7 @@ build_ghc_layer () {
 	original_name=$( basename "${original_url}" ) || die
 	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || die
 
-	log 'Building GHC layer'
+	log 'Building GHC directory'
 
 	if ! extract_cached_archive_over "${original_name}" "${ghc_build_dir}"; then
 		if ! cache_original_stored_file "${original_url}"; then
@@ -378,7 +378,7 @@ build_ghc_layer () {
 	fi
 
 	if [[ -d "${HALCYON_BASE}/ghc/share/doc" ]]; then
-		log_indent_begin 'Removing documentation from GHC layer...'
+		log_indent_begin 'Removing documentation from GHC directory...'
 
 		rm -rf "${HALCYON_BASE}/ghc/share/doc" || die
 
@@ -387,7 +387,7 @@ build_ghc_layer () {
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
-	log_indent_begin 'Stripping GHC layer...'
+	log_indent_begin 'Stripping GHC directory...'
 
 	strip_tree "${HALCYON_BASE}/ghc" || die
 
@@ -401,7 +401,7 @@ build_ghc_layer () {
 }
 
 
-archive_ghc_layer () {
+archive_ghc_dir () {
 	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE
 	expect_existing "${HALCYON_BASE}/ghc/.halcyon-tag"
 
@@ -414,14 +414,14 @@ archive_ghc_layer () {
 	platform=$( get_tag_platform "${ghc_tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
-	log 'Archiving GHC layer'
+	log 'Archiving GHC directory'
 
 	create_cached_archive "${HALCYON_BASE}/ghc" "${archive_name}" || die
 	upload_cached_file "${platform}" "${archive_name}" || true
 }
 
 
-validate_ghc_layer () {
+validate_ghc_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -433,7 +433,7 @@ validate_ghc_layer () {
 }
 
 
-restore_ghc_layer () {
+restore_ghc_dir () {
 	expect_vars HALCYON_BASE
 
 	local tag
@@ -443,21 +443,21 @@ restore_ghc_layer () {
 	platform=$( get_tag_platform "${tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
 
-	if validate_ghc_layer "${tag}" >'/dev/null'; then
-		log 'Using existing GHC layer'
+	if validate_ghc_dir "${tag}" >'/dev/null'; then
+		log 'Using existing GHC'
 
 		touch_cached_file "${archive_name}" || die
 		return 0
 	fi
 
-	log 'Restoring GHC layer'
+	log 'Restoring GHC directory'
 
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
-		! validate_ghc_layer "${tag}" >'/dev/null'
+		! validate_ghc_dir "${tag}" >'/dev/null'
 	then
 		if ! cache_stored_file "${platform}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
-			! validate_ghc_layer "${tag}" >'/dev/null'
+			! validate_ghc_dir "${tag}" >'/dev/null'
 		then
 			return 1
 		fi
@@ -472,25 +472,25 @@ recache_ghc_package_db () {
 }
 
 
-install_ghc_layer () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_LAYERS \
+install_ghc_dir () {
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
 		HALCYON_GHC_REBUILD
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
 	if ! (( HALCYON_GHC_REBUILD )); then
-		if restore_ghc_layer "${tag}"; then
+		if restore_ghc_dir "${tag}"; then
 			recache_ghc_package_db || die
 			return 0
 		fi
 
-		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_LAYERS )); then
-			log_warning 'Cannot build GHC layer'
+		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
+			log_warning 'Cannot build GHC directory'
 			return 1
 		fi
 	fi
 
-	build_ghc_layer "${tag}" "${source_dir}" || die
-	archive_ghc_layer || die
+	build_ghc_dir "${tag}" "${source_dir}" || die
+	archive_ghc_dir || die
 }

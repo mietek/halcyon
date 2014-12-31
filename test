@@ -114,7 +114,7 @@ bench_first_build () {
 		halcyon install "${url}" "$@" 2>&1 | tee "${log_file}" || return 1
 
 	local restore_time sandbox_time build_time install_time
-	restore_time=$( filter_matching 'Building sandbox layer' <"${log_file}" | awk '{ print $2 }' )
+	restore_time=$( filter_matching 'Building sandbox directory' <"${log_file}" | awk '{ print $2 }' )
 	sandbox_time=$( filter_matching 'Configuring app' <"${log_file}" | awk '{ print $2 }' )
 	build_time=$( filter_matching 'Preparing install' <"${log_file}" | awk '{ print $2 }' )
 	install_time=$( filter_matching 'App installed' <"${log_file}" | awk '{ print $2 }' )
