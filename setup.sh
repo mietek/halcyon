@@ -1,4 +1,4 @@
-source <( curl -sL https://github.com/mietek/bashmenot/raw/master/src/platform.sh )
+source <( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' )
 
 case $( detect_platform ) in
 'linux-arch'*)
@@ -15,9 +15,9 @@ case $( detect_platform ) in
 'linux-debian-6'*)
 	apt-get update
 	apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev vim
-	echo 'export BASHMENOT_CURL_RETRIES=0' >>"${HOME}/.bash_profile"
+	echo 'export BASHMENOT_CURL_RETRIES=0' >>'.bash_profile'
 	;;
-'linux-debian-7'*|'linux-ubuntu-14'*)
+'linux-debian-7'*)
 	apt-get update
 	apt-get install -y build-essential git pigz zlib1g-dev vim
 	;;
@@ -25,7 +25,7 @@ case $( detect_platform ) in
 	yum groupinstall -y 'Development Tools'
 	yum install -y git pigz zlib-devel vim
 	;;
-'linux-fedora-20'*|'linux-fedora-21'*)
+'linux-fedora-2'[01]*)
 	yum groupinstall -y 'Development Tools'
 	yum install -y git patch pigz tar zlib-devel vim
 	systemctl disable firewalld
@@ -40,12 +40,16 @@ case $( detect_platform ) in
 	apt-get update
 	apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev vim
 	;;
+'linux-ubuntu-14'*)
+	apt-get update
+	apt-get install -y build-essential git pigz zlib1g-dev vim
+	;;
 *)
 	echo '	 *** ERROR: Unexpected platform' >&2
 	exit 1
 esac
 
-git clone https://github.com/mietek/halcyon
+git clone 'https://github.com/mietek/halcyon'
 
-echo 'source <( halcyon/halcyon paths )' >>"${HOME}/.bash_profile"
+echo 'source <( halcyon/halcyon paths )' >>'.bash_profile'
 source <( halcyon/halcyon paths )
