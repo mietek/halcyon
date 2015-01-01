@@ -486,7 +486,6 @@ halcyon_main () {
 		die "Please use 'halcyon install' instead of 'halcyon deploy'"
 		;;
 	'build')
-		HALCYON_NO_UPLOAD=1 \
 		HALCYON_NO_CLEAN_CACHE=1 \
 			halcyon_install "${args[@]:-}" || return 1
 		;;
