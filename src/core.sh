@@ -162,7 +162,7 @@ announce_install () {
 	fi
 
 	if (( HALCYON_NO_APP )); then
-		log_label 'GHC and Cabal directories installed'
+		log_label 'GHC and Cabal installed'
 		return 0
 	fi
 
@@ -222,7 +222,7 @@ install_ghc_and_cabal_dirs () {
 	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		log 'Installing GHC and Cabal directories'
+		log 'Installing GHC and Cabal'
 
 		describe_storage || die
 
@@ -244,7 +244,7 @@ install_ghc_and_cabal_dirs () {
 	) || die
 
 	if ! do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}"; then
-		log_warning 'Cannot install GHC and Cabal directories'
+		log_warning 'Cannot install GHC and Cabal'
 		return 1
 	fi
 
