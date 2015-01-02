@@ -236,28 +236,18 @@ build_cabal_dir () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	local ghc_version cabal_version original_url original_name cabal_build_dir cabal_home_dir
+	rm -rf "${HALCYON_BASE}/cabal" || die
+
+	local ghc_version cabal_version cabal_original_url cabal_build_dir cabal_home_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-	original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
-	original_name=$( basename "${original_url}" ) || die
+	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
 	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
 	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || die
 
 	log 'Building Cabal directory'
 
-	rm -rf "${HALCYON_BASE}/cabal" || die
-
-	if ! extract_cached_archive_over "${original_name}" "${cabal_build_dir}"; then
-		if ! cache_original_stored_file "${original_url}"; then
-			die 'Failed to download original Cabal archive'
-		fi
-		if ! extract_cached_archive_over "${original_name}" "${cabal_build_dir}"; then
-			die 'Failed to extract original Cabal archive'
-		fi
-	else
-		touch_cached_file "${original_name}" || die
-	fi
+	acquire_original_source "${cabal_original_url}" "${cabal_build_dir}" || die
 
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'

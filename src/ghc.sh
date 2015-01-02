@@ -316,24 +316,14 @@ build_ghc_dir () {
 
 	rm -rf "${HALCYON_BASE}/ghc" || die
 
-	local ghc_version original_url original_name ghc_build_dir
+	local ghc_version ghc_original_url ghc_build_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	original_url=$( link_ghc_libs "${tag}" ) || die
-	original_name=$( basename "${original_url}" ) || die
+	ghc_original_url=$( link_ghc_libs "${tag}" ) || die
 	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || die
 
 	log 'Building GHC directory'
 
-	if ! extract_cached_archive_over "${original_name}" "${ghc_build_dir}"; then
-		if ! cache_original_stored_file "${original_url}"; then
-			die 'Failed to download original GHC archive'
-		fi
-		if ! extract_cached_archive_over "${original_name}" "${ghc_build_dir}"; then
-			die 'Failed to extract original GHC archive'
-		fi
-	else
-		touch_cached_file "${original_name}" || die
-	fi
+	acquire_original_source "${ghc_original_url}" "${ghc_build_dir}" || die
 
 	if [[ -f "${source_dir}/.halcyon/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'

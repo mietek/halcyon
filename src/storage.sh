@@ -77,6 +77,28 @@ touch_cached_file () {
 }
 
 
+acquire_original_source () {
+	local original_url dst_dir
+	expect_args original_url dst_dir -- "$@"
+
+	local original_name
+	original_name=$( basename "${original_url}" ) || return 1
+
+	if ! extract_cached_archive_over "${original_name}" "${dst_dir}"; then
+		if ! cache_original_stored_file "${original_url}"; then
+			log_error 'Failed to download original archive'
+			return 1
+		fi
+		if ! extract_cached_archive_over "${original_name}" "${dst_dir}"; then
+			log_error 'Failed to extract original archive'
+			return 1
+		fi
+	else
+		touch_cached_file "${original_name}" || true
+	fi
+}
+
+
 touch_cached_ghc_and_cabal_files () {
 	expect_vars HALCYON_CACHE
 
