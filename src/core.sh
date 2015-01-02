@@ -110,16 +110,16 @@ describe_extra () {
 		return 0
 	fi
 
-	local -a extra_lines
-	extra_lines=( $( <"${extra_file}" ) ) || die
-	if [[ -z "${extra_lines[@]:+_}" ]]; then
+	local -a extra_a
+	extra_a=( $( <"${extra_file}" ) ) || die
+	if [[ -z "${extra_a[@]:+_}" ]]; then
 		return 0
 	fi
 
-	local only_first extra_line
+	local only_first extra
 	only_first="${extra_label}"
-	for extra_line in "${extra_lines[@]}"; do
-		log_indent_label "${only_first}" "${extra_line}"
+	for extra in "${extra_a[@]}"; do
+		log_indent_label "${only_first}" "${extra}"
 		only_first=''
 	done
 }
@@ -341,10 +341,10 @@ prepare_file_strings_option () {
 		return 0
 	fi
 
-	local -a strings
-	strings=( ${magic_var} )
+	local -a strings_a
+	strings_a=( ${magic_var} )
 
-	copy_file <( IFS=$'\n' && echo "${strings[*]}" ) "${magic_file}" || die
+	copy_file <( IFS=$'\n' && echo "${strings_a[*]}" ) "${magic_file}" || die
 }
 
 

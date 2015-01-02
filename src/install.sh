@@ -90,9 +90,9 @@ install_extra_apps () {
 		return 0
 	fi
 
-	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon/extra-apps" ) ) || die
-	if [[ -z "${extra_apps[@]:+_}" ]]; then
+	local -a extra_apps_a
+	extra_apps_a=( $( <"${source_dir}/.halcyon/extra-apps" ) ) || die
+	if [[ -z "${extra_apps_a[@]:+_}" ]]; then
 		return 0
 	fi
 
@@ -111,20 +111,20 @@ install_extra_apps () {
 	local extra_constraints
 	extra_constraints="${source_dir}/.halcyon/extra-apps-constraints"
 
-	local -a opts
-	opts=()
-	opts+=( --prefix="${prefix}" )
-	opts+=( --root="${install_dir}" )
-	opts+=( --ghc-version="${ghc_version}" )
-	opts+=( --cabal-version="${cabal_version}" )
-	opts+=( --cabal-repo="${cabal_repo}" )
-	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${extra_constraints}" )
+	local -a opts_a
+	opts_a=()
+	opts_a+=( --prefix="${prefix}" )
+	opts_a+=( --root="${install_dir}" )
+	opts_a+=( --ghc-version="${ghc_version}" )
+	opts_a+=( --cabal-version="${cabal_version}" )
+	opts_a+=( --cabal-repo="${cabal_repo}" )
+	[[ -e "${extra_constraints}" ]] && opts_a+=( --constraints="${extra_constraints}" )
 
 	log 'Installing extra apps'
 
 	local extra_app index
 	index=0
-	for extra_app in "${extra_apps[@]}"; do
+	for extra_app in "${extra_apps_a[@]}"; do
 		local thing
 		if [[ -d "${source_dir}/${extra_app}" ]]; then
 			thing="${source_dir}/${extra_app}"
@@ -141,7 +141,7 @@ install_extra_apps () {
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 		HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE=1 \
-			halcyon install "${opts[@]}" "${thing}" 2>&1 | quote || return 1
+			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return 1
 	done
 }
 
@@ -171,14 +171,14 @@ install_extra_data_files () {
 			cd "${build_dir}"
 			IFS=''
 
-			local -a files
-			files=( ${glob} )
-			if [[ -z "${files[@]:+_}" ]]; then
+			local -a files_a
+			files_a=( ${glob} )
+			if [[ -z "${files_a[@]:+_}" ]]; then
 				return 0
 			fi
 
 			local file
-			for file in "${files[@]}"; do
+			for file in "${files_a[@]}"; do
 				if [[ ! -e "${file}" ]]; then
 					continue
 				fi

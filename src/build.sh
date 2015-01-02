@@ -114,20 +114,20 @@ do_build_app () {
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'
 
-		local -a opts
-		opts=()
+		local -a opts_a
+		opts_a=()
 		if [[ -f "${source_dir}/.halcyon/extra-configure-flags" ]]; then
-			local -a raw_opts
-			raw_opts=( $( <"${source_dir}/.halcyon/extra-configure-flags" ) ) || die
-			opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
+			local -a raw_opts_a
+			raw_opts_a=( $( <"${source_dir}/.halcyon/extra-configure-flags" ) ) || die
+			opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix' ) )
 		fi
-		opts+=( --prefix="${prefix}" )
-		opts+=( --verbose )
+		opts_a+=( --prefix="${prefix}" )
+		opts_a+=( --verbose )
 
 		local stdout
 		stdout=$( get_tmp_file 'halcyon-cabal-configure-stdout' ) || die
 
-		if ! sandboxed_cabal_do "${build_dir}" configure "${opts[@]}" >"${stdout}" 2>&1 | quote; then
+		if ! sandboxed_cabal_do "${build_dir}" configure "${opts_a[@]}" >"${stdout}" 2>&1 | quote; then
 			quote <"${stdout}"
 			die 'Failed to configure app'
 		fi

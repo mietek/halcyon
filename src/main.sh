@@ -129,9 +129,9 @@ set_halcyon_vars () {
 
 halcyon_main () {
 	local cmd
-	local -a args
+	local -a args_a
 	cmd=''
-	args=()
+	args_a=()
 
 	while (( $# )); do
 		case "$1" in
@@ -422,7 +422,7 @@ halcyon_main () {
 				if [[ -z "${cmd}" ]]; then
 					cmd="$1"
 				else
-					args+=( "$1" )
+					args_a+=( "$1" )
 				fi
 				shift
 			done
@@ -436,7 +436,7 @@ halcyon_main () {
 			if [[ -z "${cmd}" ]]; then
 				cmd="$1"
 			else
-				args+=( "$1" )
+				args_a+=( "$1" )
 			fi
 		esac
 		shift
@@ -480,18 +480,18 @@ halcyon_main () {
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'install')
-		halcyon_install "${args[@]:-}" || return 1
+		halcyon_install "${args_a[@]:-}" || return 1
 		;;
 	'deploy')
 		die "Please use 'halcyon install' instead of 'halcyon deploy'"
 		;;
 	'build')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install "${args[@]:-}" || return 1
+			halcyon_install "${args_a[@]:-}" || return 1
 		;;
 	'label'|'executable'|'constraints'|'tag')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install "${args[@]:-}" || return 1
+			halcyon_install "${args_a[@]:-}" || return 1
 		;;
 	'paths')
 		echo -e "export HALCYON_DIR='${HALCYON_DIR}'"
@@ -505,7 +505,7 @@ halcyon_main () {
 		die
 		;;
 	*)
-		log_error "Unexpected command: ${cmd} ${args[*]:-}"
+		log_error "Unexpected command: ${cmd} ${args_a[*]:-}"
 		help_usage
 		die
 	esac

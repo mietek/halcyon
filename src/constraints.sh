@@ -109,16 +109,16 @@ detect_constraints () {
 		sort_natural
 	) || return 1
 
-	local -A package_version_map
+	local -A packages_A
 	local base_version candidate_package candidate_version
-	package_version_map=()
+	packages_A=()
 	base_version=''
 	while read -r candidate_package candidate_version; do
-		if [[ -n "${package_version_map[${candidate_package}]:+_}" ]]; then
-			log_error "Unexpected duplicate constraint: ${candidate_package}-${candidate-version} (${package_version_map[${candidate_package}]})"
+		if [[ -n "${packages_A[${candidate_package}]:+_}" ]]; then
+			log_error "Unexpected duplicate constraint: ${candidate_package}-${candidate-version} (${packages_A[${candidate_package}]})"
 			return 1
 		fi
-		package_version_map["${candidate_package}"]="${candidate_version}"
+		packages_A["${candidate_package}"]="${candidate_version}"
 		if [[ ${candidate_package} == 'base' ]]; then
 			base_version="${candidate_version}"
 		fi
@@ -299,11 +299,11 @@ score_partial_sandbox_dirs () {
 	local constraints partial_tags
 	expect_args constraints partial_tags -- "$@"
 
-	local -A package_version_map
+	local -A packages_A
 	local package version
-	package_version_map=()
+	packages_A=()
 	while read -r package version; do
-		package_version_map["${package}"]="${version}"
+		packages_A["${package}"]="${version}"
 	done <<<"${constraints}"
 
 	log 'Scoring partially matching sandbox directories'
@@ -323,7 +323,7 @@ score_partial_sandbox_dirs () {
 		local partial_package partial_version version score
 		score=0
 		while read -r partial_package partial_version; do
-			version="${package_version_map[${partial_package}]:-}"
+			version="${packages_A[${partial_package}]:-}"
 			if [[ -z "${version}" ]]; then
 				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not needed"
 				score=''

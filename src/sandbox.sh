@@ -207,19 +207,19 @@ add_sandbox_sources () {
 	local sources_dir
 	sources_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources"
 
-	local all_names
-	if ! all_names=$( git_acquire_all "${source_dir}" "${sandbox_sources}" "${sources_dir}" ); then
+	local names
+	if ! names=$( git_acquire_all "${source_dir}" "${sandbox_sources}" "${sources_dir}" ); then
 		die 'Failed to add sandbox sources'
 	fi
 
-	local -a names
-	names=( ${all_names} )
-	if [[ -z "${names[@]:+_}" ]]; then
+	local -a names_a
+	names_a=( ${names} )
+	if [[ -z "${names_a[@]:+_}" ]]; then
 		return 0
 	fi
 
 	local name
-	for name in "${names[@]}"; do
+	for name in "${names_a[@]}"; do
 		log "Adding sandbox source: ${name}"
 
 		sandboxed_cabal_do "${source_dir}" sandbox add-source "${sources_dir}/${name}" || die
@@ -258,9 +258,9 @@ install_sandbox_extra_apps () {
 		return 0
 	fi
 
-	local -a extra_apps
-	extra_apps=( $( <"${source_dir}/.halcyon/sandbox-extra-apps" ) ) || die
-	if [[ -z "${extra_apps[@]:+_}" ]]; then
+	local -a extra_apps_a
+	extra_apps_a=( $( <"${source_dir}/.halcyon/sandbox-extra-apps" ) ) || die
+	if [[ -z "${extra_apps_a[@]:+_}" ]]; then
 		return 0
 	fi
 
@@ -276,20 +276,20 @@ install_sandbox_extra_apps () {
 	local extra_constraints
 	extra_constraints="${source_dir}/.halcyon/sandbox-extra-apps-constraints"
 
-	local -a opts
-	opts=()
-	opts+=( --root='/' )
-	opts+=( --prefix="${HALCYON_BASE}/sandbox" )
-	opts+=( --ghc-version="${ghc_version}" )
-	opts+=( --cabal-version="${cabal_version}" )
-	opts+=( --cabal-repo="${cabal_repo}" )
-	[[ -e "${extra_constraints}" ]] && opts+=( --constraints="${extra_constraints}" )
+	local -a opts_a
+	opts_a=()
+	opts_a+=( --root='/' )
+	opts_a+=( --prefix="${HALCYON_BASE}/sandbox" )
+	opts_a+=( --ghc-version="${ghc_version}" )
+	opts_a+=( --cabal-version="${cabal_version}" )
+	opts_a+=( --cabal-repo="${cabal_repo}" )
+	[[ -e "${extra_constraints}" ]] && opts_a+=( --constraints="${extra_constraints}" )
 
 	log 'Installing sandbox extra apps'
 
 	local extra_app index
 	index=0
-	for extra_app in "${extra_apps[@]}"; do
+	for extra_app in "${extra_apps_a[@]}"; do
 		local thing
 		if [[ -d "${source_dir}/${extra_app}" ]]; then
 			thing="${source_dir}/${extra_app}"
@@ -306,7 +306,7 @@ install_sandbox_extra_apps () {
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 		HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE=1 \
-			halcyon install "${opts[@]}" "${thing}" 2>&1 | quote || return 1
+			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return 1
 	done
 }
 
@@ -366,18 +366,18 @@ build_sandbox_dir () {
 
 	log 'Building sandbox'
 
-	local -a opts
-	opts=()
+	local -a opts_a
+	opts_a=()
 	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
-		local -a raw_opts
-		raw_opts=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || die
-		opts=( $( IFS=$'\n' && echo "${raw_opts[*]:-}" | filter_not_matching '^--prefix' ) )
+		local -a raw_opts_a
+		raw_opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || die
+		opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix' ) )
 	fi
-	opts+=( --dependencies-only )
-	opts+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
-	opts+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
+	opts_a+=( --dependencies-only )
+	opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
+	opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
 
-	if ! sandboxed_cabal_do "${source_dir}" install "${opts[@]}" 2>&1 | quote; then
+	if ! sandboxed_cabal_do "${source_dir}" install "${opts_a[@]}" 2>&1 | quote; then
 		die 'Failed to build sandbox'
 	fi
 
