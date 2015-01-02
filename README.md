@@ -7,7 +7,7 @@ Halcyon is a system for installing Haskell applications.
 Usage
 -----
 
-The [`halcyon install`](https://halcyon.sh/#usage) command is intended to be used instead of `cabal install`.
+The `halcyon install` command can be used instead of `cabal install`.
 
 ```
 $ halcyon install https://github.com/mietek/howistart
