@@ -300,7 +300,6 @@ install_sandbox_extra_apps () {
 		index=$(( index + 1 ))
 		if (( index > 1 )); then
 			log
-			log
 		fi
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
