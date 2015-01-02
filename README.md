@@ -10,8 +10,7 @@ Usage
 The [`halcyon install`](https://halcyon.sh/#usage) command is intended to be used instead of `cabal install`.
 
 ```
-$ halcyon install https://github.com/mietek/hello
-$ hello
+$ halcyon install https://github.com/mietek/howistart
 ```
 
 See the [Halcyon website](https://halcyon.sh/) for more information.
