@@ -208,7 +208,7 @@ add_sandbox_sources () {
 	sources_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources"
 
 	local all_names
-	if ! all_names=$( git_all_over_here "${source_dir}" "${sandbox_sources}" "${sources_dir}" ); then
+	if ! all_names=$( git_acquire_all "${source_dir}" "${sandbox_sources}" "${sources_dir}" ); then
 		die 'Failed to add sandbox sources'
 	fi
 
