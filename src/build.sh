@@ -202,7 +202,8 @@ do_build_app () {
 
 
 archive_build_dir () {
-	expect_vars HALCYON_NO_ARCHIVE
+	expect_vars HALCYON_NO_ARCHIVE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local build_dir
 	expect_args build_dir -- "$@"
@@ -212,16 +213,15 @@ archive_build_dir () {
 		return 0
 	fi
 
-	local build_tag platform ghc_id archive_name
+	local build_tag ghc_id archive_name
 	build_tag=$( detect_build_tag "${build_dir}/.halcyon-tag" ) || die
-	platform=$( get_tag_platform "${build_tag}" ) || die
 	ghc_id=$( format_ghc_id "${build_tag}" ) || die
 	archive_name=$( format_build_archive_name "${build_tag}" ) || die
 
 	log 'Archiving build directory'
 
 	create_cached_archive "${build_dir}" "${archive_name}" || die
-	upload_cached_file "${platform}/ghc-${ghc_id}" "${archive_name}" || true
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || true
 }
 
 
@@ -256,11 +256,12 @@ validate_build_dir () {
 
 
 restore_build_dir () {
+	expect_vars HALCYON_INTERNAL_PLATFORM
+
 	local tag build_dir
 	expect_args tag build_dir -- "$@"
 
-	local platform ghc_id archive_name
-	platform=$( get_tag_platform "${tag}" ) || die
+	local ghc_id archive_name
 	ghc_id=$( format_ghc_id "${tag}" ) || die
 	archive_name=$( format_build_archive_name "${tag}" ) || die
 
@@ -269,7 +270,7 @@ restore_build_dir () {
 	if ! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 		! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
 	then
-		if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${archive_name}" ||
+		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 			! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
 		then

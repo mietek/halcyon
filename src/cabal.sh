@@ -394,22 +394,22 @@ update_cabal_package_db () {
 
 
 archive_cabal_dir () {
-	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE
+	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE \
+		HALCYON_INTERNAL_PLATFORM
 	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
-	local cabal_tag platform archive_name
+	local cabal_tag archive_name
 	cabal_tag=$( detect_cabal_tag "${HALCYON_BASE}/cabal/.halcyon-tag" ) || die
-	platform=$( get_tag_platform "${cabal_tag}" ) || die
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
 	log 'Archiving Cabal directory'
 
 	create_cached_archive "${HALCYON_BASE}/cabal" "${archive_name}" || die
-	if ! upload_cached_file "${platform}" "${archive_name}" || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
+	if ! upload_cached_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
 		return 0
 	fi
 
@@ -423,7 +423,7 @@ archive_cabal_dir () {
 	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" ) || die
 	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" ) || die
 
-	delete_matching_private_stored_files "${platform}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
 }
 
 
@@ -492,13 +492,13 @@ match_updated_cabal_archive_name () {
 
 
 restore_base_cabal_dir () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag
 	expect_args tag -- "$@"
 
-	local platform base_name
-	platform=$( get_tag_platform "${tag}" ) || die
+	local base_name
 	base_name=$( format_base_cabal_archive_name "${tag}" ) || die
 
 	if validate_base_cabal_dir "${tag}" >'/dev/null'; then
@@ -513,7 +513,7 @@ restore_base_cabal_dir () {
 	if ! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_base_cabal_dir "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${platform}" "${base_name}" ||
+		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${base_name}" ||
 			! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 			! validate_base_cabal_dir "${tag}" >'/dev/null'
 		then
@@ -561,13 +561,13 @@ restore_cached_updated_cabal_dir () {
 
 
 restore_updated_cabal_dir () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag
 	expect_args tag -- "$@"
 
-	local platform archive_prefix
-	platform=$( get_tag_platform "${tag}" ) || die
+	local archive_prefix
 	archive_prefix=$( format_updated_cabal_archive_name_prefix "${tag}" ) || die
 
 	if restore_cached_updated_cabal_dir "${tag}"; then
@@ -578,14 +578,14 @@ restore_updated_cabal_dir () {
 
 	local updated_name
 	updated_name=$(
-		list_stored_files "${platform}/${archive_prefix}" |
-		sed "s:^${platform}/::" |
+		list_stored_files "${HALCYON_INTERNAL_PLATFORM}/${archive_prefix}" |
+		sed "s:^${HALCYON_INTERNAL_PLATFORM}/::" |
 		match_updated_cabal_archive_name "${tag}"
 	) || return 1
 
 	log 'Restoring Cabal directory'
 
-	if ! cache_stored_file "${platform}" "${updated_name}" ||
+	if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${updated_name}" ||
 		! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_updated_cabal_dir "${tag}" >'/dev/null'
 	then

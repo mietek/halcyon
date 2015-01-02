@@ -213,13 +213,13 @@ validate_partial_constraints_file () {
 
 
 match_full_sandbox_dir () {
-	expect_vars HALCYON_CACHE
+	expect_vars HALCYON_CACHE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag all_names
 	expect_args tag all_names -- "$@"
 
-	local platform ghc_id full_pattern full_names
-	platform=$( get_tag_platform "${tag}" ) || die
+	local ghc_id full_pattern full_names
 	ghc_id=$( format_ghc_id "${tag}" ) || die
 	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
 	full_names=$(
@@ -233,7 +233,7 @@ match_full_sandbox_dir () {
 	while read -r full_name; do
 		full_file="${HALCYON_CACHE}/${full_name}"
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
-			if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${full_name}" ||
+			if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
 			then
 				continue
@@ -255,13 +255,13 @@ match_full_sandbox_dir () {
 
 
 list_partial_sandbox_dirs () {
-	expect_vars HALCYON_CACHE
+	expect_vars HALCYON_CACHE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag constraints all_names
 	expect_args tag constraints all_names -- "$@"
 
-	local platform ghc_id full_pattern partial_names
-	platform=$( get_tag_platform "${tag}" ) || die
+	local ghc_id full_pattern partial_names
 	ghc_id=$( format_ghc_id "${tag}" ) || die
 	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
 	partial_names=$(
@@ -275,7 +275,7 @@ list_partial_sandbox_dirs () {
 	while read -r partial_name; do
 		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
-			if ! cache_stored_file "${platform}/ghc-${ghc_id}" "${partial_name}" ||
+			if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
 			then
 				continue
@@ -351,12 +351,13 @@ score_partial_sandbox_dirs () {
 
 
 match_sandbox_dir () {
-	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES
+	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
+		HALCYON_INTERNAL_PLATFORM
+
 	local tag constraints
 	expect_args tag constraints -- "$@"
 
-	local platform ghc_id constraints_name name_prefix partial_pattern
-	platform=$( get_tag_platform "${tag}" ) || die
+	local ghc_id constraints_name name_prefix partial_pattern
 	ghc_id=$( format_ghc_id "${tag}" ) || die
 	constraints_name=$( format_sandbox_constraints_file_name "${tag}" ) || die
 	name_prefix=$( format_sandbox_common_file_name_prefix ) || die
@@ -366,8 +367,8 @@ match_sandbox_dir () {
 
 	local all_names
 	all_names=$(
-		list_stored_files "${platform}/ghc-${ghc_id}/${name_prefix}" |
-		sed "s:^${platform}/ghc-${ghc_id}/::" |
+		list_stored_files "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}/${name_prefix}" |
+		sed "s:^${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}/::" |
 		filter_matching "^${partial_pattern}$" |
 		filter_not_matching "^${constraints_name}$" |
 		sort_natural -u |

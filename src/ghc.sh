@@ -203,13 +203,13 @@ copy_ghc_magic () {
 
 
 link_ghc_libs () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag
 	expect_args tag -- "$@"
 
-	local platform ghc_version
-	platform=$( get_tag_platform "${tag}" ) || die
+	local ghc_version
 	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
 
 	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
@@ -219,7 +219,7 @@ link_ghc_libs () {
 	# symlinked to .3, and the .3-flavoured binary distribution is used.
 
 	local gmp_name gmp_file tinfo_file url
-	case "${platform}" in
+	case "${HALCYON_INTERNAL_PLATFORM}" in
 	'linux-debian-7-x86_64'|'linux-ubuntu-14'*'-x86_64')
 		gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
@@ -283,7 +283,7 @@ link_ghc_libs () {
 		;;
 	*)
 		local description
-		description=$( format_platform_description "${platform}" ) || die
+		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" ) || die
 
 		die "Unexpected platform: ${description}"
 	esac
@@ -392,22 +392,22 @@ build_ghc_dir () {
 
 
 archive_ghc_dir () {
-	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE
+	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE \
+		HALCYON_INTERNAL_PLATFORM
 	expect_existing "${HALCYON_BASE}/ghc/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
 
-	local ghc_tag platform archive_name
+	local ghc_tag archive_name
 	ghc_tag=$( detect_ghc_tag "${HALCYON_BASE}/ghc/.halcyon-tag") || die
-	platform=$( get_tag_platform "${ghc_tag}" ) || die
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	log 'Archiving GHC directory'
 
 	create_cached_archive "${HALCYON_BASE}/ghc" "${archive_name}" || die
-	upload_cached_file "${platform}" "${archive_name}" || true
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" || true
 }
 
 
@@ -424,13 +424,13 @@ validate_ghc_dir () {
 
 
 restore_ghc_dir () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag
 	expect_args tag -- "$@"
 
-	local platform archive_name
-	platform=$( get_tag_platform "${tag}" ) || die
+	local archive_name
 	archive_name=$( format_ghc_archive_name "${tag}" ) || die
 
 	if validate_ghc_dir "${tag}" >'/dev/null'; then
@@ -445,7 +445,7 @@ restore_ghc_dir () {
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
 		! validate_ghc_dir "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${platform}" "${archive_name}" ||
+		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" ||
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
 			! validate_ghc_dir "${tag}" >'/dev/null'
 		then
