@@ -63,6 +63,9 @@ if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 	if (( is_debian )); then
 		path+=( "${HALCYON_BASE}/usr/lib/x86_64-linux-gnu/pkgconfig" )
 		path+=( "${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu/pkgconfig" )
+	elif (( is_redhat )); then
+		path+=( "${HALCYON_BASE}/usr/lib64/pkgconfig" )
+		path+=( "${HALCYON_BASE}/sandbox/usr/lib64/pkgconfig" )
 	fi
 	export PKG_CONFIG_PATH=$( IFS=':' && echo "${path[*]}:${PKG_CONFIG_PATH:-}" )
 
