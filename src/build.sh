@@ -316,7 +316,7 @@ prepare_build_dir () {
 	local file
 	filter_matching '^= ' <<<"${all_files}" |
 		while read -r file; do
-			cp -p "${build_dir}/${file#= }" "${prepare_dir}/${file#= }" || die
+			touch -r "${build_dir}/${file#= }" "${prepare_dir}/${file#= }" || die
 		done
 
 	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for
