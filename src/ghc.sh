@@ -196,8 +196,9 @@ copy_ghc_magic () {
 	local file
 	find_tree "${source_dir}/.halcyon" -type f -path './ghc*' |
 		while read -r file; do
-			copy_file_into "${source_dir}/.halcyon/${file}" "${HALCYON_BASE}/ghc/.halcyon" || die
-		done
+			copy_file "${source_dir}/.halcyon/${file}" \
+				"${HALCYON_BASE}/ghc/.halcyon/${file}" || die
+		done || die
 }
 
 

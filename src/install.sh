@@ -181,11 +181,9 @@ install_extra_data_files () {
 				if [[ ! -e "${file}" ]]; then
 					continue
 				fi
-
-				local dst_dir
-				dst_dir=$( dirname "${install_dir}${data_dir}/${file}" ) || die
-
-				copy_file_into "${file}" "${dst_dir}" || die
+				dir=$( dirname "${install_dir}${data_dir}/${file}" ) || die
+				mkdir -p "${dir}" || die
+				cp -Rp "${file}" "${install_dir}${data_dir}/${file}" || die
 			done
 		) || die
 	done <<<"${extra_files}"
@@ -426,6 +424,9 @@ install_app () {
 		log_begin "Installing app into ${HALCYON_ROOT}${prefix}..."
 	fi
 
+	# NOTE: When / is read-only, but HALCYON_BASE is not, cp -Rp fails, but cp -R succeeds.
+	# Copying .halcyon-tag is avoided for the same reason.
+
 	local saved_tag
 	saved_tag=''
 	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
@@ -433,11 +434,8 @@ install_app () {
 		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
 	fi
 
-	local file
-	find_tree "${install_dir}" -mindepth 1 -maxdepth 1 |
-		while read -r file; do
-			copy_file_into "${install_dir}/${file}" "${HALCYON_ROOT}" || die
-		done
+	mkdir -p "${HALCYON_ROOT}" || die
+	cp -R "${install_dir}/." "${HALCYON_ROOT}" 2>&1 | quote || die
 
 	log_end 'done'
 
