@@ -449,6 +449,7 @@ restore_ghc_dir () {
 			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
 			! validate_ghc_dir "${tag}" >'/dev/null'
 		then
+			rm -rf "${HALCYON_BASE}/ghc" || die
 			return 1
 		fi
 	else

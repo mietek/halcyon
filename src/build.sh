@@ -274,6 +274,7 @@ restore_build_dir () {
 			! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 			! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
 		then
+			rm -rf "${build_dir}" || die
 			return 1
 		fi
 	else

@@ -396,6 +396,7 @@ restore_install_dir () {
 			! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 			! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
 		then
+			rm -rf "${install_dir}" || die
 			return 1
 		fi
 	else

@@ -517,6 +517,7 @@ restore_base_cabal_dir () {
 			! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 			! validate_base_cabal_dir "${tag}" >'/dev/null'
 		then
+			rm -rf "${HALCYON_BASE}/cabal" || die
 			return 1
 		fi
 	else
@@ -553,6 +554,7 @@ restore_cached_updated_cabal_dir () {
 	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_updated_cabal_dir "${tag}" >'/dev/null'
 	then
+		rm -rf "${HALCYON_BASE}/cabal" || die
 		return 1
 	else
 		touch_cached_file "${updated_name}" || die
