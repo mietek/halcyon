@@ -224,9 +224,8 @@ copy_cabal_magic () {
 	local file
 	find_tree "${source_dir}/.halcyon" -type f -path './cabal*' |
 		while read -r file; do
-			copy_file "${source_dir}/.halcyon/${file}" \
-				"${HALCYON_BASE}/cabal/.halcyon/${file}" || die
-		done || die
+			copy_file_into "${source_dir}/.halcyon/${file}" "${HALCYON_BASE}/cabal/.halcyon" || die
+		done
 }
 
 
@@ -306,7 +305,7 @@ EOF
 		die 'Failed to bootstrap Cabal'
 	fi
 
-	copy_file "${cabal_home_dir}/.cabal/bin/cabal" "${HALCYON_BASE}/cabal/bin/cabal" || die
+	copy_file_into "${cabal_home_dir}/.cabal/bin/cabal" "${HALCYON_BASE}/cabal/bin" || die
 	copy_cabal_magic "${source_dir}" || die
 
 	local bootstrapped_size
@@ -696,7 +695,7 @@ sandboxed_cabal_do () {
 		mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}" || die
 	fi
 	if [[ -f "${work_dir}/cabal.config" ]]; then
-		copy_file "${work_dir}/cabal.config" "${HALCYON_BASE}/sandbox/cabal.config" || die
+		copy_file_into "${work_dir}/cabal.config" "${HALCYON_BASE}/sandbox" || die
 	fi
 
 	local status

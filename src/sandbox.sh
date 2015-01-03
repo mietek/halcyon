@@ -182,9 +182,8 @@ copy_sandbox_magic () {
 	local file
 	find_tree "${source_dir}/.halcyon" -type f \( -path './ghc*' -or -path './sandbox*' \) |
 		while read -r file; do
-			copy_file "${source_dir}/.halcyon/${file}" \
-				"${HALCYON_BASE}/sandbox/.halcyon/${file}" || die
-		done || die
+			copy_file_into "${source_dir}/.halcyon/${file}" "${HALCYON_BASE}/sandbox/.halcyon" || die
+		done
 }
 
 
