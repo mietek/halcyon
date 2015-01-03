@@ -167,11 +167,10 @@ install_extra_data_files () {
 	local glob
 	while read -r glob; do
 		(
-			cd "${build_dir}"
-			IFS=''
+			cd "${build_dir}" || die
 
 			local -a files_a
-			files_a=( ${glob} )
+			IFS='' && files_a=( ${glob} )
 			if [[ -z "${files_a[@]:+_}" ]]; then
 				return 0
 			fi
@@ -181,9 +180,8 @@ install_extra_data_files () {
 				if [[ ! -e "${file}" ]]; then
 					continue
 				fi
-				dir=$( dirname "${install_dir}${data_dir}/${file}" ) || die
-				mkdir -p "${dir}" || die
-				cp -Rp "${file}" "${install_dir}${data_dir}/${file}" || die
+
+				copy_dir_entry_into '.' "${file}" "${install_dir}${data_dir}" || die
 			done
 		) || die
 	done <<<"${extra_files}"
