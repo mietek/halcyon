@@ -107,7 +107,7 @@ touch_cached_ghc_and_cabal_files () {
 		filter_matching "^(halcyon-ghc-.*|halcyon-cabal-.*)$" |
 		while read -r name; do
 			touch "${HALCYON_CACHE}/${name}" || true
-		done
+		done || return 0
 }
 
 
@@ -243,7 +243,7 @@ delete_matching_private_stored_files () {
 		filter_not_matching "^${save_name//./\.}$" |
 		while read -r old_name; do
 			delete_private_stored_file "${prefix}" "${old_name}" || die
-		done
+		done || die
 }
 
 
