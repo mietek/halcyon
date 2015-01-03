@@ -287,14 +287,9 @@ prepare_build_dir () {
 	expect_args source_dir build_dir -- "$@"
 	expect_existing "${source_dir}" "${build_dir}/.halcyon-tag"
 
-	local prepare_dir
-	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || die
-
-	copy_source_dir_over "${source_dir}" "${prepare_dir}" || die
-
 	local all_files
 	all_files=$(
-		compare_tree "${build_dir}" "${prepare_dir}" |
+		compare_tree "${build_dir}" "${source_dir}" |
 		filter_not_matching '^. (\.halcyon-tag$|dist/)'
 	) || true
 
@@ -303,13 +298,17 @@ prepare_build_dir () {
 		filter_not_matching '^= ' <<<"${all_files}" |
 		match_at_least_one
 	); then
-		rm -rf "${prepare_dir}" || die
 		return 0
 	fi
 
 	log_indent 'Examining source changes'
 
 	quote <<<"${changed_files}"
+
+	local prepare_dir
+	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || die
+
+	copy_source_dir_over "${source_dir}" "${prepare_dir}" || die
 
 	# NOTE: Restoring file modification times of unchanged files is necessary to avoid
 	# needless recompilation.
