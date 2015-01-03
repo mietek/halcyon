@@ -223,7 +223,6 @@ add_sandbox_sources () {
 		log "Adding sandbox source: ${name}"
 
 		sandboxed_cabal_do "${source_dir}" sandbox add-source "${sources_dir}/${name}" || die
-		rm -rf "${sources_dir}/${name}/.git" "${sources_dir}/${name}/.gitmodules" || die
 	done
 }
 
