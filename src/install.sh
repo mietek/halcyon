@@ -423,8 +423,7 @@ install_app () {
 		log_begin "Installing app into ${HALCYON_ROOT}${prefix}..."
 	fi
 
-	# NOTE: When / is read-only, but HALCYON_BASE is not, cp -Rp fails, but cp -R succeeds.
-	# Copying .halcyon-tag is avoided for the same reason.
+	# NOTE: Copying .halcyon-tag is avoided because / may be read-only.
 
 	local saved_tag
 	saved_tag=''
@@ -433,8 +432,11 @@ install_app () {
 		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
 	fi
 
-	mkdir -p "${HALCYON_ROOT}" || die
-	cp -R "${install_dir}/." "${HALCYON_ROOT}" 2>&1 | quote || die
+	local file
+	find_tree "${install_dir}" -mindepth 1 -maxdepth 1 |
+		while read -r file; do
+			copy_dir_entry_into "${install_dir}" "${file}" "${HALCYON_ROOT}" || die
+		done
 
 	log_end 'done'
 
