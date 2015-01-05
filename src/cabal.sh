@@ -2,20 +2,17 @@ map_cabal_version_to_original_url () {
 	local cabal_version
 	expect_args cabal_version -- "$@"
 
+	# NOTE: Bootstrapping cabal-install 1.20.0.4 does not work.
+	# https://www.haskell.org/pipermail/cabal-devel/2014-December/009959.html
+
 	case "${cabal_version}" in
 	'1.22.0.0')	echo 'https://haskell.org/cabal/release/cabal-install-1.22.0.0/cabal-install-1.22.0.0.tar.gz';;
 	'1.20.0.6')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.6/cabal-install-1.20.0.6.tar.gz';;
 	'1.20.0.5')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.5/cabal-install-1.20.0.5.tar.gz';;
-	'1.20.0.4')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.4/cabal-install-1.20.0.4.tar.gz';;
 	'1.20.0.3')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.3/cabal-install-1.20.0.3.tar.gz';;
 	'1.20.0.2')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.2/cabal-install-1.20.0.2.tar.gz';;
 	'1.20.0.1')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.1/cabal-install-1.20.0.1.tar.gz';;
 	'1.20.0.0')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.0/cabal-install-1.20.0.0.tar.gz';;
-	'1.18.0.6')	echo 'https://haskell.org/cabal/release/cabal-install-1.18.0.6/cabal-install-1.18.0.6.tar.gz';;
-	'1.18.0.4')	echo 'https://haskell.org/cabal/release/cabal-install-1.18.0.4/cabal-install-1.18.0.4.tar.gz';;
-	'1.18.0.3')	echo 'https://haskell.org/cabal/release/cabal-install-1.18.0.3/cabal-install-1.18.0.3.tar.gz';;
-	'1.18.0.2')	echo 'https://haskell.org/cabal/release/cabal-install-1.18.0.2/cabal-install-1.18.0.2.tar.gz';;
-	'1.18.0.1')	echo 'https://haskell.org/cabal/release/cabal-install-1.18.0.1/cabal-install-1.18.0.1.tar.gz';;
 	*)		die "Unexpected Cabal version: ${cabal_version}"
 	esac
 }
@@ -246,6 +243,13 @@ build_cabal_dir () {
 	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
 	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || die
 
+	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
+
+	if [[ "${ghc_version}" < '7.8' ]]; then
+		log_error "Unexpected GHC version: ${ghc_version}"
+		die 'To bootstrap Cabal, use GHC 7.8 or newer'
+	fi
+
 	log 'Building Cabal directory'
 
 	acquire_original_source "${cabal_original_url}" "${cabal_build_dir}" || die
@@ -265,36 +269,20 @@ build_cabal_dir () {
 
 	log 'Bootstrapping Cabal'
 
-	# NOTE: Bootstrapping cabal-install 1.20.0.0 with GHC 7.6.* fails.
+	(
+		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
+		patch -s <<-EOF
+			--- a/bootstrap.sh
+			+++ b/bootstrap.sh
+			@@ -217,3 +217,3 @@ install_pkg () {
 
-	# NOTE: Bootstrapping cabal-install 1.20.0.4 does not work.
-	# https://www.haskell.org/pipermail/cabal-devel/2014-December/009959.html
-
-	case "${ghc_version}-${cabal_version}" in
-	'7.8.'*'-1.20.0.'*)
-		(
-			cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
-			patch -s <<-EOF
-				--- a/bootstrap.sh
-				+++ b/bootstrap.sh
-				@@ -217,3 +217,3 @@ install_pkg () {
-
-				-  \${GHC} --make Setup -o Setup ||
-				+  \${GHC} -L"${HALCYON_BASE}/ghc/usr/lib" --make Setup -o Setup ||
-				      die "Compiling the Setup script failed."
+			-  \${GHC} --make Setup -o Setup ||
+			+  \${GHC} -L"${HALCYON_BASE}/ghc/usr/lib" --make Setup -o Setup ||
+			      die "Compiling the Setup script failed."
 EOF
-		) || die
-		;;
-	*'-1.20.0.4')
-		rm -rf "${cabal_build_dir}" || die
-		die "Unsupported Cabal version: ${cabal-version}"
-		;;
-	*)
-		rm -rf "${cabal_build_dir}" || die
-		die "Unexpected Cabal version for GHC ${ghc_version}: ${cabal_version}"
-	esac
+	) || die
 
-	# NOTE: Bootstrapping cabal-install with GHC 7.8.[23] may fail unless --no-doc
+	# NOTE: Bootstrapping cabal-install with GHC 7.8.* may fail unless --no-doc
 	# is specified.
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 
