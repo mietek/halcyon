@@ -523,7 +523,15 @@ full_install_app () {
 	fi
 
 	local constraints
-	if [[ ! -f "${source_dir}/cabal.config" ]]; then
+	constraints=''
+	if [[ -f "${source_dir}/cabal.config" ]]; then
+		log 'Determining constraints'
+
+		if ! constraints=$( detect_constraints "${label}" "${source_dir}" ); then
+			die 'Failed to determine constraints'
+		fi
+	fi
+	if [[ -z "${constraints}" ]]; then
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
@@ -552,14 +560,7 @@ full_install_app () {
 		then
 			return 0
 		fi
-	else
-		log 'Determining constraints'
-
-		if ! constraints=$( detect_constraints "${label}" "${source_dir}" ); then
-			die 'Failed to determine constraints'
-		fi
 	fi
-
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'constraints' ]]; then
 		format_constraints <<<"${constraints}" || die
 		return 0

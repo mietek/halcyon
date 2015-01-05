@@ -108,6 +108,9 @@ detect_constraints () {
 		filter_correct_constraints "${label}" |
 		sort_natural
 	) || return 1
+	if [[ -z "${constraints}" ]]; then
+		return 0
+	fi
 
 	local -A packages_A
 	local base_version candidate_package candidate_version
