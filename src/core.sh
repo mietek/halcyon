@@ -111,7 +111,7 @@ describe_extra () {
 	fi
 
 	local -a extra_a
-	extra_a=( $( <"${extra_file}" ) ) || die
+	extra_a=( $( <"${extra_file}" ) ) || return 0
 	if [[ -z "${extra_a[@]:+_}" ]]; then
 		return 0
 	fi
@@ -229,7 +229,7 @@ install_ghc_and_cabal_dirs () {
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		log 'Installing GHC and Cabal'
 
-		describe_storage || die
+		describe_storage
 
 		log_indent_label 'GHC version:' "${ghc_version}"
 		[[ -n "${ghc_magic_hash}" ]] && log_indent_label 'GHC magic hash:' "${ghc_magic_hash:0:7}"
@@ -253,7 +253,7 @@ install_ghc_and_cabal_dirs () {
 		return 1
 	fi
 
-	announce_install "${tag}" || die
+	announce_install "${tag}"
 }
 
 
@@ -299,7 +299,7 @@ fast_install_app () {
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 	log_indent_label 'GHC version:' "${HALCYON_GHC_VERSION}"
 
-	describe_storage || die
+	describe_storage
 	log
 
 	local tag
@@ -316,7 +316,7 @@ fast_install_app () {
 	fi
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		announce_install "${tag}" || die
+		announce_install "${tag}"
 		touch_cached_ghc_and_cabal_files || die
 	fi
 }
@@ -608,7 +608,7 @@ full_install_app () {
 	describe_extra 'Extra dependencies:' "${source_dir}/.halcyon/extra-dependencies"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
-	describe_storage || die
+	describe_storage
 
 	log_indent_label 'GHC version:' "${ghc_version}"
 	[[ -n "${ghc_magic_hash}" ]] && log_indent_label 'GHC magic hash:' "${ghc_magic_hash:0:7}"
@@ -643,7 +643,7 @@ full_install_app () {
 	fi
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
-		announce_install "${tag}" || die
+		announce_install "${tag}"
 	fi
 }
 
