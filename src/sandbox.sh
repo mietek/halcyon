@@ -178,7 +178,8 @@ copy_sandbox_magic () {
 
 	local source_dir
 	expect_args source_dir -- "$@"
-	expect_existing "${HALCYON_BASE}/sandbox"
+
+	expect_existing "${HALCYON_BASE}/sandbox" || return 1
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
@@ -327,9 +328,9 @@ build_sandbox_dir () {
 		rm -rf "${HALCYON_BASE}/sandbox" || die
 	else
 		expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
-			"${HALCYON_BASE}/sandbox/.halcyon-constraints"
+			"${HALCYON_BASE}/sandbox/.halcyon-constraints" || return 1
 	fi
-	expect_existing "${source_dir}"
+	expect_existing "${source_dir}" || return 1
 
 	log 'Building sandbox directory'
 
@@ -459,12 +460,13 @@ build_sandbox_dir () {
 archive_sandbox_dir () {
 	expect_vars HALCYON_BASE HALCYON_CACHE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE \
 		HALCYON_INTERNAL_PLATFORM
-	expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
-		"${HALCYON_BASE}/sandbox/.halcyon-constraints"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
+
+	expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
+		"${HALCYON_BASE}/sandbox/.halcyon-constraints" || return 1
 
 	local sandbox_tag ghc_id archive_name constraints_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" ) || return 1

@@ -201,7 +201,8 @@ copy_ghc_magic () {
 
 	local source_dir
 	expect_args source_dir -- "$@"
-	expect_existing "${HALCYON_BASE}/ghc"
+
+	expect_existing "${HALCYON_BASE}/ghc" || return 1
 
 	local ghc_magic_hash
 	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
@@ -305,7 +306,7 @@ link_ghc_libs () {
 	esac
 
 	if [ -n "${gmp_file:-}" ]; then
-		expect_existing "${gmp_file}"
+		expect_existing "${gmp_file}" || return 1
 
 		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
 		ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" || die
@@ -313,7 +314,7 @@ link_ghc_libs () {
 	fi
 
 	if [ -n "${tinfo_file:-}" ]; then
-		expect_existing "${tinfo_file}"
+		expect_existing "${tinfo_file}" || return 1
 
 		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
 		ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" || die
@@ -413,11 +414,12 @@ build_ghc_dir () {
 archive_ghc_dir () {
 	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE \
 		HALCYON_INTERNAL_PLATFORM
-	expect_existing "${HALCYON_BASE}/ghc/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
+
+	expect_existing "${HALCYON_BASE}/ghc/.halcyon-tag" || return 1
 
 	local ghc_tag archive_name
 	ghc_tag=$( detect_ghc_tag "${HALCYON_BASE}/ghc/.halcyon-tag") || return 1

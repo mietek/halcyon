@@ -43,7 +43,8 @@ create_cached_archive () {
 
 	local src_dir dst_file_name
 	expect_args src_dir dst_file_name -- "$@"
-	expect_existing "${src_dir}"
+
+	expect_existing "${src_dir}" || return 1
 
 	create_archive "${src_dir}" "${HALCYON_CACHE}/${dst_file_name}" || return 1
 }

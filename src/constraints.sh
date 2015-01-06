@@ -110,7 +110,8 @@ prepare_constraints () {
 detect_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
-	expect_existing "${source_dir}/cabal.config"
+
+	expect_existing "${source_dir}/cabal.config" || return 1
 
 	local constraints
 	constraints=$(

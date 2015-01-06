@@ -220,7 +220,8 @@ copy_cabal_magic () {
 
 	local source_dir
 	expect_args source_dir -- "$@"
-	expect_existing "${HALCYON_BASE}/cabal"
+
+	expect_existing "${HALCYON_BASE}/cabal" || return 1
 
 	local cabal_magic_hash
 	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || return 1
@@ -403,11 +404,12 @@ update_cabal_package_db () {
 archive_cabal_dir () {
 	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE \
 		HALCYON_INTERNAL_PLATFORM
-	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
+
+	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag" || return 1
 
 	local cabal_tag archive_name
 	cabal_tag=$( detect_cabal_tag "${HALCYON_BASE}/cabal/.halcyon-tag" ) || return 1
@@ -607,11 +609,12 @@ restore_updated_cabal_dir () {
 link_cabal_config () {
 	expect_vars HOME HALCYON_BASE \
 		HALCYON_INTERNAL_RECURSIVE
-	expect_existing "${HOME}"
 
 	if [[ ! -f "${HALCYON_BASE}/cabal/.halcyon-tag" ]] || (( HALCYON_INTERNAL_RECURSIVE )); then
 		return 0
 	fi
+
+	expect_existing "${HOME}" || return 1
 
 	if [[ -d "${HOME}/.cabal" && -e "${HOME}/.cabal/config" ]]; then
 		local actual_config
@@ -672,13 +675,14 @@ install_cabal_dir () {
 
 cabal_do () {
 	expect_vars HALCYON_BASE
-	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag"
+
+	expect_existing "${HALCYON_BASE}/cabal/.halcyon-tag" || return 1
 
 	local work_dir
 	expect_args work_dir -- "$@"
-	expect_existing "${work_dir}"
 	shift
 
+	expect_existing "${work_dir}" || return 1
 	(
 		cd "${work_dir}" &&
 		cabal --config-file="${HALCYON_BASE}/cabal/.halcyon-cabal.config" "$@"
@@ -691,8 +695,9 @@ sandboxed_cabal_do () {
 
 	local work_dir
 	expect_args work_dir -- "$@"
-	expect_existing "${HALCYON_BASE}/sandbox" "${work_dir}"
 	shift
+
+	expect_existing "${HALCYON_BASE}/sandbox" "${work_dir}" || return 1
 
 	# NOTE: Specifying a cabal.sandbox.config file changes where Cabal looks for
 	# a cabal.config file.
@@ -899,7 +904,7 @@ populate_cabal_setup_exe_cache () {
 	if ! cabal_do "${setup_dir}" install 'populate-setup-exe-cache' 2>&1 | quote; then
 		die 'Failed to populate Cabal setup-exe-cache'
 	fi
-	expect_existing "${HOME}/.cabal/setup-exe-cache"
+	expect_existing "${HOME}/.cabal/setup-exe-cache" || return 1
 
 	log 'Cabal setup-exe-cache populated'
 

@@ -1,7 +1,8 @@
 detect_package () {
 	local source_dir
 	expect_args source_dir -- "$@"
-	expect_existing "${source_dir}"
+
+	expect_existing "${source_dir}" || return 1
 
 	local package_file
 	package_file=$(
@@ -303,7 +304,6 @@ fast_install_app () {
 
 	local label source_hash source_dir
 	expect_args label source_hash source_dir -- "$@"
-	expect_existing "${source_dir}"
 
 	if (( HALCYON_DEPENDENCIES_ONLY )) || (( HALCYON_RESTORE_DEPENDENCIES )) ||
 		(( HALCYON_APP_REBUILD )) || (( HALCYON_APP_RECONFIGURE )) || (( HALCYON_APP_REINSTALL )) ||
@@ -313,6 +313,8 @@ fast_install_app () {
 	then
 		return 1
 	fi
+
+	expect_existing "${source_dir}" || return 1
 
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
@@ -396,7 +398,8 @@ prepare_constraints_option () {
 prepare_source_dir () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
-	expect_existing "${source_dir}"
+
+	expect_existing "${source_dir}" || return 1
 
 	local magic_dir
 	magic_dir="${source_dir}/.halcyon"
@@ -517,7 +520,8 @@ full_install_app () {
 
 	local label source_dir
 	expect_args label source_dir -- "$@"
-	expect_existing "${source_dir}"
+
+	expect_existing "${source_dir}" || return 1
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'label')

@@ -102,14 +102,15 @@ do_build_app () {
 
 	local tag must_copy must_configure source_dir build_dir
 	expect_args tag must_copy must_configure source_dir build_dir -- "$@"
-	expect_existing "${source_dir}"
+
+	expect_existing "${source_dir}" || return 1
 	if (( must_copy )); then
 		if ! copy_source_dir_over "${source_dir}" "${build_dir}"; then
 			log_error 'Failed to create build directory'
 			return 1
 		fi
 	else
-		expect_existing "${build_dir}/.halcyon-tag"
+		expect_existing "${build_dir}/.halcyon-tag" || return 1
 	fi
 
 	local prefix
@@ -156,7 +157,7 @@ do_build_app () {
 
 		rm -f "${stdout}" || die
 	else
-		expect_existing "${build_dir}/dist/.halcyon-data-dir"
+		expect_existing "${build_dir}/dist/.halcyon-data-dir" || return 1
 	fi
 
 	if [[ -f "${source_dir}/.halcyon/pre-build-hook" ]]; then
@@ -214,11 +215,12 @@ archive_build_dir () {
 
 	local build_dir
 	expect_args build_dir -- "$@"
-	expect_existing "${build_dir}/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
+
+	expect_existing "${build_dir}/.halcyon-tag" || return 1
 
 	local build_tag ghc_id archive_name
 	build_tag=$( detect_build_tag "${build_dir}/.halcyon-tag" ) || return 1
@@ -293,7 +295,8 @@ restore_build_dir () {
 prepare_build_dir () {
 	local source_dir build_dir
 	expect_args source_dir build_dir -- "$@"
-	expect_existing "${source_dir}" "${build_dir}/.halcyon-tag"
+
+	expect_existing "${source_dir}" "${build_dir}/.halcyon-tag" || return 1
 
 	local all_files
 	all_files=$(

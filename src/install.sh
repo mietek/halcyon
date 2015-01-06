@@ -151,11 +151,12 @@ install_extra_data_files () {
 
 	local tag source_dir build_dir install_dir
 	expect_args tag source_dir build_dir install_dir -- "$@"
-	expect_existing "${build_dir}/dist/.halcyon-data-dir"
 
 	if [[ ! -f "${source_dir}/.halcyon/extra-data-files" ]]; then
 		return 0
 	fi
+
+	expect_existing "${build_dir}/dist/.halcyon-data-dir" || return 1
 
 	local extra_files data_dir
 	extra_files=$( <"${source_dir}/.halcyon/extra-data-files" ) || die
@@ -256,7 +257,8 @@ prepare_install_dir () {
 
 	local tag source_dir constraints build_dir install_dir
 	expect_args tag source_dir constraints build_dir install_dir -- "$@"
-	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-data-dir"
+
+	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-data-dir" || return 1
 
 	local prefix label install_id label_dir data_dir
 	prefix=$( get_tag_prefix "${tag}" )
@@ -346,11 +348,12 @@ archive_install_dir () {
 
 	local install_dir
 	expect_args install_dir -- "$@"
-	expect_existing "${install_dir}/.halcyon-tag"
 
 	if (( HALCYON_NO_ARCHIVE )); then
 		return 0
 	fi
+
+	expect_existing "${install_dir}/.halcyon-tag" || return 1
 
 	local install_tag ghc_id archive_name
 	install_tag=$( detect_install_tag "${install_dir}/.halcyon-tag" ) || return 1
@@ -420,11 +423,14 @@ install_app () {
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
 
-	local prefix label install_id label_dir data_dir
+	local prefix label install_id label_dir
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
-	expect_existing "${label_dir}/data-dir"
+
+	expect_existing "${label_dir}/data-dir" || return 1
+
+	local data_dir
 	data_dir=$( <"${label_dir}/data-dir" ) || die
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
