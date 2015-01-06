@@ -61,7 +61,7 @@ format_install_archive_name () {
 	expect_args tag -- "$@"
 
 	local install_id
-	install_id=$( format_install_id "${tag}" ) || die
+	install_id=$( format_install_id "${tag}" )
 
 	echo "halcyon-install-${install_id}.tar.gz"
 }
@@ -282,7 +282,10 @@ prepare_install_dir () {
 
 	ln -s "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" "${install_dir}${prefix}/cabal.sandbox.config" || die
 
-	format_constraints <<<"${constraints}" >"${label_dir}/constraints" || die
+	if ! format_constraints <<<"${constraints}" >"${label_dir}/constraints"; then
+		log_error 'Failed to write constraints file'
+		return 1
+	fi
 	echo "${data_dir}" >"${label_dir}/data-dir" || die
 
 	local executable
@@ -351,8 +354,8 @@ archive_install_dir () {
 
 	local install_tag ghc_id archive_name
 	install_tag=$( detect_install_tag "${install_dir}/.halcyon-tag" ) || return 1
-	ghc_id=$( format_ghc_id "${install_tag}" ) || die
-	archive_name=$( format_install_archive_name "${install_tag}" ) || die
+	ghc_id=$( format_ghc_id "${install_tag}" )
+	archive_name=$( format_install_archive_name "${install_tag}" )
 
 	log 'Archiving install directory'
 
@@ -364,8 +367,8 @@ archive_install_dir () {
 	fi
 
 	local archive_prefix archive_pattern
-	archive_prefix=$( format_install_archive_name_prefix ) || die
-	archive_pattern=$( format_install_archive_name_pattern "${install_tag}" ) || die
+	archive_prefix=$( format_install_archive_name_prefix )
+	archive_pattern=$( format_install_archive_name_pattern "${install_tag}" )
 
 	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
 }
@@ -388,9 +391,9 @@ restore_install_dir () {
 	expect_args tag install_dir -- "$@"
 
 	local ghc_id archive_name archive_pattern
-	ghc_id=$( format_ghc_id "${tag}" ) || die
-	archive_name=$( format_install_archive_name "${tag}" ) || die
-	archive_pattern=$( format_install_archive_name_pattern "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" )
+	archive_name=$( format_install_archive_name "${tag}" )
+	archive_pattern=$( format_install_archive_name_pattern "${tag}" )
 
 	log 'Restoring install directory'
 

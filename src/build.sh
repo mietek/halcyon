@@ -219,8 +219,8 @@ archive_build_dir () {
 
 	local build_tag ghc_id archive_name
 	build_tag=$( detect_build_tag "${build_dir}/.halcyon-tag" ) || return 1
-	ghc_id=$( format_ghc_id "${build_tag}" ) || die
-	archive_name=$( format_build_archive_name "${build_tag}" ) || die
+	ghc_id=$( format_ghc_id "${build_tag}" )
+	archive_name=$( format_build_archive_name "${build_tag}" )
 
 	log 'Archiving build directory'
 
@@ -266,8 +266,8 @@ restore_build_dir () {
 	expect_args tag build_dir -- "$@"
 
 	local ghc_id archive_name
-	ghc_id=$( format_ghc_id "${tag}" ) || die
-	archive_name=$( format_build_archive_name "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" )
+	archive_name=$( format_build_archive_name "${tag}" )
 
 	log 'Restoring build directory'
 

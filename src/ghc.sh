@@ -158,7 +158,7 @@ format_ghc_description () {
 	local tag
 	expect_args tag -- "$@"
 
-	format_ghc_id "${tag}" || die
+	format_ghc_id "${tag}"
 }
 
 
@@ -167,7 +167,7 @@ format_ghc_archive_name () {
 	expect_args tag -- "$@"
 
 	local ghc_id
-	ghc_id=$( format_ghc_id "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" )
 
 	echo "halcyon-ghc-${ghc_id}.tar.gz"
 }
@@ -406,7 +406,7 @@ archive_ghc_dir () {
 
 	local ghc_tag archive_name
 	ghc_tag=$( detect_ghc_tag "${HALCYON_BASE}/ghc/.halcyon-tag") || return 1
-	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
+	archive_name=$( format_ghc_archive_name "${ghc_tag}" )
 
 	log 'Archiving GHC directory'
 
@@ -435,7 +435,7 @@ restore_ghc_dir () {
 	expect_args tag -- "$@"
 
 	local archive_name
-	archive_name=$( format_ghc_archive_name "${tag}" ) || die
+	archive_name=$( format_ghc_archive_name "${tag}" )
 
 	if validate_ghc_dir "${tag}" >'/dev/null'; then
 		log 'Using existing GHC'

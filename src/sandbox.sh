@@ -80,7 +80,7 @@ format_sandbox_description () {
 
 	local label sandbox_id
 	label=$( get_tag_label "${tag}" )
-	sandbox_id=$( format_sandbox_id "${tag}" ) || die
+	sandbox_id=$( format_sandbox_id "${tag}" )
 
 	echo "${label} (${sandbox_id})"
 }
@@ -92,7 +92,7 @@ format_sandbox_archive_name () {
 
 	local label sandbox_id
 	label=$( get_tag_label "${tag}" )
-	sandbox_id=$( format_sandbox_id "${tag}" ) || die
+	sandbox_id=$( format_sandbox_id "${tag}" )
 
 	echo "halcyon-sandbox-${sandbox_id}-${label}.tar.gz"
 }
@@ -104,7 +104,7 @@ format_sandbox_constraints_file_name () {
 
 	local label sandbox_id
 	label=$( get_tag_label "${tag}" )
-	sandbox_id=$( format_sandbox_id "${tag}" ) || die
+	sandbox_id=$( format_sandbox_id "${tag}" )
 
 	echo "halcyon-sandbox-${sandbox_id}-${label}.constraints"
 }
@@ -115,7 +115,7 @@ format_full_sandbox_constraints_file_name_pattern () {
 	expect_args tag -- "$@"
 
 	local sandbox_id
-	sandbox_id=$( format_sandbox_id "${tag}" ) || die
+	sandbox_id=$( format_sandbox_id "${tag}" )
 
 	echo "halcyon-sandbox-${sandbox_id}-.*.constraints"
 }
@@ -148,7 +148,7 @@ format_sandbox_common_file_name_pattern () {
 }
 
 
-map_sandbox_constraints_file_name_to_label () {
+format_sandbox_constraints_file_name_label () {
 	local constraints_name
 	expect_args constraints_name -- "$@"
 
@@ -403,7 +403,10 @@ build_sandbox_dir () {
 		die 'Failed to build sandbox'
 	fi
 
-	format_constraints <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-constraints" || die
+	if ! format_constraints <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-constraints"; then
+		log_error 'Failed to write constraints file'
+		return 1
+	fi
 	copy_sandbox_magic "${source_dir}" || die
 
 	local built_size
@@ -459,9 +462,9 @@ archive_sandbox_dir () {
 
 	local sandbox_tag ghc_id archive_name constraints_name
 	sandbox_tag=$( detect_sandbox_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" ) || return 1
-	ghc_id=$( format_ghc_id "${sandbox_tag}" ) || die
-	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
-	constraints_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
+	ghc_id=$( format_ghc_id "${sandbox_tag}" )
+	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" )
+	constraints_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" )
 
 	log 'Archiving sandbox directory'
 
@@ -482,8 +485,8 @@ archive_sandbox_dir () {
 	fi
 
 	local common_prefix common_pattern
-	common_prefix=$( format_sandbox_common_file_name_prefix ) || die
-	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" ) || die
+	common_prefix=$( format_sandbox_common_file_name_prefix )
+	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" )
 
 	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || die
 }
@@ -509,8 +512,8 @@ restore_sandbox_dir () {
 	expect_args tag -- "$@"
 
 	local ghc_id archive_name
-	ghc_id=$( format_ghc_id "${tag}" ) || die
-	archive_name=$( format_sandbox_archive_name "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" )
+	archive_name=$( format_sandbox_archive_name "${tag}" )
 
 	if validate_sandbox_dir "${tag}" >'/dev/null'; then
 		log 'Using existing sandbox directory'
@@ -563,7 +566,7 @@ install_matching_sandbox_dir () {
 	local constraints_hash matching_hash matching_description
 	constraints_hash=$( get_tag_constraints_hash "${tag}" )
 	matching_hash=$( get_tag_constraints_hash "${matching_tag}" )
-	matching_description=$( format_sandbox_description "${matching_tag}" ) || die
+	matching_description=$( format_sandbox_description "${matching_tag}" )
 
 	if [[ "${matching_hash}" == "${constraints_hash}" ]]; then
 		log "Using fully matching sandbox directory: ${matching_description}"

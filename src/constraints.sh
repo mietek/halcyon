@@ -90,9 +90,13 @@ prepare_constraints () {
 	fi
 
 	if [[ -f "${magic_dir}/constraints" ]]; then
-		read_constraints <"${magic_dir}/constraints" |
+		if ! read_constraints <"${magic_dir}/constraints" |
 			sort_natural |
-			format_constraints_to_cabal_freeze >"${source_dir}/cabal.config" || die
+			format_constraints_to_cabal_freeze >"${source_dir}/cabal.config"
+		then
+			log_error 'Failed to write cabal.config file'
+			return 1
+		fi
 	fi
 }
 
@@ -223,8 +227,8 @@ match_full_sandbox_dir () {
 	expect_args tag all_names -- "$@"
 
 	local ghc_id full_pattern full_names
-	ghc_id=$( format_ghc_id "${tag}" ) || die
-	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" )
+	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" )
 	full_names=$(
 		filter_matching "^${full_pattern}$" <<<"${all_names}" |
 		match_at_least_one
@@ -246,7 +250,7 @@ match_full_sandbox_dir () {
 		fi
 
 		local full_label full_tag
-		full_label=$( map_sandbox_constraints_file_name_to_label "${full_name}" ) || die
+		full_label=$( format_sandbox_constraints_file_name_label "${full_name}" )
 		full_tag=$( derive_matching_sandbox_tag "${tag}" "${full_label}" "${full_hash}" )
 
 		echo "${full_tag}"
@@ -265,8 +269,8 @@ list_partial_sandbox_dirs () {
 	expect_args tag constraints all_names -- "$@"
 
 	local ghc_id full_pattern partial_names
-	ghc_id=$( format_ghc_id "${tag}" ) || die
-	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" )
+	full_pattern=$( format_full_sandbox_constraints_file_name_pattern "${tag}" )
 	partial_names=$(
 		filter_not_matching "^${full_pattern}$" <<<"${all_names}" |
 		match_at_least_one
@@ -288,7 +292,7 @@ list_partial_sandbox_dirs () {
 		fi
 
 		local partial_label partial_tag
-		partial_label=$( map_sandbox_constraints_file_name_to_label "${partial_name}" ) || die
+		partial_label=$( format_sandbox_constraints_file_name_label "${partial_name}" )
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" )
 
 		echo "${partial_tag}"
@@ -313,7 +317,7 @@ score_partial_sandbox_dirs () {
 
 	local partial_tag partial_name partial_file
 	while read -r partial_tag; do
-		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" ) || die
+		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" )
 		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! validate_partial_constraints_file "${partial_file}" >'/dev/null'; then
 			continue
@@ -321,7 +325,7 @@ score_partial_sandbox_dirs () {
 
 		local partial_constraints description
 		partial_constraints=$( read_constraints <"${partial_file}" ) || die
-		description=$( format_sandbox_description "${partial_tag}" ) || die
+		description=$( format_sandbox_description "${partial_tag}" )
 
 		local partial_package partial_version version score
 		score=0
@@ -361,10 +365,10 @@ match_sandbox_dir () {
 	expect_args tag constraints -- "$@"
 
 	local ghc_id constraints_name name_prefix partial_pattern
-	ghc_id=$( format_ghc_id "${tag}" ) || die
-	constraints_name=$( format_sandbox_constraints_file_name "${tag}" ) || die
-	name_prefix=$( format_sandbox_common_file_name_prefix ) || die
-	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" ) || die
+	ghc_id=$( format_ghc_id "${tag}" )
+	constraints_name=$( format_sandbox_constraints_file_name "${tag}" )
+	name_prefix=$( format_sandbox_common_file_name_prefix )
+	partial_pattern=$( format_partial_sandbox_constraints_file_name_pattern "${tag}" )
 
 	log 'Locating sandbox directories'
 

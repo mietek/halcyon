@@ -556,13 +556,16 @@ full_install_app () {
 
 		log_warning 'Using newest versions of all packages'
 		if [[ "${HALCYON_INTERNAL_COMMAND}" != 'constraints' ]]; then
-			format_constraints <<<"${constraints}" | quote || die
+			format_constraints <<<"${constraints}" | quote
 			log
 		fi
 
 		# NOTE: This is the second of two moments when source_dir is modified.
 
-		format_constraints_to_cabal_freeze <<<"${constraints}" >"${source_dir}/cabal.config" || die
+		if ! format_constraints_to_cabal_freeze <<<"${constraints}" >"${source_dir}/cabal.config"; then
+			log_error 'Failed to write cabal.config file'
+			return 1
+		fi
 
 		source_hash=$( hash_tree "${source_dir}" ) || die
 
@@ -573,7 +576,7 @@ full_install_app () {
 		fi
 	fi
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'constraints' ]]; then
-		format_constraints <<<"${constraints}" || die
+		format_constraints <<<"${constraints}"
 		return 0
 	fi
 

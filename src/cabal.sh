@@ -112,8 +112,8 @@ format_cabal_description () {
 	expect_args tag -- "$@"
 
 	local cabal_id repo_name cabal_date
-	cabal_id=$( format_cabal_id "${tag}" ) || die
-	repo_name=$( format_cabal_repo_name "${tag}" ) || die
+	cabal_id=$( format_cabal_id "${tag}" )
+	repo_name=$( format_cabal_repo_name "${tag}" )
 	cabal_date=$( get_tag_cabal_date "${tag}" )
 
 	echo "${cabal_id} ${repo_name:+(${repo_name} ${cabal_date})}"
@@ -145,8 +145,8 @@ format_cabal_archive_name () {
 	expect_args tag -- "$@"
 
 	local cabal_id repo_name cabal_date
-	cabal_id=$( format_cabal_id "${tag}" ) || die
-	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
+	cabal_id=$( format_cabal_id "${tag}" )
+	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 	cabal_date=$( get_tag_cabal_date "${tag}" )
 
 	echo "halcyon-cabal-${cabal_id}${repo_name:+-${repo_name}-${cabal_date}}.tar.gz"
@@ -158,7 +158,7 @@ format_base_cabal_archive_name () {
 	expect_args tag -- "$@"
 
 	local cabal_id
-	cabal_id=$( format_cabal_id "${tag}" ) || die
+	cabal_id=$( format_cabal_id "${tag}" )
 
 	echo "halcyon-cabal-${cabal_id}.tar.gz"
 }
@@ -169,8 +169,8 @@ format_updated_cabal_archive_name_prefix () {
 	expect_args tag -- "$@"
 
 	local cabal_id repo_name
-	cabal_id=$( format_cabal_id "${tag}" ) || die
-	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
+	cabal_id=$( format_cabal_id "${tag}" )
+	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 
 	echo "halcyon-cabal-${cabal_id}-${repo_name}-"
 }
@@ -181,14 +181,14 @@ format_updated_cabal_archive_name_pattern () {
 	expect_args tag -- "$@"
 
 	local cabal_id repo_name
-	cabal_id=$( format_cabal_id "${tag}" ) || die
-	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
+	cabal_id=$( format_cabal_id "${tag}" )
+	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 
 	echo "halcyon-cabal-${cabal_id//./\.}-${repo_name//./\.}-.*\.tar\.gz"
 }
 
 
-map_updated_cabal_archive_name_to_date () {
+format_updated_cabal_archive_name_date () {
 	local archive_name
 	expect_args archive_name -- "$@"
 
@@ -344,7 +344,10 @@ update_cabal_package_db () {
 
 	log 'Updating Cabal directory'
 
-	format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-cabal.config" || die
+	if ! format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-cabal.config"; then
+		log_error 'Failed to write Cabal config'
+		return 1
+	fi
 
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-update-hook" ]]; then
 		log 'Executing Cabal pre-update hook'
@@ -400,7 +403,7 @@ archive_cabal_dir () {
 
 	local cabal_tag archive_name
 	cabal_tag=$( detect_cabal_tag "${HALCYON_BASE}/cabal/.halcyon-tag" ) || return 1
-	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
+	archive_name=$( format_cabal_archive_name "${cabal_tag}" )
 
 	log 'Archiving Cabal directory'
 
@@ -416,8 +419,8 @@ archive_cabal_dir () {
 	fi
 
 	local updated_prefix updated_pattern
-	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" ) || die
-	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" ) || die
+	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" )
+	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" )
 
 	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
 }
@@ -471,7 +474,7 @@ match_updated_cabal_archive_name () {
 	expect_args tag -- "$@"
 
 	local updated_pattern candidate_name
-	updated_pattern=$( format_updated_cabal_archive_name_pattern "${tag}" ) || die
+	updated_pattern=$( format_updated_cabal_archive_name_pattern "${tag}" )
 	candidate_name=$(
 		filter_matching "^${updated_pattern}$" |
 		sort_natural -u |
@@ -480,7 +483,7 @@ match_updated_cabal_archive_name () {
 	) || return 1
 
 	local candidate_date
-	candidate_date=$( map_updated_cabal_archive_name_to_date "${candidate_name}" ) || die
+	candidate_date=$( format_updated_cabal_archive_name_date "${candidate_name}" )
 	validate_updated_cabal_date "${candidate_date}" || return 1
 
 	echo "${candidate_name}"
@@ -495,7 +498,7 @@ restore_base_cabal_dir () {
 	expect_args tag -- "$@"
 
 	local base_name
-	base_name=$( format_base_cabal_archive_name "${tag}" ) || die
+	base_name=$( format_base_cabal_archive_name "${tag}" )
 
 	if validate_base_cabal_dir "${tag}" >'/dev/null'; then
 		log 'Using existing Cabal directory'
@@ -566,7 +569,7 @@ restore_updated_cabal_dir () {
 	expect_args tag -- "$@"
 
 	local archive_prefix
-	archive_prefix=$( format_updated_cabal_archive_name_prefix "${tag}" ) || die
+	archive_prefix=$( format_updated_cabal_archive_name_prefix "${tag}" )
 
 	if restore_cached_updated_cabal_dir "${tag}"; then
 		return 0

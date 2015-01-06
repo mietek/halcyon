@@ -148,7 +148,7 @@ cache_stored_file () {
 	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
 
 	local public_url
-	public_url=$( format_public_storage_url "${object}" ) || die
+	public_url=$( format_public_storage_url "${object}" )
 	if ! curl_download "${public_url}" "${file}"; then
 		return 1
 	fi
@@ -206,7 +206,7 @@ list_private_stored_files () {
 
 list_public_stored_files () {
 	local public_url
-	public_url=$( format_public_storage_url '' ) || die
+	public_url=$( format_public_storage_url '' )
 
 	local listing
 	if (( HALCYON_NO_PUBLIC_STORAGE )) || ! listing=$( curl_list_s3 "${public_url}" ); then
@@ -300,7 +300,7 @@ clean_cache () {
 
 	local mark_time name_prefix
 	mark_time=$( get_modification_time "${cache_dir}" ) || die
-	name_prefix=$( format_sandbox_common_file_name_prefix ) || die
+	name_prefix=$( format_sandbox_common_file_name_prefix )
 
 	rm -f "${HALCYON_CACHE}/${name_prefix}"* || die
 
