@@ -434,7 +434,7 @@ halcyon_main () {
 		'-'*)
 			log_error "Unexpected option: $1"
 			help_usage
-			die
+			return 1
 			;;
 		*)
 			if [[ -z "${cmd}" ]]; then
@@ -452,7 +452,10 @@ halcyon_main () {
 	# linker warnings.
 
 	if [[ $( detect_os ) == 'osx' ]]; then
-		mkdir -p "${HALCYON_BASE}/usr/lib" "${HALCYON_BASE}/ghc/usr/lib" "${HALCYON_BASE}/sandbox/usr/lib" || die
+		if ! mkdir -p "${HALCYON_BASE}/usr/lib" "${HALCYON_BASE}/ghc/usr/lib" "${HALCYON_BASE}/sandbox/usr/lib"; then
+			log_error 'Failed to create library directories'
+			return 1
+		fi
 	fi
 
 	if (( HALCYON_LOG_TIMESTAMP )); then
@@ -477,40 +480,48 @@ halcyon_main () {
 		local repo_name
 		repo_name="${HALCYON_CABAL_REPO%%:*}"
 		if [[ -z "${repo_name}" ]]; then
-			log_error "Unexpected Cabal repo: ${HALCYON_CABAL_REPO}"
-			die "Expected Cabal repo: RepoName:${HALCYON_CABAL_REPO}"
+			log_error "Unexpected Cabal repo format: ${HALCYON_CABAL_REPO}"
+			log_error "Expected Cabal repo format: RepoName:${HALCYON_CABAL_REPO}"
+			return 1
 		fi
 	fi
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'install')
-		halcyon_install "${args_a[@]:-}" || return 1
+		halcyon_install "${args_a[@]:-}"
+		return
 		;;
 	'deploy')
-		die "Please use 'halcyon install' instead of 'halcyon deploy'"
+		log_error "Please use 'halcyon install' instead of 'halcyon deploy'"
+		return 1
 		;;
 	'build')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install "${args_a[@]:-}" || return 1
+			halcyon_install "${args_a[@]:-}"
+		return
 		;;
 	'label'|'executable'|'constraints'|'tag')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install "${args_a[@]:-}" || return 1
+			halcyon_install "${args_a[@]:-}"
+		return
 		;;
 	'paths')
 		echo -e "export HALCYON_DIR='${HALCYON_DIR}'"
 		echo -e "export HALCYON_INTERNAL_PLATFORM='${HALCYON_INTERNAL_PLATFORM}'\n"
 
-		cat "${HALCYON_DIR}/src/paths.sh" || die
+		if ! cat "${HALCYON_DIR}/src/paths.sh"; then
+			log_error 'Failed to export paths'
+			return 1
+		fi
 		;;
 	'')
 		log_error 'Expected command'
 		help_usage
-		die
+		return 1
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args_a[*]:-}"
 		help_usage
-		die
+		return 1
 	esac
 }
