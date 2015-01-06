@@ -145,14 +145,14 @@ validate_actual_constraints () {
 	# https://github.com/mietek/halcyon/issues/1
 
 	local label actual_constraints
-	label=$( get_tag_label "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
 	if ! actual_constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ); then
 		log_warning 'Failed to freeze constraints'
 		return 0
 	fi
 
 	local constraints_hash actual_hash
-	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
+	constraints_hash=$( get_tag_constraints_hash "${tag}" )
 	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
 	if [[ "${actual_hash}" != "${constraints_hash}" ]]; then
 		log_warning 'Unexpected constraints difference'
@@ -179,7 +179,7 @@ validate_full_constraints_file () {
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
 
 	local constraints_hash candidate_hash
-	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
+	constraints_hash=$( get_tag_constraints_hash "${tag}" )
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
 
 	if [[ "${candidate_hash}" != "${constraints_hash}" ]]; then

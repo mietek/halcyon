@@ -134,8 +134,8 @@ derive_ghc_tag () {
 	expect_args tag -- "$@"
 
 	local ghc_version ghc_magic_hash
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
 	create_ghc_tag "${ghc_version}" "${ghc_magic_hash}" || die
 }
@@ -146,8 +146,8 @@ format_ghc_id () {
 	expect_args tag -- "$@"
 
 	local ghc_version ghc_magic_hash
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
 	echo "${ghc_version}${ghc_magic_hash:+.${ghc_magic_hash:0:7}}"
 }
@@ -210,7 +210,7 @@ link_ghc_libs () {
 	expect_args tag -- "$@"
 
 	local ghc_version
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" )
 
 	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
 	# .10-flavoured binary distribution of GHC < 7.8. However, GHC does
@@ -317,7 +317,7 @@ build_ghc_dir () {
 	rm -rf "${HALCYON_BASE}/ghc" || die
 
 	local ghc_version ghc_original_url ghc_build_dir
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_original_url=$( link_ghc_libs "${tag}" ) || die
 	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || die
 

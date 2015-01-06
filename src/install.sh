@@ -32,11 +32,11 @@ derive_install_tag () {
 	expect_args tag -- "$@"
 
 	local prefix label source_hash ghc_version ghc_magic_hash
-	prefix=$( get_tag_prefix "${tag}" ) || die
-	label=$( get_tag_label "${tag}" ) || die
-	source_hash=$( get_tag_source_hash "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
+	label=$( get_tag_label "${tag}" )
+	source_hash=$( get_tag_source_hash "${tag}" )
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
 	create_install_tag "${prefix}" "${label}" "${source_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" || die
@@ -48,8 +48,8 @@ format_install_id () {
 	expect_args tag -- "$@"
 
 	local label source_hash
-	label=$( get_tag_label "${tag}" ) || die
-	source_hash=$( get_tag_source_hash "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
+	source_hash=$( get_tag_source_hash "${tag}" )
 
 	echo "${source_hash:0:7}-${label}"
 }
@@ -76,7 +76,7 @@ format_install_archive_name_pattern () {
 	expect_args tag -- "$@"
 
 	local label
-	label=$( get_tag_label "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
 
 	echo "halcyon-install-.*-${label//./\.}.tar.gz"
 }
@@ -97,16 +97,16 @@ install_extra_apps () {
 	fi
 
 	local prefix
-	prefix=$( get_tag_prefix "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
 
 	local ghc_version ghc_magic_hash
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
 	local cabal_version cabal_magic_hash cabal_repo
-	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
-	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
+	cabal_repo=$( get_tag_cabal_repo "${tag}" )
 
 	local extra_constraints
 	extra_constraints="${source_dir}/.halcyon/extra-apps-constraints"
@@ -197,7 +197,7 @@ install_extra_os_packages () {
 	fi
 
 	local prefix extra_packages
-	prefix=$( get_tag_prefix "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
 	extra_packages=$( <"${source_dir}/.halcyon/extra-os-packages" ) || die
 
 	log 'Installing extra OS packages'
@@ -258,8 +258,8 @@ prepare_install_dir () {
 	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-data-dir"
 
 	local prefix label install_id label_dir data_dir
-	prefix=$( get_tag_prefix "${tag}" ) || die
-	label=$( get_tag_label "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
+	label=$( get_tag_label "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
 	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
@@ -411,8 +411,8 @@ install_app () {
 	expect_args tag source_dir install_dir -- "$@"
 
 	local prefix label install_id label_dir data_dir
-	prefix=$( get_tag_prefix "${tag}" ) || die
-	label=$( get_tag_label "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
+	label=$( get_tag_label "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
 	expect_existing "${label_dir}/data-dir"
 	data_dir=$( <"${label_dir}/data-dir" ) || die

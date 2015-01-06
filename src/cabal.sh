@@ -50,8 +50,8 @@ derive_base_cabal_tag () {
 	expect_args tag -- "$@"
 
 	local cabal_version cabal_magic_hash
-	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 
 	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" '' '' || die
 }
@@ -62,9 +62,9 @@ derive_updated_cabal_tag () {
 	expect_args tag cabal_date -- "$@"
 
 	local cabal_version cabal_magic_hash cabal_repo
-	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
-	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
+	cabal_repo=$( get_tag_cabal_repo "${tag}" )
 
 	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}" || die
 }
@@ -75,9 +75,9 @@ derive_updated_cabal_tag_pattern () {
 	expect_args tag -- "$@"
 
 	local cabal_version cabal_magic_hash cabal_repo
-	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
-	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
+	cabal_repo=$( get_tag_cabal_repo "${tag}" )
 
 	create_cabal_tag "${cabal_version//./\.}" "${cabal_magic_hash}" "${cabal_repo//.\.}" '.*' || die
 }
@@ -88,8 +88,8 @@ format_cabal_id () {
 	expect_args tag -- "$@"
 
 	local cabal_version cabal_magic_hash
-	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
-	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" ) || die
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 
 	echo "${cabal_version}${cabal_magic_hash:+.${cabal_magic_hash:0:7}}"
 }
@@ -100,7 +100,7 @@ format_cabal_repo_name () {
 	expect_args tag -- "$@"
 
 	local cabal_repo
-	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
+	cabal_repo=$( get_tag_cabal_repo "${tag}" )
 
 	echo "${cabal_repo%%:*}"
 }
@@ -113,7 +113,7 @@ format_cabal_description () {
 	local cabal_id repo_name cabal_date
 	cabal_id=$( format_cabal_id "${tag}" ) || die
 	repo_name=$( format_cabal_repo_name "${tag}" ) || die
-	cabal_date=$( get_tag_cabal_date "${tag}" ) || die
+	cabal_date=$( get_tag_cabal_date "${tag}" )
 
 	echo "${cabal_id} ${repo_name:+(${repo_name} ${cabal_date})}"
 }
@@ -126,7 +126,7 @@ format_cabal_config () {
 	expect_args tag -- "$@"
 
 	local cabal_repo
-	cabal_repo=$( get_tag_cabal_repo "${tag}" ) || die
+	cabal_repo=$( get_tag_cabal_repo "${tag}" )
 
 	cat <<-EOF
 		remote-repo:        ${cabal_repo}
@@ -146,7 +146,7 @@ format_cabal_archive_name () {
 	local cabal_id repo_name cabal_date
 	cabal_id=$( format_cabal_id "${tag}" ) || die
 	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' ) || die
-	cabal_date=$( get_tag_cabal_date "${tag}" ) || die
+	cabal_date=$( get_tag_cabal_date "${tag}" )
 
 	echo "halcyon-cabal-${cabal_id}${repo_name:+-${repo_name}-${cabal_date}}.tar.gz"
 }
@@ -237,8 +237,8 @@ build_cabal_dir () {
 	rm -rf "${HALCYON_BASE}/cabal" || die
 
 	local ghc_version cabal_version cabal_original_url cabal_build_dir cabal_home_dir
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	cabal_version=$( get_tag_cabal_version "${tag}" ) || die
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
 	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
 	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || die
@@ -403,7 +403,7 @@ archive_cabal_dir () {
 	fi
 
 	local cabal_date
-	cabal_date=$( get_tag_cabal_date "${cabal_tag}" ) || die
+	cabal_date=$( get_tag_cabal_date "${cabal_tag}" )
 	if [[ -z "${cabal_date}" ]]; then
 		return 0
 	fi
@@ -452,7 +452,7 @@ validate_updated_cabal_dir () {
 	candidate_tag=$( detect_tag "${HALCYON_BASE}/cabal/.halcyon-tag" "${updated_pattern}" ) || return 1
 
 	local candidate_date
-	candidate_date=$( get_tag_cabal_date "${candidate_tag}" ) || die
+	candidate_date=$( get_tag_cabal_date "${candidate_tag}" )
 	validate_updated_cabal_date "${candidate_date}" || return 1
 
 	echo "${candidate_tag}"

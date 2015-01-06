@@ -36,14 +36,14 @@ derive_build_tag () {
 	local prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
 		sandbox_magic_hash
-	prefix=$( get_tag_prefix "${tag}" ) || die
-	label=$( get_tag_label "${tag}" ) || die
-	source_hash=$( get_tag_source_hash "${tag}" ) || die
-	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
-	magic_hash=$( get_tag_magic_hash "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
-	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
+	label=$( get_tag_label "${tag}" )
+	source_hash=$( get_tag_source_hash "${tag}" )
+	constraints_hash=$( get_tag_constraints_hash "${tag}" )
+	magic_hash=$( get_tag_magic_hash "${tag}" )
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" )
 
 	create_build_tag "${prefix}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
@@ -58,13 +58,13 @@ derive_configured_build_tag_pattern () {
 	local prefix label constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
 		sandbox_magic_hash
-	prefix=$( get_tag_prefix "${tag}" ) || die
-	label=$( get_tag_label "${tag}" ) || die
-	constraints_hash=$( get_tag_constraints_hash "${tag}" ) || die
-	magic_hash=$( get_tag_magic_hash "${tag}" ) || die
-	ghc_version=$( get_tag_ghc_version "${tag}" ) || die
-	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" ) || die
-	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
+	label=$( get_tag_label "${tag}" )
+	constraints_hash=$( get_tag_constraints_hash "${tag}" )
+	magic_hash=$( get_tag_magic_hash "${tag}" )
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" )
 
 	create_build_tag "${prefix}" "${label//./\.}" '.*' "${constraints_hash}" '.*' \
 		"${ghc_version//./\.}" "${ghc_magic_hash}" \
@@ -77,7 +77,7 @@ derive_potential_build_tag_pattern () {
 	expect_args tag -- "$@"
 
 	local label
-	label=$( get_tag_label "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
 
 	create_build_tag '.*' "${label}" '.*' '.*' '.*' \
 		'.*' '.*' \
@@ -90,7 +90,7 @@ format_build_archive_name () {
 	expect_args tag -- "$@"
 
 	local label
-	label=$( get_tag_label "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
 
 	echo "halcyon-build-${label}.tar.gz"
 }
@@ -109,7 +109,7 @@ do_build_app () {
 	fi
 
 	local prefix
-	prefix=$( get_tag_prefix "${tag}" ) || die
+	prefix=$( get_tag_prefix "${tag}" )
 
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'

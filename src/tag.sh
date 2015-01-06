@@ -18,7 +18,7 @@ get_tag_version () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $1 }' <<<"${tag}"
+	awk -F$'\t' '{ print $1 }' <<<"${tag}" || return 0
 }
 
 
@@ -26,7 +26,7 @@ get_tag_platform () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $2 }' <<<"${tag}"
+	awk -F$'\t' '{ print $2 }' <<<"${tag}" || return 0
 }
 
 
@@ -34,7 +34,7 @@ get_tag_base () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $3 }' <<<"${tag}"
+	awk -F$'\t' '{ print $3 }' <<<"${tag}" || return 0
 }
 
 
@@ -42,7 +42,7 @@ get_tag_prefix () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $4 }' <<<"${tag}"
+	awk -F$'\t' '{ print $4 }' <<<"${tag}" || return 0
 }
 
 
@@ -50,7 +50,7 @@ get_tag_label () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $5 }' <<<"${tag}"
+	awk -F$'\t' '{ print $5 }' <<<"${tag}" || return 0
 }
 
 
@@ -58,7 +58,7 @@ get_tag_source_hash () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $6 }' <<<"${tag}"
+	awk -F$'\t' '{ print $6 }' <<<"${tag}" || return 0
 }
 
 
@@ -66,7 +66,7 @@ get_tag_constraints_hash () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $7 }' <<<"${tag}"
+	awk -F$'\t' '{ print $7 }' <<<"${tag}" || return 0
 }
 
 
@@ -74,7 +74,7 @@ get_tag_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $8 }' <<<"${tag}"
+	awk -F$'\t' '{ print $8 }' <<<"${tag}" || return 0
 }
 
 
@@ -82,7 +82,7 @@ get_tag_ghc_version () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $9 }' <<<"${tag}" | sed 's/^ghc-//'
+	awk -F$'\t' '{ print $9 }' <<<"${tag}" | sed 's/^ghc-//' || return 0
 }
 
 
@@ -90,7 +90,7 @@ get_tag_ghc_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $10 }' <<<"${tag}"
+	awk -F$'\t' '{ print $10 }' <<<"${tag}" || return 0
 }
 
 
@@ -98,7 +98,7 @@ get_tag_cabal_version () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $11 }' <<<"${tag}" | sed 's/^cabal-//'
+	awk -F$'\t' '{ print $11 }' <<<"${tag}" | sed 's/^cabal-//' || return 0
 }
 
 
@@ -106,7 +106,7 @@ get_tag_cabal_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $12 }' <<<"${tag}"
+	awk -F$'\t' '{ print $12 }' <<<"${tag}" || return 0
 }
 
 
@@ -114,7 +114,7 @@ get_tag_cabal_repo () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $13 }' <<<"${tag}"
+	awk -F$'\t' '{ print $13 }' <<<"${tag}" || return 0
 }
 
 
@@ -122,7 +122,7 @@ get_tag_cabal_date () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $14 }' <<<"${tag}"
+	awk -F$'\t' '{ print $14 }' <<<"${tag}" || return 0
 }
 
 
@@ -130,7 +130,7 @@ get_tag_sandbox_magic_hash () {
 	local tag
 	expect_args tag -- "$@"
 
-	awk -F$'\t' '{ print $15 }' <<<"${tag}"
+	awk -F$'\t' '{ print $15 }' <<<"${tag}" || return 0
 }
 
 

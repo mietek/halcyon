@@ -172,7 +172,7 @@ announce_install () {
 	else
 		thing='App'
 	fi
-	label=$( get_tag_label "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'install')
@@ -262,7 +262,7 @@ do_fast_install_app () {
 	expect_args tag source_dir -- "$@"
 
 	local label install_dir
-	label=$( get_tag_label "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 
 	restore_install_dir "${tag}" "${install_dir}/${label}" || return 1
@@ -426,7 +426,7 @@ do_full_install_app () {
 	expect_args tag source_dir constraints -- "$@"
 
 	local label build_dir install_dir saved_sandbox
-	label=$( get_tag_label "${tag}" ) || die
+	label=$( get_tag_label "${tag}" )
 	build_dir=$( get_tmp_dir 'halcyon-build' ) || die
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
 	saved_sandbox=''
