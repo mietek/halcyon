@@ -80,7 +80,7 @@ determine_ghc_magic_hash () {
 	if [[ -n "${HALCYON_INTERNAL_GHC_MAGIC_HASH:+_}" ]]; then
 		ghc_magic_hash="${HALCYON_INTERNAL_GHC_MAGIC_HASH}"
 	else
-		ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+		ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || return 1
 	fi
 
 	echo "${ghc_magic_hash}"
@@ -95,7 +95,7 @@ determine_cabal_magic_hash () {
 	if [[ -n "${HALCYON_INTERNAL_CABAL_MAGIC_HASH:+_}" ]]; then
 		cabal_magic_hash="${HALCYON_INTERNAL_CABAL_MAGIC_HASH}"
 	else
-		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+		cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || return 1
 	fi
 
 	echo "${cabal_magic_hash}"
@@ -125,6 +125,20 @@ describe_extra () {
 }
 
 
+hash_source () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local source_hash
+	if ! source_hash=$( hash_tree "${source_dir}" ); then
+		log_error 'Failed to hash source'
+		return 1
+	fi
+
+	echo "${source_hash}"
+}
+
+
 hash_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -132,7 +146,13 @@ hash_magic () {
 	# NOTE: The version number of Cabal and the contents of its package
 	# database could conceivably be treated as dependencies.
 
-	hash_tree "${source_dir}/.halcyon" -not -path './cabal*' || die
+	local magic_hash
+	if ! magic_hash=$( hash_tree "${source_dir}/.halcyon" -not -path './cabal*' ); then
+		log_error 'Failed to hash magic'
+		return 1
+	fi
+
+	echo "${magic_hash}"
 }
 
 
@@ -219,11 +239,11 @@ install_ghc_and_cabal_dirs () {
 
 	local ghc_version ghc_magic_hash
 	ghc_version="${HALCYON_GHC_VERSION}"
-	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || die
+	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || return 1
 
 	local cabal_version cabal_magic_hash cabal_repo
 	cabal_version="${HALCYON_CABAL_VERSION}"
-	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || die
+	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
 	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
@@ -524,7 +544,7 @@ full_install_app () {
 
 	local source_hash
 	if [[ -f "${source_dir}/cabal.config" ]]; then
-		source_hash=$( hash_tree "${source_dir}" ) || die
+		source_hash=$( hash_source "${source_dir}" ) || return 1
 
 		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
 			fast_install_app "${label}" "${source_hash}" "${source_dir}"
@@ -567,7 +587,7 @@ full_install_app () {
 			return 1
 		fi
 
-		source_hash=$( hash_tree "${source_dir}" ) || die
+		source_hash=$( hash_source "${source_dir}" ) || return 1
 
 		if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
 			fast_install_app "${label}" "${source_hash}" "${source_dir}"
@@ -581,20 +601,20 @@ full_install_app () {
 	fi
 
 	local constraints_hash magic_hash
-	constraints_hash=$( hash_constraints "${constraints}" ) || die
-	magic_hash=$( hash_magic "${source_dir}" ) || die
+	constraints_hash=$( hash_constraints "${constraints}" ) || return 1
+	magic_hash=$( hash_magic "${source_dir}" ) || return 1
 
 	local ghc_version ghc_magic_hash
-	ghc_version=$( determine_ghc_version "${constraints}" ) || die
-	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || die
+	ghc_version=$( determine_ghc_version "${constraints}" ) || return 1
+	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || return 1
 
 	local cabal_version cabal_magic_hash cabal_repo
 	cabal_version="${HALCYON_CABAL_VERSION}"
-	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || die
+	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
 	cabal_repo="${HALCYON_CABAL_REPO}"
 
 	local sandbox_magic_hash
-	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
+	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || return 1
 
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"

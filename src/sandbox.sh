@@ -163,7 +163,13 @@ hash_sandbox_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon" \( -path './ghc*' -or -path './sandbox*' \) || die
+	local sandbox_magic_hash
+	if ! sandbox_magic_hash=$( hash_tree "${source_dir}/.halcyon" \( -path './ghc*' -or -path './sandbox*' \) ); then
+		log_error 'Failed to hash sandbox magic'
+		return 1
+	fi
+
+	echo "${sandbox_magic_hash}"
 }
 
 

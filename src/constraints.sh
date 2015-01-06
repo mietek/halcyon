@@ -61,7 +61,13 @@ hash_constraints () {
 	local constraints
 	expect_args constraints -- "$@"
 
-	get_hash <<<"${constraints}" || die
+	local constraints_hash
+	if ! constraints_hash=$( get_hash <<<"${constraints}" ); then
+		log_error 'Failed to hash constraints'
+		return 1
+	fi
+
+	echo "${constraints_hash}"
 }
 
 
@@ -157,7 +163,7 @@ validate_actual_constraints () {
 
 	local constraints_hash actual_hash
 	constraints_hash=$( get_tag_constraints_hash "${tag}" )
-	actual_hash=$( hash_constraints "${actual_constraints}" ) || die
+	actual_hash=$( hash_constraints "${actual_constraints}" ) || return 1
 	if [[ "${actual_hash}" != "${constraints_hash}" ]]; then
 		log_warning 'Unexpected constraints difference'
 		log_warning 'See https://github.com/mietek/halcyon/issues/1 for details'
@@ -184,7 +190,7 @@ validate_full_constraints_file () {
 
 	local constraints_hash candidate_hash
 	constraints_hash=$( get_tag_constraints_hash "${tag}" )
-	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
+	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || return 1
 
 	if [[ "${candidate_hash}" != "${constraints_hash}" ]]; then
 		return 1
@@ -209,7 +215,7 @@ validate_partial_constraints_file () {
 	constraints_name=$( basename "${candidate_file}" ) || die
 	short_hash_etc="${constraints_name#halcyon-sandbox-}"
 	short_hash="${short_hash_etc%%[-.]*}"
-	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || die
+	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || return 1
 
 	if [[ "${candidate_hash:0:7}" != "${short_hash}" ]]; then
 		return 1

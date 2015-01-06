@@ -205,7 +205,13 @@ hash_cabal_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon" -path './cabal*' || die
+	local cabal_magic_hash
+	if ! cabal_magic_hash=$( hash_tree "${source_dir}/.halcyon" -path './cabal*' ); then
+		log_error 'Failed to hash Cabal magic'
+		return 1
+	fi
+
+	echo "${cabal_magic_hash}"
 }
 
 
@@ -217,7 +223,7 @@ copy_cabal_magic () {
 	expect_existing "${HALCYON_BASE}/cabal"
 
 	local cabal_magic_hash
-	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || die
+	cabal_magic_hash=$( hash_cabal_magic "${source_dir}" ) || return 1
 	if [[ -z "${cabal_magic_hash}" ]]; then
 		return 0
 	fi

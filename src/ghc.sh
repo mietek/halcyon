@@ -186,7 +186,13 @@ hash_ghc_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	hash_tree "${source_dir}/.halcyon" -path './ghc*' || die
+	local ghc_magic_hash
+	if ! ghc_magic_hash=$( hash_tree "${source_dir}/.halcyon" -path './ghc*' ); then
+		log_error 'Failed to hash GHC magic'
+		return 1
+	fi
+
+	echo "${ghc_magic_hash}"
 }
 
 
