@@ -166,7 +166,7 @@ copy_source_dir_over () {
 		--exclude '.ghc' \
 		--exclude '.cabal' \
 		--exclude '.cabal-sandbox' \
-		--exclude 'cabal.sandbox.config' || die
+		--exclude 'cabal.sandbox.config' || return 1
 }
 
 
@@ -687,7 +687,10 @@ install_local_app () {
 	local source_dir
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
 
-	copy_source_dir_over "${local_dir}" "${source_dir}/${label}" || die
+	if ! copy_source_dir_over "${local_dir}" "${source_dir}/${label}"; then
+		log_error 'Failed to create source directory'
+		return 1
+	fi
 
 	full_install_app "${label}" "${source_dir}/${label}" || return 1
 
@@ -717,7 +720,10 @@ install_cloned_app () {
 		die 'Failed to detect label'
 	fi
 
-	copy_source_dir_over "${clone_dir}" "${source_dir}/${label}" || die
+	if ! copy_source_dir_over "${clone_dir}" "${source_dir}/${label}"; then
+		log_error 'Failed to create source directory'
+		return 1
+	fi
 
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}/${label}" || return 1
@@ -745,7 +751,10 @@ install_unpacked_app () {
 	local label
 	label=$( cabal_unpack_over "${thing}" "${unpack_dir}" ) || die
 
-	copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}/${label}" || die
+	if ! copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}/${label}"; then
+		log_error 'Failed to create source directory'
+		return 1
+	fi
 
 	if [[ "${label}" != "${thing}" ]]; then
 		log_warning "Using newest version of ${thing}: ${label}"

@@ -104,7 +104,10 @@ do_build_app () {
 	expect_args tag must_copy must_configure source_dir build_dir -- "$@"
 	expect_existing "${source_dir}"
 	if (( must_copy )); then
-		copy_source_dir_over "${source_dir}" "${build_dir}" || die
+		if ! copy_source_dir_over "${source_dir}" "${build_dir}"; then
+			log_error 'Failed to create build directory'
+			return 1
+		fi
 	else
 		expect_existing "${build_dir}/.halcyon-tag"
 	fi
@@ -313,7 +316,10 @@ prepare_build_dir () {
 	local prepare_dir
 	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || die
 
-	copy_source_dir_over "${source_dir}" "${prepare_dir}" || die
+	if ! copy_source_dir_over "${source_dir}" "${prepare_dir}"; then
+		log_error 'Failed to update build directory'
+		return 1
+	fi
 
 	# NOTE: Restoring file modification times of unchanged files is necessary to avoid
 	# needless recompilation.
