@@ -247,7 +247,7 @@ match_full_sandbox_dir () {
 
 		local full_label full_tag
 		full_label=$( map_sandbox_constraints_file_name_to_label "${full_name}" ) || die
-		full_tag=$( derive_matching_sandbox_tag "${tag}" "${full_label}" "${full_hash}" ) || die
+		full_tag=$( derive_matching_sandbox_tag "${tag}" "${full_label}" "${full_hash}" )
 
 		echo "${full_tag}"
 		return 0
@@ -289,7 +289,7 @@ list_partial_sandbox_dirs () {
 
 		local partial_label partial_tag
 		partial_label=$( map_sandbox_constraints_file_name_to_label "${partial_name}" ) || die
-		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" ) || die
+		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" )
 
 		echo "${partial_tag}"
 	done <<<"${partial_names}"

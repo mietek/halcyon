@@ -246,7 +246,7 @@ install_ghc_and_cabal_dirs () {
 			"${ghc_version}" "${ghc_magic_hash}" \
 			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
 			''
-	) || die
+	)
 
 	if ! do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}"; then
 		log_warning 'Cannot install GHC and Cabal'
@@ -308,7 +308,7 @@ fast_install_app () {
 			"${HALCYON_GHC_VERSION}" '' \
 			'' '' '' '' \
 			''
-	) || die
+	)
 
 	if ! do_fast_install_app "${tag}" "${source_dir}"; then
 		log
@@ -625,8 +625,8 @@ full_install_app () {
 		create_tag "${HALCYON_PREFIX}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 			"${ghc_version}" "${ghc_magic_hash}" \
 			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
-			"${sandbox_magic_hash}" || die
-	) || die
+			"${sandbox_magic_hash}"
+	)
 
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'tag' ]]; then
 		echo "${tag}"

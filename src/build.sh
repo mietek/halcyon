@@ -9,7 +9,7 @@ create_build_tag () {
 	create_tag "${prefix}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' ''  \
-		"${sandbox_magic_hash}" || die
+		"${sandbox_magic_hash}"
 }
 
 
@@ -18,11 +18,12 @@ detect_build_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_build_tag '.*' '.*' '.*' '.*' '.*' '.*' '.*' '.*' ) || die
+	tag_pattern=$( create_build_tag '.*' '.*' '.*' '.*' '.*' '.*' '.*' '.*' )
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect build tag'
+		log_error 'Failed to detect build tag'
+		return 1
 	fi
 
 	echo "${tag}"
@@ -47,7 +48,7 @@ derive_build_tag () {
 
 	create_build_tag "${prefix}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		"${sandbox_magic_hash}" || die
+		"${sandbox_magic_hash}"
 }
 
 
@@ -68,7 +69,7 @@ derive_configured_build_tag_pattern () {
 
 	create_build_tag "${prefix}" "${label//./\.}" '.*' "${constraints_hash}" '.*' \
 		"${ghc_version//./\.}" "${ghc_magic_hash}" \
-		"${sandbox_magic_hash}" || die
+		"${sandbox_magic_hash}"
 }
 
 
@@ -81,7 +82,7 @@ derive_potential_build_tag_pattern () {
 
 	create_build_tag '.*' "${label}" '.*' '.*' '.*' \
 		'.*' '.*' \
-		'.*' || die
+		'.*'
 }
 
 
@@ -197,7 +198,10 @@ do_build_app () {
 	stripped_size=$( get_size "${build_dir}" ) || die
 	log_indent_end "done, ${stripped_size}"
 
-	derive_build_tag "${tag}" >"${build_dir}/.halcyon-tag" || die
+	if ! derive_build_tag "${tag}" >"${build_dir}/.halcyon-tag"; then
+		log_error 'Failed to write build tag'
+		return 1
+	fi
 }
 
 
@@ -214,7 +218,7 @@ archive_build_dir () {
 	fi
 
 	local build_tag ghc_id archive_name
-	build_tag=$( detect_build_tag "${build_dir}/.halcyon-tag" ) || die
+	build_tag=$( detect_build_tag "${build_dir}/.halcyon-tag" ) || return 1
 	ghc_id=$( format_ghc_id "${build_tag}" ) || die
 	archive_name=$( format_build_archive_name "${build_tag}" ) || die
 
@@ -230,7 +234,7 @@ validate_potential_build_dir () {
 	expect_args tag build_dir -- "$@"
 
 	local recognized_pattern
-	recognized_pattern=$( derive_potential_build_tag_pattern "${tag}" ) || die
+	recognized_pattern=$( derive_potential_build_tag_pattern "${tag}" )
 	detect_tag "${build_dir}/.halcyon-tag" "${recognized_pattern}" || return 1
 }
 
@@ -240,7 +244,7 @@ validate_configured_build_dir () {
 	expect_args tag build_dir -- "$@"
 
 	local configured_pattern
-	configured_pattern=$( derive_configured_build_tag_pattern "${tag}" ) || die
+	configured_pattern=$( derive_configured_build_tag_pattern "${tag}" )
 	detect_tag "${build_dir}/.halcyon-tag" "${configured_pattern}" || return 1
 }
 
@@ -250,7 +254,7 @@ validate_build_dir () {
 	expect_args tag build_dir -- "$@"
 
 	local build_tag
-	build_tag=$( derive_build_tag "${tag}" ) || die
+	build_tag=$( derive_build_tag "${tag}" )
 	detect_tag "${build_dir}/.halcyon-tag" "${build_tag//./\.}" || return 1
 }
 

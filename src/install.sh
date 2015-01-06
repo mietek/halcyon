@@ -7,7 +7,7 @@ create_install_tag () {
 	create_tag "${prefix}" "${label}" "${source_hash}" '' '' \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' '' \
-		'' || die
+		''
 }
 
 
@@ -16,11 +16,12 @@ detect_install_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_install_tag '.*' '.*' '.*' '.*' '.*' ) || die
+	tag_pattern=$( create_install_tag '.*' '.*' '.*' '.*' '.*' )
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect install tag'
+		log_error 'Failed to detect install tag'
+		return 1
 	fi
 
 	echo "${tag}"
@@ -39,7 +40,7 @@ derive_install_tag () {
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
 	create_install_tag "${prefix}" "${label}" "${source_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}" || die
+		"${ghc_version}" "${ghc_magic_hash}"
 }
 
 
@@ -289,7 +290,10 @@ prepare_install_dir () {
 		echo "${executable}" >"${label_dir}/executable" || die
 	fi
 
-	derive_install_tag "${tag}" >"${label_dir}/tag" || die
+	if ! derive_install_tag "${tag}" >"${label_dir}/tag"; then
+		log_error 'Failed to write install tag'
+		return 1
+	fi
 
 	if ! install_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
 		log_warning 'Cannot install extra apps'
@@ -326,7 +330,10 @@ prepare_install_dir () {
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
-	derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag" || die
+	if ! derive_install_tag "${tag}" >"${install_dir}/.halcyon-tag"; then
+		log_error 'Failed to write install tag'
+		return 1
+	fi
 }
 
 
@@ -343,7 +350,7 @@ archive_install_dir () {
 	fi
 
 	local install_tag ghc_id archive_name
-	install_tag=$( detect_install_tag "${install_dir}/.halcyon-tag" ) || die
+	install_tag=$( detect_install_tag "${install_dir}/.halcyon-tag" ) || return 1
 	ghc_id=$( format_ghc_id "${install_tag}" ) || die
 	archive_name=$( format_install_archive_name "${install_tag}" ) || die
 
@@ -369,7 +376,7 @@ validate_install_dir () {
 	expect_args tag install_dir -- "$@"
 
 	local install_tag
-	install_tag=$( derive_install_tag "${tag}" ) || die
+	install_tag=$( derive_install_tag "${tag}" )
 	detect_tag "${install_dir}/.halcyon-tag" "${install_tag//./\.}" || return 1
 }
 

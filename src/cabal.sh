@@ -25,7 +25,7 @@ create_cabal_tag () {
 	create_tag '' '' '' '' '' \
 		'' '' \
 		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}" \
-		'' || die
+		''
 }
 
 
@@ -34,11 +34,12 @@ detect_cabal_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_cabal_tag '.*' '.*' '.*' '.*' ) || die
+	tag_pattern=$( create_cabal_tag '.*' '.*' '.*' '.*' )
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect Cabal tag'
+		log_error 'Failed to detect Cabal tag'
+		return 1
 	fi
 
 	echo "${tag}"
@@ -53,7 +54,7 @@ derive_base_cabal_tag () {
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 
-	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" '' '' || die
+	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" '' ''
 }
 
 
@@ -66,7 +67,7 @@ derive_updated_cabal_tag () {
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 	cabal_repo=$( get_tag_cabal_repo "${tag}" )
 
-	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}" || die
+	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}"
 }
 
 
@@ -79,7 +80,7 @@ derive_updated_cabal_tag_pattern () {
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 	cabal_repo=$( get_tag_cabal_repo "${tag}" )
 
-	create_cabal_tag "${cabal_version//./\.}" "${cabal_magic_hash}" "${cabal_repo//.\.}" '.*' || die
+	create_cabal_tag "${cabal_version//./\.}" "${cabal_magic_hash}" "${cabal_repo//.\.}" '.*'
 }
 
 
@@ -323,7 +324,10 @@ EOF
 	stripped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
 	log_indent_end "done, ${stripped_size}"
 
-	derive_base_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag" || die
+	if ! derive_base_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag"; then
+		log_error 'Failed to write Cabal tag'
+		return 1
+	fi
 
 	rm -rf "${cabal_build_dir}" "${cabal_home_dir}" || die
 }
@@ -378,7 +382,10 @@ update_cabal_package_db () {
 		log 'Cabal post-update hook executed'
 	fi
 
-	derive_updated_cabal_tag "${tag}" "${cabal_date}" >"${HALCYON_BASE}/cabal/.halcyon-tag" || die
+	if ! derive_updated_cabal_tag "${tag}" "${cabal_date}" >"${HALCYON_BASE}/cabal/.halcyon-tag"; then
+		log_error 'Failed to write Cabal tag'
+		return 1
+	fi
 }
 
 
@@ -392,7 +399,7 @@ archive_cabal_dir () {
 	fi
 
 	local cabal_tag archive_name
-	cabal_tag=$( detect_cabal_tag "${HALCYON_BASE}/cabal/.halcyon-tag" ) || die
+	cabal_tag=$( detect_cabal_tag "${HALCYON_BASE}/cabal/.halcyon-tag" ) || return 1
 	archive_name=$( format_cabal_archive_name "${cabal_tag}" ) || die
 
 	log 'Archiving Cabal directory'
@@ -423,7 +430,7 @@ validate_base_cabal_dir () {
 	expect_args tag -- "$@"
 
 	local base_tag
-	base_tag=$( derive_base_cabal_tag "${tag}" ) || die
+	base_tag=$( derive_base_cabal_tag "${tag}" )
 	detect_tag "${HALCYON_BASE}/cabal/.halcyon-tag" "${base_tag//./\.}" || return 1
 }
 
@@ -448,7 +455,7 @@ validate_updated_cabal_dir () {
 	expect_args tag -- "$@"
 
 	local updated_pattern candidate_tag
-	updated_pattern=$( derive_updated_cabal_tag_pattern "${tag}" ) || die
+	updated_pattern=$( derive_updated_cabal_tag_pattern "${tag}" )
 	candidate_tag=$( detect_tag "${HALCYON_BASE}/cabal/.halcyon-tag" "${updated_pattern}" ) || return 1
 
 	local candidate_date

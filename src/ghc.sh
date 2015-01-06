@@ -109,7 +109,7 @@ create_ghc_tag () {
 	create_tag '' '' '' '' '' \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' '' \
-		'' || die
+		''
 }
 
 
@@ -118,11 +118,12 @@ detect_ghc_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_ghc_tag '.*' '.*' ) || die
+	tag_pattern=$( create_ghc_tag '.*' '.*' )
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect GHC tag'
+		log_error 'Failed to detect GHC tag'
+		return 1
 	fi
 
 	echo "${tag}"
@@ -137,7 +138,7 @@ derive_ghc_tag () {
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
-	create_ghc_tag "${ghc_version}" "${ghc_magic_hash}" || die
+	create_ghc_tag "${ghc_version}" "${ghc_magic_hash}"
 }
 
 
@@ -385,7 +386,10 @@ build_ghc_dir () {
 	stripped_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
 	log_indent_end "done, ${stripped_size}"
 
-	derive_ghc_tag "${tag}" >"${HALCYON_BASE}/ghc/.halcyon-tag" || die
+	if ! derive_ghc_tag "${tag}" >"${HALCYON_BASE}/ghc/.halcyon-tag"; then
+		log_error 'Failed to write GHC tag'
+		return 1
+	fi
 
 	rm -rf "${ghc_build_dir}" || die
 }
@@ -401,7 +405,7 @@ archive_ghc_dir () {
 	fi
 
 	local ghc_tag archive_name
-	ghc_tag=$( detect_ghc_tag "${HALCYON_BASE}/ghc/.halcyon-tag") || die
+	ghc_tag=$( detect_ghc_tag "${HALCYON_BASE}/ghc/.halcyon-tag") || return 1
 	archive_name=$( format_ghc_archive_name "${ghc_tag}" ) || die
 
 	log 'Archiving GHC directory'
@@ -418,7 +422,7 @@ validate_ghc_dir () {
 	expect_args tag -- "$@"
 
 	local ghc_tag
-	ghc_tag=$( derive_ghc_tag "${tag}" ) || die
+	ghc_tag=$( derive_ghc_tag "${tag}" )
 	detect_tag "${HALCYON_BASE}/ghc/.halcyon-tag" "${ghc_tag//./\.}" || return 1
 }
 

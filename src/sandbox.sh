@@ -9,7 +9,7 @@ create_sandbox_tag () {
 	create_tag '' "${label}" '' "${constraints_hash}" '' \
 		"${ghc_version}" "${ghc_magic_hash}" \
 		'' '' '' '' \
-		"${sandbox_magic_hash}" || die
+		"${sandbox_magic_hash}"
 }
 
 
@@ -18,11 +18,12 @@ detect_sandbox_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_sandbox_tag '.*' '.*' '.*' '.*' '.*' ) || die
+	tag_pattern=$( create_sandbox_tag '.*' '.*' '.*' '.*' '.*' )
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
-		die 'Failed to detect sandbox tag'
+		log_error 'Failed to detect sandbox tag'
+		return 1
 	fi
 
 	echo "${tag}"
@@ -42,7 +43,7 @@ derive_sandbox_tag () {
 
 	create_sandbox_tag "${label}" "${constraints_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		"${sandbox_magic_hash}" || die
+		"${sandbox_magic_hash}"
 }
 
 
@@ -57,7 +58,7 @@ derive_matching_sandbox_tag () {
 
 	create_sandbox_tag "${label}" "${constraints_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		"${sandbox_magic_hash}" || die
+		"${sandbox_magic_hash}"
 }
 
 
@@ -439,7 +440,10 @@ build_sandbox_dir () {
 	stripped_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
 	log_indent_end "done, ${stripped_size}"
 
-	derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag" || die
+	if ! derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag"; then
+		log_error 'Failed to write sandbox tag'
+		return 1
+	fi
 }
 
 
@@ -454,7 +458,7 @@ archive_sandbox_dir () {
 	fi
 
 	local sandbox_tag ghc_id archive_name constraints_name
-	sandbox_tag=$( detect_sandbox_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" ) || die
+	sandbox_tag=$( detect_sandbox_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" ) || return 1
 	ghc_id=$( format_ghc_id "${sandbox_tag}" ) || die
 	archive_name=$( format_sandbox_archive_name "${sandbox_tag}" ) || die
 	constraints_name=$( format_sandbox_constraints_file_name "${sandbox_tag}" ) || die
@@ -492,7 +496,7 @@ validate_sandbox_dir () {
 	expect_args tag -- "$@"
 
 	local sandbox_tag
-	sandbox_tag=$( derive_sandbox_tag "${tag}" ) || die
+	sandbox_tag=$( derive_sandbox_tag "${tag}" )
 	detect_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}" || return 1
 }
 
@@ -567,7 +571,10 @@ install_matching_sandbox_dir () {
 		restore_sandbox_dir "${matching_tag}" || return 1
 		recache_sandbox_package_db || die
 
-		derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag" || die
+		if ! derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag"; then
+			log_error 'Failed to write sandbox tag'
+			return 1
+		fi
 		return 0
 	fi
 
