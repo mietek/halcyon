@@ -212,7 +212,7 @@ validate_partial_constraints_file () {
 	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
 
 	local constraints_name short_hash_etc short_hash candidate_hash
-	constraints_name=$( basename "${candidate_file}" ) || die
+	constraints_name=$( basename "${candidate_file}" ) || return 1
 	short_hash_etc="${constraints_name#halcyon-sandbox-}"
 	short_hash="${short_hash_etc%%[-.]*}"
 	candidate_hash=$( hash_constraints "${candidate_constraints}" ) || return 1

@@ -163,7 +163,7 @@ cache_original_stored_file () {
 	expect_args original_url -- "$@"
 
 	local file_name file
-	file_name=$( basename "${original_url}" ) || die
+	file_name=$( basename "${original_url}" ) || return 1
 	file="${HALCYON_CACHE}/${file_name}"
 
 	if cache_stored_file 'original' "${file_name}"; then
