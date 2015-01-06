@@ -151,7 +151,7 @@ copy_source_dir_over () {
 
 
 announce_install () {
-	expect_vars HALCYON_NO_APP \
+	expect_vars HALCYON_NO_APP HALCYON_DEPENDENCIES_ONLY \
 		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL
 
 	local tag
@@ -166,17 +166,22 @@ announce_install () {
 		return 0
 	fi
 
-	local label
+	local thing label
+	if (( HALCYON_DEPENDENCIES_ONLY )); then
+		thing='Dependencies'
+	else
+		thing='App'
+	fi
 	label=$( get_tag_label "${tag}" ) || die
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'install')
 		log
-		log_label 'App installed:' "${label}"
+		log_label "${thing} installed:" "${label}"
 		;;
 	'build')
 		log
-		log_label 'App built:' "${label}"
+		log_label "${thing} built:" "${label}"
 	esac
 }
 
@@ -269,7 +274,7 @@ do_fast_install_app () {
 
 
 fast_install_app () {
-	expect_vars HALCYON_PREFIX HALCYON_RESTORE_DEPENDENCIES \
+	expect_vars HALCYON_PREFIX HALCYON_DEPENDENCIES_ONLY HALCYON_RESTORE_DEPENDENCIES \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_GHC_VERSION HALCYON_GHC_REBUILD \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE \
@@ -280,7 +285,7 @@ fast_install_app () {
 	expect_args label source_hash source_dir -- "$@"
 	expect_existing "${source_dir}"
 
-	if (( HALCYON_RESTORE_DEPENDENCIES )) ||
+	if (( HALCYON_DEPENDENCIES_ONLY )) || (( HALCYON_RESTORE_DEPENDENCIES )) ||
 		(( HALCYON_APP_REBUILD )) || (( HALCYON_APP_RECONFIGURE )) || (( HALCYON_APP_REINSTALL )) ||
 		(( HALCYON_GHC_REBUILD )) ||
 		(( HALCYON_CABAL_REBUILD )) || (( HALCYON_CABAL_UPDATE )) ||
@@ -412,7 +417,7 @@ prepare_source_dir () {
 
 
 do_full_install_app () {
-	expect_vars HALCYON_BASE \
+	expect_vars HALCYON_BASE HALCYON_DEPENDENCIES_ONLY \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_SANDBOX_REBUILD \
 		HALCYON_INTERNAL_RECURSIVE
@@ -439,9 +444,13 @@ do_full_install_app () {
 	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
 	log
 
-	build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return 1
+	if ! (( HALCYON_DEPENDENCIES_ONLY )); then
+		build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return 1
+	fi
 
-	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]]; then
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
+		! (( HALCYON_DEPENDENCIES_ONLY ))
+	then
 		log
 
 		local must_prepare
@@ -470,7 +479,9 @@ do_full_install_app () {
 		fi
 	fi
 
-	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]]; then
+	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
+		! (( HALCYON_DEPENDENCIES_ONLY ))
+	then
 		install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
 		link_cabal_config || die
 	fi
@@ -480,7 +491,7 @@ do_full_install_app () {
 
 
 full_install_app () {
-	expect_vars HALCYON_PREFIX \
+	expect_vars HALCYON_PREFIX HALCYON_DEPENDENCIES_ONLY \
 		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
 		HALCYON_INTERNAL_RECURSIVE
 

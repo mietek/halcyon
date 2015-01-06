@@ -18,6 +18,7 @@ set_halcyon_vars () {
 		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
+		export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
 
 		export HALCYON_EXTRA_APPS="${HALCYON_EXTRA_APPS:-}"
 		export HALCYON_EXTRA_APPS_CONSTRAINTS="${HALCYON_EXTRA_APPS_CONSTRAINTS:-}"
@@ -97,6 +98,7 @@ set_halcyon_vars () {
 		export HALCYON_POST_BUILD_HOOK=''
 		export HALCYON_APP_REBUILD=0
 		export HALCYON_APP_RECONFIGURE=0
+		export HALCYON_DEPENDENCIES_ONLY=0
 
 		export HALCYON_EXTRA_APPS=''
 		export HALCYON_EXTRA_APPS_CONSTRAINTS=''
@@ -195,6 +197,8 @@ halcyon_main () {
 			export HALCYON_NO_BUILD=1;;
 		'--no-build-dependencies')
 			export HALCYON_NO_BUILD_DEPENDENCIES=1;;
+		'--dependencies-only')
+			export HALCYON_DEPENDENCIES_ONLY=1;;
 
 	# Install-time options
 		'--extra-apps')

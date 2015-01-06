@@ -36,6 +36,7 @@ help_usage () {
 		  --app-reconfigure
 		  --no-build
 		  --no-build-dependencies
+		  --dependencies-only
 
 		Install-time options
 		  --extra-apps=                           STRINGS | FILE
