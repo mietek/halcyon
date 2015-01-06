@@ -438,7 +438,7 @@ install_app () {
 	local saved_tag
 	saved_tag=''
 	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
-		saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || die
+		saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || return 1
 		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
 	fi
 

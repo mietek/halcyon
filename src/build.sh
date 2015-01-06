@@ -129,7 +129,7 @@ do_build_app () {
 		opts_a+=( --verbose )
 
 		local stdout
-		stdout=$( get_tmp_file 'halcyon-cabal-configure-stdout' ) || die
+		stdout=$( get_tmp_file 'halcyon-cabal-configure-stdout' ) || return 1
 
 		if ! sandboxed_cabal_do "${build_dir}" configure "${opts_a[@]}" >"${stdout}" 2>&1 | quote; then
 			quote <"${stdout}"
@@ -314,7 +314,7 @@ prepare_build_dir () {
 	quote <<<"${changed_files}"
 
 	local prepare_dir
-	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || die
+	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || return 1
 
 	if ! copy_source_dir_over "${source_dir}" "${prepare_dir}"; then
 		log_error 'Failed to update build directory'

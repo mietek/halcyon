@@ -283,7 +283,7 @@ do_fast_install_app () {
 
 	local label install_dir
 	label=$( get_tag_label "${tag}" )
-	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
+	install_dir=$( get_tmp_dir 'halcyon-install' ) || return 1
 
 	restore_install_dir "${tag}" "${install_dir}/${label}" || return 1
 	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
@@ -447,15 +447,15 @@ do_full_install_app () {
 
 	local label build_dir install_dir saved_sandbox
 	label=$( get_tag_label "${tag}" )
-	build_dir=$( get_tmp_dir 'halcyon-build' ) || die
-	install_dir=$( get_tmp_dir 'halcyon-install' ) || die
+	build_dir=$( get_tmp_dir 'halcyon-build' ) || return 1
+	install_dir=$( get_tmp_dir 'halcyon-install' ) || return 1
 	saved_sandbox=''
 
 	do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}" || return 1
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
-			saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
+			saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || return 1
 			mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}" || die
 		fi
 	fi
@@ -685,7 +685,7 @@ install_local_app () {
 	fi
 
 	local source_dir
-	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
+	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
 
 	if ! copy_source_dir_over "${local_dir}" "${source_dir}/${label}"; then
 		log_error 'Failed to create source directory'
@@ -703,8 +703,8 @@ install_cloned_app () {
 	expect_args url -- "$@"
 
 	local clone_dir source_dir
-	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || die
-	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
+	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || return 1
+	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
 
 	log_begin "Cloning ${url}..."
 
@@ -737,8 +737,8 @@ install_unpacked_app () {
 	expect_args thing -- "$@"
 
 	local unpack_dir source_dir
-	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || die
-	source_dir=$( get_tmp_dir 'halcyon-source' ) || die
+	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || return 1
+	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
 
 	HALCYON_NO_APP=1 \
 	HALCYON_GHC_REBUILD=0 \
@@ -776,7 +776,7 @@ halcyon_install () {
 	fi
 
 	local cache_dir
-	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || die
+	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || return 1
 
 	prepare_cache "${cache_dir}" || die
 

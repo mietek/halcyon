@@ -335,7 +335,7 @@ build_ghc_dir () {
 	local ghc_version ghc_original_url ghc_build_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_original_url=$( link_ghc_libs "${tag}" ) || die
-	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || die
+	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || return 1
 
 	log 'Building GHC directory'
 

@@ -249,8 +249,8 @@ build_cabal_dir () {
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || return 1
-	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
-	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || die
+	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || return 1
+	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || return 1
 
 	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
 
@@ -701,7 +701,7 @@ sandboxed_cabal_do () {
 	local saved_config
 	saved_config=''
 	if [[ -f "${HALCYON_BASE}/sandbox/cabal.config" ]]; then
-		saved_config=$( get_tmp_file 'halcyon-saved-config' ) || die
+		saved_config=$( get_tmp_file 'halcyon-saved-config' ) || return 1
 		mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}" || die
 	fi
 	if [[ -f "${work_dir}/cabal.config" ]]; then
@@ -813,7 +813,7 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 	saved_sandbox=''
 
 	if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
-		saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || die
+		saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || return 1
 		mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}" || die
 	fi
 
@@ -857,7 +857,7 @@ cabal_unpack_over () {
 	expect_args thing unpack_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || die
+	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || return 1
 
 	rm -rf "${unpack_dir}" || die
 	mkdir -p "${unpack_dir}" || die
@@ -892,7 +892,7 @@ populate_cabal_setup_exe_cache () {
 	log 'Populating Cabal setup-exe-cache'
 
 	local setup_dir
-	setup_dir="$( get_tmp_dir 'halcyon-setup-exe-cache' )" || die
+	setup_dir="$( get_tmp_dir 'halcyon-setup-exe-cache' )" || return 1
 
 	mkdir -p "${setup_dir}" || die
 	cabal_do "${setup_dir}" sandbox init --sandbox '.' 2>&1 | quote || die
