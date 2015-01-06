@@ -63,7 +63,7 @@ determine_ghc_version () {
 
 	local ghc_version
 	if [[ -n "${constraints}" ]]; then
-		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || die
+		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || return 1
 	else
 		ghc_version="${HALCYON_GHC_VERSION}"
 	fi

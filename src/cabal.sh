@@ -13,7 +13,9 @@ map_cabal_version_to_original_url () {
 	'1.20.0.2')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.2/cabal-install-1.20.0.2.tar.gz';;
 	'1.20.0.1')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.1/cabal-install-1.20.0.1.tar.gz';;
 	'1.20.0.0')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.0/cabal-install-1.20.0.0.tar.gz';;
-	*)		die "Unexpected Cabal version: ${cabal_version}"
+	*)
+		log_error "Unexpected Cabal version: ${cabal_version}"
+		return 1
 	esac
 }
 
@@ -240,7 +242,7 @@ build_cabal_dir () {
 	local ghc_version cabal_version cabal_original_url cabal_build_dir cabal_home_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	cabal_version=$( get_tag_cabal_version "${tag}" )
-	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || die
+	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || return 1
 	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || die
 	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || die
 

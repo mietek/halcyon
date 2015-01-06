@@ -7,7 +7,9 @@ map_ghc_version_to_linux_x86_64_gmp10_url () {
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
-	*)		die "Unexpected GHC version for Linux/libgmp.so.10 (x86_64): ${ghc_version}"
+	*)
+		log_error "Unexpected GHC version for Linux/libgmp.so.10 (x86_64): ${ghc_version}"
+		return 1
 	esac
 }
 
@@ -39,7 +41,9 @@ map_ghc_version_to_linux_x86_64_gmp3_url () {
 	'6.10.3')	echo 'https://downloads.haskell.org/~ghc/6.10.3/ghc-6.10.3-x86_64-unknown-linux-n.tar.bz2';;
 	'6.10.2')	echo 'https://downloads.haskell.org/~ghc/6.10.2/ghc-6.10.2-x86_64-unknown-linux-libedit2.tar.bz2';;
 	'6.10.1')	echo 'https://downloads.haskell.org/~ghc/6.10.1/ghc-6.10.1-x86_64-unknown-linux-libedit2.tar.bz2';;
-	*)		die "Unexpected GHC version for Linux/libgmp.so.3 (x86_64): ${ghc_version}"
+	*)
+		log_error "Unexpected GHC version for Linux/libgmp.so.3 (x86_64): ${ghc_version}"
+		return 1
 	esac
 }
 
@@ -64,7 +68,9 @@ map_ghc_version_to_osx_x86_64_url () {
 	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-apple-darwin.tar.bz2';; # 10.6+?
 	'7.0.3')	echo 'https://downloads.haskell.org/~ghc/7.0.3/ghc-7.0.3-x86_64-apple-darwin.tar.bz2';; # 10.6+?
 	'7.0.2')	echo 'https://downloads.haskell.org/~ghc/7.0.2/ghc-7.0.2-x86_64-apple-darwin.tar.bz2';; # 10.6+?
-	*)		die "Unexpected GHC version for OS X (x86_64): ${ghc_version}"
+	*)
+		log_error "Unexpected GHC version for OS X (x86_64): ${ghc_version}"
+		return 1
 	esac
 }
 
@@ -84,7 +90,9 @@ map_base_package_version_to_ghc_version () {
 	'4.3.1.0')	echo '7.0.4';;
 	'4.2.0.2')	echo '6.12.3';;
 	'4.1.0.0')	echo '6.10.4';;
-	*)		die "Unexpected base package version: ${base_version}"
+	*)
+		log_error "Unexpected base package version: ${base_version}"
+		return 1
 	esac
 }
 
@@ -95,10 +103,11 @@ map_constraints_to_ghc_version () {
 
 	local base_version
 	if ! base_version=$( match_package_version 'base' <<<"${constraints}" ); then
-		die 'Unexpected missing base package version'
+		log_error 'Unexpected missing base package version'
+		return 1
 	fi
 
-	map_base_package_version_to_ghc_version "${base_version}" || die
+	map_base_package_version_to_ghc_version "${base_version}" || return 1
 }
 
 
@@ -226,10 +235,10 @@ link_ghc_libs () {
 		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		if [[ "${ghc_version}" < '7.8' ]]; then
 			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
 			gmp_name='libgmp.so.10'
-			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
 	'linux-ubuntu-12'*'-x86_64')
@@ -237,54 +246,54 @@ link_ghc_libs () {
 			gmp_file='/usr/lib/libgmp.so.3'
 			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
 			gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 			gmp_name='libgmp.so.10'
-			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
 	'linux-debian-6-x86_64'|'linux-ubuntu-10'*'-x86_64')
 		gmp_file='/usr/lib/libgmp.so.3'
 		tinfo_file='/lib/libncurses.so.5'
 		gmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		;;
 	'linux-centos-7-x86_64'|'linux-fedora-21-x86_64'|'linux-fedora-20-x86_64'|'linux-fedora-19-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.10'
 		tinfo_file='/usr/lib64/libtinfo.so.5'
 		if [[ "${ghc_version}" < '7.8' ]]; then
 			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
 			gmp_name='libgmp.so.10'
-			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
 	'linux-centos-6-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.3'
 		tinfo_file='/lib64/libtinfo.so.5'
 		gmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		;;
 	'linux-arch-x86_64')
 		gmp_file='/usr/lib/libgmp.so.10'
 		tinfo_file='/usr/lib/libncurses.so.5'
 		if [[ "${ghc_version}" < '7.8' ]]; then
 			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
 			gmp_name='libgmp.so.10'
-			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" )
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
 	'osx-'*'-x86_64')
-		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" )
+		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" ) || return 1
 		;;
 	*)
 		local description
-		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" ) || die
+		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
 
 		die "Unexpected platform: ${description}"
 	esac
