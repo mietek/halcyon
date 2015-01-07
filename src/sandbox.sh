@@ -207,7 +207,7 @@ add_sandbox_sources () {
 	fi
 
 	local sandbox_sources
-	sandbox_sources=$( <"${source_dir}/.halcyon/sandbox-sources" ) || die
+	sandbox_sources=$( <"${source_dir}/.halcyon/sandbox-sources" ) || true
 	if [[ -z "${sandbox_sources}" ]]; then
 		return 0
 	fi
@@ -246,7 +246,10 @@ install_sandbox_extra_os_packages () {
 	fi
 
 	local extra_packages
-	extra_packages=$( <"${source_dir}/.halcyon/sandbox-extra-os-packages" ) || die
+	extra_packages=$( <"${source_dir}/.halcyon/sandbox-extra-os-packages" ) || true
+	if [[ -z "${extra_packages}" ]]; then
+		return 0
+	fi
 
 	log 'Installing sandbox extra OS packages'
 
@@ -267,7 +270,7 @@ install_sandbox_extra_apps () {
 	fi
 
 	local -a extra_apps_a
-	extra_apps_a=( $( <"${source_dir}/.halcyon/sandbox-extra-apps" ) ) || die
+	extra_apps_a=( $( <"${source_dir}/.halcyon/sandbox-extra-apps" ) ) || true
 	if [[ -z "${extra_apps_a[@]:+_}" ]]; then
 		return 0
 	fi
@@ -388,7 +391,7 @@ build_sandbox_dir () {
 	opts_a=()
 	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
 		local -a raw_opts_a
-		raw_opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || die
+		raw_opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || true
 		opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix' ) )
 	fi
 	opts_a+=( --dependencies-only )

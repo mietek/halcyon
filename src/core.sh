@@ -112,7 +112,7 @@ describe_extra () {
 	fi
 
 	local -a extra_a
-	extra_a=( $( <"${extra_file}" ) ) || return 0
+	extra_a=( $( <"${extra_file}" ) ) || true
 	if [[ -z "${extra_a[@]:+_}" ]]; then
 		return 0
 	fi

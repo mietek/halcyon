@@ -92,7 +92,7 @@ install_extra_apps () {
 	fi
 
 	local -a extra_apps_a
-	extra_apps_a=( $( <"${source_dir}/.halcyon/extra-apps" ) ) || die
+	extra_apps_a=( $( <"${source_dir}/.halcyon/extra-apps" ) ) || true
 	if [[ -z "${extra_apps_a[@]:+_}" ]]; then
 		return 0
 	fi
@@ -156,11 +156,20 @@ install_extra_data_files () {
 		return 0
 	fi
 
+	local extra_files
+	extra_files=$( <"${source_dir}/.halcyon/extra-data-files" ) || true
+	if [[ -z "${extra_files}" ]]; then
+		return 0
+	fi
+
 	expect_existing "${build_dir}/dist/.halcyon-data-dir" || return 1
 
-	local extra_files data_dir
-	extra_files=$( <"${source_dir}/.halcyon/extra-data-files" ) || die
-	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
+	local data_dir
+	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || true
+	if [[ -z "${data_dir}" ]]; then
+		log_error 'Failed to read data directory file'
+		return 1
+	fi
 
 	# NOTE: Extra data files may be directories, and are actually bash globs.
 
@@ -198,9 +207,14 @@ install_extra_os_packages () {
 		return 0
 	fi
 
-	local prefix extra_packages
+	local extra_packages
+	extra_packages=$( <"${source_dir}/.halcyon/extra-os-packages" ) || true
+	if [[ -z "${extra_packages}" ]]; then
+		return 0
+	fi
+
+	local prefix
 	prefix=$( get_tag_prefix "${tag}" )
-	extra_packages=$( <"${source_dir}/.halcyon/extra-os-packages" ) || die
 
 	log 'Installing extra OS packages'
 
@@ -228,10 +242,13 @@ install_extra_dependencies () {
 		return 0
 	fi
 
-	log_indent 'Including extra dependencies'
-
 	local extra_dependencies
-	extra_dependencies=$( <"${source_dir}/.halcyon/extra-dependencies" ) || die
+	extra_dependencies=$( <"${source_dir}/.halcyon/extra-dependencies" ) || true
+	if [[ -z "${extra_dependencies}" ]]; then
+		return 0
+	fi
+
+	log_indent 'Including extra dependencies'
 
 	local dependency
 	while read -r dependency; do
@@ -260,11 +277,17 @@ prepare_install_dir () {
 
 	expect_existing "${build_dir}/.halcyon-tag" "${build_dir}/dist/.halcyon-data-dir" || return 1
 
-	local prefix label install_id label_dir data_dir
+	local data_dir
+	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || true
+	if [[ -z "${data_dir}" ]]; then
+		log_error 'Failed to read data directory file'
+		return 1
+	fi
+
+	local prefix label install_id label_dir
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
-	data_dir=$( <"${build_dir}/dist/.halcyon-data-dir" ) || die
 
 	log 'Preparing install directory'
 
@@ -431,7 +454,11 @@ install_app () {
 	expect_existing "${label_dir}/data-dir" || return 1
 
 	local data_dir
-	data_dir=$( <"${label_dir}/data-dir" ) || die
+	data_dir=$( <"${label_dir}/data-dir" ) || true
+	if [[ -z "${data_dir}" ]]; then
+		log_error 'Failed to read data directory file'
+		return 1
+	fi
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
 		log_begin "Installing app into ${prefix}..."
