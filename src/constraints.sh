@@ -247,13 +247,16 @@ match_full_sandbox_dir () {
 	while read -r full_name; do
 		full_file="${HALCYON_CACHE}/${full_name}"
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
+			rm -f "${full_file}" || true
+
 			if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
 			then
+				rm -f "${full_file}" || true
 				continue
 			fi
 		else
-			touch_cached_file "${full_name}" || die
+			touch_cached_file "${full_name}"
 		fi
 
 		local full_label full_tag
@@ -289,13 +292,16 @@ list_partial_sandbox_dirs () {
 	while read -r partial_name; do
 		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
+			rm -f "${partial_file}" || true
+
 			if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
 			then
+				rm -f "${partial_file}" || true
 				continue
 			fi
 		else
-			touch_cached_file "${partial_name}" || die
+			touch_cached_file "${partial_name}"
 		fi
 
 		local partial_label partial_tag
@@ -327,6 +333,7 @@ score_partial_sandbox_dirs () {
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" )
 		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! validate_partial_constraints_file "${partial_file}" >'/dev/null'; then
+			rm -f "${partial_file}" || true
 			continue
 		fi
 

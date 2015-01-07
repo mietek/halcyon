@@ -458,7 +458,7 @@ build_sandbox_dir () {
 
 
 archive_sandbox_dir () {
-	expect_vars HALCYON_BASE HALCYON_CACHE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE \
+	expect_vars HALCYON_BASE HALCYON_CACHE HALCYON_NO_ARCHIVE \
 		HALCYON_INTERNAL_PLATFORM
 
 	if (( HALCYON_NO_ARCHIVE )); then
@@ -476,27 +476,18 @@ archive_sandbox_dir () {
 
 	log 'Archiving sandbox directory'
 
-	create_cached_archive "${HALCYON_BASE}/sandbox" "${archive_name}" || die
+	create_cached_archive "${HALCYON_BASE}/sandbox" "${archive_name}" || return 1
 	copy_file "${HALCYON_BASE}/sandbox/.halcyon-constraints" \
 		"${HALCYON_CACHE}/${constraints_name}" || die
 
-	local no_clean
-	no_clean=0
-	if ! upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}"; then
-		no_clean=1
-	fi
-	if ! upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${constraints_name}"; then
-		no_clean=1
-	fi
-	if (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )) || (( no_clean )); then
-		return 0
-	fi
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || return 1
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${constraints_name}" || return 1
 
 	local common_prefix common_pattern
 	common_prefix=$( format_sandbox_common_file_name_prefix )
 	common_pattern=$( format_sandbox_common_file_name_pattern "${sandbox_tag}" )
 
-	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || die
+	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${common_prefix}" "${common_pattern}" "(${archive_name}|${constraints_name})" || return 1
 }
 
 
@@ -526,24 +517,29 @@ restore_sandbox_dir () {
 	if validate_sandbox_dir "${tag}" >'/dev/null'; then
 		log 'Using existing sandbox directory'
 
-		touch_cached_file "${archive_name}" || die
+		touch_cached_file "${archive_name}"
 		return 0
 	fi
+	rm -rf "${HALCYON_BASE}/sandbox" || true
 
 	log 'Restoring sandbox directory'
 
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
 		! validate_sandbox_dir "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" ||
-			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
+		rm -rf "${HALCYON_BASE}/sandbox" || true
+		cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || return 1
+
+		if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/sandbox" ||
 			! validate_sandbox_dir "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_BASE}/sandbox" || die
+			rm -rf "${HALCYON_BASE}/sandbox" || true
+
+			log_error 'Failed to restore sandbox directory'
 			return 1
 		fi
 	else
-		touch_cached_file "${archive_name}" || die
+		touch_cached_file "${archive_name}"
 	fi
 }
 

@@ -262,7 +262,7 @@ build_cabal_dir () {
 
 	log 'Building Cabal directory'
 
-	acquire_original_source "${cabal_original_url}" "${cabal_build_dir}" || die
+	acquire_original_source "${cabal_original_url}" "${cabal_build_dir}" || return 1
 
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
@@ -402,7 +402,7 @@ update_cabal_package_db () {
 
 
 archive_cabal_dir () {
-	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE \
+	expect_vars HALCYON_BASE HALCYON_NO_ARCHIVE \
 		HALCYON_INTERNAL_PLATFORM
 
 	if (( HALCYON_NO_ARCHIVE )); then
@@ -417,10 +417,8 @@ archive_cabal_dir () {
 
 	log 'Archiving Cabal directory'
 
-	create_cached_archive "${HALCYON_BASE}/cabal" "${archive_name}" || die
-	if ! upload_cached_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" || (( HALCYON_NO_CLEAN_PRIVATE_STORAGE )); then
-		return 0
-	fi
+	create_cached_archive "${HALCYON_BASE}/cabal" "${archive_name}" || return 1
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" || return 1
 
 	local cabal_date
 	cabal_date=$( get_tag_cabal_date "${cabal_tag}" )
@@ -432,7 +430,7 @@ archive_cabal_dir () {
 	updated_prefix=$( format_updated_cabal_archive_name_prefix "${cabal_tag}" )
 	updated_pattern=$( format_updated_cabal_archive_name_pattern "${cabal_tag}" )
 
-	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}" "${updated_prefix}" "${updated_pattern}" "${archive_name}" || return 1
 }
 
 
@@ -513,24 +511,29 @@ restore_base_cabal_dir () {
 	if validate_base_cabal_dir "${tag}" >'/dev/null'; then
 		log 'Using existing Cabal directory'
 
-		touch_cached_file "${base_name}" || die
+		touch_cached_file "${base_name}"
 		return 0
 	fi
+	rm -rf "${HALCYON_BASE}/cabal" || true
 
 	log 'Restoring base Cabal directory'
 
 	if ! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_base_cabal_dir "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${base_name}" ||
-			! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
+		rm -rf "${HALCYON_BASE}/cabal" || true
+		cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${base_name}" || return 1
+
+		if ! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 			! validate_base_cabal_dir "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_BASE}/cabal" || die
+			rm -rf "${HALCYON_BASE}/cabal" || true
+
+			log_error 'Failed to restore base Cabal directory'
 			return 1
 		fi
 	else
-		touch_cached_file "${base_name}" || die
+		touch_cached_file "${base_name}"
 	fi
 }
 
@@ -550,9 +553,10 @@ restore_cached_updated_cabal_dir () {
 	if validate_updated_cabal_dir "${tag}" >'/dev/null'; then
 		log 'Using existing Cabal directory'
 
-		touch_cached_file "${updated_name}" || die
+		touch_cached_file "${updated_name}"
 		return 0
 	fi
+	rm -rf "${HALCYON_BASE}/cabal" || true
 
 	if [[ -z "${updated_name}" ]]; then
 		return 1
@@ -563,10 +567,12 @@ restore_cached_updated_cabal_dir () {
 	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_updated_cabal_dir "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_BASE}/cabal" || die
+		rm -rf "${HALCYON_BASE}/cabal" || true
+
+		log_error 'Failed to restore Cabal directory'
 		return 1
 	else
-		touch_cached_file "${updated_name}" || die
+		touch_cached_file "${updated_name}"
 	fi
 }
 
@@ -596,11 +602,14 @@ restore_updated_cabal_dir () {
 
 	log 'Restoring Cabal directory'
 
-	if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${updated_name}" ||
-		! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
+	cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${updated_name}" || return 1
+
+	if ! extract_cached_archive_over "${updated_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_updated_cabal_dir "${tag}" >'/dev/null'
 	then
-		rm -rf "${HALCYON_BASE}/cabal" || die
+		rm -rf "${HALCYON_BASE}/cabal" || true
+
+		log_error 'Failed to restore Cabal directory'
 		return 1
 	fi
 }

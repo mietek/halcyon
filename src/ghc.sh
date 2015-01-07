@@ -340,7 +340,7 @@ build_ghc_dir () {
 
 	log 'Building GHC directory'
 
-	acquire_original_source "${ghc_original_url}" "${ghc_build_dir}" || die
+	acquire_original_source "${ghc_original_url}" "${ghc_build_dir}" || return 1
 
 	if [[ -f "${source_dir}/.halcyon/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
@@ -427,8 +427,8 @@ archive_ghc_dir () {
 
 	log 'Archiving GHC directory'
 
-	create_cached_archive "${HALCYON_BASE}/ghc" "${archive_name}" || die
-	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" || true
+	create_cached_archive "${HALCYON_BASE}/ghc" "${archive_name}" || return 1
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" || return 1
 }
 
 
@@ -457,24 +457,29 @@ restore_ghc_dir () {
 	if validate_ghc_dir "${tag}" >'/dev/null'; then
 		log 'Using existing GHC'
 
-		touch_cached_file "${archive_name}" || die
+		touch_cached_file "${archive_name}"
 		return 0
 	fi
+	rm -rf "${HALCYON_BASE}/ghc" || true
 
 	log 'Restoring GHC directory'
 
 	if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
 		! validate_ghc_dir "${tag}" >'/dev/null'
 	then
-		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" ||
-			! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
+		rm -rf "${HALCYON_BASE}/ghc" || true
+		cache_stored_file "${HALCYON_INTERNAL_PLATFORM}" "${archive_name}" || return 1
+
+		if ! extract_cached_archive_over "${archive_name}" "${HALCYON_BASE}/ghc" ||
 			! validate_ghc_dir "${tag}" >'/dev/null'
 		then
-			rm -rf "${HALCYON_BASE}/ghc" || die
+			rm -rf "${HALCYON_BASE}/ghc" || true
+
+			log_error 'Failed to restore GHC directory'
 			return 1
 		fi
 	else
-		touch_cached_file "${archive_name}" || die
+		touch_cached_file "${archive_name}"
 	fi
 }
 

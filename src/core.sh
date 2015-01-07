@@ -339,7 +339,7 @@ fast_install_app () {
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		announce_install "${tag}"
-		touch_cached_ghc_and_cabal_files || die
+		touch_cached_ghc_and_cabal_files
 	fi
 }
 
@@ -782,7 +782,10 @@ halcyon_install () {
 	local cache_dir
 	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || return 1
 
-	prepare_cache "${cache_dir}" || die
+	if ! prepare_cache "${cache_dir}"; then
+		log_error 'Failed to prepare cache'
+		return 1
+	fi
 
 	if (( HALCYON_NO_APP )); then
 		install_ghc_and_cabal_dirs '/dev/null' || return 1
@@ -803,7 +806,9 @@ halcyon_install () {
 		fi
 	fi
 
-	clean_cache "${cache_dir}" || die
+	if ! clean_cache "${cache_dir}"; then
+		log_warning 'Failed to clean cache'
+	fi
 
-	rm -rf "${cache_dir}" || die
+	rm -rf "${cache_dir}" || true
 }

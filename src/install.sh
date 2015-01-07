@@ -343,7 +343,7 @@ prepare_install_dir () {
 
 
 archive_install_dir () {
-	expect_vars HALCYON_NO_ARCHIVE HALCYON_NO_CLEAN_PRIVATE_STORAGE \
+	expect_vars HALCYON_NO_ARCHIVE \
 		HALCYON_INTERNAL_PLATFORM
 
 	local install_dir
@@ -362,18 +362,14 @@ archive_install_dir () {
 
 	log 'Archiving install directory'
 
-	create_cached_archive "${install_dir}" "${archive_name}" || die
-	if ! upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" ||
-		(( HALCYON_NO_CLEAN_PRIVATE_STORAGE ))
-	then
-		return 0
-	fi
+	create_cached_archive "${install_dir}" "${archive_name}" || return 1
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || return 1
 
 	local archive_prefix archive_pattern
 	archive_prefix=$( format_install_archive_name_prefix )
 	archive_pattern=$( format_install_archive_name_pattern "${install_tag}" )
 
-	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || die
+	delete_matching_private_stored_files "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_prefix}" "${archive_pattern}" "${archive_name}" || return 1
 }
 
 
@@ -403,15 +399,19 @@ restore_install_dir () {
 	if ! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 		! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
 	then
-		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" ||
-			! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
+		rm -rf "${install_dir}" || true
+		cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || return 1
+
+		if ! extract_cached_archive_over "${archive_name}" "${install_dir}" ||
 			! validate_install_dir "${tag}" "${install_dir}" >'/dev/null'
 		then
-			rm -rf "${install_dir}" || die
+			rm -rf "${install_dir}" || true
+
+			log_error 'Failed to restore install directory'
 			return 1
 		fi
 	else
-		touch_cached_file "${archive_name}" || die
+		touch_cached_file "${archive_name}"
 	fi
 }
 

@@ -229,8 +229,8 @@ archive_build_dir () {
 
 	log 'Archiving build directory'
 
-	create_cached_archive "${build_dir}" "${archive_name}" || die
-	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || true
+	create_cached_archive "${build_dir}" "${archive_name}" || return 1
+	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || return 1
 }
 
 
@@ -279,15 +279,19 @@ restore_build_dir () {
 	if ! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 		! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
 	then
-		if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" ||
-			! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
+		rm -rf "${build_dir}" || true
+		cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || return 1
+
+		if ! extract_cached_archive_over "${archive_name}" "${build_dir}" ||
 			! validate_potential_build_dir "${tag}" "${build_dir}" >'/dev/null'
 		then
-			rm -rf "${build_dir}" || die
+			rm -rf "${build_dir}" || true
+
+			log_error 'Failed to restore build directory'
 			return 1
 		fi
 	else
-		touch_cached_file "${archive_name}" || die
+		touch_cached_file "${archive_name}"
 	fi
 }
 
@@ -302,7 +306,7 @@ prepare_build_dir () {
 	all_files=$(
 		compare_tree "${build_dir}" "${source_dir}" |
 		filter_not_matching '^. (\.halcyon-tag$|dist/)'
-	) || true
+	)
 
 	local changed_files
 	if ! changed_files=$(
