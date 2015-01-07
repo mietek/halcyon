@@ -391,6 +391,15 @@ prepare_constraints_option () {
 }
 
 
+# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the
+# executables to be installed, but not to install the packages.
+# https://github.com/haskell/cabal/issues/220
+
+# NOTE: Listing executable-only packages in build-depends causes Cabal to install the
+# packages, and to fail to recognise the packages have been installed.
+# https://github.com/haskell/cabal/issues/779
+
+
 prepare_source_dir () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
@@ -461,7 +470,9 @@ do_full_install_app () {
 		fi
 	fi
 
-	install_sandbox_dir "${tag}" "${source_dir}" "${constraints}" || return 1
+	# NOTE: Returns 2 if build is needed.
+
+	install_sandbox_dir "${tag}" "${source_dir}" "${constraints}" || return
 	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
 	log
 

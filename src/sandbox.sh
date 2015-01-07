@@ -182,7 +182,7 @@ copy_sandbox_magic () {
 	expect_existing "${HALCYON_BASE}/sandbox" || return 1
 
 	local sandbox_magic_hash
-	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || die
+	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || return 1
 	if [[ -z "${sandbox_magic_hash}" ]]; then
 		return 0
 	fi
@@ -191,8 +191,8 @@ copy_sandbox_magic () {
 	find_tree "${source_dir}/.halcyon" -type f \( -path './ghc*' -or -path './sandbox*' \) |
 		while read -r file; do
 			copy_file "${source_dir}/.halcyon/${file}" \
-				"${HALCYON_BASE}/sandbox/.halcyon/${file}" || die
-		done || die
+				"${HALCYON_BASE}/sandbox/.halcyon/${file}" || return 1
+		done || return 0
 }
 
 
@@ -206,32 +206,18 @@ add_sandbox_sources () {
 		return 0
 	fi
 
-	local sandbox_sources
+	local sandbox_sources sources_dir
 	sandbox_sources=$( <"${source_dir}/.halcyon/sandbox-sources" ) || true
-	if [[ -z "${sandbox_sources}" ]]; then
-		return 0
-	fi
-
-	local sources_dir
 	sources_dir="${HALCYON_BASE}/sandbox/.halcyon-sandbox-sources"
 
-	local names
-	if ! names=$( git_acquire_all "${source_dir}" "${sandbox_sources}" "${sources_dir}" ); then
-		die 'Failed to add sandbox sources'
-	fi
-
-	local -a names_a
-	names_a=( ${names} )
-	if [[ -z "${names_a[@]:+_}" ]]; then
-		return 0
-	fi
-
 	local name
-	for name in "${names_a[@]}"; do
-		log "Adding sandbox source: ${name}"
+	git_acquire_all "${source_dir}" "${sandbox_sources}" "${sources_dir}" |
+		while read -r name; do
+			log "Adding sandbox source: ${name}"
 
-		sandboxed_cabal_do "${source_dir}" sandbox add-source "${sources_dir}/${name}" || die
-	done
+			sandboxed_cabal_do "${source_dir}" sandbox add-source \
+				"${sources_dir}/${name}" || return 1
+		done || return 0
 }
 
 
@@ -247,14 +233,12 @@ install_sandbox_extra_os_packages () {
 
 	local extra_packages
 	extra_packages=$( <"${source_dir}/.halcyon/sandbox-extra-os-packages" ) || true
-	if [[ -z "${extra_packages}" ]]; then
-		return 0
-	fi
 
 	log 'Installing sandbox extra OS packages'
 
 	if ! install_platform_packages "${extra_packages}" "${HALCYON_BASE}/sandbox"; then
-		die 'Failed to install sandbox extra OS packages'
+		log_error 'Failed to install sandbox extra OS packages'
+		return 1
 	fi
 }
 
@@ -306,11 +290,14 @@ install_sandbox_extra_apps () {
 		if (( index > 1 )); then
 			log
 		fi
+
+		# NOTE: Returns 2 if build is needed.
+
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 		HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE=1 \
-			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return 1
+			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return
 	done <"${source_dir}/.halcyon/sandbox-extra-apps" || return 0
 }
 
@@ -322,7 +309,10 @@ build_sandbox_dir () {
 	expect_args tag source_dir constraints must_create -- "$@"
 
 	if (( must_create )); then
-		rm -rf "${HALCYON_BASE}/sandbox" || die
+		if ! rm -rf "${HALCYON_BASE}/sandbox"; then
+			log_error 'Failed to remove sandbox directory'
+			return 1
+		fi
 	else
 		expect_existing "${HALCYON_BASE}/sandbox/.halcyon-tag" \
 			"${HALCYON_BASE}/sandbox/.halcyon-constraints" || return 1
@@ -340,22 +330,16 @@ build_sandbox_dir () {
 		fi
 	fi
 
-	add_sandbox_sources "${source_dir}" || die
-
-	# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the
-	# executables to be installed, but not to install the packages.
-	# https://github.com/haskell/cabal/issues/220
-
-	# NOTE: Listing executable-only packages in build-depends causes Cabal to install the
-	# packages, and to fail to recognise the packages have been installed.
-	# https://github.com/haskell/cabal/issues/779
-
-	if ! install_sandbox_extra_apps "${tag}" "${source_dir}"; then
-		log_warning 'Cannot install sandbox extra apps'
+	if ! add_sandbox_sources "${source_dir}"; then
+		log_error 'Failed to add sandbox sources'
 		return 1
 	fi
 
-	install_sandbox_extra_os_packages "${tag}" "${source_dir}" || die
+	# NOTE: Returns 2 if build is needed.
+
+	install_sandbox_extra_apps "${tag}" "${source_dir}" || return
+
+	install_sandbox_extra_os_packages "${tag}" "${source_dir}" || return 1
 
 	if [[ -f "${source_dir}/.halcyon/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
@@ -364,7 +348,8 @@ build_sandbox_dir () {
 				"${source_dir}/.halcyon/sandbox-pre-build-hook" \
 					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
-			die 'Failed to execute sandbox pre-build hook'
+			log_error 'Failed to execute sandbox pre-build hook'
+			return 1
 		fi
 		log 'Sandbox pre-build hook executed'
 	fi
@@ -404,19 +389,22 @@ build_sandbox_dir () {
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib64" )
 	fi
 
-	if ! sandboxed_cabal_do "${source_dir}" install "${opts_a[@]}" 2>&1 | quote; then
-		die 'Failed to build sandbox'
-	fi
-
-	if ! format_constraints <<<"${constraints}" >"${HALCYON_BASE}/sandbox/.halcyon-constraints"; then
-		log_error 'Failed to write constraints file'
+	local built_size
+	if ! sandboxed_cabal_do "${source_dir}" install "${opts_a[@]}" 2>&1 | quote ||
+		! copy_sandbox_magic "${source_dir}" ||
+		! built_size=$( get_size "${HALCYON_BASE}/sandbox" )
+	then
+		log_error 'Failed to build sandbox'
 		return 1
 	fi
-	copy_sandbox_magic "${source_dir}" || die
-
-	local built_size
-	built_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
 	log "Sandbox built, ${built_size}"
+
+	if ! format_constraints <<<"${constraints}" \
+		>"${HALCYON_BASE}/sandbox/.halcyon-constraints"
+	then
+		log_error 'Failed to write sandbox constraints file'
+		return 1
+	fi
 
 	if [[ -f "${source_dir}/.halcyon/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
@@ -425,7 +413,8 @@ build_sandbox_dir () {
 				"${source_dir}/.halcyon/sandbox-post-build-hook" \
 					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		); then
-			die 'Failed to execute sandbox post-build hook'
+			log_error 'Failed to execute sandbox post-build hook'
+			return 1
 		fi
 		log 'Sandbox post-build hook executed'
 	fi
@@ -433,19 +422,25 @@ build_sandbox_dir () {
 	if [[ -d "${HALCYON_BASE}/sandbox/logs" || -d "${HALCYON_BASE}/sandbox/share/doc" ]]; then
 		log_indent_begin 'Removing documentation from sandbox directory...'
 
-		rm -rf "${HALCYON_BASE}/sandbox/logs" "${HALCYON_BASE}/sandbox/share/doc" || die
-
 		local trimmed_size
-		trimmed_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
+		if ! rm -rf "${HALCYON_BASE}/sandbox/logs" "${HALCYON_BASE}/sandbox/share/doc" ||
+			! trimmed_size=$( get_size "${HALCYON_BASE}/sandbox" )
+		then
+			log_indent_end 'error'
+			return 1
+		fi
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
 	log_indent_begin 'Stripping sandbox directory...'
 
-	strip_tree "${HALCYON_BASE}/sandbox" || die
-
 	local stripped_size
-	stripped_size=$( get_size "${HALCYON_BASE}/sandbox" ) || die
+	if ! strip_tree "${HALCYON_BASE}/sandbox" ||
+		! stripped_size=$( get_size "${HALCYON_BASE}/sandbox" )
+	then
+		log_indent_end 'error'
+		return 1
+	fi
 	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag"; then
@@ -475,8 +470,13 @@ archive_sandbox_dir () {
 	log 'Archiving sandbox directory'
 
 	create_cached_archive "${HALCYON_BASE}/sandbox" "${archive_name}" || return 1
-	copy_file "${HALCYON_BASE}/sandbox/.halcyon-constraints" \
-		"${HALCYON_CACHE}/${constraints_name}" || die
+
+	if ! copy_file "${HALCYON_BASE}/sandbox/.halcyon-constraints" \
+		"${HALCYON_CACHE}/${constraints_name}"
+	then
+		log_error 'Failed to cache sandbox constraints file'
+		return 1
+	fi
 
 	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${archive_name}" || return 1
 	upload_cached_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${constraints_name}" || return 1
@@ -553,9 +553,11 @@ get_sandbox_package_db () {
 
 recache_sandbox_package_db () {
 	local package_db
-	package_db=$( get_sandbox_package_db ) || die
-
-	ghc-pkg recache --package-db="${package_db}" 2>&1 | quote || die
+	if ! package_db=$( get_sandbox_package_db ) ||
+		! ghc-pkg recache --package-db="${package_db}" 2>&1 | quote
+	then
+		log_warning 'Failed to recache sandbox package database'
+	fi
 }
 
 
@@ -574,7 +576,7 @@ install_matching_sandbox_dir () {
 		log "Using fully matching sandbox directory: ${matching_description}"
 
 		restore_sandbox_dir "${matching_tag}" || return 1
-		recache_sandbox_package_db || die
+		recache_sandbox_package_db
 
 		if ! derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag"; then
 			log_error 'Failed to write sandbox tag'
@@ -586,11 +588,13 @@ install_matching_sandbox_dir () {
 	log "Using partially matching sandbox directory: ${matching_description}"
 
 	restore_sandbox_dir "${matching_tag}" || return 1
-	recache_sandbox_package_db || die
+	recache_sandbox_package_db
+
+	# NOTE: Returns 2 if build is needed.
 
 	local must_create
 	must_create=0
-	build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return 1
+	build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return
 }
 
 
@@ -603,7 +607,7 @@ install_sandbox_dir () {
 
 	if ! (( HALCYON_SANDBOX_REBUILD )); then
 		if restore_sandbox_dir "${tag}"; then
-			recache_sandbox_package_db || die
+			recache_sandbox_package_db
 			return 0
 		fi
 
@@ -611,21 +615,22 @@ install_sandbox_dir () {
 		if matching_tag=$( match_sandbox_dir "${tag}" "${constraints}" ) &&
 			install_matching_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${matching_tag}"
 		then
-			archive_sandbox_dir || die
+			archive_sandbox_dir || return 1
 			return 0
 		fi
 
+		# NOTE: Returns 2 if build is needed.
+
 		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
-			log_warning 'Cannot build sandbox directory'
-			return 1
+			log_error 'Cannot build sandbox directory'
+			return 2
 		fi
 	fi
 
+	# NOTE: Returns 2 if build is needed.
+
 	local must_create
 	must_create=1
-	if ! build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}"; then
-		log_warning 'Cannot build sandbox directory'
-		return 1
-	fi
-	archive_sandbox_dir || die
+	build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return
+	archive_sandbox_dir || return 1
 }
