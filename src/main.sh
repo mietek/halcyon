@@ -486,6 +486,8 @@ halcyon_main () {
 		fi
 	fi
 
+	# NOTE: Returns 2 if build is needed.
+
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'install')
 		halcyon_install "${args_a[@]:-}"

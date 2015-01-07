@@ -8,7 +8,7 @@ map_ghc_version_to_linux_x86_64_gmp10_url () {
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.1')	echo 'https://downloads.haskell.org/~ghc/7.8.1/ghc-7.8.1-x86_64-unknown-linux-deb7.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for Linux/libgmp.so.10 (x86_64): ${ghc_version}"
+		log_error "Unexpected GHC version for Linux (x86_64 libgmp.so.10): ${ghc_version}"
 		return 1
 	esac
 }
@@ -42,7 +42,7 @@ map_ghc_version_to_linux_x86_64_gmp3_url () {
 	'6.10.2')	echo 'https://downloads.haskell.org/~ghc/6.10.2/ghc-6.10.2-x86_64-unknown-linux-libedit2.tar.bz2';;
 	'6.10.1')	echo 'https://downloads.haskell.org/~ghc/6.10.1/ghc-6.10.1-x86_64-unknown-linux-libedit2.tar.bz2';;
 	*)
-		log_error "Unexpected GHC version for Linux/libgmp.so.3 (x86_64): ${ghc_version}"
+		log_error "Unexpected GHC version for Linux (x86_64 libgmp.so.3): ${ghc_version}"
 		return 1
 	esac
 }
@@ -103,7 +103,7 @@ map_constraints_to_ghc_version () {
 
 	local base_version
 	if ! base_version=$( match_package_version 'base' <<<"${constraints}" ); then
-		log_error 'Unexpected missing base package version'
+		log_error 'Expected base package version'
 		return 1
 	fi
 
@@ -205,7 +205,7 @@ copy_ghc_magic () {
 	expect_existing "${HALCYON_BASE}/ghc" || return 1
 
 	local ghc_magic_hash
-	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || die
+	ghc_magic_hash=$( hash_ghc_magic "${source_dir}" ) || return 1
 	if [[ -z "${ghc_magic_hash}" ]]; then
 		return 0
 	fi
@@ -214,12 +214,12 @@ copy_ghc_magic () {
 	find_tree "${source_dir}/.halcyon" -type f -path './ghc*' |
 		while read -r file; do
 			copy_file "${source_dir}/.halcyon/${file}" \
-				"${HALCYON_BASE}/ghc/.halcyon/${file}" || die
-		done || die
+				"${HALCYON_BASE}/ghc/.halcyon/${file}" || return 1
+		done || return 0
 }
 
 
-link_ghc_libs () {
+symlink_ghc_libs () {
 	expect_vars HALCYON_BASE \
 		HALCYON_INTERNAL_PLATFORM
 
@@ -302,23 +302,32 @@ link_ghc_libs () {
 		local description
 		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
 
-		die "Unexpected platform: ${description}"
+		log_error "Unexpected platform: ${description}"
+		return 1
 	esac
 
 	if [ -n "${gmp_file:-}" ]; then
 		expect_existing "${gmp_file}" || return 1
 
-		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
-		ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" || die
-		ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so" || die
+		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
+			ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" ||
+			ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so"
+		then
+			log_error 'Failed to symlink GHC libraries (libgmp.so)'
+			return 1
+		fi
 	fi
 
 	if [ -n "${tinfo_file:-}" ]; then
 		expect_existing "${tinfo_file}" || return 1
 
-		mkdir -p "${HALCYON_BASE}/ghc/usr/lib" || die
-		ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" || die
-		ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so" || die
+		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
+			ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" ||
+			ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so"
+		then
+			log_error 'Failed to symlink GHC libraries (libtinfo.so)'
+			return 1
+		fi
 	fi
 
 	echo "${url}"
@@ -331,11 +340,14 @@ build_ghc_dir () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	rm -rf "${HALCYON_BASE}/ghc" || die
+	if ! rm -rf "${HALCYON_BASE}/ghc"; then
+		log_error 'Failed to prepare GHC directory'
+		return 1
+	fi
 
 	local ghc_version ghc_original_url ghc_build_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" )
-	ghc_original_url=$( link_ghc_libs "${tag}" ) || die
+	ghc_original_url=$( symlink_ghc_libs "${tag}" ) || return 1
 	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || return 1
 
 	log 'Building GHC directory'
@@ -350,25 +362,26 @@ build_ghc_dir () {
 					"${tag}" "${source_dir}" \
 					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
 		); then
-			die 'Failed to execute GHC pre-build hook'
+			log_error 'Failed to execute GHC pre-build hook'
+			return 1
 		fi
 		log 'GHC pre-build hook executed'
 	fi
 
 	log 'Installing GHC'
 
+	local installed_size
 	if ! (
 		cd "${ghc_build_dir}/ghc-${ghc_version}" &&
 		./configure --prefix="${HALCYON_BASE}/ghc" 2>&1 | quote &&
 		make install 2>&1 | quote
-	); then
-		die 'Failed to install GHC'
+	) ||
+		! copy_ghc_magic "${source_dir}" ||
+		! installed_size=$( get_size "${HALCYON_BASE}/ghc" )
+	then
+		log_error 'Failed to install GHC'
+		return 1
 	fi
-
-	copy_ghc_magic "${source_dir}" || die
-
-	local installed_size
-	installed_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
 	log "GHC installed, ${installed_size}"
 
 	if [[ -f "${source_dir}/.halcyon/ghc-post-build-hook" ]]; then
@@ -379,7 +392,8 @@ build_ghc_dir () {
 					"${tag}" "${source_dir}" \
 					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
 		); then
-			die 'Failed to execute GHC post-build hook'
+			log_error 'Failed to execute GHC post-build hook'
+			return 1
 		fi
 		log 'GHC post-build hook executed'
 	fi
@@ -387,19 +401,25 @@ build_ghc_dir () {
 	if [[ -d "${HALCYON_BASE}/ghc/share/doc" ]]; then
 		log_indent_begin 'Removing documentation from GHC directory...'
 
-		rm -rf "${HALCYON_BASE}/ghc/share/doc" || die
-
 		local trimmed_size
-		trimmed_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
+		if ! rm -rf "${HALCYON_BASE}/ghc/share/doc" ||
+			! trimmed_size=$( get_size "${HALCYON_BASE}/ghc" )
+		then
+			log_indent_end 'error'
+			return 1
+		fi
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
 	log_indent_begin 'Stripping GHC directory...'
 
-	strip_tree "${HALCYON_BASE}/ghc" || die
-
 	local stripped_size
-	stripped_size=$( get_size "${HALCYON_BASE}/ghc" ) || die
+	if ! strip_tree "${HALCYON_BASE}/ghc" ||
+		! stripped_size=$( get_size "${HALCYON_BASE}/ghc" )
+	then
+		log_indent_end 'error'
+		return 1
+	fi
 	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_ghc_tag "${tag}" >"${HALCYON_BASE}/ghc/.halcyon-tag"; then
@@ -407,7 +427,7 @@ build_ghc_dir () {
 		return 1
 	fi
 
-	rm -rf "${ghc_build_dir}" || die
+	rm -rf "${ghc_build_dir}" || return 0
 }
 
 
@@ -485,7 +505,9 @@ restore_ghc_dir () {
 
 
 recache_ghc_package_db () {
-	ghc-pkg recache --global 2>&1 | quote || die
+	if ! ghc-pkg recache --global 2>&1 | quote; then
+		log_warning 'Failed to recache GHC package database'
+	fi
 }
 
 
@@ -498,16 +520,18 @@ install_ghc_dir () {
 
 	if ! (( HALCYON_GHC_REBUILD )); then
 		if restore_ghc_dir "${tag}"; then
-			recache_ghc_package_db || die
+			recache_ghc_package_db
 			return 0
 		fi
 
+		# NOTE: Returns 2 if build is needed.
+
 		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
-			log_warning 'Cannot build GHC directory'
-			return 1
+			log_error 'Cannot build GHC directory'
+			return 2
 		fi
 	fi
 
-	build_ghc_dir "${tag}" "${source_dir}" || die
-	archive_ghc_dir || die
+	build_ghc_dir "${tag}" "${source_dir}" || return 1
+	archive_ghc_dir || return 1
 }

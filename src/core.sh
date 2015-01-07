@@ -217,15 +217,18 @@ do_install_ghc_and_cabal_dirs () {
 		if ! validate_ghc_dir "${tag}" >'/dev/null' ||
 			! validate_updated_cabal_dir "${tag}" >'/dev/null'
 		then
-			die 'Failed to validate existing GHC and Cabal directories'
+			log_error 'Cannot use existing GHC and Cabal directories'
+			return 1
 		fi
 		return 0
 	fi
 
-	install_ghc_dir "${tag}" "${source_dir}" || return 1
+	# NOTE: Returns 2 if build is needed.
+
+	install_ghc_dir "${tag}" "${source_dir}" || return
 	log
 
-	install_cabal_dir "${tag}" "${source_dir}" || return 1
+	install_cabal_dir "${tag}" "${source_dir}" || return
 	log
 }
 
@@ -269,10 +272,9 @@ install_ghc_and_cabal_dirs () {
 			''
 	)
 
-	if ! do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}"; then
-		log_warning 'Cannot install GHC and Cabal'
-		return 1
-	fi
+	# NOTE: Returns 2 if build is needed.
+
+	do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}" || return
 
 	announce_install "${tag}"
 }
@@ -454,7 +456,9 @@ do_full_install_app () {
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || return 1
 	saved_sandbox=''
 
-	do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}" || return 1
+	# NOTE: Returns 2 if build is needed.
+
+	do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}" || return
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
@@ -567,10 +571,12 @@ full_install_app () {
 		fi
 	fi
 	if [[ -z "${constraints}" ]]; then
+		# NOTE: Returns 2 if build is needed.
+
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
-			install_ghc_and_cabal_dirs "${source_dir}" || return 1
+			install_ghc_and_cabal_dirs "${source_dir}" || return
 
 		log 'Determining constraints'
 
@@ -660,11 +666,10 @@ full_install_app () {
 		return 0
 	fi
 
+	# NOTE: Returns 2 if build is needed.
+
 	log
-	if ! do_full_install_app "${tag}" "${source_dir}" "${constraints}"; then
-		log_warning 'Cannot install app'
-		return 1
-	fi
+	do_full_install_app "${tag}" "${source_dir}" "${constraints}" || return
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		announce_install "${tag}"
@@ -684,7 +689,9 @@ install_local_app () {
 	fi
 
 	if (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
-		full_install_app "${label}" "${local_dir}" || return 1
+		# NOTE: Returns 2 if build is needed.
+
+		full_install_app "${label}" "${local_dir}" || return
 		return 0
 	fi
 
@@ -696,7 +703,9 @@ install_local_app () {
 		return 1
 	fi
 
-	full_install_app "${label}" "${source_dir}/${label}" || return 1
+	# NOTE: Returns 2 if build is needed.
+
+	full_install_app "${label}" "${source_dir}/${label}" || return
 
 	rm -rf "${source_dir}" || die
 }
@@ -729,8 +738,10 @@ install_cloned_app () {
 		return 1
 	fi
 
+	# NOTE: Returns 2 if build is needed.
+
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		full_install_app "${label}" "${source_dir}/${label}" || return 1
+		full_install_app "${label}" "${source_dir}/${label}" || return
 
 	rm -rf "${clone_dir}" "${source_dir}" || die
 }
@@ -744,11 +755,13 @@ install_unpacked_app () {
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || return 1
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
 
+	# NOTE: Returns 2 if build is needed.
+
 	HALCYON_NO_APP=1 \
 	HALCYON_GHC_REBUILD=0 \
 	HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 	HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
-		install_ghc_and_cabal_dirs '/dev/null' || return 1
+		install_ghc_and_cabal_dirs '/dev/null' || return
 
 	log 'Unpacking app'
 
@@ -764,8 +777,10 @@ install_unpacked_app () {
 		log_warning "Using newest version of ${thing}: ${label}"
 	fi
 
+	# NOTE: Returns 2 if build is needed.
+
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		full_install_app "${label}" "${source_dir}/${label}" || return 1
+		full_install_app "${label}" "${source_dir}/${label}" || return
 
 	rm -rf "${unpack_dir}" "${source_dir}" || die
 }
@@ -787,22 +802,24 @@ halcyon_install () {
 		return 1
 	fi
 
+	# NOTE: Returns 2 if build is needed.
+
 	if (( HALCYON_NO_APP )); then
-		install_ghc_and_cabal_dirs '/dev/null' || return 1
+		install_ghc_and_cabal_dirs '/dev/null' || return
 	elif ! (( $# )) || [[ "$1" == '' ]]; then
 		if ! detect_label '.' >'/dev/null'; then
 			HALCYON_NO_APP=1 \
-				install_ghc_and_cabal_dirs '/dev/null' || return 1
+				install_ghc_and_cabal_dirs '/dev/null' || return
 		else
-			install_local_app '.' || return 1
+			install_local_app '.' || return
 		fi
 	else
 		if validate_git_url "$1"; then
-			install_cloned_app "$1" || return 1
+			install_cloned_app "$1" || return
 		elif [[ -d "$1" ]]; then
-			install_local_app "${1%/}" || return 1
+			install_local_app "${1%/}" || return
 		else
-			install_unpacked_app "$1" || return 1
+			install_unpacked_app "$1" || return
 		fi
 	fi
 
