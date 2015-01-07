@@ -338,7 +338,8 @@ build_sandbox_dir () {
 		log 'Creating sandbox'
 
 		if ! cabal_create_sandbox; then
-			die 'Failed to create sandbox'
+			log_error 'Failed to create sandbox'
+			return 1
 		fi
 	fi
 

@@ -290,7 +290,7 @@ do_fast_install_app () {
 
 	restore_install_dir "${tag}" "${install_dir}/${label}" || return 1
 	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
-	link_cabal_config || die
+	symlink_cabal_config
 
 	rm -rf "${install_dir}"
 }
@@ -510,7 +510,7 @@ do_full_install_app () {
 		! (( HALCYON_DEPENDENCIES_ONLY ))
 	then
 		install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
-		link_cabal_config || die
+		symlink_cabal_config
 	fi
 
 	rm -rf "${build_dir}" "${install_dir}" || die
@@ -581,7 +581,8 @@ full_install_app () {
 		log 'Determining constraints'
 
 		if ! constraints=$( cabal_determine_constraints "${label}" "${source_dir}" ); then
-			die 'Failed to determine constraints'
+			log_error 'Failed to determine constraints'
+			return 1
 		fi
 
 		log_warning 'Using newest versions of all packages'
@@ -766,9 +767,9 @@ install_unpacked_app () {
 	log 'Unpacking app'
 
 	local label
-	label=$( cabal_unpack_over "${thing}" "${unpack_dir}" ) || die
-
-	if ! copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}/${label}"; then
+	if ! label=$( cabal_unpack_over "${thing}" "${unpack_dir}" ) ||
+		! copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}/${label}"
+	then
 		log_error 'Failed to create source directory'
 		return 1
 	fi

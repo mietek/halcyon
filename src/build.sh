@@ -134,7 +134,9 @@ do_build_app () {
 
 		if ! sandboxed_cabal_do "${build_dir}" configure "${opts_a[@]}" >"${stdout}" 2>&1 | quote; then
 			quote <"${stdout}"
-			die 'Failed to configure app'
+
+			log_error 'Failed to configure app'
+			return 1
 		fi
 
 		# NOTE: This helps implement HALCYON_EXTRA_DATA_FILES, which
@@ -174,12 +176,13 @@ do_build_app () {
 
 	log 'Building app'
 
-	if ! sandboxed_cabal_do "${build_dir}" build 2>&1 | quote; then
-		die 'Failed to build app'
-	fi
-
 	local built_size
-	built_size=$( get_size "${build_dir}" ) || die
+	if ! sandboxed_cabal_do "${build_dir}" build 2>&1 | quote ||
+		! built_size=$( get_size "${build_dir}" )
+	then
+		log_error 'Failed to build app'
+		return 1
+	fi
 	log "App built, ${built_size}"
 
 	if [[ -f "${source_dir}/.halcyon/post-build-hook" ]]; then

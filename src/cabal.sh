@@ -233,8 +233,8 @@ copy_cabal_magic () {
 	find_tree "${source_dir}/.halcyon" -type f -path './cabal*' |
 		while read -r file; do
 			copy_file "${source_dir}/.halcyon/${file}" \
-				"${HALCYON_BASE}/cabal/.halcyon/${file}" || die
-		done || die
+				"${HALCYON_BASE}/cabal/.halcyon/${file}" || return 1
+		done || return 0
 }
 
 
@@ -244,7 +244,10 @@ build_cabal_dir () {
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
-	rm -rf "${HALCYON_BASE}/cabal" || die
+	if ! rm -rf "${HALCYON_BASE}/cabal"; then
+		log_error 'Failed to prepare Cabal directory'
+		return 1
+	fi
 
 	local ghc_version cabal_version cabal_original_url cabal_build_dir cabal_home_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" )
@@ -257,7 +260,8 @@ build_cabal_dir () {
 
 	if [[ "${ghc_version}" < '7.8' ]]; then
 		log_error "Unexpected GHC version: ${ghc_version}"
-		die 'To bootstrap Cabal, use GHC 7.8 or newer'
+		log_error 'To bootstrap Cabal, use GHC 7.8 or newer'
+		return 1
 	fi
 
 	log 'Building Cabal directory'
@@ -272,14 +276,15 @@ build_cabal_dir () {
 					"${tag}" "${source_dir}" \
 					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
 		); then
-			die 'Failed to execute Cabal pre-build hook'
+			log_error 'Failed to execute Cabal pre-build hook'
+			return 1
 		fi
 		log 'Cabal pre-build hook executed'
 	fi
 
 	log 'Bootstrapping Cabal'
 
-	(
+	if ! (
 		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
 		patch -s <<-EOF
 			--- a/bootstrap.sh
@@ -290,26 +295,29 @@ build_cabal_dir () {
 			+  \${GHC} -L"${HALCYON_BASE}/ghc/usr/lib" --make Setup -o Setup ||
 			      die "Compiling the Setup script failed."
 EOF
-	) || die
+	); then
+		log_error 'Failed to patch Cabal'
+		return 1
+	fi
 
 	# NOTE: Bootstrapping cabal-install with GHC 7.8.* may fail unless --no-doc
 	# is specified.
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 
+	local bootstrapped_size
 	if ! (
 		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
 		HOME="${cabal_home_dir}" \
 		EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_BASE}/ghc/usr/lib" \
 			./bootstrap.sh --no-doc 2>&1 | quote
-	); then
-		die 'Failed to bootstrap Cabal'
+	) ||
+		! copy_file "${cabal_home_dir}/.cabal/bin/cabal" "${HALCYON_BASE}/cabal/bin/cabal" ||
+		! copy_cabal_magic "${source_dir}" ||
+		! bootstrapped_size=$( get_size "${HALCYON_BASE}/cabal" )
+	then
+		log_error 'Failed to bootstrap Cabal'
+		return 1
 	fi
-
-	copy_file "${cabal_home_dir}/.cabal/bin/cabal" "${HALCYON_BASE}/cabal/bin/cabal" || die
-	copy_cabal_magic "${source_dir}" || die
-
-	local bootstrapped_size
-	bootstrapped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
 	log "Cabal bootstrapped, ${bootstrapped_size}"
 
 	if [[ -f "${source_dir}/.halcyon/cabal-post-build-hook" ]]; then
@@ -320,17 +328,21 @@ EOF
 					"${tag}" "${source_dir}" \
 					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
 		); then
-			die 'Failed to execute Cabal post-build hook'
+			log_error 'Failed to execute Cabal post-build hook'
+			return 1
 		fi
 		log 'Cabal post-build hook executed'
 	fi
 
 	log_indent_begin 'Stripping Cabal directory...'
 
-	strip_tree "${HALCYON_BASE}/cabal" || die
-
 	local stripped_size
-	stripped_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
+	if ! strip_tree "${HALCYON_BASE}/cabal" ||
+		! stripped_size=$( get_size "${HALCYON_BASE}/cabal" )
+	then
+		log_indent_end 'error'
+		return 1
+	fi
 	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_base_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag"; then
@@ -338,7 +350,7 @@ EOF
 		return 1
 	fi
 
-	rm -rf "${cabal_build_dir}" "${cabal_home_dir}" || die
+	rm -rf "${cabal_build_dir}" "${cabal_home_dir}" || true
 }
 
 
@@ -364,7 +376,8 @@ update_cabal_package_db () {
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon/cabal-pre-update-hook" 2>&1 | quote
 		); then
-			die 'Failed to execute Cabal pre-update hook'
+			log_error 'Failed to execute Cabal pre-update hook'
+			return 1
 		fi
 		log 'Cabal pre-update hook executed'
 	fi
@@ -375,12 +388,13 @@ update_cabal_package_db () {
 	# even for the update command.
 	# https://github.com/haskell/cabal/issues/2309
 
-	if ! cabal_do '.' --no-require-sandbox update 2>&1 | quote; then
-		die 'Failed to update Cabal package database'
-	fi
-
 	local updated_size
-	updated_size=$( get_size "${HALCYON_BASE}/cabal" ) || die
+	if ! cabal_do '.' --no-require-sandbox update 2>&1 | quote ||
+		! updated_size=$( get_size "${HALCYON_BASE}/cabal" )
+	then
+		log_error 'Failed to update Cabal package database'
+		return 1
+	fi
 	log "Cabal package database updated, ${updated_size}"
 
 	if [[ -f "${source_dir}/.halcyon/cabal-post-update-hook" ]]; then
@@ -389,7 +403,8 @@ update_cabal_package_db () {
 			HALCYON_INTERNAL_RECURSIVE=1 \
 				"${source_dir}/.halcyon/cabal-post-update-hook" 2>&1 | quote
 		); then
-			die 'Failed to execute Cabal post-update hook'
+			log_error 'Failed to execute Cabal post-update hook'
+			return 1
 		fi
 		log 'Cabal post-update hook executed'
 	fi
@@ -615,7 +630,7 @@ restore_updated_cabal_dir () {
 }
 
 
-link_cabal_config () {
+symlink_cabal_config () {
 	expect_vars HOME HALCYON_BASE \
 		HALCYON_INTERNAL_RECURSIVE
 
@@ -623,7 +638,7 @@ link_cabal_config () {
 		return 0
 	fi
 
-	expect_existing "${HOME}" || return 1
+	expect_existing "${HOME}" || return 0
 
 	if [[ -d "${HOME}/.cabal" && -e "${HOME}/.cabal/config" ]]; then
 		local actual_config
@@ -637,12 +652,16 @@ link_cabal_config () {
 		fi
 	fi
 
-	# NOTE: Creating config links is necessary to allow the user to easily run Cabal commands,
-	# without having to use cabal_do or sandboxed_cabal_do.
+	# NOTE: Creating config symlinks is necessary to allow the user to
+	# easily run Cabal commands, without having to use cabal_do or
+	# sandboxed_cabal_do.
 
-	rm -f "${HOME}/.cabal/config" || die
-	mkdir -p "${HOME}/.cabal" || die
-	ln -s "${HALCYON_BASE}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config" || die
+	if ! rm -f "${HOME}/.cabal/config" ||
+		! mkdir -p "${HOME}/.cabal" ||
+		! ln -s "${HALCYON_BASE}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config"
+	then
+		log_warning 'Failed to symlink Cabal config'
+	fi
 }
 
 
@@ -657,28 +676,30 @@ install_cabal_dir () {
 		if ! (( HALCYON_CABAL_UPDATE )) &&
 			restore_updated_cabal_dir "${tag}"
 		then
-			link_cabal_config || die
+			symlink_cabal_config
 			return 0
 		fi
 
 		if restore_base_cabal_dir "${tag}"; then
-			update_cabal_package_db "${tag}" || die
-			archive_cabal_dir || die
-			link_cabal_config || die
+			update_cabal_package_db "${tag}" || return 1
+			archive_cabal_dir || return 1
+			symlink_cabal_config
 			return 0
 		fi
 
+		# NOTE: Returns 2 if build is needed.
+
 		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
-			log_warning 'Cannot build Cabal directory'
-			return 1
+			log_error 'Cannot build Cabal directory'
+			return 2
 		fi
 	fi
 
-	build_cabal_dir "${tag}" "${source_dir}" || die
-	archive_cabal_dir || die
-	update_cabal_package_db "${tag}" || die
-	archive_cabal_dir || die
-	link_cabal_config || die
+	build_cabal_dir "${tag}" "${source_dir}" || return 1
+	archive_cabal_dir || return 1
+	update_cabal_package_db "${tag}" || return 1
+	archive_cabal_dir || return 1
+	symlink_cabal_config
 }
 
 
@@ -715,24 +736,35 @@ sandboxed_cabal_do () {
 	local saved_config
 	saved_config=''
 	if [[ -f "${HALCYON_BASE}/sandbox/cabal.config" ]]; then
-		saved_config=$( get_tmp_file 'halcyon-saved-config' ) || return 1
-		mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}" || die
+		if ! saved_config=$( get_tmp_file 'halcyon-saved-config' ) ||
+			! mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}"
+		then
+			log_error 'Failed to save existing sandbox cabal.config'
+			return 1
+		fi
 	fi
 	if [[ -f "${work_dir}/cabal.config" ]]; then
-		copy_file "${work_dir}/cabal.config" "${HALCYON_BASE}/sandbox/cabal.config" || die
+		if ! copy_file "${work_dir}/cabal.config" "${HALCYON_BASE}/sandbox/cabal.config"; then
+			log_error 'Failed to create temporary sandbox cabal.config'
+			return 1
+		fi
 	fi
 
 	local status
 	status=0
-	if ! (
-		cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" "$@"
-	); then
+	if ! cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" "$@"; then
 		status=1
 	fi
 
-	rm -f "${HALCYON_BASE}/sandbox/cabal.config" || die
+	if ! rm -f "${HALCYON_BASE}/sandbox/cabal.config"; then
+		log_error 'Failed to remove temporary sandbox cabal.config'
+		return 1
+	fi
 	if [[ -n "${saved_config}" ]]; then
-		mv "${saved_config}" "${HALCYON_BASE}/sandbox/cabal.config" || die
+		if ! mv "${saved_config}" "${HALCYON_BASE}/sandbox/cabal.config"; then
+			log_error 'Failed to restore previous sandbox cabal.config'
+			return 1
+		fi
 	fi
 
 	return "${status}"
@@ -754,7 +786,7 @@ cabal_create_sandbox () {
 
 	mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || return 1
 
-	rm -rf "${stderr}" || return 1
+	rm -rf "${stderr}" || true
 }
 
 
@@ -787,7 +819,7 @@ cabal_dry_freeze_constraints () {
 		return 1
 	fi
 
-	rm -f "${stderr}" || return 1
+	rm -f "${stderr}" || true
 
 	echo "${constraints}"
 }
@@ -811,7 +843,7 @@ sandboxed_cabal_dry_freeze_constraints () {
 		return 1
 	fi
 
-	rm -f "${stderr}" || return 1
+	rm -f "${stderr}" || true
 
 	echo "${constraints}"
 }
@@ -825,26 +857,39 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 
 	local saved_sandbox
 	saved_sandbox=''
-
 	if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
-		saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || return 1
-		mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}" || die
+		if ! saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) ||
+			! mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}"
+		then
+			log_error 'Failed to save existing sandbox'
+			return 1
+		fi
 	fi
 
 	log 'Creating temporary sandbox'
 
 	if ! cabal_create_sandbox; then
-		die 'Failed to create temporary sandbox'
+		log_error 'Failed to create temporary sandbox'
+		return 1
 	fi
 
-	add_sandbox_sources "${source_dir}" || die
+	if ! add_sandbox_sources "${source_dir}"; then
+		log_error 'Failed to add temporary sandbox sources'
+		return 1
+	fi
 
 	local constraints
-	constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || die
+	constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || return 1
 
+	if ! rm -rf "${HALCYON_BASE}/sandbox"; then
+		log_error 'Failed to remove temporary sandbox'
+		return 1
+	fi
 	if [[ -n "${saved_sandbox}" ]]; then
-		rm -rf "${HALCYON_BASE}/sandbox" || die
-		mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox" || die
+		if ! mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox"; then
+			log_error 'Failed to restore previous sandbox'
+			return 1
+		fi
 	fi
 
 	echo "${constraints}"
@@ -873,8 +918,8 @@ cabal_unpack_over () {
 	local stderr
 	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || return 1
 
-	rm -rf "${unpack_dir}" || die
-	mkdir -p "${unpack_dir}" || die
+	rm -rf "${unpack_dir}" || return 1
+	mkdir -p "${unpack_dir}" || return 1
 
 	local label
 	if ! label=$(
@@ -884,10 +929,10 @@ cabal_unpack_over () {
 		sed 's:^Unpacking to \(.*\)/$:\1:'
 	); then
 		quote <"${stderr}"
-		die 'Failed to unpack app'
+		return 1
 	fi
 
-	rm -rf "${stderr}" || die
+	rm -rf "${stderr}" || true
 
 	echo "${label}"
 }
@@ -908,14 +953,16 @@ populate_cabal_setup_exe_cache () {
 	local setup_dir
 	setup_dir="$( get_tmp_dir 'halcyon-setup-exe-cache' )" || return 1
 
-	mkdir -p "${setup_dir}" || die
-	cabal_do "${setup_dir}" sandbox init --sandbox '.' 2>&1 | quote || die
-	if ! cabal_do "${setup_dir}" install 'populate-setup-exe-cache' 2>&1 | quote; then
-		die 'Failed to populate Cabal setup-exe-cache'
+	if ! mkdir -p "${setup_dir}" ||
+		! cabal_do "${setup_dir}" sandbox init --sandbox '.' 2>&1 | quote ||
+		! cabal_do "${setup_dir}" install 'populate-setup-exe-cache' 2>&1 | quote
+	then
+		log_error 'Failed to populate Cabal setup-exe-cache'
+		return 1
 	fi
 	expect_existing "${HOME}/.cabal/setup-exe-cache" || return 1
 
 	log 'Cabal setup-exe-cache populated'
 
-	rm -rf "${setup_dir}" || die
+	rm -rf "${setup_dir}" || true
 }
