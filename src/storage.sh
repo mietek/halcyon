@@ -286,7 +286,7 @@ delete_matching_private_stored_files () {
 		filter_not_matching "^${save_name//./\.}$" |
 		while read -r old_name; do
 			delete_private_stored_file "${prefix}" "${old_name}" || return 1
-		done || return 1
+		done || return 0
 }
 
 

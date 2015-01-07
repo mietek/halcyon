@@ -111,18 +111,12 @@ describe_extra () {
 		return 0
 	fi
 
-	local -a extra_a
-	extra_a=( $( <"${extra_file}" ) ) || true
-	if [[ -z "${extra_a[@]:+_}" ]]; then
-		return 0
-	fi
-
 	local only_first extra
 	only_first="${extra_label}"
-	for extra in "${extra_a[@]}"; do
+	while read -r extra; do
 		log_indent_label "${only_first}" "${extra}"
 		only_first=''
-	done
+	done <"${extra_file}" || return 0
 }
 
 

@@ -316,6 +316,10 @@ score_partial_sandbox_dirs () {
 	local constraints partial_tags
 	expect_args constraints partial_tags -- "$@"
 
+	if [[ -z "${constraints}" || -z "${partial_tags}" ]]; then
+		return 0
+	fi
+
 	local -A packages_A
 	local package version
 	packages_A=()
@@ -331,7 +335,8 @@ score_partial_sandbox_dirs () {
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" )
 		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! partial_constraints=$( read_constraints <"${partial_file}" ) ||
-			! validate_partial_constraints_file "${partial_file}" >'/dev/null'
+			! validate_partial_constraints_file "${partial_file}" >'/dev/null' ||
+			[[ -z "${partial_constraints}" ]]
 		then
 			rm -f "${partial_file}" || true
 			continue

@@ -91,12 +91,6 @@ install_extra_apps () {
 		return 0
 	fi
 
-	local -a extra_apps_a
-	extra_apps_a=( $( <"${source_dir}/.halcyon/extra-apps" ) ) || true
-	if [[ -z "${extra_apps_a[@]:+_}" ]]; then
-		return 0
-	fi
-
 	local prefix
 	prefix=$( get_tag_prefix "${tag}" )
 
@@ -125,7 +119,7 @@ install_extra_apps () {
 
 	local extra_app index
 	index=0
-	for extra_app in "${extra_apps_a[@]}"; do
+	while read -r extra_app; do
 		local thing
 		if [[ -d "${source_dir}/${extra_app}" ]]; then
 			thing="${source_dir}/${extra_app}"
@@ -142,7 +136,7 @@ install_extra_apps () {
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 		HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE=1 \
 			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return 1
-	done
+	done <"${source_dir}/.halcyon/extra-apps" || return 0
 }
 
 
@@ -153,12 +147,6 @@ install_extra_data_files () {
 	expect_args tag source_dir build_dir install_dir -- "$@"
 
 	if [[ ! -f "${source_dir}/.halcyon/extra-data-files" ]]; then
-		return 0
-	fi
-
-	local extra_files
-	extra_files=$( <"${source_dir}/.halcyon/extra-data-files" ) || true
-	if [[ -z "${extra_files}" ]]; then
 		return 0
 	fi
 
@@ -195,7 +183,7 @@ install_extra_data_files () {
 				copy_dir_entry_into '.' "${file}" "${install_dir}${data_dir}" || die
 			done
 		) || die
-	done <<<"${extra_files}"
+	done <"${source_dir}/.halcyon/extra-data-files" || return 0
 }
 
 
@@ -242,12 +230,6 @@ install_extra_dependencies () {
 		return 0
 	fi
 
-	local extra_dependencies
-	extra_dependencies=$( <"${source_dir}/.halcyon/extra-dependencies" ) || true
-	if [[ -z "${extra_dependencies}" ]]; then
-		return 0
-	fi
-
 	log_indent 'Including extra dependencies'
 
 	local dependency
@@ -265,7 +247,7 @@ install_extra_dependencies () {
 		*)
 			die "Unexpected extra dependency: ${dependency}"
 		esac
-	done <<<"${extra_dependencies}"
+	done <"${source_dir}/.halcyon/extra-dependencies" || return 0
 }
 
 

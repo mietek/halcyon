@@ -269,12 +269,6 @@ install_sandbox_extra_apps () {
 		return 0
 	fi
 
-	local -a extra_apps_a
-	extra_apps_a=( $( <"${source_dir}/.halcyon/sandbox-extra-apps" ) ) || true
-	if [[ -z "${extra_apps_a[@]:+_}" ]]; then
-		return 0
-	fi
-
 	local ghc_version ghc_magic_hash
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
@@ -300,7 +294,7 @@ install_sandbox_extra_apps () {
 
 	local extra_app index
 	index=0
-	for extra_app in "${extra_apps_a[@]}"; do
+	while read -r extra_app; do
 		local thing
 		if [[ -d "${source_dir}/${extra_app}" ]]; then
 			thing="${source_dir}/${extra_app}"
@@ -317,7 +311,7 @@ install_sandbox_extra_apps () {
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 		HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE=1 \
 			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return 1
-	done
+	done <"${source_dir}/.halcyon/sandbox-extra-apps" || return 0
 }
 
 
