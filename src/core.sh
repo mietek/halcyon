@@ -543,7 +543,7 @@ full_install_app () {
 
 	# NOTE: This is the first of two moments when source_dir is modified.
 
-	prepare_constraints "${label}" "${source_dir}" || die
+	prepare_constraints "${label}" "${source_dir}" || return 1
 	prepare_source_dir "${label}" "${source_dir}" || die
 
 	local source_hash

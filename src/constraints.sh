@@ -1,19 +1,19 @@
 read_constraints () {
-	sed 's/^\(.*\)-\(.*\)$/\1 \2/'
+	sed 's/^\(.*\)-\(.*\)$/\1 \2/' || return 0
 }
 
 
 read_constraints_from_cabal_freeze () {
 	awk '/^ *[Cc]onstraints:/, !/[:,]/ { print }' |
 		tr -d '\r' |
-		sed 's/[Cc]onstraints://;s/[, ]//g;s/==/ /;/^$/d'
+		sed 's/[Cc]onstraints://;s/[, ]//g;s/==/ /;/^$/d' || return 0
 }
 
 
 read_constraints_from_cabal_dry_freeze () {
 	awk '/The following packages would be frozen:/ { i = 1 } i' |
 		filter_not_first |
-		sed 's/ == / /'
+		sed 's/ == / /' || return 0
 }
 
 
@@ -41,19 +41,19 @@ filter_correct_constraints () {
 		name='halcyon-fake-base'
 	fi
 
-	filter_not_matching "^${name} ${version}$" || die
+	filter_not_matching "^${name} ${version}$"
 }
 
 
 format_constraints () {
-	sed 's/ /-/'
+	sed 's/ /-/' || return 0
 }
 
 
 format_constraints_to_cabal_freeze () {
 	awk 'BEGIN { printf "constraints:"; separator = " " }
 		!/^$/ { printf "%s%s ==%s", separator, $1, $2; separator = ",\n             " }
-		END { printf "\n" }'
+		END { printf "\n" }' || return 0
 }
 
 
@@ -82,27 +82,23 @@ prepare_constraints () {
 
 	if [[ -n "${HALCYON_CONSTRAINTS:+_}" ]]; then
 		if [[ -d "${HALCYON_CONSTRAINTS}" && -f "${HALCYON_CONSTRAINTS}/${label}.constraints" ]]; then
-			copy_file "${HALCYON_CONSTRAINTS}/${label}.constraints" "${magic_dir}/constraints" || die
+			copy_file "${HALCYON_CONSTRAINTS}/${label}.constraints" "${magic_dir}/constraints" || return 1
 		elif [[ -f "${HALCYON_CONSTRAINTS}" ]]; then
-			copy_file "${HALCYON_CONSTRAINTS}" "${magic_dir}/constraints" || die
+			copy_file "${HALCYON_CONSTRAINTS}" "${magic_dir}/constraints" || return 1
 		else
-			copy_file <( echo "${HALCYON_CONSTRAINTS}" ) "${magic_dir}/constraints" || die
+			copy_file <( echo "${HALCYON_CONSTRAINTS}" ) "${magic_dir}/constraints" || return 1
 		fi
 	fi
 
 	if (( HALCYON_IGNORE_ALL_CONSTRAINTS )); then
-		rm -f "${source_dir}/cabal.config" || die
+		rm -f "${source_dir}/cabal.config" || return 1
 		return 0
 	fi
 
 	if [[ -f "${magic_dir}/constraints" ]]; then
-		if ! read_constraints <"${magic_dir}/constraints" |
+		read_constraints <"${magic_dir}/constraints" |
 			sort_natural |
-			format_constraints_to_cabal_freeze >"${source_dir}/cabal.config"
-		then
-			log_error 'Failed to write cabal.config file'
-			return 1
-		fi
+			format_constraints_to_cabal_freeze >"${source_dir}/cabal.config" || return 1
 	fi
 }
 
@@ -155,19 +151,18 @@ validate_actual_constraints () {
 	# https://github.com/haskell/cabal/issues/1896
 	# https://github.com/mietek/halcyon/issues/1
 
-	local label actual_constraints
+	local label actual_constraints constraints_hash actual_hash
 	label=$( get_tag_label "${tag}" )
-	if ! actual_constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ); then
-		log_warning 'Failed to freeze constraints'
+	constraints_hash=$( get_tag_constraints_hash "${tag}" )
+	if ! actual_constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ) ||
+		! actual_hash=$( hash_constraints "${actual_constraints}" )
+	then
+		log_warning 'Failed to determine actual constraints'
 		return 0
 	fi
 
-	local constraints_hash actual_hash
-	constraints_hash=$( get_tag_constraints_hash "${tag}" )
-	actual_hash=$( hash_constraints "${actual_constraints}" ) || return 1
 	if [[ "${actual_hash}" != "${constraints_hash}" ]]; then
 		log_warning 'Unexpected constraints difference'
-		log_warning 'See https://github.com/mietek/halcyon/issues/1 for details'
 		diff --unified \
 			<( format_constraints <<<"${constraints}" ) \
 			<( format_constraints <<<"${actual_constraints}" ) |
@@ -187,7 +182,7 @@ validate_full_constraints_file () {
 	fi
 
 	local candidate_constraints
-	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
+	candidate_constraints=$( read_constraints <"${candidate_file}" ) || return 1
 
 	local constraints_hash candidate_hash
 	constraints_hash=$( get_tag_constraints_hash "${tag}" )
@@ -210,7 +205,7 @@ validate_partial_constraints_file () {
 	fi
 
 	local candidate_constraints
-	candidate_constraints=$( read_constraints <"${candidate_file}" ) || die
+	candidate_constraints=$( read_constraints <"${candidate_file}" ) || return 1
 
 	local constraints_name short_hash_etc short_hash candidate_hash
 	constraints_name=$( basename "${candidate_file}" ) || return 1
@@ -243,8 +238,9 @@ match_full_sandbox_dir () {
 
 	log 'Examining fully matching sandbox directories'
 
-	local full_name full_file full_hash
+	local full_name
 	while read -r full_name; do
+		local full_file full_hash
 		full_file="${HALCYON_CACHE}/${full_name}"
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
 			rm -f "${full_file}" || true
@@ -288,8 +284,9 @@ list_partial_sandbox_dirs () {
 
 	log 'Examining partially matching sandbox directories'
 
-	local partial_name partial_file partial_hash
+	local partial_name
 	while read -r partial_name; do
+		local partial_file partial_hash
 		partial_file="${HALCYON_CACHE}/${partial_name}"
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
 			rm -f "${partial_file}" || true
@@ -309,7 +306,7 @@ list_partial_sandbox_dirs () {
 		partial_tag=$( derive_matching_sandbox_tag "${tag}" "${partial_label}" "${partial_hash}" )
 
 		echo "${partial_tag}"
-	done <<<"${partial_names}"
+	done <<<"${partial_names}" || return 0
 }
 
 
@@ -328,22 +325,25 @@ score_partial_sandbox_dirs () {
 
 	log 'Scoring partially matching sandbox directories'
 
-	local partial_tag partial_name partial_file
+	local partial_tag
 	while read -r partial_tag; do
+		local partial_name partial_file partial_constraints
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" )
 		partial_file="${HALCYON_CACHE}/${partial_name}"
-		if ! validate_partial_constraints_file "${partial_file}" >'/dev/null'; then
+		if ! partial_constraints=$( read_constraints <"${partial_file}" ) ||
+			! validate_partial_constraints_file "${partial_file}" >'/dev/null'
+		then
 			rm -f "${partial_file}" || true
 			continue
 		fi
 
-		local partial_constraints description
-		partial_constraints=$( read_constraints <"${partial_file}" ) || die
+		local description
 		description=$( format_sandbox_description "${partial_tag}" )
 
-		local partial_package partial_version version score
+		local partial_package partial_version score
 		score=0
 		while read -r partial_package partial_version; do
+			local version
 			version="${packages_A[${partial_package}]:-}"
 			if [[ -z "${version}" ]]; then
 				log_indent "Ignoring ${description} as ${partial_package}-${partial_version} is not needed"
@@ -367,7 +367,7 @@ score_partial_sandbox_dirs () {
 				echo "${score} ${partial_tag}"
 			fi
 		fi
-	done <<<"${partial_tags}"
+	done <<<"${partial_tags}" || return 0
 }
 
 
@@ -407,7 +407,7 @@ match_sandbox_dir () {
 	fi
 
 	local partial_tags result
-	partial_tags=$( list_partial_sandbox_dirs "${tag}" "${constraints}" "${all_names}" ) || die
+	partial_tags=$( list_partial_sandbox_dirs "${tag}" "${constraints}" "${all_names}" )
 	if result=$(
 		score_partial_sandbox_dirs "${constraints}" "${partial_tags}" |
 		sort_natural |
