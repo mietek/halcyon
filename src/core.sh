@@ -476,8 +476,10 @@ do_full_install_app () {
 	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
 	log
 
+	# NOTE: Returns 2 if build is needed.
+
 	if ! (( HALCYON_DEPENDENCIES_ONLY )); then
-		build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return 1
+		build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return
 	fi
 
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&

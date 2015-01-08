@@ -146,18 +146,21 @@ do_build_app () {
 		# https://github.com/haskell/cabal/issues/784
 
 		local data_dir
-		data_dir=$(
+		if ! data_dir=$(
 			awk '	/Data files installed in:/ { i = 1 }
 				/Documentation installed in:/ { i = 0 }
 				i' <"${stdout}" |
 			strip_trailing_newline |
 			tr '\n' ' ' |
 			sed 's/^Data files installed in: //'
-		) || die
+		) ||
+			echo "${data_dir}" >"${build_dir}/dist/.halcyon-data-dir"
+		then
+			log_error 'Failed to write data directory file'
+			return 1
+		fi
 
-		echo "${data_dir}" >"${build_dir}/dist/.halcyon-data-dir"
-
-		rm -f "${stdout}" || die
+		rm -f "${stdout}" || true
 	else
 		expect_existing "${build_dir}/dist/.halcyon-data-dir" || return 1
 	fi
@@ -169,7 +172,8 @@ do_build_app () {
 				"${source_dir}/.halcyon/pre-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		); then
-			die 'Failed to execute pre-build hook'
+			log_error 'Failed to execute pre-build hook'
+			return 1
 		fi
 		log 'Pre-build hook executed'
 	fi
@@ -192,17 +196,21 @@ do_build_app () {
 				"${source_dir}/.halcyon/post-build-hook" \
 					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		); then
-			die 'Failed to execute post-build hook'
+			log_error 'Failed to execute post-build hook'
+			return 1
 		fi
 		log 'Post-build hook executed'
 	fi
 
 	log_indent_begin 'Stripping app...'
 
-	strip_tree "${build_dir}" || die
-
 	local stripped_size
-	stripped_size=$( get_size "${build_dir}" ) || die
+	if ! strip_tree "${build_dir}" ||
+		! stripped_size=$( get_size "${build_dir}" )
+	then
+		log_indent_end 'error'
+		return 1
+	fi
 	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_build_tag "${tag}" >"${build_dir}/.halcyon-tag"; then
@@ -254,6 +262,10 @@ validate_configured_build_dir () {
 	local configured_pattern
 	configured_pattern=$( derive_configured_build_tag_pattern "${tag}" )
 	detect_tag "${build_dir}/.halcyon-tag" "${configured_pattern}" || return 1
+
+	if [[ ! -f "${build_dir}/dist/setup-config" ]]; then
+		return 1
+	fi
 }
 
 
@@ -264,6 +276,10 @@ validate_build_dir () {
 	local build_tag
 	build_tag=$( derive_build_tag "${tag}" )
 	detect_tag "${build_dir}/.halcyon-tag" "${build_tag//./\.}" || return 1
+
+	if [[ ! -f "${build_dir}/dist/setup-config" ]]; then
+		return 1
+	fi
 }
 
 
@@ -337,18 +353,23 @@ prepare_build_dir () {
 	local file
 	filter_matching '^= ' <<<"${all_files}" |
 		while read -r file; do
-			touch -r "${build_dir}/${file#= }" "${prepare_dir}/${file#= }" || die
+			touch -r "${build_dir}/${file#= }" "${prepare_dir}/${file#= }" || true
 		done
 
 	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for
 	# an example.
 
-	rm -rf "${prepare_dir}/dist" || die
-	mv "${build_dir}/dist" "${prepare_dir}/dist" || die
-	mv "${build_dir}/.halcyon-tag" "${prepare_dir}/.halcyon-tag" || die
+	if ! rm -rf "${prepare_dir}/dist" ||
+		mv "${build_dir}/dist" "${prepare_dir}/dist" ||
+		mv "${build_dir}/.halcyon-tag" "${prepare_dir}/.halcyon-tag" ||
+		rm -rf "${build_dir}" ||
+		mv "${prepare_dir}" "${build_dir}"
+	then
+		rm -rf "${prepare_dir}" || true
 
-	rm -rf "${build_dir}" || die
-	mv "${prepare_dir}" "${build_dir}" || die
+		log_error 'Failed to prepare build directory'
+		return 1
+	fi
 
 	# NOTE: With build-type: Custom, changing Setup.hs requires manually re-running
 	# configure, as Cabal fails to detect the change.
@@ -357,15 +378,11 @@ prepare_build_dir () {
 	# NOTE: Detecting changes in cabal.config works around a Cabal issue.
 	# https://github.com/haskell/cabal/issues/1992
 
-	local must_configure
-	must_configure=0
 	if filter_matching "^. (\.halcyon/extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
 		match_at_least_one >'/dev/null'
 	then
-		must_configure=1
+		rm -f "${build_dir}/dist/setup-config" || true
 	fi
-
-	return "${must_configure}"
 }
 
 
@@ -377,34 +394,38 @@ build_app () {
 	local tag source_dir build_dir
 	expect_args tag source_dir build_dir -- "$@"
 
+	# NOTE: Returns 2 if build is needed.
+
 	if (( HALCYON_NO_BUILD )); then
-		log_warning 'Cannot build app'
-		return 1
+		log_error 'Cannot build app'
+		return 2
 	fi
 
 	if ! (( HALCYON_APP_REBUILD )) && ! (( HALCYON_SANDBOX_REBUILD )) &&
 		restore_build_dir "${tag}" "${build_dir}"
 	then
-		if ! (( HALCYON_APP_RECONFIGURE )) && validate_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
+		if ! (( HALCYON_APP_RECONFIGURE )) &&
+			validate_build_dir "${tag}" "${build_dir}" >'/dev/null'
+		then
 			return 0
 		fi
 
 		local must_copy must_configure
 		must_copy=0
 		must_configure="${HALCYON_APP_RECONFIGURE}"
-		if ! prepare_build_dir "${source_dir}" "${build_dir}" ||
-			! validate_configured_build_dir "${tag}" "${build_dir}" >'/dev/null'
-		then
+		if ! prepare_build_dir "${source_dir}" "${build_dir}"; then
+			must_copy=1
+		elif ! validate_configured_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
 			must_configure=1
 		fi
-		do_build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
-		archive_build_dir "${build_dir}" || die
+		do_build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || return 1
+		archive_build_dir "${build_dir}" || return 1
 		return 0
 	fi
 
 	local must_copy must_configure
 	must_copy=1
 	must_configure=1
-	do_build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || die
-	archive_build_dir "${build_dir}" || die
+	do_build_app "${tag}" "${must_copy}" "${must_configure}" "${source_dir}" "${build_dir}" || return 1
+	archive_build_dir "${build_dir}" || return 1
 }
