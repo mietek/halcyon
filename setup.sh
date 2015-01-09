@@ -16,11 +16,13 @@ case $( detect_platform ) in
 		yum install -y git zlib-devel"
 	;;
 'linux-debian-6'*)
-	# NOTE: There is no sudo on Debian 6.
+	# NOTE: There is no sudo on Debian 6, and curl considers HTTP 40*
+	# errors to be transient, which makes retrying impractical.
 
 	apt-get update &&
 		apt-get install -y build-essential git pigz zlib1g-dev
 	echo 'export BASHMENOT_CURL_RETRIES=0' >>"${HOME}/.bash_profile"
+	export BASHMENOT_CURL_RETRIES=0
 	;;
 'linux-debian-7'*)
 	sudo -k
