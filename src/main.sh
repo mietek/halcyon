@@ -130,6 +130,10 @@ set_halcyon_vars () {
 
 
 halcyon_main () {
+	expect_vars HALCYON_DIR
+
+	expect_existing "${HALCYON_DIR}" || return 1
+
 	local cmd
 	local -a args_a
 	cmd=''
