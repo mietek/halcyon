@@ -161,7 +161,7 @@ install_extra_data_files () {
 
 	# NOTE: Extra data files may be directories, and are actually bash globs.
 
-	log_indent 'Including extra data files'
+	log_indent 'Installing extra data files'
 
 	local glob
 	while read -r glob; do
@@ -230,7 +230,7 @@ install_extra_dependencies () {
 		return 0
 	fi
 
-	log_indent 'Including extra dependencies'
+	log_indent 'Installing extra dependencies'
 
 	local dependency
 	while read -r dependency; do
