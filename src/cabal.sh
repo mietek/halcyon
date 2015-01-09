@@ -207,7 +207,7 @@ hash_cabal_magic () {
 
 	local cabal_magic_hash
 	if ! cabal_magic_hash=$( hash_tree "${source_dir}/.halcyon" -path './cabal*' ); then
-		log_error 'Failed to hash Cabal magic'
+		log_error 'Failed to hash Cabal magic files'
 		return 1
 	fi
 
@@ -739,13 +739,13 @@ sandboxed_cabal_do () {
 		if ! saved_config=$( get_tmp_file 'halcyon-saved-config' ) ||
 			! mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}"
 		then
-			log_error 'Failed to save existing sandbox cabal.config'
+			log_error 'Failed to save existing sandbox Cabal config'
 			return 1
 		fi
 	fi
 	if [[ -f "${work_dir}/cabal.config" ]]; then
 		if ! copy_file "${work_dir}/cabal.config" "${HALCYON_BASE}/sandbox/cabal.config"; then
-			log_error 'Failed to create temporary sandbox cabal.config'
+			log_error 'Failed to copy temporary sandbox Cabal config'
 			return 1
 		fi
 	fi
@@ -757,12 +757,12 @@ sandboxed_cabal_do () {
 	fi
 
 	if ! rm -f "${HALCYON_BASE}/sandbox/cabal.config"; then
-		log_error 'Failed to remove temporary sandbox cabal.config'
+		log_error 'Failed to remove temporary sandbox Cabal config'
 		return 1
 	fi
 	if [[ -n "${saved_config}" ]]; then
 		if ! mv "${saved_config}" "${HALCYON_BASE}/sandbox/cabal.config"; then
-			log_error 'Failed to restore previous sandbox cabal.config'
+			log_error 'Failed to restore previous sandbox Cabal config'
 			return 1
 		fi
 	fi
@@ -948,7 +948,7 @@ populate_cabal_setup_exe_cache () {
 		return 0
 	fi
 
-	log 'Populating Cabal setup-exe-cache'
+	log 'Populating Cabal setup executable cache'
 
 	local setup_dir
 	setup_dir="$( get_tmp_dir 'halcyon-setup-exe-cache' )" || return 1
@@ -957,12 +957,12 @@ populate_cabal_setup_exe_cache () {
 		! cabal_do "${setup_dir}" sandbox init --sandbox '.' 2>&1 | quote ||
 		! cabal_do "${setup_dir}" install 'populate-setup-exe-cache' 2>&1 | quote
 	then
-		log_error 'Failed to populate Cabal setup-exe-cache'
+		log_error 'Failed to populate Cabal setup executable cache'
 		return 1
 	fi
 	expect_existing "${HOME}/.cabal/setup-exe-cache" || return 1
 
-	log 'Cabal setup-exe-cache populated'
+	log 'Cabal setup executable cache populated'
 
 	rm -rf "${setup_dir}" || return 0
 }

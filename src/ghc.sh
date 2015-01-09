@@ -188,7 +188,7 @@ hash_ghc_magic () {
 
 	local ghc_magic_hash
 	if ! ghc_magic_hash=$( hash_tree "${source_dir}/.halcyon" -path './ghc*' ); then
-		log_error 'Failed to hash GHC magic'
+		log_error 'Failed to hash GHC magic files'
 		return 1
 	fi
 

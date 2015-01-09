@@ -165,7 +165,7 @@ hash_sandbox_magic () {
 
 	local sandbox_magic_hash
 	if ! sandbox_magic_hash=$( hash_tree "${source_dir}/.halcyon" \( -path './ghc*' -or -path './sandbox*' \) ); then
-		log_error 'Failed to hash sandbox magic'
+		log_error 'Failed to hash sandbox magic files'
 		return 1
 	fi
 
@@ -402,7 +402,7 @@ build_sandbox_dir () {
 	if ! format_constraints <<<"${constraints}" \
 		>"${HALCYON_BASE}/sandbox/.halcyon-constraints"
 	then
-		log_error 'Failed to write sandbox constraints file'
+		log_error 'Failed to prepare sandbox directory'
 		return 1
 	fi
 
@@ -474,7 +474,7 @@ archive_sandbox_dir () {
 	if ! copy_file "${HALCYON_BASE}/sandbox/.halcyon-constraints" \
 		"${HALCYON_CACHE}/${constraints_name}"
 	then
-		log_error 'Failed to cache sandbox constraints file'
+		log_error 'Failed to cache file'
 		return 1
 	fi
 

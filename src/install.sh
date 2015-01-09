@@ -255,7 +255,7 @@ prepare_install_dir () {
 		! sandboxed_cabal_do "${build_dir}" register \
 			--gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote
 	then
-		log_error 'Failed to copy app'
+		log_error 'Failed to copy app to install directory'
 		return 1
 	fi
 
@@ -447,7 +447,7 @@ install_app () {
 	if ! no_preserve_copy_dir_into "${install_dir}" "${HALCYON_ROOT}" \
 		--exclude '.halcyon-tag'
 	then
-		log_error 'Failed to install app'
+		log_error 'Failed to copy app to root directory'
 		return 1
 	fi
 

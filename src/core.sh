@@ -126,7 +126,7 @@ hash_source () {
 
 	local source_hash
 	if ! source_hash=$( hash_tree "${source_dir}" ); then
-		log_error 'Failed to hash source'
+		log_error 'Failed to hash source files'
 		return 1
 	fi
 
@@ -143,7 +143,7 @@ hash_magic () {
 
 	local magic_hash
 	if ! magic_hash=$( hash_tree "${source_dir}/.halcyon" -not -path './cabal*' ); then
-		log_error 'Failed to hash magic'
+		log_error 'Failed to hash magic files'
 		return 1
 	fi
 
@@ -611,7 +611,7 @@ full_install_app () {
 		# NOTE: This is the second of two moments when source_dir is modified.
 
 		if ! format_constraints_to_cabal_freeze <<<"${constraints}" >"${source_dir}/cabal.config"; then
-			log_error 'Failed to write cabal.config file'
+			log_error 'Failed to write Cabal config'
 			return 1
 		fi
 
