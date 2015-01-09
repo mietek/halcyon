@@ -283,7 +283,7 @@ do_fast_install_app () {
 	install_dir=$( get_tmp_dir 'halcyon-install' ) || return 1
 
 	restore_install_dir "${tag}" "${install_dir}/${label}" || return 1
-	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
+	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || return 1
 	symlink_cabal_config
 
 	rm -rf "${install_dir}"
@@ -498,11 +498,10 @@ do_full_install_app () {
 			must_prepare=0
 		fi
 		if (( must_prepare )); then
-			if ! prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}"; then
-				log_warning 'Cannot prepare install directory'
-				return 1
-			fi
-			archive_install_dir "${install_dir}/${label}" || die
+			# NOTE: Returns 2 if build is needed.
+
+			prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}" || return
+			archive_install_dir "${install_dir}/${label}" || return 1
 		fi
 	fi
 
@@ -516,7 +515,7 @@ do_full_install_app () {
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
 		! (( HALCYON_DEPENDENCIES_ONLY ))
 	then
-		install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || die
+		install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || return 1
 		symlink_cabal_config
 	fi
 

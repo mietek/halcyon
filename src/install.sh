@@ -131,11 +131,14 @@ install_extra_apps () {
 		if (( index > 1 )); then
 			log
 		fi
+
+		# NOTE: Returns 2 if build is needed.
+
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
 		HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE=1 \
-			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return 1
+			halcyon install "${opts_a[@]}" "${thing}" 2>&1 | quote || return
 	done <"${source_dir}/.halcyon/extra-apps" || return 0
 }
 
@@ -159,30 +162,11 @@ install_extra_data_files () {
 		return 1
 	fi
 
-	# NOTE: Extra data files may be directories, and are actually bash globs.
-
 	log_indent 'Installing extra data files'
 
 	local glob
 	while read -r glob; do
-		(
-			cd "${build_dir}" || die
-
-			local -a files_a
-			IFS='' && files_a=( ${glob} )
-			if [[ -z "${files_a[@]:+_}" ]]; then
-				return 0
-			fi
-
-			local file
-			for file in "${files_a[@]}"; do
-				if [[ ! -e "${file}" ]]; then
-					continue
-				fi
-
-				copy_dir_entry_into '.' "${file}" "${install_dir}${data_dir}" || die
-			done
-		) || die
+		copy_dir_glob_into "${build_dir}" "${glob}" "${install_dir}${data_dir}" || return 1
 	done <"${source_dir}/.halcyon/extra-data-files" || return 0
 }
 
@@ -195,36 +179,24 @@ install_extra_os_packages () {
 		return 0
 	fi
 
-	local extra_packages
+	local extra_packages prefix
 	extra_packages=$( <"${source_dir}/.halcyon/extra-os-packages" ) || true
-	if [[ -z "${extra_packages}" ]]; then
-		return 0
-	fi
-
-	local prefix
 	prefix=$( get_tag_prefix "${tag}" )
 
 	log 'Installing extra OS packages'
 
 	if ! install_platform_packages "${extra_packages}" "${install_dir}${prefix}"; then
-		die 'Failed to install extra OS packages'
+		log_error 'Failed to install extra OS packages'
+		return 1
 	fi
 }
 
 
 install_extra_dependencies () {
+	expect_vars HALCYON_BASE
+
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
-
-	# NOTE: Cabal libraries may require data files at run-time.
-	# See filestore for an example.
-	# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
-
-	if find_tree "${HALCYON_BASE}/sandbox/share" -type f |
-		match_at_least_one >'/dev/null'
-	then
-		copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || die
-	fi
 
 	if [[ ! -f "${source_dir}/.halcyon/extra-dependencies" ]]; then
 		return 0
@@ -236,16 +208,17 @@ install_extra_dependencies () {
 	while read -r dependency; do
 		case "${dependency}" in
 		'ghc')
-			copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || die
+			copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || return 1
 			;;
 		'cabal')
-			copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || die
+			copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || return 1
 			;;
 		'sandbox')
-			copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || die
+			copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || return 1
 			;;
 		*)
-			die "Unexpected extra dependency: ${dependency}"
+			log_error "Unexpected extra dependency: ${dependency}"
+			return 1
 		esac
 	done <"${source_dir}/.halcyon/extra-dependencies" || return 0
 }
@@ -275,44 +248,44 @@ prepare_install_dir () {
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 
-	if ! (
-		PATH="${install_dir}${prefix}:${PATH}" \
-			sandboxed_cabal_do "${build_dir}" copy \
-				--destdir="${install_dir}" --verbose=0 2>&1 | quote
-	); then
-		die 'Failed to copy app'
-	fi
-
-	mkdir -p "${label_dir}" || die
-	sandboxed_cabal_do "${build_dir}" register \
-		--gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote || die
-
-	ln -s "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" "${install_dir}${prefix}/cabal.sandbox.config" || die
-
-	if ! format_constraints <<<"${constraints}" >"${label_dir}/constraints"; then
-		log_error 'Failed to write constraints file'
-		return 1
-	fi
-	echo "${data_dir}" >"${label_dir}/data-dir" || die
-
-	local executable
-	if executable=$( detect_executable "${source_dir}" ); then
-		echo "${executable}" >"${label_dir}/executable" || die
-	fi
-
-	if ! derive_install_tag "${tag}" >"${label_dir}/tag"; then
-		log_error 'Failed to write install tag'
+	if ! PATH="${install_dir}${prefix}:${PATH}" \
+		sandboxed_cabal_do "${build_dir}" copy \
+			--destdir="${install_dir}" --verbose=0 2>&1 | quote ||
+		! mkdir -p "${label_dir}" ||
+		! sandboxed_cabal_do "${build_dir}" register \
+			--gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote
+	then
+		log_error 'Failed to copy app'
 		return 1
 	fi
 
-	if ! install_extra_apps "${tag}" "${source_dir}" "${install_dir}"; then
-		log_warning 'Cannot install extra apps'
+	# NOTE: Returns 2 if build is needed.
+
+	install_extra_apps "${tag}" "${source_dir}" "${install_dir}" || return
+
+	if ! install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}"; then
+		log_error 'Failed to install extra data files'
 		return 1
 	fi
 
-	install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}" || die
-	install_extra_os_packages "${tag}" "${source_dir}" "${install_dir}" || die
-	install_extra_dependencies "${tag}" "${source_dir}" "${install_dir}" || die
+	# NOTE: Cabal libraries may require data files at run-time.
+	# See filestore for an example.
+	# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
+
+	if find_tree "${HALCYON_BASE}/sandbox/share" -type f |
+		match_at_least_one >'/dev/null'
+	then
+		log 'Installing extra data files for dependencies'
+
+		copy_dir_into "${HALCYON_BASE}/sandbox/share" "${install_dir}${HALCYON_BASE}/sandbox/share" || return 1
+	fi
+
+	install_extra_os_packages "${tag}" "${source_dir}" "${install_dir}" || return 1
+
+	if ! install_extra_dependencies "${tag}" "${source_dir}" "${install_dir}"; then
+		log_error 'Failed to install extra dependencies'
+		return 1
+	fi
 
 	if [[ -f "${source_dir}/.halcyon/pre-install-hook" ]]; then
 		log 'Executing pre-install hook'
@@ -321,22 +294,43 @@ prepare_install_dir () {
 				"${source_dir}/.halcyon/pre-install-hook" \
 					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
-			die 'Failed to execute pre-install hook'
+			log_error 'Failed to execute pre-install hook'
+			return 1
 		fi
 		log 'Pre-install hook executed'
 	fi
 
+	local executable
+	if executable=$( detect_executable "${source_dir}" ); then
+		if ! echo "${executable}" >"${label_dir}/executable"; then
+			log_error 'Failed to prepare install directory'
+			return 1
+		fi
+	fi
+
 	local prepared_size
-	prepared_size=$( get_size "${install_dir}" ) || die
+	if ! format_constraints <<<"${constraints}" >"${label_dir}/constraints" ||
+		! echo "${data_dir}" >"${label_dir}/data-dir" ||
+		! derive_install_tag "${tag}" >"${label_dir}/tag" ||
+		! ln -s "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" \
+			"${install_dir}${prefix}/cabal.sandbox.config" ||
+		! prepared_size=$( get_size "${install_dir}" )
+	then
+		log_error 'Failed to prepare install directory'
+		return 1
+	fi
 	log "Install directory prepared, ${prepared_size}"
 
 	if [[ -d "${install_dir}${prefix}/share/doc" ]]; then
 		log_indent_begin 'Removing documentation from install directory...'
 
-		rm -rf "${install_dir}${prefix}/share/doc" || die
-
 		local trimmed_size
-		trimmed_size=$( get_size "${install_dir}" ) || die
+		if ! rm -rf "${install_dir}${prefix}/share/doc" ||
+			! trimmed_size=$( get_size "${install_dir}" )
+		then
+			log_indent_end 'error'
+			return 1
+		fi
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
@@ -443,30 +437,18 @@ install_app () {
 	fi
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
-		log_begin "Installing app into ${prefix}..."
+		log "Installing app into ${prefix}"
 	else
-		log_begin "Installing app into ${HALCYON_ROOT}${prefix}..."
+		log "Installing app into ${HALCYON_ROOT}${prefix}"
 	fi
 
 	# NOTE: Copying .halcyon-tag is avoided because / may be read-only.
 
-	local saved_tag
-	saved_tag=''
-	if [[ -f "${install_dir}/.halcyon-tag" ]]; then
-		saved_tag=$( get_tmp_file 'halcyon-saved-tag' ) || return 1
-		mv "${install_dir}/.halcyon-tag" "${saved_tag}" || die
-	fi
-
-	local file
-	find_tree "${install_dir}" -mindepth 1 -maxdepth 1 |
-		while read -r file; do
-			copy_dir_entry_into "${install_dir}" "${file}" "${HALCYON_ROOT}" || die
-		done
-
-	log_end 'done'
-
-	if [[ -n "${saved_tag}" ]]; then
-		mv "${saved_tag}" "${install_dir}/.halcyon-tag" || die
+	if ! no_preserve_copy_dir_into "${install_dir}" "${HALCYON_ROOT}" \
+		--exclude '.halcyon-tag'
+	then
+		log_error 'Failed to install app'
+		return 1
 	fi
 
 	if [[ -f "${source_dir}/.halcyon/post-install-hook" ]]; then
@@ -476,7 +458,8 @@ install_app () {
 				"${source_dir}/.halcyon/post-install-hook" \
 					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		); then
-			die 'Failed to execute post-install hook'
+			log_error 'Failed to execute post-install hook'
+			return 1
 		fi
 		log 'Post-install hook executed'
 	fi
