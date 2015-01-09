@@ -348,7 +348,7 @@ prepare_file_option () {
 		return 0
 	fi
 
-	copy_file "${magic_var}" "${magic_file}" || die
+	copy_file "${magic_var}" "${magic_file}" || return 1
 }
 
 
@@ -360,14 +360,14 @@ prepare_file_strings_option () {
 		return 0
 	fi
 	if [[ -f "${magic_var}" ]]; then
-		copy_file "${magic_var}" "${magic_file}" || die
+		copy_file "${magic_var}" "${magic_file}" || return 1
 		return 0
 	fi
 
 	local -a strings_a
 	strings_a=( ${magic_var} )
 
-	copy_file <( IFS=$'\n' && echo "${strings_a[*]}" ) "${magic_file}" || die
+	copy_file <( IFS=$'\n' && echo "${strings_a[*]}" ) "${magic_file}" || return 1
 }
 
 
@@ -379,15 +379,15 @@ prepare_constraints_option () {
 		return 0
 	fi
 	if [[ -d "${magic_var}" ]]; then
-		copy_dir_over "${magic_var}" "${magic_file}" || die
+		copy_dir_over "${magic_var}" "${magic_file}" || return 1
 		return 0
 	fi
 	if [[ -f "${magic_var}" ]]; then
-		copy_file "${magic_var}" "${magic_file}" || die
+		copy_file "${magic_var}" "${magic_file}" || return 1
 		return 0
 	fi
 
-	copy_file <( echo "${magic_var}" ) "${magic_file}" || die
+	copy_file <( echo "${magic_var}" ) "${magic_file}" || return 1
 }
 
 
@@ -410,37 +410,37 @@ prepare_source_dir () {
 	magic_dir="${source_dir}/.halcyon"
 
 # Build-time magic files
-	prepare_file_strings_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || die
-	prepare_file_option "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || die
-	prepare_file_option "${HALCYON_POST_BUILD_HOOK}" "${magic_dir}/post-build-hook" || die
+	prepare_file_strings_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || return 1
+	prepare_file_option "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || return 1
+	prepare_file_option "${HALCYON_POST_BUILD_HOOK}" "${magic_dir}/post-build-hook" || return 1
 
 # Install-time magic files
-	prepare_file_strings_option "${HALCYON_EXTRA_APPS}" "${magic_dir}/extra-apps" || die
-	prepare_constraints_option "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || die
-	prepare_file_strings_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || die
-	prepare_file_strings_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || die
-	prepare_file_strings_option "${HALCYON_EXTRA_DEPENDENCIES}" "${magic_dir}/extra-dependencies" || die
-	prepare_file_option "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || die
-	prepare_file_option "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || die
+	prepare_file_strings_option "${HALCYON_EXTRA_APPS}" "${magic_dir}/extra-apps" || return 1
+	prepare_constraints_option "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || return 1
+	prepare_file_strings_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || return 1
+	prepare_file_strings_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || return 1
+	prepare_file_strings_option "${HALCYON_EXTRA_DEPENDENCIES}" "${magic_dir}/extra-dependencies" || return 1
+	prepare_file_option "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || return 1
+	prepare_file_option "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || return 1
 
 # GHC magic files
-	prepare_file_option "${HALCYON_GHC_PRE_BUILD_HOOK}" "${magic_dir}/ghc-pre-build-hook" || die
-	prepare_file_option "${HALCYON_GHC_POST_BUILD_HOOK}" "${magic_dir}/ghc-post-build-hook" || die
+	prepare_file_option "${HALCYON_GHC_PRE_BUILD_HOOK}" "${magic_dir}/ghc-pre-build-hook" || return 1
+	prepare_file_option "${HALCYON_GHC_POST_BUILD_HOOK}" "${magic_dir}/ghc-post-build-hook" || return 1
 
 # Cabal magic files
-	prepare_file_option "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${magic_dir}/cabal-pre-build-hook" || die
-	prepare_file_option "${HALCYON_CABAL_POST_BUILD_HOOK}" "${magic_dir}/cabal-post-build-hook" || die
-	prepare_file_option "${HALCYON_CABAL_PRE_UPDATE_HOOK}" "${magic_dir}/cabal-pre-update-hook" || die
-	prepare_file_option "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${magic_dir}/cabal-post-update-hook" || die
+	prepare_file_option "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${magic_dir}/cabal-pre-build-hook" || return 1
+	prepare_file_option "${HALCYON_CABAL_POST_BUILD_HOOK}" "${magic_dir}/cabal-post-build-hook" || return 1
+	prepare_file_option "${HALCYON_CABAL_PRE_UPDATE_HOOK}" "${magic_dir}/cabal-pre-update-hook" || return 1
+	prepare_file_option "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${magic_dir}/cabal-post-update-hook" || return 1
 
 # Sandbox magic files
-	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || die
-	prepare_file_strings_option "${HALCYON_SANDBOX_SOURCES}" "${magic_dir}/sandbox-sources" || die
-	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_APPS}" "${magic_dir}/sandbox-extra-apps" || die
-	prepare_constraints_option "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || die
-	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES}" "${magic_dir}/sandbox-extra-os-packages" || die
-	prepare_file_option "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${magic_dir}/sandbox-pre-build-hook" || die
-	prepare_file_option "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${magic_dir}/sandbox-post-build-hook" || die
+	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || return 1
+	prepare_file_strings_option "${HALCYON_SANDBOX_SOURCES}" "${magic_dir}/sandbox-sources" || return 1
+	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_APPS}" "${magic_dir}/sandbox-extra-apps" || return 1
+	prepare_constraints_option "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || return 1
+	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES}" "${magic_dir}/sandbox-extra-os-packages" || return 1
+	prepare_file_option "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${magic_dir}/sandbox-pre-build-hook" || return 1
+	prepare_file_option "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${magic_dir}/sandbox-post-build-hook" || return 1
 }
 
 
@@ -465,15 +465,19 @@ do_full_install_app () {
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
-			saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) || return 1
-			mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}" || die
+			if ! saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) ||
+				! mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}"
+			then
+				log_error 'Failed to save existing sandbox'
+				return 1
+			fi
 		fi
 	fi
 
 	# NOTE: Returns 2 if build is needed.
 
 	install_sandbox_dir "${tag}" "${source_dir}" "${constraints}" || return
-	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}" || die
+	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}"
 	log
 
 	# NOTE: Returns 2 if build is needed.
@@ -487,17 +491,12 @@ do_full_install_app () {
 	then
 		log
 
-		local must_prepare
-		must_prepare=1
-		if ! (( HALCYON_APP_REBUILD )) &&
-			! (( HALCYON_APP_RECONFIGURE )) &&
-			! (( HALCYON_APP_REINSTALL )) &&
-			! (( HALCYON_SANDBOX_REBUILD )) &&
-			restore_install_dir "${tag}" "${install_dir}/${label}"
+		if (( HALCYON_APP_REBUILD )) ||
+			(( HALCYON_APP_RECONFIGURE )) ||
+			(( HALCYON_APP_REINSTALL )) ||
+			(( HALCYON_SANDBOX_REBUILD )) ||
+			! restore_install_dir "${tag}" "${install_dir}/${label}"
 		then
-			must_prepare=0
-		fi
-		if (( must_prepare )); then
 			# NOTE: Returns 2 if build is needed.
 
 			prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}" || return
@@ -506,9 +505,15 @@ do_full_install_app () {
 	fi
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
+		if ! rm -rf "${HALCYON_BASE}/sandbox"; then
+			log_error 'Failed to remove sandbox'
+			return 1
+		fi
 		if [[ -n "${saved_sandbox}" ]]; then
-			rm -rf "${HALCYON_BASE}/sandbox" || die
-			mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox" || die
+			if ! mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox"; then
+				log_error 'Failed to restore previous sandbox'
+				return 1
+			fi
 		fi
 	fi
 
@@ -519,7 +524,7 @@ do_full_install_app () {
 		symlink_cabal_config
 	fi
 
-	rm -rf "${build_dir}" "${install_dir}" || die
+	rm -rf "${build_dir}" "${install_dir}" || return 0
 }
 
 
@@ -541,7 +546,8 @@ full_install_app () {
 	'executable')
 		local executable
 		if ! executable=$( detect_executable "${source_dir}" ); then
-			die 'Failed to detect executable'
+			log_error 'Failed to detect executable'
+			return 1
 		fi
 
 		echo "${executable}"
@@ -553,8 +559,12 @@ full_install_app () {
 
 	# NOTE: This is the first of two moments when source_dir is modified.
 
-	prepare_constraints "${label}" "${source_dir}" || return 1
-	prepare_source_dir "${label}" "${source_dir}" || die
+	if ! prepare_constraints "${label}" "${source_dir}" ||
+		! prepare_source_dir "${label}" "${source_dir}"
+	then
+		log_error 'Failed to prepare source directory'
+		return 1
+	fi
 
 	local source_hash
 	if [[ -f "${source_dir}/cabal.config" ]]; then
@@ -573,7 +583,8 @@ full_install_app () {
 		log 'Determining constraints'
 
 		if ! constraints=$( detect_constraints "${label}" "${source_dir}" ); then
-			die 'Failed to determine constraints'
+			log_error 'Failed to determine constraints'
+			return 1
 		fi
 	fi
 	if [[ -z "${constraints}" ]]; then
@@ -692,7 +703,8 @@ install_local_app () {
 
 	local label
 	if ! label=$( detect_label "${local_dir}" ); then
-		die 'Failed to detect label'
+		log_error 'Failed to detect label'
+		return 1
 	fi
 
 	if (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
@@ -714,7 +726,7 @@ install_local_app () {
 
 	full_install_app "${label}" "${source_dir}/${label}" || return
 
-	rm -rf "${source_dir}" || die
+	rm -rf "${source_dir}" || return 0
 }
 
 
@@ -731,13 +743,14 @@ install_cloned_app () {
 	local commit_hash
 	if ! commit_hash=$( git_clone_over "${url}" "${clone_dir}" ); then
 		log_end 'error'
-		die 'Failed to clone app'
+		return 1
 	fi
 	log_end "done, ${commit_hash:0:7}"
 
 	local label
 	if ! label=$( detect_label "${clone_dir}" ); then
-		die 'Failed to detect label'
+		log_error 'Failed to detect label'
+		return 1
 	fi
 
 	if ! copy_source_dir_over "${clone_dir}" "${source_dir}/${label}"; then
@@ -750,7 +763,7 @@ install_cloned_app () {
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}/${label}" || return
 
-	rm -rf "${clone_dir}" "${source_dir}" || die
+	rm -rf "${clone_dir}" "${source_dir}" || return 0
 }
 
 
@@ -789,7 +802,7 @@ install_unpacked_app () {
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}/${label}" || return
 
-	rm -rf "${unpack_dir}" "${source_dir}" || die
+	rm -rf "${unpack_dir}" "${source_dir}" || return 0
 }
 
 
@@ -798,7 +811,8 @@ halcyon_install () {
 
 	if (( $# > 1 )); then
 		shift
-		die "Unexpected args: $*"
+		log_error "Unexpected args: $*"
+		return 1
 	fi
 
 	local cache_dir
@@ -834,5 +848,5 @@ halcyon_install () {
 		log_warning 'Failed to clean cache'
 	fi
 
-	rm -rf "${cache_dir}" || true
+	rm -rf "${cache_dir}" || return 0
 }
