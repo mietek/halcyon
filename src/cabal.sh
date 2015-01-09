@@ -350,7 +350,7 @@ EOF
 		return 1
 	fi
 
-	rm -rf "${cabal_build_dir}" "${cabal_home_dir}" || true
+	rm -rf "${cabal_build_dir}" "${cabal_home_dir}" || return 0
 }
 
 
@@ -786,7 +786,7 @@ cabal_create_sandbox () {
 
 	mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || return 1
 
-	rm -rf "${stderr}" || true
+	rm -rf "${stderr}" || return 0
 }
 
 
@@ -819,9 +819,9 @@ cabal_dry_freeze_constraints () {
 		return 1
 	fi
 
-	rm -f "${stderr}" || true
-
 	echo "${constraints}"
+
+	rm -f "${stderr}" || return 0
 }
 
 
@@ -843,9 +843,9 @@ sandboxed_cabal_dry_freeze_constraints () {
 		return 1
 	fi
 
-	rm -f "${stderr}" || true
-
 	echo "${constraints}"
+
+	rm -f "${stderr}" || return 0
 }
 
 
@@ -932,9 +932,9 @@ cabal_unpack_over () {
 		return 1
 	fi
 
-	rm -rf "${stderr}" || true
-
 	echo "${label}"
+
+	rm -rf "${stderr}" || return 0
 }
 
 
@@ -964,5 +964,5 @@ populate_cabal_setup_exe_cache () {
 
 	log 'Cabal setup-exe-cache populated'
 
-	rm -rf "${setup_dir}" || true
+	rm -rf "${setup_dir}" || return 0
 }

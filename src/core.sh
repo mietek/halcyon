@@ -286,7 +286,7 @@ do_fast_install_app () {
 	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || return 1
 	symlink_cabal_config
 
-	rm -rf "${install_dir}"
+	rm -rf "${install_dir}" || return 0
 }
 
 
