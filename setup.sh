@@ -19,7 +19,7 @@ case $( detect_platform ) in
 	# NOTE: There is no sudo on Debian 6.
 
 	apt-get update &&
-		apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev
+		apt-get install -y build-essential git pigz zlib1g-dev
 	echo 'export BASHMENOT_CURL_RETRIES=0' >>"${HOME}/.bash_profile"
 	;;
 'linux-debian-7'*)
@@ -42,7 +42,7 @@ case $( detect_platform ) in
 'linux-ubuntu-10'*)
 	sudo -k
 	sudo bash -c "apt-get update &&
-		apt-get install -y build-essential git-core libgmp3c2 pigz zlib1g-dev &&
+		apt-get install -y build-essential git-core pigz zlib1g-dev &&
 		apt-get install -y --reinstall ca-certificates"
 	;;
 'linux-ubuntu-12'*)
