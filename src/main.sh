@@ -429,6 +429,7 @@ halcyon_main () {
 				fi
 				shift
 			done
+			break
 			;;
 		'-'*)
 			log_error "Unexpected option: $1"
