@@ -43,10 +43,10 @@ help_usage () {
 		  --extra-apps-constraints=               STRINGS | FILE | DIR
 		  --extra-data-files=                     STRINGS | FILE
 		  --extra-os-packages=                    STRINGS | FILE
-		  --restore-dependencies
 		  --pre-install-hook=                     FILE
 		  --post-install-hook=                    FILE
 		  --app-reinstall
+		  --keep-dependencies
 
 		Cache options
 		  --cache=                                DIR
