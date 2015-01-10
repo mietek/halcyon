@@ -127,59 +127,67 @@ bench_first_build () {
 
 
 test_shootout () {
+	local bench branch
+	expect_args bench branch -- "$@"
+	shift 2
+
 	local -a urls_a
 	urls_a=()
-	if ! (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+	if ! (( bench )); then
 		# NOTE: When not benchmarking, hello-wai goes first, so that
 		# the sandbox can be reused to speed up the other builds.
-		urls_a+=( 'https://github.com/mietek/hello-wai' )
+		urls_a+=( "https://github.com/mietek/hello-wai${branch}" )
 	fi
-	urls_a+=( 'https://github.com/mietek/hello-apiary' )
-	urls_a+=( 'https://github.com/mietek/hello-happstack' )
-	urls_a+=( 'https://github.com/mietek/hello-mflow' )
-	urls_a+=( 'https://github.com/mietek/hello-miku' )
-	urls_a+=( 'https://github.com/mietek/hello-scotty' )
-	urls_a+=( 'https://github.com/mietek/hello-simple' )
-	urls_a+=( 'https://github.com/mietek/hello-snap' )
-	urls_a+=( 'https://github.com/mietek/hello-spock' )
-	if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
-		urls_a+=( 'https://github.com/mietek/hello-wai' )
+	urls_a+=( "https://github.com/mietek/hello-apiary${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-happstack${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-mflow${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-miku${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-scotty${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-simple${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-snap${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-spock${branch}" )
+	if (( bench )); then
+		urls_a+=( "https://github.com/mietek/hello-wai${branch}" )
 	fi
-	urls_a+=( 'https://github.com/mietek/hello-wheb' )
-	urls_a+=( 'https://github.com/mietek/hello-yesod' )
+	urls_a+=( "https://github.com/mietek/hello-wheb${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-yesod${branch}" )
 
 	local csv_file
 	csv_file=''
-	if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+	if (( bench )); then
 		csv_file=$( get_tmp_file 'halcyon-shootout' )'.csv' || return 1
 	fi
 
 	for url in "${urls_a[@]}"; do
 		log
 		log
-		if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+		if (( bench )); then
 			bench_first_build "${url}" "${csv_file}" "$@" || return 1
 		else
 			halcyon install "${url}" "$@" || return 1
 		fi
 	done
 
-	if (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+	if (( bench )); then
 		cat "${csv_file}"
 	fi
 }
 
 
 test_examples () {
+	local branch
+	expect_args branch -- "$@"
+	shift
+
 	local -a urls_a
 	urls_a=()
-	urls_a+=( 'https://github.com/mietek/howistart' )
-	urls_a+=( 'https://github.com/mietek/hl' )
-	urls_a+=( 'https://github.com/mietek/tryhaskell' )
-	urls_a+=( 'https://github.com/mietek/tryidris' )
-	urls_a+=( 'https://github.com/mietek/trypurescript' )
-	urls_a+=( 'https://github.com/mietek/tryhaste' )
-	urls_a+=( 'https://github.com/mietek/gitit' )
+	urls_a+=( "https://github.com/mietek/howistart${branch}" )
+	urls_a+=( "https://github.com/mietek/hl${branch}" )
+	urls_a+=( "https://github.com/mietek/tryhaskell${branch}" )
+	urls_a+=( "https://github.com/mietek/tryidris${branch}" )
+	urls_a+=( "https://github.com/mietek/trypurescript${branch}" )
+	urls_a+=( "https://github.com/mietek/tryhaste${branch}" )
+	urls_a+=( "https://github.com/mietek/gitit${branch}" )
 
 	for url in "${urls_a[@]}"; do
 		log
@@ -189,68 +197,113 @@ test_examples () {
 }
 
 
+help_test_usage () {
+	log
+	quote <<-EOF
+		Usage
+		  halcyon                                 COMMAND
+
+		Commands
+		  ghc                                     OPTION*
+		  sandbox-apps                            OPTION*
+		  apps                                    OPTION*
+		  shootout                                OPTION*
+		  bench-shootout                          OPTION*
+		  examples                                OPTION*
+		  all                                     OPTION*
+
+		Options
+		  --bench
+		  --branch
+	EOF
+}
+
+
 test_main () {
-	local cmd
-	expect_args cmd -- "$@"
-	shift
+	local cmd bench branch
+	local -a args_a
+	cmd=''
+	bench=0
+	branch=''
+	args_a=()
 
-	case "${cmd}" in
-	'ghc'|'sandbox-apps'|'apps'|'shootout'|'bench-shootout'|'examples'|'all')
-		true
-		;;
-	*)
-		log_error "Unexpected command: ${cmd}"
-		quote <<-EOF
-			Usage
-			  test COMMAND
+	while (( $# )); do
+		case "$1" in
 
-			Commands
-			  ghc
-			  sandbox-apps
-			  apps
-			  shootout
-			  bench-shootout
-			  examples
-			  all
-EOF
-		return 1
-	esac
+		'--bench')
+			bench=1;;
+		'--branch')
+			shift
+			expect_args branch -- "$@";;
+		'--branch='*)
+			branch="${1#*=}";;
 
-	local cache_dir
-	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || return 1
-
-	export HALCYON_CACHE="${cache_dir}"
-
-	rm -rf "${HALCYON_BASE}" '/tmp/halcyon-'* || return 1
-
-	halcyon install "$@" || return 1
+		'-h'|'--help')
+			help_usage
+			return 0
+			;;
+		'--')
+			shift
+			while (( $# )); do
+				if [[ -z "${cmd}" ]]; then
+					cmd="$1"
+				else
+					args_a+=( "$1" )
+				fi
+				shift
+			done
+			;;
+		'-'*)
+			log_error "Unexpected option: $1"
+			help_test_usage
+			return 1
+			;;
+		*)
+			if [[ -z "${cmd}" ]]; then
+				cmd="$1"
+			else
+				args_a+=( "$1" )
+			fi
+		esac
+		shift
+	done
 
 	case "${cmd}" in
 	'ghc')
-		test_ghc "$@" || return 1
+		test_ghc ${args_a[@]:+"${args_a[@]}"} || return 1
 		;;
 	'sandbox-apps')
-		test_sandbox_apps "$@" || return 1
+		test_sandbox_apps ${args_a[@]:+"${args_a[@]}"} || return 1
 		;;
 	'apps')
-		test_apps "$@" || return 1
+		test_apps ${args_a[@]:+"${args_a[@]}"} || return 1
 		;;
 	'shootout')
-		test_shootout "$@" || return 1
-		;;
-	'bench-shootout')
-		HALCYON_INTERNAL_BENCH=1 \
-			test_shootout "$@" || return 1
+		test_shootout "${bench}" "${branch}" ${args_a[@]:+"${args_a[@]}"} || return 1
 		;;
 	'examples')
-		test_examples "$@" || return 1
+		test_examples "${branch}" ${args_a[@]:+"${args_a[@]}"} || return 1
 		;;
 	'all')
-		test_ghc "$@" || return 1
-		test_sandbox_apps "$@" || return 1
-		test_apps "$@" || return 1
-		test_shootout "$@" || return 1
-		test_examples "$@" || return 1
+		test_ghc ${args_a[@]:+"${args_a[@]}"} || return 1
+		test_sandbox_apps ${args_a[@]:+"${args_a[@]}"} || return 1
+		test_apps ${args_a[@]:+"${args_a[@]}"} || return 1
+		test_shootout "${bench}" "${branch}" ${args_a[@]:+"${args_a[@]}"} || return 1
+		test_examples "${branch}" ${args_a[@]:+"${args_a[@]}"} || return 1
+		;;
+	'help')
+		help_test_usage
+		return 0
+		;;
+	'')
+		log_error 'Expected command'
+		help_test_usage
+		return 1
+		;;
+	*)
+		log_error "Unexpected command: ${cmd} ${args_a[*]:-}"
+		help_test_usage
+		return 1
 	esac
 
 	rm -rf "${HALCYON_BASE}" '/tmp/halcyon-'* || return 1
