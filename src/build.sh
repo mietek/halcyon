@@ -153,7 +153,7 @@ do_build_app () {
 			tr '\n' ' ' |
 			sed 's/^Data files installed in: //'
 		) ||
-			echo "${data_dir}" >"${build_dir}/dist/.halcyon-data-dir"
+			! echo "${data_dir}" >"${build_dir}/dist/.halcyon-data-dir"
 		then
 			log_error 'Failed to write data directory file'
 			return 1
