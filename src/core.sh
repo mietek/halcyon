@@ -271,6 +271,8 @@ install_ghc_and_cabal_dirs () {
 
 
 do_fast_install_app () {
+	expect_vars HALCYON_INTERNAL_NO_CLEANUP
+
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
@@ -282,7 +284,9 @@ do_fast_install_app () {
 	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || return 1
 	symlink_cabal_config
 
-	rm -rf "${install_dir}" || return 0
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+		rm -rf "${install_dir}" || true
+	fi
 }
 
 
@@ -442,7 +446,7 @@ do_full_install_app () {
 	expect_vars HALCYON_BASE HALCYON_DEPENDENCIES_ONLY \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_SANDBOX_REBUILD \
-		HALCYON_INTERNAL_RECURSIVE
+		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_NO_CLEANUP
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
@@ -514,7 +518,9 @@ do_full_install_app () {
 		symlink_cabal_config
 	fi
 
-	rm -rf "${build_dir}" "${install_dir}" || return 0
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+		rm -rf "${build_dir}" "${install_dir}" || true
+	fi
 }
 
 
@@ -681,7 +687,7 @@ full_install_app () {
 
 
 install_local_app () {
-	expect_vars HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE
+	expect_vars HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE HALCYON_INTERNAL_NO_CLEANUP
 
 	local local_dir
 	expect_args local_dir -- "$@"
@@ -709,11 +715,15 @@ install_local_app () {
 	# NOTE: Returns 2 if build is needed.
 	full_install_app "${label}" "${source_dir}/${label}" || return
 
-	rm -rf "${source_dir}" || return 0
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+		rm -rf "${source_dir}" || true
+	fi
 }
 
 
 install_cloned_app () {
+	expect_vars HALCYON_INTERNAL_NO_CLEANUP
+
 	local url
 	expect_args url -- "$@"
 
@@ -745,11 +755,15 @@ install_cloned_app () {
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}/${label}" || return
 
-	rm -rf "${clone_dir}" "${source_dir}" || return 0
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+		rm -rf "${clone_dir}" "${source_dir}" || true
+	fi
 }
 
 
 install_unpacked_app () {
+	expect_vars HALCYON_INTERNAL_NO_CLEANUP
+
 	local thing
 	expect_args thing -- "$@"
 
@@ -782,12 +796,15 @@ install_unpacked_app () {
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}/${label}" || return
 
-	rm -rf "${unpack_dir}" "${source_dir}" || return 0
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+		rm -rf "${unpack_dir}" "${source_dir}" || true
+	fi
 }
 
 
 halcyon_install () {
-	expect_vars HALCYON_NO_APP
+	expect_vars HALCYON_NO_APP \
+		HALCYON_INTERNAL_NO_CLEANUP
 
 	if (( $# > 1 )); then
 		shift
@@ -827,5 +844,7 @@ halcyon_install () {
 		log_warning 'Failed to clean cache'
 	fi
 
-	rm -rf "${cache_dir}" || return 0
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+		rm -rf "${cache_dir}" || true
+	fi
 }

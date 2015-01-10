@@ -98,7 +98,8 @@ format_build_archive_name () {
 
 
 do_build_app () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_INTERNAL_NO_CLEANUP
 
 	local tag must_copy must_configure source_dir build_dir
 	expect_args tag must_copy must_configure source_dir build_dir -- "$@"
@@ -159,7 +160,9 @@ do_build_app () {
 			return 1
 		fi
 
-		rm -f "${stdout}" || true
+		if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+			rm -f "${stdout}" || true
+		fi
 	else
 		expect_existing "${build_dir}/dist/.halcyon-data-dir" || return 1
 	fi

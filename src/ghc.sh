@@ -333,7 +333,8 @@ symlink_ghc_libs () {
 
 
 build_ghc_dir () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_INTERNAL_NO_CLEANUP
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -425,7 +426,9 @@ build_ghc_dir () {
 		return 1
 	fi
 
-	rm -rf "${ghc_build_dir}" || return 0
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
+		rm -rf "${ghc_build_dir}" || true
+	fi
 }
 
 
