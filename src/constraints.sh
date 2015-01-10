@@ -330,6 +330,8 @@ score_partial_sandbox_dirs () {
 
 	local partial_tag
 	while read -r partial_tag; do
+		# TODO: Allow sandboxes with magic files to be extended from
+		# sandboxes with no magic files.
 		local partial_name partial_file partial_constraints
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" )
 		partial_file="${HALCYON_CACHE}/${partial_name}"
