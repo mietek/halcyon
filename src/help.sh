@@ -43,7 +43,6 @@ help_usage () {
 		  --extra-apps-constraints=               STRINGS | FILE | DIR
 		  --extra-data-files=                     STRINGS | FILE
 		  --extra-os-packages=                    STRINGS | FILE
-		  --extra-dependencies=                   STRINGS | FILE
 		  --restore-dependencies
 		  --pre-install-hook=                     FILE
 		  --post-install-hook=                    FILE

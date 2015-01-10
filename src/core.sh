@@ -419,7 +419,6 @@ prepare_source_dir () {
 	prepare_constraints_option "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || return 1
 	prepare_file_strings_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || return 1
 	prepare_file_strings_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || return 1
-	prepare_file_strings_option "${HALCYON_EXTRA_DEPENDENCIES}" "${magic_dir}/extra-dependencies" || return 1
 	prepare_file_option "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || return 1
 	prepare_file_option "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || return 1
 
@@ -653,7 +652,6 @@ full_install_app () {
 	describe_extra 'Extra apps:' "${source_dir}/.halcyon/extra-apps"
 	describe_extra 'Extra data files:' "${source_dir}/.halcyon/extra-data-files"
 	describe_extra 'Extra OS packages:' "${source_dir}/.halcyon/extra-os-packages"
-	describe_extra 'Extra dependencies:' "${source_dir}/.halcyon/extra-dependencies"
 	[[ -n "${magic_hash}" ]] && log_indent_label 'Magic hash:' "${magic_hash:0:7}"
 
 	describe_storage

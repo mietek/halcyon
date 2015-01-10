@@ -192,38 +192,6 @@ install_extra_os_packages () {
 }
 
 
-install_extra_dependencies () {
-	expect_vars HALCYON_BASE
-
-	local tag source_dir install_dir
-	expect_args tag source_dir install_dir -- "$@"
-
-	if [[ ! -f "${source_dir}/.halcyon/extra-dependencies" ]]; then
-		return 0
-	fi
-
-	log_indent 'Installing extra dependencies'
-
-	local dependency
-	while read -r dependency; do
-		case "${dependency}" in
-		'ghc')
-			copy_dir_into "${HALCYON_BASE}/ghc" "${install_dir}${HALCYON_BASE}/ghc" || return 1
-			;;
-		'cabal')
-			copy_dir_into "${HALCYON_BASE}/cabal" "${install_dir}${HALCYON_BASE}/cabal" || return 1
-			;;
-		'sandbox')
-			copy_dir_into "${HALCYON_BASE}/sandbox" "${install_dir}${HALCYON_BASE}/sandbox" || return 1
-			;;
-		*)
-			log_error "Unexpected extra dependency: ${dependency}"
-			return 1
-		esac
-	done <"${source_dir}/.halcyon/extra-dependencies" || return 0
-}
-
-
 prepare_install_dir () {
 	expect_vars HALCYON_BASE
 
@@ -281,11 +249,6 @@ prepare_install_dir () {
 	fi
 
 	install_extra_os_packages "${tag}" "${source_dir}" "${install_dir}" || return 1
-
-	if ! install_extra_dependencies "${tag}" "${source_dir}" "${install_dir}"; then
-		log_error 'Failed to install extra dependencies'
-		return 1
-	fi
 
 	if [[ -f "${source_dir}/.halcyon/pre-install-hook" ]]; then
 		log 'Executing pre-install hook'
