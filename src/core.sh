@@ -806,7 +806,7 @@ halcyon_install () {
 	# NOTE: Returns 2 if build is needed.
 	if (( HALCYON_NO_APP )); then
 		install_ghc_and_cabal_dirs '/dev/null' || return
-	elif ! (( $# )) || [[ "$1" == '' ]]; then
+	elif ! (( $# )); then
 		if ! detect_label '.' >'/dev/null'; then
 			HALCYON_NO_APP=1 \
 				install_ghc_and_cabal_dirs '/dev/null' || return

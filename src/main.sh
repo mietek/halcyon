@@ -485,7 +485,7 @@ halcyon_main () {
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'install')
-		halcyon_install "${args_a[@]:-}"
+		halcyon_install ${args_a[@]:+"${args_a[@]}"}
 		return
 		;;
 	'deploy')
@@ -494,12 +494,12 @@ halcyon_main () {
 		;;
 	'build')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install "${args_a[@]:-}"
+			halcyon_install ${args_a[@]:+"${args_a[@]}"}
 		return
 		;;
 	'label'|'executable'|'constraints'|'tag')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install "${args_a[@]:-}"
+			halcyon_install ${args_a[@]:+"${args_a[@]}"}
 		return
 		;;
 	'paths')
