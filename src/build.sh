@@ -337,7 +337,7 @@ prepare_build_dir () {
 		return 0
 	fi
 
-	log_indent 'Examining source changes'
+	log 'Examining source changes'
 
 	quote <<<"${changed_files}"
 
