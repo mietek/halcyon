@@ -385,7 +385,7 @@ update_cabal_package_db () {
 	# even for the update command.
 	# https://github.com/haskell/cabal/issues/2309
 	local updated_size
-	if ! cabal_do '.' --no-require-sandbox update 2>&1 | quote ||
+	if ! cabal_do '.' --no-require-sandbox update >'/dev/null' 2>&1 ||
 		! updated_size=$( get_size "${HALCYON_BASE}/cabal" )
 	then
 		log_error 'Failed to update Cabal package database'
