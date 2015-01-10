@@ -358,11 +358,10 @@ clean_cache () {
 		return 0
 	fi
 
-	local mark_time name_prefix
+	local mark_time
 	mark_time=$( get_modification_time "${cache_dir}" ) || return 1
-	name_prefix=$( format_sandbox_common_file_name_prefix )
 
-	rm -f "${HALCYON_CACHE}/${name_prefix}"* || true
+	rm -f "${HALCYON_CACHE}/"*'.constraints' || true
 
 	local file
 	find "${HALCYON_CACHE}" -maxdepth 1 -type f 2>'/dev/null' |
