@@ -492,10 +492,6 @@ halcyon_main () {
 		halcyon_install ${args_a[@]:+"${args_a[@]}"}
 		return
 		;;
-	'deploy')
-		log_error "Please use 'halcyon install' instead of 'halcyon deploy'"
-		return 1
-		;;
 	'build')
 		HALCYON_NO_CLEAN_CACHE=1 \
 			halcyon_install ${args_a[@]:+"${args_a[@]}"}
