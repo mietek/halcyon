@@ -415,6 +415,10 @@ halcyon_main () {
 		'--sandbox-rebuild')
 			export HALCYON_SANDBOX_REBUILD=1;;
 
+		'-h'|'--help')
+			help_usage
+			return 0
+			;;
 		'--')
 			shift
 			while (( $# )); do
@@ -510,6 +514,10 @@ halcyon_main () {
 			log_error 'Failed to export paths'
 			return 1
 		fi
+		;;
+	'help')
+		help_usage
+		return 0
 		;;
 	'')
 		log_error 'Expected command'
