@@ -333,8 +333,8 @@ score_partial_sandbox_dirs () {
 		local partial_name partial_file partial_constraints
 		partial_name=$( format_sandbox_constraints_file_name "${partial_tag}" )
 		partial_file="${HALCYON_CACHE}/${partial_name}"
-		if ! partial_constraints=$( read_constraints <"${partial_file}" ) ||
-			! validate_partial_constraints_file "${partial_file}" >'/dev/null' ||
+		if ! validate_partial_constraints_file "${partial_file}" >'/dev/null' ||
+			! partial_constraints=$( read_constraints <"${partial_file}" ) ||
 			[[ -z "${partial_constraints}" ]]
 		then
 			rm -f "${partial_file}" || true
