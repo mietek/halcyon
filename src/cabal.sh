@@ -779,7 +779,7 @@ cabal_create_sandbox () {
 
 	mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || return 1
 
-	rm -rf "${stderr}" || return 0
+	rm -f "${stderr}" || return 0
 }
 
 
@@ -924,7 +924,7 @@ cabal_unpack_over () {
 
 	echo "${label}"
 
-	rm -rf "${stderr}" || return 0
+	rm -f "${stderr}" || return 0
 }
 
 
