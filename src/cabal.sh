@@ -653,7 +653,7 @@ symlink_cabal_config () {
 	# sandboxed_cabal_do.
 	if ! rm -f "${HOME}/.cabal/config" ||
 		! mkdir -p "${HOME}/.cabal" ||
-		! ln -s "${HALCYON_BASE}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config"
+		! ln -fs "${HALCYON_BASE}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config"
 	then
 		log_warning 'Failed to symlink Cabal config'
 	fi

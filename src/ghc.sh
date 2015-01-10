@@ -308,8 +308,8 @@ symlink_ghc_libs () {
 		expect_existing "${gmp_file}" || return 1
 
 		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
-			! ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" ||
-			! ln -s "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so"
+			! ln -fs "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" ||
+			! ln -fs "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so"
 		then
 			log_error 'Failed to symlink GHC libraries (libgmp.so)'
 			return 1
@@ -320,8 +320,8 @@ symlink_ghc_libs () {
 		expect_existing "${tinfo_file}" || return 1
 
 		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
-			! ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" ||
-			! ln -s "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so"
+			! ln -fs "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" ||
+			! ln -fs "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so"
 		then
 			log_error 'Failed to symlink GHC libraries (libtinfo.so)'
 			return 1
