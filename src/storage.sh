@@ -1,15 +1,12 @@
 private_storage () {
 	expect_vars HALCYON_NO_PRIVATE_STORAGE
 
-	if (( HALCYON_NO_PRIVATE_STORAGE )); then
-		return 1
-	fi
-
-	[[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}"
-	&& -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}"
-	&& -n "${HALCYON_S3_BUCKET:+_}"
-	&& -n "${HALCYON_S3_ENDPOINT:+_}"
-	&& -n "${HALCYON_S3_ACL:+_}" ]] || return 1
+	! (( HALCYON_NO_PRIVATE_STORAGE )) || return 1
+	[[ -n "${HALCYON_AWS_ACCESS_KEY_ID:+_}" ]] || return 1
+	[[ -n "${HALCYON_AWS_SECRET_ACCESS_KEY:+_}" ]] || return 1
+	[[ -n "${HALCYON_S3_BUCKET:+_}" ]] || return 1
+	[[ -n "${HALCYON_S3_ENDPOINT:+_}" ]] || return 1
+	[[ -n "${HALCYON_S3_ACL:+_}" ]] || return 1
 }
 
 
