@@ -401,10 +401,7 @@ install_app () {
 		log "Installing app to ${HALCYON_ROOT}${prefix}"
 	fi
 
-	# NOTE: Copying .halcyon-tag is avoided because / may be read-only.
-	if ! no_preserve_copy_dir_into "${install_dir}" "${HALCYON_ROOT}" \
-		--exclude '.halcyon-tag'
-	then
+	if ! copy_dir_into "${install_dir}${prefix}" "${HALCYON_ROOT}${prefix}"; then
 		log_error 'Failed to copy app to root directory'
 		return 1
 	fi
