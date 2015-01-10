@@ -357,10 +357,10 @@ prepare_build_dir () {
 	# NOTE: Any build products outside dist will have to be rebuilt.
 	# See alex or happy for examples.
 	if ! rm -rf "${prepare_dir}/dist" ||
-		mv "${build_dir}/dist" "${prepare_dir}/dist" ||
-		mv "${build_dir}/.halcyon-tag" "${prepare_dir}/.halcyon-tag" ||
-		rm -rf "${build_dir}" ||
-		mv "${prepare_dir}" "${build_dir}"
+		! mv "${build_dir}/dist" "${prepare_dir}/dist" ||
+		! mv "${build_dir}/.halcyon-tag" "${prepare_dir}/.halcyon-tag" ||
+		! rm -rf "${build_dir}" ||
+		! mv "${prepare_dir}" "${build_dir}"
 	then
 		rm -rf "${prepare_dir}" || true
 
