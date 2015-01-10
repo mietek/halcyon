@@ -315,8 +315,6 @@ test_main () {
 		help_test_usage
 		return 1
 	esac
-
-	rm -rf "${HALCYON_BASE}" '/tmp/halcyon-'* || return 1
 }
 
 
