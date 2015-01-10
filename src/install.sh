@@ -133,7 +133,6 @@ install_extra_apps () {
 		fi
 
 		# NOTE: Returns 2 if build is needed.
-
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
@@ -215,7 +214,6 @@ prepare_install_dir () {
 	log 'Preparing install directory'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
-
 	if ! PATH="${install_dir}${prefix}:${PATH}" \
 		sandboxed_cabal_do "${build_dir}" copy \
 			--destdir="${install_dir}" --verbose=0 2>&1 | quote ||
@@ -228,7 +226,6 @@ prepare_install_dir () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	install_extra_apps "${tag}" "${source_dir}" "${install_dir}" || return
 
 	if ! install_extra_data_files "${tag}" "${source_dir}" "${build_dir}" "${install_dir}"; then
@@ -239,7 +236,6 @@ prepare_install_dir () {
 	# NOTE: Cabal libraries may require data files at run-time.
 	# See filestore for an example.
 	# https://haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
-
 	if find_tree "${HALCYON_BASE}/sandbox/share" -type f |
 		match_at_least_one >'/dev/null'
 	then
@@ -406,7 +402,6 @@ install_app () {
 	fi
 
 	# NOTE: Copying .halcyon-tag is avoided because / may be read-only.
-
 	if ! no_preserve_copy_dir_into "${install_dir}" "${HALCYON_ROOT}" \
 		--exclude '.halcyon-tag'
 	then

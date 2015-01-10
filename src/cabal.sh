@@ -2,9 +2,6 @@ map_cabal_version_to_original_url () {
 	local cabal_version
 	expect_args cabal_version -- "$@"
 
-	# NOTE: Bootstrapping cabal-install 1.20.0.4 does not work.
-	# https://www.haskell.org/pipermail/cabal-devel/2014-December/009959.html
-
 	case "${cabal_version}" in
 	'1.22.0.0')	echo 'https://haskell.org/cabal/release/cabal-install-1.22.0.0/cabal-install-1.22.0.0.tar.gz';;
 	'1.20.0.6')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.6/cabal-install-1.20.0.6.tar.gz';;
@@ -14,6 +11,8 @@ map_cabal_version_to_original_url () {
 	'1.20.0.1')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.1/cabal-install-1.20.0.1.tar.gz';;
 	'1.20.0.0')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.0/cabal-install-1.20.0.0.tar.gz';;
 	*)
+		# NOTE: Bootstrapping cabal-install 1.20.0.4 does not work.
+		# https://www.haskell.org/pipermail/cabal-devel/2014-December/009959.html
 		log_error "Unexpected Cabal version: ${cabal_version}"
 		return 1
 	esac
@@ -257,7 +256,6 @@ build_cabal_dir () {
 	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || return 1
 
 	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
-
 	if [[ "${ghc_version}" < '7.8' ]]; then
 		log_error "Unexpected GHC version: ${ghc_version}"
 		log_error 'To bootstrap Cabal, use GHC 7.8 or newer'
@@ -300,10 +298,9 @@ EOF
 		return 1
 	fi
 
-	# NOTE: Bootstrapping cabal-install with GHC 7.8.* may fail unless --no-doc
-	# is specified.
+	# NOTE: Bootstrapping cabal-install with GHC 7.8.* may fail unless
+	# --no-doc is specified.
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
-
 	local bootstrapped_size
 	if ! (
 		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
@@ -387,7 +384,6 @@ update_cabal_package_db () {
 	# NOTE: cabal-install 1.20.0.5 enforces the require-sandbox option
 	# even for the update command.
 	# https://github.com/haskell/cabal/issues/2309
-
 	local updated_size
 	if ! cabal_do '.' --no-require-sandbox update 2>&1 | quote ||
 		! updated_size=$( get_size "${HALCYON_BASE}/cabal" )
@@ -655,7 +651,6 @@ symlink_cabal_config () {
 	# NOTE: Creating config symlinks is necessary to allow the user to
 	# easily run Cabal commands, without having to use cabal_do or
 	# sandboxed_cabal_do.
-
 	if ! rm -f "${HOME}/.cabal/config" ||
 		! mkdir -p "${HOME}/.cabal" ||
 		! ln -s "${HALCYON_BASE}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config"
@@ -688,7 +683,6 @@ install_cabal_dir () {
 		fi
 
 		# NOTE: Returns 2 if build is needed.
-
 		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_error 'Cannot build Cabal directory'
 			return 2
@@ -729,10 +723,9 @@ sandboxed_cabal_do () {
 
 	expect_existing "${HALCYON_BASE}/sandbox" "${work_dir}" || return 1
 
-	# NOTE: Specifying a cabal.sandbox.config file changes where Cabal looks for
-	# a cabal.config file.
+	# NOTE: Specifying a cabal.sandbox.config file changes where Cabal
+	# looks for a cabal.config file.
 	# https://github.com/haskell/cabal/issues/1915
-
 	local saved_config
 	saved_config=''
 	if [[ -f "${HALCYON_BASE}/sandbox/cabal.config" ]]; then
@@ -790,17 +783,6 @@ cabal_create_sandbox () {
 }
 
 
-# NOTE: Cabal automatically sets global installed constraints for installed
-# packages, even during a freeze dry run.  Hence, if a local constraint
-# conflicts with an installed package, Cabal will fail to resolve
-# dependencies.
-# https://github.com/haskell/cabal/issues/2178
-
-# NOTE: Cabal freeze always ignores any constraints set both in the local
-# cabal.config file, and in the global ~/.cabal/config file.
-# https://github.com/haskell/cabal/issues/2265
-
-
 cabal_dry_freeze_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
@@ -808,6 +790,14 @@ cabal_dry_freeze_constraints () {
 	local stderr
 	stderr=$( get_tmp_file 'halcyon-cabal-dry-freeze-stderr' ) || return 1
 
+	# NOTE: Cabal automatically sets global installed constraints for
+	# installed packages, even during a freeze dry run.  Hence, if a
+	# local constraint conflicts with an installed package, Cabal will
+	# fail to resolve dependencies.
+	# Cabal freeze always ignores any constraints set both in the local
+	# cabal.config file, and in the global ~/.cabal/config file.
+	# https://github.com/haskell/cabal/issues/2178
+	# https://github.com/haskell/cabal/issues/2265
 	local constraints
 	if ! constraints=$(
 		cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
@@ -943,7 +933,6 @@ populate_cabal_setup_exe_cache () {
 
 	# NOTE: Haste needs Cabal to generate HOME/.cabal/setup-exe-cache.
 	# https://github.com/valderman/haste-compiler/issues/257
-
 	if [[ -f "${HOME}/.cabal/setup-exe-cache" ]]; then
 		return 0
 	fi

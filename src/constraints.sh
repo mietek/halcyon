@@ -31,9 +31,9 @@ filter_correct_constraints () {
 	local label
 	expect_args label -- "$@"
 
-	# NOTE: Cabal includes the package itself in the list of frozen constraints.
+	# NOTE: Cabal includes the package itself in the list of frozen
+	# constraints.
 	# https://github.com/haskell/cabal/issues/1908
-
 	local name version
 	name="${label%-*}"
 	version="${label##*-}"
@@ -146,11 +146,6 @@ validate_actual_constraints () {
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
-	# NOTE: Cabal sometimes gives different results when freezing constraints before and after
-	# installation.
-	# https://github.com/haskell/cabal/issues/1896
-	# https://github.com/mietek/halcyon/issues/1
-
 	local label actual_constraints constraints_hash actual_hash
 	label=$( get_tag_label "${tag}" )
 	constraints_hash=$( get_tag_constraints_hash "${tag}" )
@@ -161,6 +156,10 @@ validate_actual_constraints () {
 		return 0
 	fi
 
+	# NOTE: Cabal sometimes gives different results when freezing
+	# constraints before and after installation.
+	# https://github.com/haskell/cabal/issues/1896
+	# https://github.com/mietek/halcyon/issues/1
 	if [[ "${actual_hash}" != "${constraints_hash}" ]]; then
 		log_warning 'Unexpected constraints difference'
 		diff --unified \

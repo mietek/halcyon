@@ -53,7 +53,6 @@ map_ghc_version_to_osx_x86_64_url () {
 	expect_args ghc_version -- "$@"
 
 	# TODO: Improve cross-version compatibility.
-
 	case "${ghc_version}" in
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';; # 10.7+
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-apple-darwin-mavericks.tar.xz';; # 10.9 only?
@@ -234,7 +233,6 @@ symlink_ghc_libs () {
 	# not use the `mpn_bdivmod` function, which is the only difference
 	# between the ABI of .3 and .10. Hence, on some platforms, .10 is
 	# symlinked to .3, and the .3-flavoured binary distribution is used.
-
 	local gmp_name gmp_file tinfo_file url
 	case "${HALCYON_INTERNAL_PLATFORM}" in
 	'linux-debian-7-x86_64'|'linux-ubuntu-14'*'-x86_64')
@@ -525,7 +523,6 @@ install_ghc_dir () {
 		fi
 
 		# NOTE: Returns 2 if build is needed.
-
 		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_error 'Cannot build GHC directory'
 			return 2

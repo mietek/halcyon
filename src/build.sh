@@ -139,12 +139,11 @@ do_build_app () {
 			return 1
 		fi
 
-		# NOTE: This helps implement HALCYON_EXTRA_DATA_FILES, which
-		# works around unusual Cabal globbing for the data-files
-		# package description entry.
+		# NOTE: Storing the data dir helps implement
+		# HALCYON_EXTRA_DATA_FILES, which works around unusual Cabal
+		# globbing for the data-files package description entry.
 		# https://github.com/haskell/cabal/issues/713
 		# https://github.com/haskell/cabal/issues/784
-
 		local data_dir
 		if ! data_dir=$(
 			awk '	/Data files installed in:/ { i = 1 }
@@ -347,18 +346,16 @@ prepare_build_dir () {
 		return 1
 	fi
 
-	# NOTE: Restoring file modification times of unchanged files is necessary to avoid
-	# needless recompilation.
-
+	# NOTE: Restoring file modification times of unchanged files is
+	# necessary to avoid needless recompilation.
 	local file
 	filter_matching '^= ' <<<"${all_files}" |
 		while read -r file; do
 			touch -r "${build_dir}/${file#= }" "${prepare_dir}/${file#= }" || true
 		done
 
-	# NOTE: Any build products outside dist will have to be rebuilt.  See alex or happy for
-	# an example.
-
+	# NOTE: Any build products outside dist will have to be rebuilt.
+	# See alex or happy for examples.
 	if ! rm -rf "${prepare_dir}/dist" ||
 		mv "${build_dir}/dist" "${prepare_dir}/dist" ||
 		mv "${build_dir}/.halcyon-tag" "${prepare_dir}/.halcyon-tag" ||
@@ -371,13 +368,11 @@ prepare_build_dir () {
 		return 1
 	fi
 
-	# NOTE: With build-type: Custom, changing Setup.hs requires manually re-running
-	# configure, as Cabal fails to detect the change.
+	# NOTE: With build-type: Custom, changing Setup.hs requires manually
+	# re-running configure, as Cabal fails to detect the change.
+	# Detecting changes in cabal.config works around a Cabal issue.
 	# https://github.com/mietek/haskell-on-heroku/issues/29
-
-	# NOTE: Detecting changes in cabal.config works around a Cabal issue.
 	# https://github.com/haskell/cabal/issues/1992
-
 	if filter_matching "^. (\.halcyon/extra-configure-flags|cabal\.config|Setup\.hs|.*\.cabal)$" <<<"${changed_files}" |
 		match_at_least_one >'/dev/null'
 	then
@@ -395,7 +390,6 @@ build_app () {
 	expect_args tag source_dir build_dir -- "$@"
 
 	# NOTE: Returns 2 if build is needed.
-
 	if (( HALCYON_NO_BUILD )); then
 		log_error 'Cannot build app'
 		return 2

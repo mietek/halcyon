@@ -292,7 +292,6 @@ install_sandbox_extra_apps () {
 		fi
 
 		# NOTE: Returns 2 if build is needed.
-
 		HALCYON_INTERNAL_RECURSIVE=1 \
 		HALCYON_INTERNAL_GHC_MAGIC_HASH="${ghc_magic_hash}" \
 		HALCYON_INTERNAL_CABAL_MAGIC_HASH="${cabal_magic_hash}" \
@@ -336,7 +335,6 @@ build_sandbox_dir () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	install_sandbox_extra_apps "${tag}" "${source_dir}" || return
 
 	install_sandbox_extra_os_packages "${tag}" "${source_dir}" || return 1
@@ -591,7 +589,6 @@ install_matching_sandbox_dir () {
 	recache_sandbox_package_db
 
 	# NOTE: Returns 2 if build is needed.
-
 	local must_create
 	must_create=0
 	build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return
@@ -620,7 +617,6 @@ install_sandbox_dir () {
 		fi
 
 		# NOTE: Returns 2 if build is needed.
-
 		if (( HALCYON_NO_BUILD )) || (( HALCYON_NO_BUILD_DEPENDENCIES )); then
 			log_error 'Cannot build sandbox directory'
 			return 2
@@ -628,7 +624,6 @@ install_sandbox_dir () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	local must_create
 	must_create=1
 	build_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${must_create}" || return

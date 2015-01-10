@@ -59,7 +59,6 @@ set_halcyon_vars () {
 
 		# NOTE: Cabal does not support HTTPS repository URLs.
 		# https://github.com/haskell/cabal/issues/936
-
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-1.20.0.3}"
 		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-Hackage:http://hackage.haskell.org/packages/archive}"
 		export HALCYON_CABAL_PRE_BUILD_HOOK="${HALCYON_CABAL_PRE_BUILD_HOOK:-}"

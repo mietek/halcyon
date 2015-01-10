@@ -127,12 +127,11 @@ bench_first_build () {
 
 
 test_shootout () {
-	# NOTE: When not benchmarking, hello-wai goes first, so that the
-	# sandbox can be reused to speed up the other builds.
-
 	local -a urls_a
 	urls_a=()
 	if ! (( ${HALCYON_INTERNAL_BENCH:-0} )); then
+		# NOTE: When not benchmarking, hello-wai goes first, so that
+		# the sandbox can be reused to speed up the other builds.
 		urls_a+=( 'https://github.com/mietek/hello-wai' )
 	fi
 	urls_a+=( 'https://github.com/mietek/hello-apiary' )

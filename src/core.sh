@@ -140,7 +140,6 @@ hash_magic () {
 
 	# NOTE: The version number of Cabal and the contents of its package
 	# database could conceivably be treated as dependencies.
-
 	local magic_hash
 	if ! magic_hash=$( hash_tree "${source_dir}/.halcyon" -not -path './cabal*' ); then
 		log_error 'Failed to hash magic files'
@@ -218,10 +217,8 @@ do_install_ghc_and_cabal_dirs () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	install_ghc_dir "${tag}" "${source_dir}" || return
 	log
-
 	install_cabal_dir "${tag}" "${source_dir}" || return
 	log
 }
@@ -267,7 +264,6 @@ install_ghc_and_cabal_dirs () {
 	)
 
 	# NOTE: Returns 2 if build is needed.
-
 	do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}" || return
 
 	announce_install "${tag}"
@@ -391,21 +387,20 @@ prepare_constraints_option () {
 }
 
 
-# NOTE: Listing executable-only packages in build-tools causes Cabal to expect the
-# executables to be installed, but not to install the packages.
-# https://github.com/haskell/cabal/issues/220
-
-# NOTE: Listing executable-only packages in build-depends causes Cabal to install the
-# packages, and to fail to recognise the packages have been installed.
-# https://github.com/haskell/cabal/issues/779
-
-
 prepare_source_dir () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
 
 	expect_existing "${source_dir}" || return 1
 
+	# NOTE: Listing executable-only packages in build-tools causes Cabal
+	# to expect the executables to be installed, but not to install the
+	# packages.
+	# Listing executable-only packages in build-depends causes Cabal to
+	# install the packages, and to fail to recognise the packages have
+	# been installed.
+	# https://github.com/haskell/cabal/issues/220
+	# https://github.com/haskell/cabal/issues/779
 	local magic_dir
 	magic_dir="${source_dir}/.halcyon"
 
@@ -459,7 +454,6 @@ do_full_install_app () {
 	saved_sandbox=''
 
 	# NOTE: Returns 2 if build is needed.
-
 	do_install_ghc_and_cabal_dirs "${tag}" "${source_dir}" || return
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
@@ -474,14 +468,12 @@ do_full_install_app () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	install_sandbox_dir "${tag}" "${source_dir}" "${constraints}" || return
 	validate_actual_constraints "${tag}" "${source_dir}" "${constraints}"
 	log
 
-	# NOTE: Returns 2 if build is needed.
-
 	if ! (( HALCYON_DEPENDENCIES_ONLY )); then
+		# NOTE: Returns 2 if build is needed.
 		build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return
 	fi
 
@@ -497,7 +489,6 @@ do_full_install_app () {
 			! restore_install_dir "${tag}" "${install_dir}/${label}"
 		then
 			# NOTE: Returns 2 if build is needed.
-
 			prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}" || return
 			archive_install_dir "${install_dir}/${label}" || return 1
 		fi
@@ -556,8 +547,7 @@ full_install_app () {
 
 	log "Installing ${label}"
 
-	# NOTE: This is the first of two moments when source_dir is modified.
-
+	# NOTE: First of two places where source_dir is modified.
 	if ! prepare_constraints "${label}" "${source_dir}" ||
 		! prepare_source_dir "${label}" "${source_dir}"
 	then
@@ -588,7 +578,6 @@ full_install_app () {
 	fi
 	if [[ -z "${constraints}" ]]; then
 		# NOTE: Returns 2 if build is needed.
-
 		HALCYON_GHC_REBUILD=0 \
 		HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
 		HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL=1 \
@@ -607,8 +596,7 @@ full_install_app () {
 			log
 		fi
 
-		# NOTE: This is the second of two moments when source_dir is modified.
-
+		# NOTE: Second of two places where source_dir is modified.
 		if ! format_constraints_to_cabal_freeze <<<"${constraints}" >"${source_dir}/cabal.config"; then
 			log_error 'Failed to write Cabal config'
 			return 1
@@ -683,7 +671,6 @@ full_install_app () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	log
 	do_full_install_app "${tag}" "${source_dir}" "${constraints}" || return
 
@@ -707,7 +694,6 @@ install_local_app () {
 
 	if (( HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE )); then
 		# NOTE: Returns 2 if build is needed.
-
 		full_install_app "${label}" "${local_dir}" || return
 		return 0
 	fi
@@ -721,7 +707,6 @@ install_local_app () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	full_install_app "${label}" "${source_dir}/${label}" || return
 
 	rm -rf "${source_dir}" || return 0
@@ -757,7 +742,6 @@ install_cloned_app () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}/${label}" || return
 
@@ -774,7 +758,6 @@ install_unpacked_app () {
 	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
 
 	# NOTE: Returns 2 if build is needed.
-
 	HALCYON_NO_APP=1 \
 	HALCYON_GHC_REBUILD=0 \
 	HALCYON_CABAL_REBUILD=0 HALCYON_CABAL_UPDATE=0 \
@@ -796,7 +779,6 @@ install_unpacked_app () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}/${label}" || return
 
@@ -822,7 +804,6 @@ halcyon_install () {
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
 	if (( HALCYON_NO_APP )); then
 		install_ghc_and_cabal_dirs '/dev/null' || return
 	elif ! (( $# )) || [[ "$1" == '' ]]; then

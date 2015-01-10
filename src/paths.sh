@@ -71,8 +71,7 @@ if ! (( ${HALCYON_INTERNAL_PATHS:-0} )); then
 
 	export PKG_CONFIG_SYSROOT_DIR="${HALCYON_BASE}/sandbox"
 
-	# NOTE: A UTF-8 locale is needed to work around a Cabal issue.
+	# NOTE: UTF-8 locale is needed to work around a Cabal issue.
 	# https://github.com/haskell/cabal/issues/1883
-
 	export LANG="${LANG:-C.UTF-8}"
 fi
