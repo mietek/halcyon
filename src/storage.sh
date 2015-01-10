@@ -138,11 +138,11 @@ cache_stored_file () {
 	local public_url
 	public_url=$( format_public_storage_url "${object}" )
 
-	if (( HALCYON_NO_PUBLIC_STORAGE )) ||
-		! curl_download "${public_url}" "${file}" ||
-		! upload_cached_file "${prefix}" "${file_name}"
-	then
-		log_error 'Failed to cache stored file'
+	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
+	curl_download "${public_url}" "${file}" || return 1
+
+	if ! upload_cached_file "${prefix}" "${file_name}"; then
+		log_error 'Failed to upload cached file'
 		return 1
 	fi
 }
@@ -162,10 +162,10 @@ cache_original_stored_file () {
 		return 0
 	fi
 
-	if ! curl_download "${original_url}" "${file}" ||
-		! upload_cached_file 'original' "${file_name}"
-	then
-		log_error 'Failed to cache original stored file'
+	curl_download "${original_url}" "${file}" || return 1
+
+	if ! upload_cached_file 'original' "${file_name}"; then
+		log_error 'Failed to upload cached file'
 		return 1
 	fi
 }
