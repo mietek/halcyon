@@ -258,7 +258,9 @@ build_cabal_dir () {
 	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
 	if [[ "${ghc_version}" < '7.8' ]]; then
 		log_error "Unexpected GHC version: ${ghc_version}"
-		log_error 'To bootstrap Cabal, use GHC 7.8 or newer'
+		log
+		log_indent 'To bootstrap Cabal, use GHC 7.8 or newer'
+		log
 		return 1
 	fi
 
@@ -379,7 +381,7 @@ update_cabal_package_db () {
 		log 'Cabal pre-update hook executed'
 	fi
 
-	log 'Updating Cabal package database'
+	log_indent_begin 'Updating Cabal package database...'
 
 	# NOTE: cabal-install 1.20.0.5 enforces the require-sandbox option
 	# even for the update command.
@@ -388,10 +390,10 @@ update_cabal_package_db () {
 	if ! cabal_do '.' --no-require-sandbox update >'/dev/null' 2>&1 ||
 		! updated_size=$( get_size "${HALCYON_BASE}/cabal" )
 	then
-		log_error 'Failed to update Cabal package database'
+		log_indent_end 'error'
 		return 1
 	fi
-	log "Cabal package database updated, ${updated_size}"
+	log_indent_end "done, ${updated_size}"
 
 	if [[ -f "${source_dir}/.halcyon/cabal-post-update-hook" ]]; then
 		log 'Executing Cabal post-update hook'
@@ -642,8 +644,10 @@ symlink_cabal_config () {
 			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" ]]
 		then
 			log_warning 'Unexpected existing Cabal config'
-			log_warning 'To replace with recommended Cabal config:'
+			log
+			log_indent 'To replace with recommended Cabal config:'
 			log_indent "$ ln -fs ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
+			log
 			return 0
 		fi
 	fi

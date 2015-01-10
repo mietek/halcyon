@@ -396,9 +396,9 @@ install_app () {
 	fi
 
 	if [[ "${HALCYON_ROOT}" == '/' ]]; then
-		log "Installing app into ${prefix}"
+		log "Installing app to ${prefix}"
 	else
-		log "Installing app into ${HALCYON_ROOT}${prefix}"
+		log "Installing app to ${HALCYON_ROOT}${prefix}"
 	fi
 
 	# NOTE: Copying .halcyon-tag is avoided because / may be read-only.
