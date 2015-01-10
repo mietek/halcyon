@@ -98,6 +98,18 @@ touch_cached_ghc_and_cabal_files () {
 }
 
 
+check_s3_status () {
+	local s3_status
+	expect_args s3_status -- "$@"
+
+	# NOTE: Requests using the wrong S3 endpoint fail with 301.
+	# https://github.com/mietek/haskell-on-heroku/issues/37
+	if (( s3_status == 3 )); then
+		log_error "Unexpected HALCYON_S3_ENDPOINT for HALCYON_S3_BUCKET (${HALCYON_S3_BUCKET}): ${HALCYON_S3_ENDPOINT}"
+	fi
+}
+
+
 upload_cached_file () {
 	expect_vars HALCYON_CACHE HALCYON_NO_UPLOAD
 
@@ -112,8 +124,12 @@ upload_cached_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE}/${file_name}"
 
-	if ! s3_upload "${file}" "${HALCYON_S3_BUCKET}" "${object}" "${HALCYON_S3_ACL}"; then
+	local status
+	status=0
+	s3_upload "${file}" "${HALCYON_S3_BUCKET}" "${object}" "${HALCYON_S3_ACL}" || status="$?"
+	if (( status )); then
 		log_error 'Failed to upload cached file'
+		check_s3_status "${status}"
 		return 1
 	fi
 }
@@ -129,10 +145,15 @@ cache_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE}/${file_name}"
 
-	if private_storage &&
-		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}"
-	then
-		return 0
+	if private_storage; then
+		local status
+		status=0
+		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" || status="$?"
+		if ! (( status )); then
+			return 0
+		else
+			check_s3_status "${status}"
+		fi
 	fi
 
 	local public_url
@@ -140,11 +161,7 @@ cache_stored_file () {
 
 	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
 	curl_download "${public_url}" "${file}" || return 1
-
-	if ! upload_cached_file "${prefix}" "${file_name}"; then
-		log_error 'Failed to upload cached file'
-		return 1
-	fi
+	upload_cached_file "${prefix}" "${file_name}" || return 1
 }
 
 
@@ -163,11 +180,7 @@ cache_original_stored_file () {
 	fi
 
 	curl_download "${original_url}" "${file}" || return 1
-
-	if ! upload_cached_file 'original' "${file_name}"; then
-		log_error 'Failed to upload cached file'
-		return 1
-	fi
+	upload_cached_file 'original' "${file_name}" || return 1
 }
 
 
@@ -204,10 +217,13 @@ delete_private_stored_file () {
 		return 0
 	fi
 
-	local object
+	local object status
 	object="${prefix:+${prefix}/}${file_name}"
-	if ! s3_delete "${HALCYON_S3_BUCKET}" "${object}"; then
+	status=0
+	s3_delete "${HALCYON_S3_BUCKET}" "${object}" || status="$?"
+	if (( status )); then
 		log_error 'Failed to delete private stored file'
+		check_s3_status "${status}"
 		return 1
 	fi
 }
@@ -221,8 +237,12 @@ list_private_stored_files () {
 		return 0
 	fi
 
-	if ! s3_list "${HALCYON_S3_BUCKET}" "${prefix}"; then
+	local status
+	status=0
+	s3_list "${HALCYON_S3_BUCKET}" "${prefix}" || status="$?"
+	if (( status )); then
 		log_error 'Failed to list private stored files'
+		check_s3_status "${status}"
 		return 1
 	fi
 }
