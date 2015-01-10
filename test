@@ -19,8 +19,9 @@ test_ghc () {
 	versions_a+=( '7.2.2' )
 	versions_a+=( '7.0.4' )
 
+	log 'Testing GHC'
+
 	for version in "${versions_a[@]}"; do
-		log
 		log
 		halcyon install --ghc-version="${version}" "$@" || return 1
 	done
@@ -40,6 +41,8 @@ test_sandbox_apps () {
 
 	local constraints_dir
 	constraints_dir=$( get_tmp_dir 'halcyon-constraints' ) || return 1
+
+	log 'Testing sandbox apps'
 
 	mkdir -p "${constraints_dir}" || return 1
 
@@ -61,7 +64,6 @@ test_sandbox_apps () {
 		fi
 
 		log
-		log
 		halcyon install "${opts_a[@]}" "${label}" "$@" || return 1
 	done
 }
@@ -75,6 +77,8 @@ test_apps () {
 
 	local constraints_dir
 	constraints_dir=$( get_tmp_dir 'halcyon-constraints' ) || return 1
+
+	log 'Testing apps'
 
 	mkdir -p "${constraints_dir}" || return 1
 
@@ -90,7 +94,6 @@ test_apps () {
 		opts_a=()
 		opts_a+=( --constraints="${constraints_dir}" )
 
-		log
 		log
 		halcyon install "${opts_a[@]}" "${label}" "$@" || return 1
 	done
@@ -158,8 +161,9 @@ test_shootout () {
 		csv_file=$( get_tmp_file 'halcyon-shootout' )'.csv' || return 1
 	fi
 
+	log 'Testing shootout'
+
 	for url in "${urls_a[@]}"; do
-		log
 		log
 		if (( bench )); then
 			bench_first_build "${url}" "${csv_file}" "$@" || return 1
@@ -189,8 +193,9 @@ test_examples () {
 	urls_a+=( "https://github.com/mietek/tryhaste${branch}" )
 	urls_a+=( "https://github.com/mietek/gitit${branch}" )
 
+	log 'Testing examples'
+
 	for url in "${urls_a[@]}"; do
-		log
 		log
 		halcyon install "${url}" "$@" || return 1
 	done
@@ -268,6 +273,10 @@ test_main () {
 		esac
 		shift
 	done
+
+	if [[ -n "${branch}" && ! "${branch}" =~ ^# ]]; then
+		branch="#${branch}"
+	fi
 
 	case "${cmd}" in
 	'ghc')
