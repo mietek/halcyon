@@ -83,11 +83,18 @@ install_halcyon () {
 		uid=$( id -u ) || return 1
 		gid=$( id -g ) || return 1
 
+		echo '-----> Creating base directory' >&2
+
 		sudo -k mkdir -p "${base}" "${dir}" || return 1
 		sudo chown "${uid}":"${gid}" "${base}" "${dir}" || return 1
 	fi
 
-	install_os_packages "${platform}" || return 1
+	echo '-----> Installing OS packages' >&2
+
+	if ! install_os_packages "${platform}"; then
+		echo '   *** ERROR: Failed to install OS packages' >&2
+		return 1
+	fi
 
 	local url base_url branch
 	url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
@@ -119,5 +126,4 @@ install_halcyon () {
 
 if ! install_halcyon "$@"; then
 	echo '   *** ERROR: Failed to install Halcyon' >&2
-	exit 1
 fi
