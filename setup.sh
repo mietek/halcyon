@@ -51,7 +51,7 @@ install_os_packages () {
 install_halcyon () {
 	local base dir
 	base="${HALCYON_BASE:-/app}"
-	dir="${1:-${base}/halcyon}"
+	dir="${HALCYON_DIR:-${base}/halcyon}"
 	if [[ -d "${dir}" ]]; then
 		source <( "${dir}/halcyon" paths ) || return 1
 		return 0
@@ -122,6 +122,6 @@ install_halcyon () {
 }
 
 
-if ! install_halcyon "$@"; then
+if ! install_halcyon; then
 	echo '   *** ERROR: Failed to install Halcyon' >&2
 fi
