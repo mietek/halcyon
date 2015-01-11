@@ -1,3 +1,6 @@
+set -o pipefail
+
+
 install_os_packages () {
 	case "$1" in
 	'linux-arch'*)
@@ -53,7 +56,6 @@ install_halcyon () {
 	base="${HALCYON_BASE:-/app}"
 	dir="${HALCYON_DIR:-${base}/halcyon}"
 	if [[ -d "${dir}" ]]; then
-		source <( "${dir}/halcyon" paths ) || return 1
 		return 0
 	fi
 
@@ -70,28 +72,32 @@ install_halcyon () {
 
 	source <( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' ) || return 1
 
-	local platform
+	local platform user group
 	platform=$( detect_platform )
+	user=$( id -nu ) || return 1
+	group=$( id -ng ) || return 1
 
 	if [[ "${platform}" =~ 'linux-debian-6'* ]]; then
-		# NOTE: There is no sudo on Debian 6, and curl considers HTTP 40*
-		# errors to be transient, which makes retrying impractical.
-		echo 'export BASHMENOT_CURL_RETRIES=0' >>"${HOME}/.bash_profile" || return 1
+		# NOTE: There is no sudo on Debian 6, and curl considers
+		# HTTP 40* errors to be transient, which makes retrying
+		# impractical.
+		echo "   *** WARNING: Cannot create base directory" >&2
+		echo "	 *** WARNING: Ensure ${base} is owned by ${user}:${group}" >&2
 		export BASHMENOT_CURL_RETRIES=0
 	else
-		local uid gid
-		uid=$( id -u ) || return 1
-		gid=$( id -g ) || return 1
-
-		echo "-----> Creating base directory: ${base}" >&2
-
-		sudo -k mkdir -p "${base}" "${dir}" || return 1
-		sudo chown "${uid}":"${gid}" "${base}" "${dir}" || return 1
+		if sudo -k mkdir -p "${base}" &&
+			sudo chown "${user}:${group}" "${base}"
+		then
+			echo "-----> Creating base directory: ${base}" >&2
+		else
+			echo "   *** ERROR: Failed to create base directory" >&2
+			return 1
+		fi
 	fi
 
 	echo '-----> Installing OS packages' >&2
 
-	if ! install_os_packages "${platform}"; then
+	if ! install_os_packages "${platform}" 2>&1 | sed 's/^/       /' >&2; then
 		echo '   *** ERROR: Failed to install OS packages' >&2
 		return 1
 	fi
@@ -119,9 +125,31 @@ install_halcyon () {
 	fi
 	echo " done, ${commit_hash:0:7}" >&2
 
-	echo "source <( \"${dir}/halcyon\" paths )" >>"${HOME}/.bash_profile" || return 1
-	source <( HALCYON_NO_SELF_UPDATE=1 \
-		"${dir}/halcyon" paths ) || return 1
+	source <( HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths ) || return 1
+
+	if ! (( ${HALCYON_NO_EXTEND_PROFILE:-0} )); then
+		echo '-----> Extending .bash_profile' >&2
+
+		if [[ "${platform}" =~ 'linux-debian-6'* ]]; then
+			echo 'export BASHMENOT_CURL_RETRIES=0' >>"${HOME}/.bash_profile" || return 1
+		fi
+		if [[ "${base}" != '/app' ]]; then
+			echo "export HALCYON_BASE=${base}" >>"${HOME}/.bash_profile" || return 1
+		fi
+		echo "source <( HALCYON_NO_SELF_UPDATE=1 \"${dir}/halcyon\" paths )" >>"${HOME}/.bash_profile" || return 1
+	else
+		echo "   *** WARNING: Cannot extend ${HOME}/.bash_profile" >&2
+		echo >&2
+		echo '       To activate Halcyon manually:'
+
+		if [[ "${platform}" =~ 'linux-debian-6'* ]]; then
+			echo '       $ export BASHMENOT_CURL_RETRIES=0' >&2
+		fi
+		if [[ "${base}" != '/app' ]]; then
+			echo "       $ export HALCYON_BASE=\"${base}\"" >&2
+		fi
+		echo "       $ source <( \"${dir}/halcyon\" paths )" >&2
+	fi
 }
 
 
