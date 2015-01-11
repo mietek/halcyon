@@ -26,9 +26,7 @@ install_os_packages () {
 		;;
 	'linux-fedora-2'[01]*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
-			yum install -y git patch pigz tar zlib-devel &&
-			systemctl disable firewalld &&
-			systemctl stop firewalld" || return 1
+			yum install -y git patch pigz tar zlib-devel" || return 1
 		;;
 	'linux-ubuntu-10'*)
 		sudo bash -c "apt-get update &&
