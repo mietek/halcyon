@@ -61,7 +61,7 @@ case $( detect_platform ) in
 	exit 1
 esac
 
-git clone 'https://github.com/mietek/halcyon' "${HOME}/halcyon"
+git clone "${HALCYON_URL:-https://github.com/mietek/halcyon}" "${HOME}/halcyon"
 
 echo 'source <( "${HOME}/halcyon/halcyon" paths )' >>"${HOME}/.bash_profile"
 source <( "${HOME}/halcyon/halcyon" paths )
