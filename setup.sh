@@ -57,6 +57,8 @@ install_halcyon () {
 		return 0
 	fi
 
+	echo '-----> Welcome to Halcyon' >&2
+
 	if [[ -e "${base}" ]]; then
 		echo "   *** ERROR: Unexpected existing ${base}" >&2
 		return 1
@@ -81,7 +83,7 @@ install_halcyon () {
 		uid=$( id -u ) || return 1
 		gid=$( id -g ) || return 1
 
-		echo '-----> Creating base directory' >&2
+		echo "-----> Creating base directory: ${base}" >&2
 
 		sudo -k mkdir -p "${base}" "${dir}" || return 1
 		sudo chown "${uid}":"${gid}" "${base}" "${dir}" || return 1
@@ -102,7 +104,8 @@ install_halcyon () {
 		branch='master'
 	fi
 
-	echo -n '-----> Installing Halcyon...' >&2
+	echo >&2
+	echo -n "-----> Installing Halcyon in ${dir}..." >&2
 
 	local commit_hash
 	if ! commit_hash=$(
