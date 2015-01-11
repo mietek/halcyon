@@ -1,59 +1,58 @@
 prepare_platform () {
 	source <( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' ) || return 1
 
-	case $( detect_platform ) in
-	'linux-arch'*)
+	local platform
+	platform=$( detect_platform )
+
+	if [[ ! "${platform}" =~ 'linux-debian-6'* ]]; then
+		# NOTE: There is no sudo on Debian 6.
 		sudo -k || return 1
+	fi
+
+	case "${platform}" in
+	'linux-arch'*)
 		sudo pacman --sync --noconfirm base-devel git pigz zlib || return 1
 		;;
 	'linux-centos-6'*)
-		sudo -k || return 1
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git yum-plugin-downloadonly zlib-devel" || return 1
 		;;
 	'linux-centos-7'*)
-		sudo -k || return 1
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git zlib-devel" || return 1
 		;;
 	'linux-debian-6'*)
-		# NOTE: There is no sudo on Debian 6, and curl considers HTTP 40*
-		# errors to be transient, which makes retrying impractical.
+		# NOTE: On Debian 6, curl considers HTTP 40* errors to be
+		# transient, which makes retrying impractical.
 		apt-get update || return 1
 		apt-get install -y build-essential git pigz zlib1g-dev || return 1
 		echo 'export BASHMENOT_CURL_RETRIES=0' >>"${HOME}/.bash_profile" || return 1
 		export BASHMENOT_CURL_RETRIES=0
 		;;
 	'linux-debian-7'*)
-		sudo -k || return 1
 		sudo bash -c "apt-get update &&
 			apt-get install -y build-essential git pigz zlib1g-dev" || return 1
 		;;
 	'linux-fedora-19'*)
-		sudo -k || return 1
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git pigz zlib-devel" || return 1
 		;;
 	'linux-fedora-2'[01]*)
-		sudo -k || return 1
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git patch pigz tar zlib-devel &&
 			systemctl disable firewalld &&
 			systemctl stop firewalld" || return 1
 		;;
 	'linux-ubuntu-10'*)
-		sudo -k || return 1
 		sudo bash -c "apt-get update &&
 			apt-get install -y build-essential git-core pigz zlib1g-dev &&
 			apt-get install -y --reinstall ca-certificates" || return 1
 		;;
 	'linux-ubuntu-12'*)
-		sudo -k || return 1
 		sudo bash -c "apt-get update &&
 			apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev" || return 1
 		;;
 	'linux-ubuntu-14'*)
-		sudo -k || return 1
 		sudo bash -c "apt-get update &&
 			apt-get install -y build-essential git pigz zlib1g-dev" || return 1
 		;;
