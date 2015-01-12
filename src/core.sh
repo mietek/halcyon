@@ -315,9 +315,10 @@ fast_install_app () {
 	log_indent_label 'Label:' "${label}"
 	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
-	log_indent_label 'GHC version:' "${HALCYON_GHC_VERSION}"
 
 	describe_storage
+
+	log_indent_label 'GHC version:' "${HALCYON_GHC_VERSION}"
 	log
 
 	local tag
