@@ -24,6 +24,7 @@ help_usage () {
 		  --prefix=                               DIR
 		  --root=                                 DIR
 		  --no-app
+		  --no-modify-home
 		  --log-timestamp
 
 		Build-time options

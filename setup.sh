@@ -127,7 +127,7 @@ install_halcyon () {
 
 	source <( HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths ) || return 1
 
-	if ! (( ${HALCYON_NO_EXTEND_PROFILE:-0} )); then
+	if ! (( ${HALCYON_NO_MODIFY_HOME:-0} )); then
 		echo '-----> Extending .bash_profile' >&2
 
 		if [[ "${platform}" =~ 'linux-debian-6'* ]]; then

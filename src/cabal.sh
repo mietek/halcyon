@@ -632,10 +632,13 @@ restore_updated_cabal_dir () {
 
 
 symlink_cabal_config () {
-	expect_vars HOME HALCYON_BASE \
+	expect_vars HOME HALCYON_BASE HALCYON_NO_MODIFY_HOME \
 		HALCYON_INTERNAL_RECURSIVE
 
-	if [[ ! -f "${HALCYON_BASE}/cabal/.halcyon-tag" ]] || (( HALCYON_INTERNAL_RECURSIVE )); then
+	if [[ ! -f "${HALCYON_BASE}/cabal/.halcyon-tag" ]] ||
+		(( HALCYON_NO_MODIFY_HOME )) ||
+		(( HALCYON_INTERNAL_RECURSIVE ))
+	then
 		return 0
 	fi
 
