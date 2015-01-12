@@ -367,7 +367,7 @@ update_cabal_package_db () {
 
 	log 'Updating Cabal directory'
 
-	if ! format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-cabal.config"; then
+	if ! format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/config"; then
 		log_error 'Failed to write Cabal config'
 		return 1
 	fi
@@ -488,6 +488,10 @@ validate_updated_cabal_dir () {
 	local candidate_date
 	candidate_date=$( get_tag_cabal_date "${candidate_tag}" )
 	validate_updated_cabal_date "${candidate_date}" || return 1
+
+	if [[ ! -f "${HALCYON_BASE}/cabal/config" ]]; then
+		return 1
+	fi
 
 	echo "${candidate_tag}"
 }
@@ -631,39 +635,51 @@ restore_updated_cabal_dir () {
 }
 
 
+help_cabal_symlink () {
+	log
+	quote <<-EOF
+		To symlink the Halcyon Cabal config:
+		$ rm -f ~/.cabal/config
+		$ mkdir -p ~/.cabal
+		$ ln -s "${HALCYON_BASE}/cabal/config" ~/.cabal/config
+
+		To use the Halcyon Cabal config manually:
+		$ cabal --config-file="${HALCYON_BASE}/cabal/config" ...
+EOF
+}
+
+
 symlink_cabal_config () {
 	expect_vars HOME HALCYON_BASE HALCYON_NO_MODIFY_HOME \
 		HALCYON_INTERNAL_RECURSIVE
 
-	if [[ ! -f "${HALCYON_BASE}/cabal/.halcyon-tag" ]] ||
-		(( HALCYON_NO_MODIFY_HOME )) ||
-		(( HALCYON_INTERNAL_RECURSIVE ))
-	then
+	if [[ ! -f "${HALCYON_BASE}/cabal/.halcyon-tag" ]] || (( HALCYON_INTERNAL_RECURSIVE )); then
 		return 0
 	fi
 
-	expect_existing "${HOME}" || return 0
+	if (( HALCYON_NO_MODIFY_HOME )); then
+		log_warning 'Cannot symlink Cabal config'
+		help_cabal_symlink
+		return 0
+	fi
 
-	if [[ -d "${HOME}/.cabal" && -e "${HOME}/.cabal/config" ]]; then
+	if [[ -f "${HOME}/.cabal/config" ]]; then
+		# TOOD: Remove the .halcyon-cabal.config line in the future.
 		local actual_config
 		if ! actual_config=$( readlink "${HOME}/.cabal/config" ) ||
-			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" ]]
+			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" &&
+				"${actual_config}" != "${HALCYON_BASE}/cabal/config"
+			]]
 		then
-			log_warning 'Unexpected existing Cabal config'
-			log
-			log_indent 'To replace with recommended Cabal config:'
-			log_indent "$ ln -fs ${HALCYON_BASE}/cabal/.halcyon-cabal.config ~/.cabal/config"
-			log
+			log_warning 'Cannot symlink Cabal config'
+			help_cabal_symlink
 			return 0
 		fi
 	fi
 
-	# NOTE: Creating config symlinks is necessary to allow the user to
-	# easily run Cabal commands, without having to use cabal_do or
-	# sandboxed_cabal_do.
 	if ! rm -f "${HOME}/.cabal/config" ||
 		! mkdir -p "${HOME}/.cabal" ||
-		! ln -fs "${HALCYON_BASE}/cabal/.halcyon-cabal.config" "${HOME}/.cabal/config"
+		! ln -fs "${HALCYON_BASE}/cabal/config" "${HOME}/.cabal/config"
 	then
 		log_warning 'Failed to symlink Cabal config'
 	fi
@@ -719,7 +735,7 @@ cabal_do () {
 	expect_existing "${work_dir}" || return 1
 	(
 		cd "${work_dir}" &&
-		cabal --config-file="${HALCYON_BASE}/cabal/.halcyon-cabal.config" "$@"
+		cabal --config-file="${HALCYON_BASE}/cabal/config" "$@"
 	) || return 1
 }
 
