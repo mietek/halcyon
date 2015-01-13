@@ -111,7 +111,7 @@ install_halcyon () {
 	fi
 
 	echo >&2
-	echo -n "-----> Installing Halcyon in ${dir}..." >&2
+	echo -n '-----> Installing Halcyon...' >&2
 
 	local commit_hash
 	if ! commit_hash=$(

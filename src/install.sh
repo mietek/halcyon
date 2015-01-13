@@ -395,11 +395,7 @@ install_app () {
 		return 1
 	fi
 
-	if [[ "${HALCYON_ROOT}" == '/' ]]; then
-		log "Installing app to ${prefix}"
-	else
-		log "Installing app to ${HALCYON_ROOT}${prefix}"
-	fi
+	log "Installing app to ${prefix}"
 
 	if ! copy_dir_into "${install_dir}${prefix}" "${HALCYON_ROOT}${prefix}"; then
 		log_error 'Failed to copy app to root directory'
