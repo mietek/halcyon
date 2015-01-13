@@ -1,5 +1,8 @@
 public_storage () {
-	expect_vars HALCYON_NO_PUBLIC_STORAGE
+	expect_vars HALCYON_BASE HALCYON_NO_PUBLIC_STORAGE
+
+	# NOTE: All archives in public storage assume HALCYON_BASE is /app.
+	[[ "${HALCYON_BASE}" == '/app' ]] || return 1
 
 	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
 	[[ -n "${HALCYON_PUBLIC_STORAGE_URL}" ]] || return 1
