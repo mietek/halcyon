@@ -1,3 +1,11 @@
+public_storage () {
+	expect_vars HALCYON_NO_PUBLIC_STORAGE
+
+	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
+	[[ -n "${HALCYON_PUBLIC_STORAGE_URL}" ]] || return 1
+}
+
+
 private_storage () {
 	expect_vars HALCYON_NO_PRIVATE_STORAGE
 
@@ -21,13 +29,11 @@ format_public_storage_url () {
 
 
 describe_storage () {
-	expect_vars HALCYON_NO_PUBLIC_STORAGE
-
-	if private_storage && ! (( HALCYON_NO_PUBLIC_STORAGE )); then
+	if private_storage && public_storage; then
 		log_indent_label 'External storage:' 'private and public'
 	elif private_storage; then
 		log_indent_label 'External storage:' 'private'
-	elif ! (( HALCYON_NO_PUBLIC_STORAGE )); then
+	elif public_storage; then
 		log_indent_label 'External storage:' 'public'
 	else
 		log_indent_label 'External storage:' 'none'
@@ -133,7 +139,7 @@ upload_cached_file () {
 
 
 cache_stored_file () {
-	expect_vars HALCYON_CACHE HALCYON_NO_PUBLIC_STORAGE
+	expect_vars HALCYON_CACHE
 
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
@@ -153,10 +159,13 @@ cache_stored_file () {
 		fi
 	fi
 
+	if ! public_storage; then
+		return 1
+	fi
+
 	local public_url
 	public_url=$( format_public_storage_url "${object}" )
 
-	! (( HALCYON_NO_PUBLIC_STORAGE )) || return 1
 	curl_download "${public_url}" "${file}" || return 1
 	upload_cached_file "${prefix}" "${file_name}" || return 1
 }
@@ -246,7 +255,7 @@ list_private_stored_files () {
 
 
 list_public_stored_files () {
-	if (( HALCYON_NO_PUBLIC_STORAGE )); then
+	if ! public_storage; then
 		return 0
 	fi
 
