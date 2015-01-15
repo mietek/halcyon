@@ -89,5 +89,11 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 
 	# NOTE: UTF-8 locale is needed to work around a Cabal issue.
 	# https://github.com/haskell/cabal/issues/1883
-	export LANG="${LANG:-C.UTF-8}"
+	case "${HALCYON_INTERNAL_PLATFORM}" in
+	'freebsd-'*)
+		export LANG="${LANG:-en_US.UTF-8}"
+		;;
+	*)
+		export LANG="${LANG:-C.UTF-8}"
+	esac
 fi
