@@ -112,6 +112,7 @@ check_s3_status () {
 	# https://github.com/mietek/haskell-on-heroku/issues/37
 	if (( s3_status == 3 )); then
 		log_error "Unexpected HALCYON_S3_ENDPOINT for HALCYON_S3_BUCKET (${HALCYON_S3_BUCKET}): ${HALCYON_S3_ENDPOINT}"
+		return 1
 	fi
 }
 
@@ -135,7 +136,7 @@ upload_cached_file () {
 	s3_upload "${file}" "${HALCYON_S3_BUCKET}" "${object}" "${HALCYON_S3_ACL}" || status="$?"
 	if (( status )); then
 		log_error 'Failed to upload cached file'
-		check_s3_status "${status}"
+		check_s3_status "${status}" || return 1
 		return 1
 	fi
 }
@@ -157,9 +158,8 @@ cache_stored_file () {
 		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" || status="$?"
 		if ! (( status )); then
 			return 0
-		else
-			check_s3_status "${status}"
 		fi
+		check_s3_status "${status}" || return 1
 	fi
 
 	if ! public_storage; then
@@ -232,7 +232,7 @@ delete_private_stored_file () {
 	s3_delete "${HALCYON_S3_BUCKET}" "${object}" || status="$?"
 	if (( status )); then
 		log_error 'Failed to delete private stored file'
-		check_s3_status "${status}"
+		check_s3_status "${status}" || return 1
 		return 1
 	fi
 }
@@ -251,7 +251,7 @@ list_private_stored_files () {
 	s3_list "${HALCYON_S3_BUCKET}" "${prefix}" || status="$?"
 	if (( status )); then
 		log_error 'Failed to list private stored files'
-		check_s3_status "${status}"
+		check_s3_status "${status}" || return 1
 		return 1
 	fi
 }
