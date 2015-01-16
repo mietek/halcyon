@@ -609,9 +609,9 @@ install_sandbox_dir () {
 		fi
 
 		local matching_tag
-		if matching_tag=$( match_sandbox_dir "${tag}" "${constraints}" ) &&
-			install_matching_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${matching_tag}"
-		then
+		if matching_tag=$( match_sandbox_dir "${tag}" "${constraints}" ); then
+			# NOTE: Returns 2 is build is needed.
+			install_matching_sandbox_dir "${tag}" "${source_dir}" "${constraints}" "${matching_tag}" || return
 			archive_sandbox_dir || return 1
 			return 0
 		fi
