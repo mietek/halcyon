@@ -235,7 +235,7 @@ match_full_sandbox_dir () {
 		match_at_least_one
 	) || return 1
 
-	log 'Examining fully matching sandbox directories'
+	log 'Examining fully-matching sandbox directories'
 
 	local full_name
 	while read -r full_name; do
@@ -282,7 +282,7 @@ list_partial_sandbox_dirs () {
 		match_at_least_one
 	) || return 0
 
-	log 'Examining partially matching sandbox directories'
+	log 'Examining partially-matching sandbox directories'
 
 	local partial_name
 	while read -r partial_name; do
@@ -328,7 +328,7 @@ score_partial_sandbox_dirs () {
 		packages_A["${package}"]="${version}"
 	done <<<"${constraints}"
 
-	log 'Scoring partially matching sandbox directories'
+	log 'Scoring partially-matching sandbox directories'
 
 	local partial_tag
 	while read -r partial_tag; do

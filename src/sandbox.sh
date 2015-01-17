@@ -571,7 +571,7 @@ install_matching_sandbox_dir () {
 	matching_description=$( format_sandbox_description "${matching_tag}" )
 
 	if [[ "${matching_hash}" == "${constraints_hash}" ]]; then
-		log "Using fully matching sandbox directory: ${matching_description}"
+		log "Using fully-matching sandbox directory: ${matching_description}"
 
 		HALCYON_NO_UPLOAD=1 \
 			restore_sandbox_dir "${matching_tag}" || return 1
@@ -584,7 +584,7 @@ install_matching_sandbox_dir () {
 		return 0
 	fi
 
-	log "Using partially matching sandbox directory: ${matching_description}"
+	log "Using partially-matching sandbox directory: ${matching_description}"
 
 	HALCYON_NO_UPLOAD=1 \
 		restore_sandbox_dir "${matching_tag}" || return 1
