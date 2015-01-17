@@ -244,7 +244,8 @@ match_full_sandbox_dir () {
 		if ! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" ); then
 			rm -f "${full_file}" || true
 
-			if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${full_name}" ||
+			if ! HALCYON_NO_UPLOAD=1 \
+				cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${full_name}" ||
 				! full_hash=$( validate_full_constraints_file "${tag}" "${full_file}" )
 			then
 				rm -f "${full_file}" || true
@@ -290,7 +291,8 @@ list_partial_sandbox_dirs () {
 		if ! partial_hash=$( validate_partial_constraints_file "${partial_file}" ); then
 			rm -f "${partial_file}" || true
 
-			if ! cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${partial_name}" ||
+			if ! HALCYON_NO_UPLOAD=1 \
+				cache_stored_file "${HALCYON_INTERNAL_PLATFORM}/ghc-${ghc_id}" "${partial_name}" ||
 				! partial_hash=$( validate_partial_constraints_file "${partial_file}" )
 			then
 				rm -f "${partial_file}" || true
