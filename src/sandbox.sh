@@ -573,8 +573,12 @@ install_matching_sandbox_dir () {
 	if [[ "${matching_hash}" == "${constraints_hash}" ]]; then
 		log "Using fully-matching sandbox directory: ${matching_description}"
 
-		HALCYON_NO_UPLOAD=1 \
-			restore_sandbox_dir "${matching_tag}" || return 1
+		if ! HALCYON_NO_UPLOAD=1 \
+			restore_sandbox_dir "${matching_tag}"
+		then
+			log_error 'Failed to restore sandbox directory'
+			return 1
+		fi
 		recache_sandbox_package_db
 
 		if ! derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag"; then
@@ -586,8 +590,12 @@ install_matching_sandbox_dir () {
 
 	log "Using partially-matching sandbox directory: ${matching_description}"
 
-	HALCYON_NO_UPLOAD=1 \
-		restore_sandbox_dir "${matching_tag}" || return 1
+	if ! HALCYON_NO_UPLOAD=1 \
+		restore_sandbox_dir "${matching_tag}";
+	then
+		log_error 'Failed to restore sandbox directory'
+		return 1
+	fi
 	recache_sandbox_package_db
 
 	# NOTE: Returns 2 if build is needed.
