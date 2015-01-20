@@ -37,9 +37,6 @@ filter_correct_constraints () {
 	local name version
 	name="${label%-*}"
 	version="${label##*-}"
-	if [[ ${name} == 'base' ]]; then
-		name='halcyon-fake-base'
-	fi
 
 	filter_not_matching "^${name} ${version}$"
 }
