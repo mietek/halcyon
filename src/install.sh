@@ -271,8 +271,6 @@ prepare_install_dir () {
 	if ! format_constraints <<<"${constraints}" >"${label_dir}/constraints" ||
 		! echo "${data_dir}" >"${label_dir}/data-dir" ||
 		! derive_install_tag "${tag}" >"${label_dir}/tag" ||
-		! ln -fs "${HALCYON_BASE}/sandbox/cabal.sandbox.config" \
-			"${install_dir}${prefix}/cabal.sandbox.config" ||
 		! prepared_size=$( get_size "${install_dir}" )
 	then
 		log_error 'Failed to prepare install directory'
@@ -376,6 +374,7 @@ restore_install_dir () {
 
 install_app () {
 	expect_vars HALCYON_BASE HALCYON_ROOT \
+		HALCYON_KEEP_DEPENDENCIES \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir install_dir
@@ -400,6 +399,15 @@ install_app () {
 	if ! copy_dir_into "${install_dir}${prefix}" "${HALCYON_ROOT}${prefix}"; then
 		log_error 'Failed to copy app to root directory'
 		return 1
+	fi
+
+	if (( HALCYON_KEEP_DEPENDENCIES )); then
+		if ! ln -fs "${HALCYON_BASE}/sandbox/cabal.sandbox.config" \
+			"${HALCYON_ROOT}${prefix}/cabal.sandbox.config"
+		then
+			log_error 'Failed to symlink sandbox config'
+			return 1
+		fi
 	fi
 
 	if [[ -f "${source_dir}/.halcyon/post-install-hook" ]]; then
