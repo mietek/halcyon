@@ -10,12 +10,11 @@ help_usage () {
 		  label                                   APP? OPTION*
 		  executable                              APP? OPTION*
 		  constraints                             APP? OPTION*
-		  tag                                     APP? OPTION*
 		  paths
 
 		App
-		  directory path
 		  label
+		  directory path
 		  git URL
 		  nothing
 
