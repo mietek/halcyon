@@ -1,24 +1,24 @@
 [Halcyon](https://halcyon.sh/)
 ==============================
 
-Halcyon is a system for installing Haskell applications.
+Halcyon is a system for installing [Haskell](https://haskell.org/) apps and development tools, including [GHC](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/) and [Cabal](https://www.haskell.org/cabal/users-guide/).
+
+To learn more, start with the [Halcyon tutorial](https://halcyon.sh/tutorial/).
 
 
 Usage
 -----
 
-The `halcyon install` command can be used instead of `cabal install`.
+The `halcyon install` command can be used instead of `cabal install`:
 
 ```
-$ halcyon install https://github.com/mietek/howistart
+$ halcyon install https://github.com/mietek/halcyon-tutorial
 ```
-
-See the [Halcyon website](https://halcyon.sh/) for more information.
 
 
 ### Installation
 
-Halcyon can be installed in one command on most recent Linux distributions.
+Halcyon can be installed by running the setup script:
 
 ```
 $ source <( curl -sL https://github.com/mietek/halcyon/raw/master/setup.sh )
