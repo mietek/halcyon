@@ -36,7 +36,7 @@ $ source <( curl -sL https://github.com/mietek/halcyon/raw/master/setup.sh )
 
 Halcyon is written in [GNU _bash_](https://gnu.org/software/bash/), using the [_bashmenot_](https://bashmenot.mietek.io/) library.
 
-- Dive into the [Halcyon source code](https://github.com/mietek/halcyon) to understand how it all works.
+- Read the [Halcyon source code](https://github.com/mietek/halcyon) to understand how it works.
 
 
 About
