@@ -493,9 +493,15 @@ validate_sandbox_dir () {
 	local tag
 	expect_args tag -- "$@"
 
-	local sandbox_tag
+	local sandbox_tag candidate_tag
 	sandbox_tag=$( derive_sandbox_tag "${tag}" )
-	detect_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}" || return 1
+	candidate_tag=$( detect_tag "${HALCYON_BASE}/sandbox/.halcyon-tag" "${sandbox_tag//./\.}" ) || return 1
+
+	if [[ ! -f "${HALCYON_BASE}/sandbox/cabal.sandbox.config" ]]; then
+		return 1
+	fi
+
+	echo "${candidate_tag}"
 }
 
 
