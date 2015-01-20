@@ -249,21 +249,26 @@ build_cabal_dir () {
 		return 1
 	fi
 
-	local ghc_version cabal_version cabal_original_url cabal_build_dir cabal_home_dir
+	local ghc_version ghc_major ghc_minor
 	ghc_version=$( get_tag_ghc_version "${tag}" )
-	cabal_version=$( get_tag_cabal_version "${tag}" )
-	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || return 1
-	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || return 1
-	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || return 1
+	ghc_major="${ghc_version%%.*}"
+	ghc_minor="${ghc_version#*.}"
+	ghc_minor="${ghc_minor%%.*}"
 
 	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
-	if [[ "${ghc_version}" < '7.8' ]]; then
+	if (( ghc_major < 7 || ghc_minor < 8 )); then
 		log_error "Unexpected GHC version: ${ghc_version}"
 		log
 		log_indent 'To bootstrap Cabal, use GHC 7.8 or newer'
 		log
 		return 1
 	fi
+
+	local cabal_version cabal_original_url cabal_build_dir cabal_home_dir
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || return 1
+	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || return 1
+	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || return 1
 
 	log 'Building Cabal directory'
 

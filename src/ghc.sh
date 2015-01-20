@@ -255,8 +255,11 @@ symlink_ghc_libs () {
 	local tag
 	expect_args tag -- "$@"
 
-	local ghc_version
+	local ghc_version ghc_major ghc_minor
 	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_major="${ghc_version%%.*}"
+	ghc_minor="${ghc_version#*.}"
+	ghc_minor="${ghc_minor%%.*}"
 
 	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
 	# .10-flavoured binary distribution of GHC < 7.8. However, GHC does
@@ -271,7 +274,7 @@ symlink_ghc_libs () {
 	'linux-debian-7-x86_64'|'linux-ubuntu-14'*'-x86_64')
 		gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
-		if [[ "${ghc_version}" < '7.8' ]]; then
+		if (( ghc_major < 7 || ghc_minor < 8 )); then
 			gmp_name='libgmp.so.3'
 			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
@@ -280,7 +283,7 @@ symlink_ghc_libs () {
 		fi
 		;;
 	'linux-ubuntu-12'*'-x86_64')
-		if [[ "${ghc_version}" < '7.8' ]]; then
+		if (( ghc_major < 7 || ghc_minor < 8 )); then
 			gmp_file='/usr/lib/libgmp.so.3'
 			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 			gmp_name='libgmp.so.3'
@@ -301,7 +304,7 @@ symlink_ghc_libs () {
 	'linux-centos-7-x86_64'|'linux-fedora-21-x86_64'|'linux-fedora-20-x86_64'|'linux-fedora-19-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.10'
 		tinfo_file='/usr/lib64/libtinfo.so.5'
-		if [[ "${ghc_version}" < '7.8' ]]; then
+		if (( ghc_major < 7 || ghc_minor < 8 )); then
 			gmp_name='libgmp.so.3'
 			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
@@ -318,7 +321,7 @@ symlink_ghc_libs () {
 	'linux-arch-x86_64')
 		gmp_file='/usr/lib/libgmp.so.10'
 		tinfo_file='/usr/lib/libncurses.so.5'
-		if [[ "${ghc_version}" < '7.8' ]]; then
+		if (( ghc_major < 7 || ghc_minor < 8 )); then
 			gmp_name='libgmp.so.3'
 			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
