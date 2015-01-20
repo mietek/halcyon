@@ -258,12 +258,15 @@ list_private_stored_files () {
 
 
 list_public_stored_files () {
+	local prefix
+	expect_args prefix -- "$@"
+
 	if ! public_storage; then
 		return 0
 	fi
 
 	local public_url
-	public_url=$( format_public_storage_url '' )
+	public_url=$( format_public_storage_url "${prefix:+?prefix=${prefix}}" )
 
 	if ! curl_list_s3 "${public_url}"; then
 		log_error 'Failed to list public stored files'
@@ -284,10 +287,7 @@ list_stored_files () {
 	echo "${private_files}"
 
 	local public_files
-	if ! public_files=$(
-		list_public_stored_files |
-		filter_matching "^${prefix//./\.}"
-	); then
+	if ! public_files=$( list_public_stored_files "${prefix}" ); then
 		return 1
 	fi
 
