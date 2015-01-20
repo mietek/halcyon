@@ -543,7 +543,7 @@ restore_sandbox_dir () {
 get_sandbox_package_db () {
 	expect_vars HALCYON_BASE
 
-	filter_matching '^package-db: ' <"${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" |
+	filter_matching '^package-db: ' <"${HALCYON_BASE}/sandbox/cabal.sandbox.config" |
 		match_exactly_one |
 		awk '{ print $2 }' || return 1
 }

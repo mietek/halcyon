@@ -776,7 +776,7 @@ sandboxed_cabal_do () {
 
 	local status
 	status=0
-	if ! cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" "$@"; then
+	if ! cabal_do "${work_dir}" --sandbox-config-file="${HALCYON_BASE}/sandbox/cabal.sandbox.config" "$@"; then
 		status=1
 	fi
 
@@ -808,8 +808,6 @@ cabal_create_sandbox () {
 		quote <"${stderr}"
 		return 1
 	fi
-
-	mv "${HALCYON_BASE}/sandbox/cabal.sandbox.config" "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" || return 1
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
 		rm -f "${stderr}" || true

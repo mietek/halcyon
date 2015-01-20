@@ -271,7 +271,7 @@ prepare_install_dir () {
 	if ! format_constraints <<<"${constraints}" >"${label_dir}/constraints" ||
 		! echo "${data_dir}" >"${label_dir}/data-dir" ||
 		! derive_install_tag "${tag}" >"${label_dir}/tag" ||
-		! ln -fs "${HALCYON_BASE}/sandbox/.halcyon-sandbox.config" \
+		! ln -fs "${HALCYON_BASE}/sandbox/cabal.sandbox.config" \
 			"${install_dir}${prefix}/cabal.sandbox.config" ||
 		! prepared_size=$( get_size "${install_dir}" )
 	then
