@@ -169,11 +169,10 @@ do_build_app () {
 
 	if [[ -f "${source_dir}/.halcyon/pre-build-hook" ]]; then
 		log 'Executing pre-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/pre-build-hook" \
-					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/pre-build-hook" \
+				"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
+		then
 			log_error 'Failed to execute pre-build hook'
 			return 1
 		fi
@@ -193,11 +192,10 @@ do_build_app () {
 
 	if [[ -f "${source_dir}/.halcyon/post-build-hook" ]]; then
 		log 'Executing post-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/post-build-hook" \
-					"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/post-build-hook" \
+				"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
+		then
 			log_error 'Failed to execute post-build hook'
 			return 1
 		fi

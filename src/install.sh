@@ -248,11 +248,10 @@ prepare_install_dir () {
 
 	if [[ -f "${source_dir}/.halcyon/pre-install-hook" ]]; then
 		log 'Executing pre-install hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/pre-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/pre-install-hook" \
+				"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
+		then
 			log_error 'Failed to execute pre-install hook'
 			return 1
 		fi
@@ -412,11 +411,10 @@ install_app () {
 
 	if [[ -f "${source_dir}/.halcyon/post-install-hook" ]]; then
 		log 'Executing post-install hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/post-install-hook" \
-					"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/post-install-hook" \
+				"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
+		then
 			log_error 'Failed to execute post-install hook'
 			return 1
 		fi

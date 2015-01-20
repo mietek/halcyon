@@ -276,12 +276,11 @@ build_cabal_dir () {
 
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/cabal-pre-build-hook" \
-					"${tag}" "${source_dir}" \
-					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/cabal-pre-build-hook" \
+				"${tag}" "${source_dir}" \
+				"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
+		then
 			log_error 'Failed to execute Cabal pre-build hook'
 			return 1
 		fi
@@ -327,12 +326,11 @@ EOF
 
 	if [[ -f "${source_dir}/.halcyon/cabal-post-build-hook" ]]; then
 		log 'Executing Cabal post-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/cabal-post-build-hook" \
-					"${tag}" "${source_dir}" \
-					"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/cabal-post-build-hook" \
+				"${tag}" "${source_dir}" \
+				"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
+		then
 			log_error 'Failed to execute Cabal post-build hook'
 			return 1
 		fi
@@ -379,10 +377,9 @@ update_cabal_package_db () {
 
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-update-hook" ]]; then
 		log 'Executing Cabal pre-update hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/cabal-pre-update-hook" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/cabal-pre-update-hook" 2>&1 | quote
+		then
 			log_error 'Failed to execute Cabal pre-update hook'
 			return 1
 		fi
@@ -405,10 +402,9 @@ update_cabal_package_db () {
 
 	if [[ -f "${source_dir}/.halcyon/cabal-post-update-hook" ]]; then
 		log 'Executing Cabal post-update hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/cabal-post-update-hook" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/cabal-post-update-hook" 2>&1 | quote
+		then
 			log_error 'Failed to execute Cabal post-update hook'
 			return 1
 		fi

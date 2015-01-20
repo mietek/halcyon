@@ -391,12 +391,11 @@ build_ghc_dir () {
 
 	if [[ -f "${source_dir}/.halcyon/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/ghc-pre-build-hook" \
-					"${tag}" "${source_dir}" \
-					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/ghc-pre-build-hook" \
+				"${tag}" "${source_dir}" \
+				"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
+		then
 			log_error 'Failed to execute GHC pre-build hook'
 			return 1
 		fi
@@ -437,12 +436,11 @@ build_ghc_dir () {
 
 	if [[ -f "${source_dir}/.halcyon/ghc-post-build-hook" ]]; then
 		log 'Executing GHC post-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/ghc-post-build-hook" \
-					"${tag}" "${source_dir}" \
-					"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/ghc-post-build-hook" \
+				"${tag}" "${source_dir}" \
+				"${ghc_build_dir}/ghc-${ghc-version}" 2>&1 | quote
+		then
 			log_error 'Failed to execute GHC post-build hook'
 			return 1
 		fi

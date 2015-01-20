@@ -341,11 +341,10 @@ build_sandbox_dir () {
 
 	if [[ -f "${source_dir}/.halcyon/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/sandbox-pre-build-hook" \
-					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/sandbox-pre-build-hook" \
+				"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
+		then
 			log_error 'Failed to execute sandbox pre-build hook'
 			return 1
 		fi
@@ -406,11 +405,10 @@ build_sandbox_dir () {
 
 	if [[ -f "${source_dir}/.halcyon/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
-		if ! (
-			HALCYON_INTERNAL_RECURSIVE=1 \
-				"${source_dir}/.halcyon/sandbox-post-build-hook" \
-					"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
-		); then
+		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			"${source_dir}/.halcyon/sandbox-post-build-hook" \
+				"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
+		then
 			log_error 'Failed to execute sandbox post-build hook'
 			return 1
 		fi
