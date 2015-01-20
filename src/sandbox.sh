@@ -369,7 +369,7 @@ build_sandbox_dir () {
 	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
 		local -a raw_opts_a
 		raw_opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || true
-		opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix' ) )
+		opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix=' ) )
 	fi
 	opts_a+=( --dependencies-only )
 	opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include" )
