@@ -47,10 +47,10 @@ set_halcyon_vars () {
 		export HALCYON_NO_UPLOAD="${HALCYON_NO_UPLOAD:-0}"
 		export HALCYON_NO_CLEAN_PRIVATE_STORAGE="${HALCYON_NO_CLEAN_PRIVATE_STORAGE:-0}"
 
-		# TODO: Switch to GHC 7.8.4.
+		# TODO: Remove the check once official OS X build is released.
 		case "${HALCYON_INTERNAL_PLATFORM}" in
-		'linux-'*)
-			export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-7.8.3}";;
+		'linux-'*|'freebsd-'*)
+			export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-7.8.4}";;
 		*)
 			export HALCYON_GHC_VERSION="${HALCYON_GHC_VERSION:-7.8.3}"
 		esac
