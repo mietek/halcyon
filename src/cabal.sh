@@ -664,7 +664,7 @@ symlink_cabal_config () {
 	fi
 
 	if [[ -f "${HOME}/.cabal/config" ]]; then
-		# TOOD: Remove the .halcyon-cabal.config line in the future.
+		# TODO: Remove the .halcyon-cabal.config line in the future.
 		local actual_config
 		if ! actual_config=$( readlink "${HOME}/.cabal/config" ) ||
 			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" &&
