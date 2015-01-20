@@ -63,9 +63,11 @@ determine_ghc_version () {
 	expect_args constraints -- "$@"
 
 	local ghc_version
+	ghc_version=''
 	if [[ -n "${constraints}" ]]; then
 		ghc_version=$( map_constraints_to_ghc_version "${constraints}" ) || return 1
-	else
+	fi
+	if [[ -z "${ghc_version}" ]]; then
 		ghc_version="${HALCYON_GHC_VERSION}"
 	fi
 

@@ -109,36 +109,38 @@ detect_constraints () {
 
 	expect_existing "${source_dir}/cabal.config" || return 1
 
-	local constraints
-	constraints=$(
+	local candidate_constraints
+	candidate_constraints=$(
 		read_constraints_from_cabal_freeze <"${source_dir}/cabal.config" |
 		filter_correct_constraints "${label}" |
 		sort_natural
 	) || return 1
-	if [[ -z "${constraints}" ]]; then
+	if [[ -z "${candidate_constraints}" ]]; then
 		return 0
 	fi
 
+	local -a constraints_a
 	local -A packages_A
-	local base_version candidate_package candidate_version
+	local candidate_package candidate_version
+	constraints_a=()
 	packages_A=()
-	base_version=''
 	while read -r candidate_package candidate_version; do
-		if [[ -n "${packages_A[${candidate_package}]:+_}" ]]; then
-			log_error "Unexpected duplicate constraint: ${candidate_package}-${candidate-version} (${packages_A[${candidate_package}]})"
-			return 1
+		if [[ "${candidate_version}" == 'installed' ]]; then
+			log_warning "Ignoring installed constraint: ${candidate_package}"
+		elif [[ ! "${candidate_version}" =~ [0-9]+(\.[0-9]+)* ]]; then
+			log_warning "Ignoring unexpected constraint: ${candidate_package}-${candidate_version}"
+		elif [[ -n "${packages_A[${candidate_package}]:+_}" ]]; then
+			log_warning "Ignoring duplicate constraint: ${candidate_package}-${candidate-version} (${packages_A[${candidate_package}]})"
+		else
+			constraints_a+=( "${candidate_package} ${candidate_version}" )
+			packages_A["${candidate_package}"]="${candidate_version}"
 		fi
-		packages_A["${candidate_package}"]="${candidate_version}"
-		if [[ ${candidate_package} == 'base' ]]; then
-			base_version="${candidate_version}"
-		fi
-	done <<<"${constraints}"
-	if [[ -z "${base_version}" ]]; then
-		log_error 'Expected base package constraint'
-		return 1
+	done <<<"${candidate_constraints}"
+	if [[ -z "${constraints_a[@]:+_}" ]]; then
+		return 0
 	fi
 
-	echo "${constraints}"
+	IFS=$'\n' && echo "${constraints_a[*]}"
 }
 
 

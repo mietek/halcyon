@@ -132,8 +132,8 @@ map_constraints_to_ghc_version () {
 
 	local base_version
 	if ! base_version=$( match_package_version 'base' <<<"${constraints}" ); then
-		log_error 'Expected base package version'
-		return 1
+		log_warning 'Expected base package constraint'
+		return 0
 	fi
 
 	map_base_package_version_to_ghc_version "${base_version}" || return 1
