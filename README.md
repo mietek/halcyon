@@ -27,9 +27,9 @@ $ source <( curl -sL https://github.com/mietek/halcyon/raw/master/setup.sh )
 
 ### Documentation
 
-- Start with the [Halcyon tutorial](/tutorial/) to learn how to deploy a simple Haskell web app using Halcyon.
+- Start with the [Halcyon tutorial](https://halcyon.sh/tutorial/) to learn how to deploy a simple Haskell web app using Halcyon.
 
-- See the [Halcyon reference](/reference/) for a complete list of available commands and options.
+- See the [Halcyon reference](https://halcyon.sh/reference/) for a complete list of available commands and options.
 
 
 #### Internals
