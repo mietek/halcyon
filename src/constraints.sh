@@ -6,7 +6,7 @@ read_constraints () {
 read_constraints_from_cabal_freeze () {
 	awk '/^ *[Cc]onstraints:/, !/[:,]/ { print }' |
 		tr -d '\r' |
-		sed 's/[Cc]onstraints://;s/[, ]//g;s/==/ /;/^$/d' || return 0
+		sed 's/[Cc]onstraints://;s/,//g;s/==/ /;s/  */ /g;s/^ //;/^ ?$/d' || return 0
 }
 
 
