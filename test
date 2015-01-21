@@ -150,6 +150,7 @@ test_shootout () {
 	urls_a+=( "https://github.com/mietek/hello-mflow${branch}" )
 	urls_a+=( "https://github.com/mietek/hello-miku${branch}" )
 	urls_a+=( "https://github.com/mietek/hello-scotty${branch}" )
+	urls_a+=( "https://github.com/mietek/hello-servant${branch}" )
 	urls_a+=( "https://github.com/mietek/hello-simple${branch}" )
 	urls_a+=( "https://github.com/mietek/hello-snap${branch}" )
 	urls_a+=( "https://github.com/mietek/hello-spock${branch}" )
