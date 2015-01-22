@@ -113,6 +113,8 @@ bench_first_build () {
 	name=$( basename "${url}" ) || return 1
 	log_file=$( get_tmp_file 'halcyon-shootout' )'.log' || return 1
 
+	rm -rf "${HALCYON_BASE}/ghc" "${HALCYON_BASE}/cabal" || return 1
+
 	HALCYON_SANDBOX_REBUILD=1 \
 	HALCYON_NO_UPLOAD=1 \
 		halcyon install "${url}" "$@" 2>&1 | tee "${log_file}" || return 1
