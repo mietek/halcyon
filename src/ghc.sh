@@ -526,7 +526,7 @@ restore_ghc_dir () {
 	archive_name=$( format_ghc_archive_name "${tag}" )
 
 	if validate_ghc_dir "${tag}" >'/dev/null'; then
-		log 'Using existing GHC'
+		log 'Using existing GHC directory'
 
 		touch_cached_file "${archive_name}"
 		return 0
