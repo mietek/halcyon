@@ -508,7 +508,7 @@ do_full_install_app () {
 		fi
 		if [[ -n "${saved_sandbox}" ]]; then
 			if ! mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox"; then
-				log_error 'Failed to restore previous sandbox'
+				log_error 'Failed to restore saved sandbox'
 				return 1
 			fi
 		fi

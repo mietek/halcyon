@@ -782,7 +782,7 @@ sandboxed_cabal_do () {
 	fi
 	if [[ -n "${saved_config}" ]]; then
 		if ! mv "${saved_config}" "${HALCYON_BASE}/sandbox/cabal.config"; then
-			log_error 'Failed to restore previous sandbox Cabal config'
+			log_error 'Failed to restore saved sandbox Cabal config'
 			return 1
 		fi
 	fi
@@ -913,7 +913,7 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 	fi
 	if [[ -n "${saved_sandbox}" ]]; then
 		if ! mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox"; then
-			log_error 'Failed to restore previous sandbox'
+			log_error 'Failed to restore saved sandbox'
 			return 1
 		fi
 	fi
