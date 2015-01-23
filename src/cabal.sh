@@ -992,8 +992,6 @@ populate_cabal_setup_exe_cache () {
 	fi
 	expect_existing "${HOME}/.cabal/setup-exe-cache" || return 1
 
-	log 'Cabal setup executable cache populated'
-
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
 		rm -rf "${setup_dir}" || true
 	fi
