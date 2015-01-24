@@ -697,7 +697,7 @@ install_local_app () {
 
 	local label
 	if ! label=$( detect_label "${local_dir}" ); then
-		log_error 'Failed to detect label'
+		log_error 'Failed to detect app'
 		return 1
 	fi
 
@@ -745,7 +745,7 @@ install_cloned_app () {
 
 	local label
 	if ! label=$( detect_label "${clone_dir}" ); then
-		log_error 'Failed to detect label'
+		log_error 'Failed to detect app'
 		return 1
 	fi
 
