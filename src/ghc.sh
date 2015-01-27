@@ -3,6 +3,7 @@ map_ghc_version_to_linux_x86_64_gmp10_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
+	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
@@ -81,6 +82,7 @@ map_base_package_version_to_ghc_version () {
 	expect_args base_version -- "$@"
 
 	case "${base_version}" in
+	'4.8.0.0')	echo '7.10.1-rc2';;
 	'4.7.0.2')	echo '7.8.4';;
 	'4.7.0.1')	echo '7.8.3';;
 	'4.7.0.0')	echo '7.8.2';;
@@ -270,8 +272,16 @@ symlink_ghc_libs () {
 	'linux-debian-6-x86_64'|'linux-ubuntu-10'*'-x86_64')
 		gmp_file='/usr/lib/libgmp.so.3'
 		tinfo_file='/lib/libncurses.so.5'
-		gmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		if (( ghc_major < 7 || ghc_minor < 10 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		else
+			log_error "Unexpected GHC version: ${ghc_version}"
+			log
+			log_indent 'To continue, use GHC 7.8.4 or older'
+			log
+			return 1
+		fi
 		;;
 	'linux-centos-7-x86_64'|'linux-fedora-21-x86_64'|'linux-fedora-20-x86_64'|'linux-fedora-19-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.10'
@@ -287,8 +297,13 @@ symlink_ghc_libs () {
 	'linux-centos-6-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.3'
 		tinfo_file='/lib64/libtinfo.so.5'
-		gmp_name='libgmp.so.3'
-		url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		if (( ghc_major < 7 || ghc_minor < 10 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
+		fi
 		;;
 	'linux-arch-x86_64')
 		gmp_file='/usr/lib/libgmp.so.10'
@@ -361,12 +376,21 @@ build_ghc_dir () {
 
 	acquire_original_source "${ghc_original_url}" "${ghc_build_dir}" || return 1
 
+	local ghc_source_dir
+	if ! ghc_source_dir=$(
+		find_tree "${ghc_build_dir}" -type d -maxdepth 1 -name 'ghc-*' |
+		match_exactly_one
+	); then
+		log_error 'Failed to detect GHC source directory'
+		return 1
+	fi
+
 	if [[ -f "${source_dir}/.halcyon/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
 			"${source_dir}/.halcyon/ghc-pre-build-hook" \
 				"${tag}" "${source_dir}" \
-				"${ghc_build_dir}/ghc-${ghc_version}" 2>&1 | quote
+				"${ghc_build_dir}/${ghc_source_dir}" 2>&1 | quote
 		then
 			log_error 'Failed to execute GHC pre-build hook'
 			return 1
@@ -393,7 +417,7 @@ build_ghc_dir () {
 
 	local installed_size
 	if ! (
-		cd "${ghc_build_dir}/ghc-${ghc_version}" &&
+		cd "${ghc_build_dir}/${ghc_source_dir}" &&
 		CC="${cc}" \
 			./configure "${opts_a[@]}" 2>&1 | quote &&
 		"${make}" install 2>&1 | quote
@@ -411,7 +435,7 @@ build_ghc_dir () {
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
 			"${source_dir}/.halcyon/ghc-post-build-hook" \
 				"${tag}" "${source_dir}" \
-				"${ghc_build_dir}/ghc-${ghc_version}" 2>&1 | quote
+				"${ghc_build_dir}/${ghc_source_dir}" 2>&1 | quote
 		then
 			log_error 'Failed to execute GHC post-build hook'
 			return 1
@@ -555,5 +579,6 @@ install_ghc_dir () {
 	fi
 
 	build_ghc_dir "${tag}" "${source_dir}" || return 1
+	recache_ghc_package_db
 	archive_ghc_dir || return 1
 }

@@ -234,14 +234,29 @@ install_ghc_and_cabal_dirs () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	local ghc_version ghc_magic_hash
+	local ghc_version ghc_magic_hash ghc_major ghc_minor
 	ghc_version="${HALCYON_GHC_VERSION}"
 	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || return 1
+	ghc_major="${ghc_version%%.*}"
+	ghc_minor="${ghc_version#*.}"
+	ghc_minor="${ghc_minor%%.*}"
 
-	local cabal_version cabal_magic_hash cabal_repo
+	local cabal_version cabal_magic_hash cabal_repo cabal_major cabal_minor
 	cabal_version="${HALCYON_CABAL_VERSION}"
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
 	cabal_repo="${HALCYON_CABAL_REPO}"
+	cabal_major="${cabal_version%%.*}"
+	cabal_minor="${cabal_version#*.}"
+	cabal_minor="${cabal_minor%%.*}"
+
+	# NOTE: GHC 7.10.* requires Cabal 1.22.0.0 or newer.
+	if (( ((ghc_major == 7 && ghc_minor >= 10) || ghc_major > 7) && cabal_major == 1 && cabal_minor < 22 )); then
+		log_error 'Unexpected Cabal version'
+		log
+		log_indent 'To use GHC 7.10.1 or newer, use Cabal 1.22.0.0 or newer'
+		log
+		return 1
+	fi
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		log 'Installing GHC and Cabal'
