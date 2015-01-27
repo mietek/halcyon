@@ -259,7 +259,7 @@ build_cabal_dir () {
 	if (( ghc_major < 7 || ghc_minor < 8 )); then
 		log_error "Unexpected GHC version: ${ghc_version}"
 		log
-		log_indent 'To bootstrap Cabal, use GHC 7.8 or newer'
+		log_indent 'To bootstrap Cabal, use GHC 7.8.2 or newer'
 		log
 		return 1
 	fi
