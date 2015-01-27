@@ -127,7 +127,7 @@ detect_constraints () {
 		elif [[ ! "${candidate_version}" =~ [0-9]+(\.[0-9]+)* ]]; then
 			log_warning "Ignoring unexpected constraint: ${candidate_package}-${candidate_version}"
 		elif [[ -n "${packages_A[${candidate_package}]:+_}" ]]; then
-			log_warning "Ignoring duplicate constraint: ${candidate_package}-${candidate-version} (${packages_A[${candidate_package}]})"
+			log_warning "Ignoring duplicate constraint: ${candidate_package}-${candidate_version} (${packages_A[${candidate_package}]})"
 		else
 			constraints_a+=( "${candidate_package} ${candidate_version}" )
 			packages_A["${candidate_package}"]="${candidate_version}"
