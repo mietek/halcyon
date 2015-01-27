@@ -27,9 +27,13 @@ install_os_packages () {
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git pigz zlib-devel" || return 1
 		;;
-	'linux-fedora-2'[01]*)
+	'linux-fedora-20'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git patch pigz tar zlib-devel" || return 1
+		;;
+	'linux-fedora-21'*)
+		sudo bash -c "yum groupinstall -y 'Development Tools' &&
+			yum install -y git patch openssl pigz tar which zlib-devel" || return 1
 		;;
 	'linux-ubuntu-10'*)
 		sudo bash -c "apt-get update &&
