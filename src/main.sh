@@ -452,16 +452,6 @@ halcyon_main () {
 
 	export HALCYON_INTERNAL_COMMAND="${cmd}"
 
-	# NOTE: The lib dirs are always created on OS X to avoid spurious
-	# linker warnings.
-
-	if [[ $( detect_os ) == 'osx' ]]; then
-		if ! mkdir -p "${HALCYON_BASE}/usr/lib" "${HALCYON_BASE}/ghc/usr/lib" "${HALCYON_BASE}/sandbox/usr/lib"; then
-			log_error 'Failed to create library directories'
-			return 1
-		fi
-	fi
-
 	if (( HALCYON_LOG_TIMESTAMP )); then
 		export BASHMENOT_LOG_TIMESTAMP=1
 		export BASHMENOT_TIMESTAMP_EPOCH=$( get_current_time )
