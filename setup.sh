@@ -82,12 +82,9 @@ install_halcyon () {
 	group=$( id -ng ) || return 1
 
 	if [[ "${platform}" =~ 'linux-debian-6'* ]]; then
-		# NOTE: There is no sudo on Debian 6, and curl considers
-		# HTTP 40* errors to be transient, which makes retrying
-		# impractical.
+		# NOTE: There is no sudo on Debian 6.
 		echo "   *** WARNING: Cannot create base directory" >&2
 		echo "	 *** WARNING: Ensure ${base} is owned by ${user}:${group}" >&2
-		export BASHMENOT_CURL_RETRIES=0
 	else
 		if sudo -k mkdir -p "${base}" &&
 			sudo chown "${user}:${group}" "${base}"
@@ -134,9 +131,6 @@ install_halcyon () {
 	if ! (( ${HALCYON_NO_MODIFY_HOME:-0} )); then
 		echo '-----> Extending .bash_profile' >&2
 
-		if [[ "${platform}" =~ 'linux-debian-6'* ]]; then
-			echo 'export BASHMENOT_CURL_RETRIES=0' >>"${HOME}/.bash_profile" || return 1
-		fi
 		if [[ "${base}" != '/app' ]]; then
 			echo "export HALCYON_BASE=${base}" >>"${HOME}/.bash_profile" || return 1
 		fi
@@ -146,9 +140,6 @@ install_halcyon () {
 		echo >&2
 		echo '       To activate Halcyon manually:'
 
-		if [[ "${platform}" =~ 'linux-debian-6'* ]]; then
-			echo '       $ export BASHMENOT_CURL_RETRIES=0' >&2
-		fi
 		if [[ "${base}" != '/app' ]]; then
 			echo "       $ export HALCYON_BASE=\"${base}\"" >&2
 		fi
