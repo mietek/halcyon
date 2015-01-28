@@ -404,14 +404,17 @@ build_ghc_dir () {
 	make='make'
 	opts_a=()
 	opts_a+=( --prefix="${HALCYON_BASE}/ghc" )
-	if [[ "${HALCYON_INTERNAL_PLATFORM}" =~ 'freebsd-'* ]]; then
+
+	case "${HALCYON_INTERNAL_PLATFORM}" in
+	'freebsd-'*)
 		# NOTE: As described in:
 		# https://downloads.haskell.org/~ghc/7.8.4/README.fbsd.html
 		cc='gcc48'
 		make='gmake'
-		opts+=( --with-gcc='gcc48' )
-		opts+=( --with-ld='/usr/local/bin/ld' )
-	fi
+		opts_a+=( --with-gcc='gcc48' )
+		opts_a+=( --with-ld='/usr/local/bin/ld' )
+		;;
+	esac
 
 	log 'Installing GHC'
 

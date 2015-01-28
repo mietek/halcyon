@@ -351,40 +351,34 @@ build_sandbox_dir () {
 		log 'Sandbox pre-build hook executed'
 	fi
 
-	log 'Building sandbox'
-
-	local is_debian is_redhat
-	is_debian=0
-	is_redhat=0
-	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-debian-'*|'linux-ubuntu-'*)
-		is_debian=1;;
-	'linux-centos-'*|'linux-fedora-'*)
-		is_redhat=1;;
-	esac
-
 	local -a opts_a
 	opts_a=()
-	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
-		local -a raw_opts_a
-		raw_opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || true
-		opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix=' ) )
-	fi
 	opts_a+=( --dependencies-only )
 	opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include" )
 	opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
 	opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib" )
 	opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
-	if (( is_debian )); then
+
+	case "${HALCYON_INTERNAL_PLATFORM}" in
+	'linux-debian-'*|'linux-ubuntu-'*)
 		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/x86_64-linux-gnu" )
 		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" )
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu" )
-	fi
-	if (( is_redhat )); then
+		;;
+	'linux-centos-'*|'linux-fedora-'*)
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib64" )
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib64" )
+		;;
+	esac
+
+	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
+		local -a raw_opts_a
+		raw_opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || true
+		opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix=' ) )
 	fi
+
+	log 'Building sandbox'
 
 	local built_size
 	if ! sandboxed_cabal_do "${source_dir}" install "${opts_a[@]}" 2>&1 | quote ||

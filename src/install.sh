@@ -211,15 +211,21 @@ prepare_install_dir () {
 	label=$( get_tag_label "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
 
+	local -a copy_opts_a register_opts_a
+	copy_opts_a=()
+	copy_opts_a+=( --destdir="${install_dir}" )
+	copy_opts_a+=( --verbose=0 )
+	register_opts_a=()
+	register_opts_a+=( --gen-pkg-config="${label_dir}/${label}.conf" )
+	register_opts_a+=( --verbose=0 )
+
 	log 'Preparing install directory'
 
 	# NOTE: PATH is extended to silence a misleading Cabal warning.
 	if ! PATH="${install_dir}${prefix}:${PATH}" \
-		sandboxed_cabal_do "${build_dir}" copy \
-			--destdir="${install_dir}" --verbose=0 2>&1 | quote ||
+			sandboxed_cabal_do "${build_dir}" copy "${copy_opts_a[@]}" 2>&1 | quote ||
 		! mkdir -p "${label_dir}" ||
-		! sandboxed_cabal_do "${build_dir}" register \
-			--gen-pkg-config="${label_dir}/${label}.conf" --verbose=0 2>&1 | quote
+		! sandboxed_cabal_do "${build_dir}" register "${register_opts_a[@]}" 2>&1 | quote
 	then
 		log_error 'Failed to copy app to install directory'
 		return 1
