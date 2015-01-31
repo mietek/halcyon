@@ -2,7 +2,11 @@ set -o pipefail
 
 
 install_os_packages () {
-	case "$1" in
+	local platform uid
+	platform="$1"
+	uid="$2"
+
+	case "${platform}" in
 	'linux-arch'*)
 		sudo pacman --sync --noconfirm base-devel git pigz zlib || return 1
 		;;
@@ -16,12 +20,27 @@ install_os_packages () {
 		;;
 	'linux-debian-6'*)
 		# NOTE: There is no sudo on Debian 6.
-		apt-get update || return 1
-		apt-get install -y build-essential git pigz zlib1g-dev || return 1
+		if ! (( uid )); then
+			apt-get update || return 1
+			apt-get install -y build-essential git pigz zlib1g-dev || return 1
+		else
+			echo '   *** WARNING: Cannot install OS packages' >&2
+			echo >&2
+			echo '       Ensure the following OS packages are installed:' >&2
+			echo '       $ apt-get update' >&2
+			echo '       $ apt-get install -y build-essential git pigz zlib1g-dev' >&2
+		fi
 		;;
 	'linux-debian-7'*)
-		sudo bash -c "apt-get update &&
-			apt-get install -y build-essential git pigz zlib1g-dev" || return 1
+		# NOTE: When run as root, sudo asks for password
+		# on Debian 7.
+		if ! (( uid )); then
+			apt-get update || return 1
+			apt-get install -y build-essential git pigz zlib1g-dev || return 1
+		else
+			sudo bash -c "apt-get update &&
+				apt-get install -y build-essential git pigz zlib1g-dev" || return 1
+		fi
 		;;
 	'linux-fedora-19'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
@@ -36,17 +55,38 @@ install_os_packages () {
 			yum install -y git patch openssl pigz tar which zlib-devel" || return 1
 		;;
 	'linux-ubuntu-10'*)
-		sudo bash -c "apt-get update &&
-			apt-get install -y build-essential git-core pigz zlib1g-dev &&
-			apt-get install -y --reinstall ca-certificates" || return 1
+		# NOTE: When run as root, sudo asks for password
+		# on Ubuntu 10.
+		if ! (( uid )); then
+			apt-get install -y build-essential git-core pigz zlib1g-dev || return 1
+			apt-get install -y --reinstall ca-certificates || return 1
+		else
+			sudo bash -c "apt-get update &&
+				apt-get install -y build-essential git-core pigz zlib1g-dev &&
+				apt-get install -y --reinstall ca-certificates" || return 1
+		fi
 		;;
 	'linux-ubuntu-12'*)
-		sudo bash -c "apt-get update &&
-			apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev" || return 1
+		# NOTE: When run as root, sudo asks for password
+		# on Ubuntu 12.
+		if ! (( uid )); then
+			apt-get update || return 1
+			apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev || return 1
+		else
+			sudo bash -c "apt-get update &&
+				apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev" || return 1
+		fi
 		;;
 	'linux-ubuntu-14'*)
 		sudo bash -c "apt-get update &&
 			apt-get install -y build-essential git pigz zlib1g-dev" || return 1
+		;;
+	'osx-'*)
+		echo '   *** WARNING: Cannot install OS packages' >&2
+		echo >&2
+		echo '       Ensure the following OS packages are installed:' >&2
+		echo '       $ brew update' >&2
+		echo '       $ brew install bash coreutils git pigz' >&2
 		;;
 	*)
 		echo '	 *** ERROR: Unexpected platform' >&2
@@ -59,9 +99,6 @@ install_halcyon () {
 	local base dir
 	base="${HALCYON_BASE:-/app}"
 	dir="${HALCYON_DIR:-${base}/halcyon}"
-	if [[ -d "${dir}" ]]; then
-		return 0
-	fi
 
 	echo '-----> Welcome to Halcyon' >&2
 
@@ -76,29 +113,48 @@ install_halcyon () {
 
 	source <( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' ) || return 1
 
-	local platform user group
+	local platform uid user group
 	platform=$( detect_platform )
+	uid=$( id -u ) || return 1
 	user=$( id -nu ) || return 1
 	group=$( id -ng ) || return 1
 
-	if [[ "${platform}" =~ 'linux-debian-6'* ]]; then
+	echo "-----> Creating base directory: ${base}" >&2
+
+
+	case "${platform}" in
+	'linux-debian-6'*)
 		# NOTE: There is no sudo on Debian 6.
-		echo "   *** WARNING: Cannot create base directory" >&2
-		echo "	 *** WARNING: Ensure ${base} is owned by ${user}:${group}" >&2
-	else
-		if sudo -k mkdir -p "${base}" &&
-			sudo chown "${user}:${group}" "${base}"
-		then
-			echo "-----> Creating base directory: ${base}" >&2
+		if ! (( uid )); then
+			mkdir -p "${base}" || return 1
+			chown "${user}:${group}" "${base}" || return 1
 		else
-			echo "   *** ERROR: Failed to create base directory" >&2
-			return 1
+			echo '   *** WARNING: Cannot create base directory' >&2
+			echo
+			echo "       Ensure ${base} is owned by ${user}:${group}:" >&2
+			echo "       $ mkdir -p \"${base}\"" >&2
+			echo "       $ chown ${user}:${group} \"${base}\"" >&2
 		fi
-	fi
+		;;
+	'linux-debian-7'*|'linux-ubuntu-10'*|'linux-ubuntu-12'*)
+		# NOTE: When run as root, sudo asks for password
+		# on Debian 7, Ubuntu 10, and Ubuntu 12.
+		if ! (( uid )); then
+			mkdir -p "${base}" || return 1
+			chown "${user}:${group}" "${base}" || return 1
+		else
+			sudo -k mkdir -p "${base}" || return 1
+			sudo chown "${user}:${group}" "${base}" || return 1
+		fi
+		;;
+	*)
+		sudo -k mkdir -p "${base}" || return 1
+		sudo chown "${user}:${group}" "${base}" || return 1
+	esac
 
 	echo '-----> Installing OS packages' >&2
 
-	if ! install_os_packages "${platform}" 2>&1 | sed 's/^/       /' >&2; then
+	if ! install_os_packages "${platform}" "${uid}" 2>&1 | sed 's/^/       /' >&2; then
 		echo '   *** ERROR: Failed to install OS packages' >&2
 		return 1
 	fi
