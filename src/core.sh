@@ -126,8 +126,20 @@ hash_source () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
+	local -a opts_a
+	opts_a=()
+	# NOTE: Ignoring the same files as in prepare_build_dir.
+	opts_a+=( \( -name '.git' )
+	opts_a+=( -o -name '.gitmodules' )
+	opts_a+=( -o -name '.ghc' )
+	opts_a+=( -o -name '.cabal' )
+	opts_a+=( -o -name '.cabal-sandbox' )
+	opts_a+=( -o -name 'cabal.sandbox.config' )
+	opts_a+=( \) )
+	opts_a+=( -prune -o )
+
 	local source_hash
-	if ! source_hash=$( hash_tree "${source_dir}" ); then
+	if ! source_hash=$( hash_tree "${source_dir}" "${opts_a[@]}" ); then
 		log_error 'Failed to hash source files'
 		return 1
 	fi
@@ -149,20 +161,6 @@ hash_magic () {
 	fi
 
 	echo "${magic_hash}"
-}
-
-
-copy_source_dir_over () {
-	local source_dir dst_dir
-	expect_args source_dir dst_dir -- "$@"
-
-	copy_dir_over "${source_dir}" "${dst_dir}" \
-		--exclude '.git' \
-		--exclude '.gitmodules' \
-		--exclude '.ghc' \
-		--exclude '.cabal' \
-		--exclude '.cabal-sandbox' \
-		--exclude 'cabal.sandbox.config' || return 1
 }
 
 
@@ -725,7 +723,7 @@ install_local_app () {
 	local source_dir
 	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
 
-	copy_source_dir_over "${local_dir}" "${source_dir}/${label}" || return 1
+	copy_dir_over "${local_dir}" "${source_dir}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	full_install_app "${label}" "${source_dir}" || return
@@ -763,14 +761,14 @@ install_cloned_app () {
 	local source_dir
 	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
 
-	copy_source_dir_over "${clone_dir}" "${source_dir}" || return 1
+	mv "${clone_dir}" "${source_dir}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}" || return
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${clone_dir}" "${source_dir}" || true
+		rm -rf "${source_dir}" || true
 	fi
 }
 
@@ -806,7 +804,7 @@ install_unpacked_app () {
 	local source_dir
 	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
 
-	copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}" || return 1
+	mv "${unpack_dir}/${label}" "${source_dir}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \

@@ -106,7 +106,7 @@ do_build_app () {
 
 	expect_existing "${source_dir}" || return 1
 	if (( must_copy )); then
-		copy_source_dir_over "${source_dir}" "${build_dir}" || return 1
+		copy_dir_over "${source_dir}" "${build_dir}" || return 1
 	else
 		expect_existing "${build_dir}/.halcyon-tag" || return 1
 	fi
@@ -319,11 +319,24 @@ prepare_build_dir () {
 	expect_existing "${source_dir}" "${build_dir}/.halcyon-tag" \
 		"${build_dir}/dist/setup-config" || return 1
 
+	local -a opts_a
+	opts_a=()
+	# NOTE: Ignoring the same files as in hash_source.
+	opts_a+=( \( -name '.git' )
+	opts_a+=( -o -name '.gitmodules' )
+	opts_a+=( -o -name '.ghc' )
+	opts_a+=( -o -name '.cabal' )
+	opts_a+=( -o -name '.cabal-sandbox' )
+	opts_a+=( -o -name 'cabal.sandbox.config' )
+	# NOTE: Ignoring files expected in build dir only, even though
+	# they may also be in source dir.
+	opts_a+=( -o -name '.halcyon-tag' )
+	opts_a+=( -o -name 'dist' )
+	opts_a+=( \) )
+	opts_a+=( -prune -o )
+
 	local all_files
-	all_files=$(
-		compare_tree "${build_dir}" "${source_dir}" |
-		filter_not_matching '^. (\.halcyon-tag$|dist/)'
-	)
+	all_files=$( compare_tree "${build_dir}" "${source_dir}" "${opts_a[@]}" )
 
 	local changed_files
 	if ! changed_files=$(
@@ -341,7 +354,7 @@ prepare_build_dir () {
 	label=$( get_tag_label "${tag}" )
 	prepare_dir=$( get_tmp_dir "halcyon-prepare-${label}" ) || return 1
 
-	copy_source_dir_over "${source_dir}" "${prepare_dir}" || return 1
+	copy_dir_over "${source_dir}" "${prepare_dir}" || return 1
 
 	# NOTE: Restoring file modification times of unchanged files is
 	# necessary to avoid needless recompilation.
