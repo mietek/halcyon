@@ -367,30 +367,33 @@ build_ghc_dir () {
 		return 1
 	fi
 
-	local ghc_version ghc_original_url ghc_build_dir
+	local ghc_version ghc_original_url ghc_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_original_url=$( symlink_ghc_libs "${tag}" ) || return 1
-	ghc_build_dir=$( get_tmp_dir 'halcyon-ghc-source' ) || return 1
+	ghc_dir=$( get_tmp_dir "halcyon-ghc-${ghc_version}" ) || return 1
 
 	log 'Building GHC directory'
 
-	acquire_original_source "${ghc_original_url}" "${ghc_build_dir}" || return 1
+	acquire_original_source "${ghc_original_url}" "${ghc_dir}" || return 1
 
-	local ghc_source_dir
-	if ! ghc_source_dir=$(
-		find_tree "${ghc_build_dir}" -type d -maxdepth 1 -name 'ghc-*' |
+	local ghc_sub_dir
+	if ! ghc_sub_dir=$(
+		find_tree "${ghc_dir}" -type d -maxdepth 1 -name 'ghc-*' |
 		match_exactly_one
 	); then
 		log_error 'Failed to detect GHC source directory'
 		return 1
 	fi
 
+	local ghc_build_dir
+	ghc_build_dir="${ghc_dir}/${ghc_sub_dir}"
+	expect_existing "${ghc_build_dir}" || return 1
+
 	if [[ -f "${source_dir}/.halcyon/ghc-pre-build-hook" ]]; then
 		log 'Executing GHC pre-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
 			"${source_dir}/.halcyon/ghc-pre-build-hook" \
-				"${tag}" "${source_dir}" \
-				"${ghc_build_dir}/${ghc_source_dir}" 2>&1 | quote
+				"${tag}" "${source_dir}" "${ghc_build_dir}" 2>&1 | quote
 		then
 			log_error 'Failed to execute GHC pre-build hook'
 			return 1
@@ -420,7 +423,7 @@ build_ghc_dir () {
 
 	local installed_size
 	if ! (
-		cd "${ghc_build_dir}/${ghc_source_dir}" &&
+		cd "${ghc_build_dir}" &&
 		CC="${cc}" \
 			./configure "${opts_a[@]}" 2>&1 | quote &&
 		"${make}" install 2>&1 | quote
@@ -437,8 +440,7 @@ build_ghc_dir () {
 		log 'Executing GHC post-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
 			"${source_dir}/.halcyon/ghc-post-build-hook" \
-				"${tag}" "${source_dir}" \
-				"${ghc_build_dir}/${ghc_source_dir}" 2>&1 | quote
+				"${tag}" "${source_dir}" "${ghc_build_dir}" 2>&1 | quote
 		then
 			log_error 'Failed to execute GHC post-build hook'
 			return 1
@@ -476,7 +478,7 @@ build_ghc_dir () {
 	fi
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${ghc_build_dir}" || true
+		rm -rf "${ghc_dir}" || true
 	fi
 }
 
