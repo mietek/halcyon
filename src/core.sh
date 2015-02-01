@@ -135,6 +135,12 @@ hash_source () {
 	opts_a+=( -o -name '.cabal' )
 	opts_a+=( -o -name '.cabal-sandbox' )
 	opts_a+=( -o -name 'cabal.sandbox.config' )
+	if [[ -f "${source_dir}/.halcyon/extra-source-hash-ignore" ]]; then
+		local ignore
+		while read -r ignore; do
+			opts_a+=( -o -name "${ignore}" )
+		done <"${source_dir}/.halcyon/extra-source-hash-ignore"
+	fi
 	opts_a+=( \) )
 	opts_a+=( -prune -o )
 
@@ -425,6 +431,7 @@ prepare_source_dir () {
 	magic_dir="${source_dir}/.halcyon"
 
 # Build-time magic files
+	prepare_file_strings_option "${HALCYON_EXTRA_SOURCE_HASH_IGNORE}" "${magic_dir}/extra-source-hash-ignore" || return 1
 	prepare_file_strings_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || return 1
 	prepare_file_option "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || return 1
 	prepare_file_option "${HALCYON_POST_BUILD_HOOK}" "${magic_dir}/post-build-hook" || return 1
@@ -657,6 +664,7 @@ full_install_app () {
 	log_indent_label 'Prefix:' "${HALCYON_PREFIX}"
 	log_indent_label 'Source hash:' "${source_hash:0:7}"
 
+	describe_extra 'Extra source hash ignore:' "${source_dir}/.halcyon/extra-source-hash-ignore"
 	log_indent_label 'Constraints hash:' "${constraints_hash:0:7}"
 	describe_extra 'Extra configure flags:' "${source_dir}/.halcyon/extra-configure-flags"
 	describe_extra 'Extra apps:' "${source_dir}/.halcyon/extra-apps"

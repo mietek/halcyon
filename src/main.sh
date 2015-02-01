@@ -10,6 +10,7 @@ set_halcyon_vars () {
 		export HALCYON_NO_MODIFY_HOME="${HALCYON_NO_MODIFY_HOME:-0}"
 		export HALCYON_LOG_TIMESTAMP="${HALCYON_LOG_TIMESTAMP:-0}"
 
+		export HALCYON_EXTRA_SOURCE_HASH_IGNORE="${HALCYON_EXTRA_SOURCE_HASH_IGNORE:-}"
 		export HALCYON_CONSTRAINTS="${HALCYON_CONSTRAINTS:-}"
 		export HALCYON_IGNORE_ALL_CONSTRAINTS="${HALCYON_IGNORE_ALL_CONSTRAINTS:-0}"
 		export HALCYON_EXTRA_CONFIGURE_FLAGS="${HALCYON_EXTRA_CONFIGURE_FLAGS:-}"
@@ -91,6 +92,7 @@ set_halcyon_vars () {
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		export HALCYON_LOG_TIMESTAMP=0
 
+		export HALCYON_EXTRA_SOURCE_HASH_IGNORE=''
 		export HALCYON_CONSTRAINTS=''
 		export HALCYON_IGNORE_ALL_CONSTRAINTS=0
 		export HALCYON_EXTRA_CONFIGURE_FLAGS=''
@@ -168,6 +170,12 @@ halcyon_main () {
 			export HALCYON_LOG_TIMESTAMP=1;;
 
 	# Build-time options
+		'--extra-source-hash-ignore')
+			shift
+			expect_args extra_source_hash_ignore -- "$@"
+			export HALCYON_EXTRA_SOURCE_HASH_IGNORE="${extra_source_hash_ignore}";;
+		'--extra-source-hash-ignore='*)
+			export HALCYON_EXTRA_SOURCE_HASH_IGNORE="${1#*=}";;
 		'--constraints')
 			shift
 			expect_args constraints -- "$@"

@@ -328,6 +328,12 @@ prepare_build_dir () {
 	opts_a+=( -o -name '.cabal' )
 	opts_a+=( -o -name '.cabal-sandbox' )
 	opts_a+=( -o -name 'cabal.sandbox.config' )
+	if [[ -f "${source_dir}/.halcyon/extra-source-hash-ignore" ]]; then
+		local ignore
+		while read -r ignore; do
+			opts_a+=( -o -name "${ignore}" )
+		done <"${source_dir}/.halcyon/extra-source-hash-ignore"
+	fi
 	# NOTE: Ignoring files expected in build dir only, even though
 	# they may also be in source dir.
 	opts_a+=( -o -name '.halcyon-tag' )

@@ -27,6 +27,7 @@ help_usage () {
 		  --log-timestamp
 
 		Build-time options
+		  --extra-source-hash-ignore=             STRINGS | FILE
 		  --constraints=                          STRINGS | FILE | DIR
 		  --ignore-all-constraints
 		  --extra-configure-flags=                STRINGS | FILE
