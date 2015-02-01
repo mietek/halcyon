@@ -264,22 +264,34 @@ build_cabal_dir () {
 		return 1
 	fi
 
-	local cabal_version cabal_original_url cabal_build_dir cabal_home_dir
+	local cabal_version cabal_original_url cabal_dir cabal_home_dir
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || return 1
-	cabal_build_dir=$( get_tmp_dir 'halcyon-cabal-source' ) || return 1
-	cabal_home_dir=$( get_tmp_dir 'halcyon-cabal-home.disregard-this-advice' ) || return 1
+	cabal_dir=$( get_tmp_dir "halcyon-cabal-${cabal_version}" ) || return 1
+	cabal_home_dir=$( get_tmp_dir "halcyon-cabal-${cabal_version}.disregard-this-advice" ) || return 1
 
 	log 'Building Cabal directory'
 
-	acquire_original_source "${cabal_original_url}" "${cabal_build_dir}" || return 1
+	acquire_original_source "${cabal_original_url}" "${cabal_dir}" || return 1
+
+	local cabal_sub_dir
+	if ! cabal_sub_dir=$(
+		find_tree "${cabal_dir}" -type d -maxdepth 1 -name 'cabal-install-*' |
+		match_exactly_one
+	); then
+		log_error 'Failed to detect Cabal source directory'
+		return 1
+	fi
+
+	local cabal_build_dir
+	cabal_build_dir="${cabal_dir}/${cabal_sub_dir}"
+	expect_existing "${cabal_build_dir}" || return 1
 
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
 			"${source_dir}/.halcyon/cabal-pre-build-hook" \
-				"${tag}" "${source_dir}" \
-				"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
+				"${tag}" "${source_dir}" "${cabal_build_dir}" 2>&1 | quote
 		then
 			log_error 'Failed to execute Cabal pre-build hook'
 			return 1
@@ -290,7 +302,7 @@ build_cabal_dir () {
 	log 'Bootstrapping Cabal'
 
 	if ! (
-		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
+		cd "${cabal_build_dir}" &&
 		patch -s <<-EOF
 			--- a/bootstrap.sh
 			+++ b/bootstrap.sh
@@ -310,7 +322,7 @@ EOF
 	# https://ghc.haskell.org/trac/ghc/ticket/9174
 	local bootstrapped_size
 	if ! (
-		cd "${cabal_build_dir}/cabal-install-${cabal_version}" &&
+		cd "${cabal_build_dir}" &&
 		HOME="${cabal_home_dir}" \
 		EXTRA_CONFIGURE_OPTS="--extra-lib-dirs=${HALCYON_BASE}/ghc/usr/lib" \
 			./bootstrap.sh --no-doc 2>&1 | quote
@@ -328,8 +340,7 @@ EOF
 		log 'Executing Cabal post-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
 			"${source_dir}/.halcyon/cabal-post-build-hook" \
-				"${tag}" "${source_dir}" \
-				"${cabal_build_dir}/cabal-install-${cabal_version}" 2>&1 | quote
+				"${tag}" "${source_dir}" "${cabal_build_dir}" 2>&1 | quote
 		then
 			log_error 'Failed to execute Cabal post-build hook'
 			return 1
@@ -354,7 +365,7 @@ EOF
 	fi
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${cabal_build_dir}" "${cabal_home_dir}" || true
+		rm -rf "${cabal_dir}" "${cabal_home_dir}" || true
 	fi
 }
 
