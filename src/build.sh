@@ -316,10 +316,11 @@ restore_build_dir () {
 
 
 prepare_build_dir () {
-	local source_dir build_dir
-	expect_args source_dir build_dir -- "$@"
+	local tag source_dir build_dir
+	expect_args tag source_dir build_dir -- "$@"
 
-	expect_existing "${source_dir}" "${build_dir}/.halcyon-tag" || return 1
+	expect_existing "${source_dir}" "${build_dir}/.halcyon-tag" \
+		"${build_dir}/dist/setup-config" || return 1
 
 	local all_files
 	all_files=$(
@@ -339,8 +340,9 @@ prepare_build_dir () {
 
 	quote <<<"${changed_files}"
 
-	local prepare_dir
-	prepare_dir=$( get_tmp_dir 'halcyon-prepare' ) || return 1
+	local label prepare_dir
+	label=$( get_tag_label "${tag}" )
+	prepare_dir=$( get_tmp_dir "halcyon-prepare-${label}" ) || return 1
 
 	if ! copy_source_dir_over "${source_dir}" "${prepare_dir}"; then
 		log_error 'Failed to update build directory'
@@ -357,17 +359,11 @@ prepare_build_dir () {
 
 	# NOTE: Any build products outside dist will have to be rebuilt.
 	# See alex or happy for examples.
-	if ! rm -rf "${prepare_dir}/dist" ||
-		! mv "${build_dir}/dist" "${prepare_dir}/dist" ||
-		! mv "${build_dir}/.halcyon-tag" "${prepare_dir}/.halcyon-tag" ||
-		! rm -rf "${build_dir}" ||
-		! mv "${prepare_dir}" "${build_dir}"
-	then
-		rm -rf "${prepare_dir}" || true
-
-		log_error 'Failed to prepare build directory'
-		return 1
-	fi
+	rm -rf "${prepare_dir}/dist" || return 1
+	mv "${build_dir}/.halcyon-tag" "${prepare_dir}/.halcyon-tag" || return 1
+	mv "${build_dir}/dist" "${prepare_dir}/dist" || return 1
+	rm -rf "${build_dir}" || return 1
+	mv "${prepare_dir}" "${build_dir}" || return 1
 
 	# NOTE: With build-type: Custom, changing Setup.hs requires manually
 	# re-running configure, as Cabal fails to detect the change.
@@ -408,7 +404,7 @@ build_app () {
 		local must_copy must_configure
 		must_copy=0
 		must_configure="${HALCYON_APP_RECONFIGURE}"
-		if ! prepare_build_dir "${source_dir}" "${build_dir}"; then
+		if ! prepare_build_dir "${tag}" "${source_dir}" "${build_dir}"; then
 			must_copy=1
 		elif ! validate_configured_build_dir "${tag}" "${build_dir}" >'/dev/null'; then
 			must_configure=1
