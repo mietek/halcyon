@@ -723,15 +723,12 @@ install_local_app () {
 	fi
 
 	local source_dir
-	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
+	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
 
-	if ! copy_source_dir_over "${local_dir}" "${source_dir}/${label}"; then
-		log_error 'Failed to create source directory'
-		return 1
-	fi
+	copy_source_dir_over "${local_dir}" "${source_dir}/${label}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
-	full_install_app "${label}" "${source_dir}/${label}" || return
+	full_install_app "${label}" "${source_dir}" || return
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
 		rm -rf "${source_dir}" || true
@@ -745,9 +742,8 @@ install_cloned_app () {
 	local url
 	expect_args url -- "$@"
 
-	local clone_dir source_dir
+	local clone_dir
 	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || return 1
-	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
 
 	log_begin "Cloning ${url}..."
 
@@ -764,14 +760,14 @@ install_cloned_app () {
 		return 1
 	fi
 
-	if ! copy_source_dir_over "${clone_dir}" "${source_dir}/${label}"; then
-		log_error 'Failed to create source directory'
-		return 1
-	fi
+	local source_dir
+	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
+
+	copy_source_dir_over "${clone_dir}" "${source_dir}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		full_install_app "${label}" "${source_dir}/${label}" || return
+		full_install_app "${label}" "${source_dir}" || return
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
 		rm -rf "${clone_dir}" "${source_dir}" || true
@@ -785,9 +781,8 @@ install_unpacked_app () {
 	local thing
 	expect_args thing -- "$@"
 
-	local unpack_dir source_dir
+	local unpack_dir
 	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || return 1
-	source_dir=$( get_tmp_dir 'halcyon-source' ) || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_NO_APP=1 \
@@ -799,10 +794,8 @@ install_unpacked_app () {
 	log 'Unpacking app'
 
 	local label
-	if ! label=$( cabal_unpack_over "${thing}" "${unpack_dir}" ) ||
-		! copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}/${label}"
-	then
-		log_error 'Failed to create source directory'
+	if ! label=$( cabal_unpack_over "${thing}" "${unpack_dir}" ); then
+		log_error 'Failed to unpack app'
 		return 1
 	fi
 
@@ -810,9 +803,14 @@ install_unpacked_app () {
 		log_warning "Using newest version of ${thing}: ${label}"
 	fi
 
+	local source_dir
+	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
+
+	copy_source_dir_over "${unpack_dir}/${label}" "${source_dir}" || return 1
+
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
-		full_install_app "${label}" "${source_dir}/${label}" || return
+		full_install_app "${label}" "${source_dir}" || return
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
 		rm -rf "${unpack_dir}" "${source_dir}" || true
