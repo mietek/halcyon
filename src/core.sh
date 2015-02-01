@@ -295,10 +295,10 @@ do_fast_install_app () {
 
 	local label install_dir
 	label=$( get_tag_label "${tag}" )
-	install_dir=$( get_tmp_dir 'halcyon-install' ) || return 1
+	install_dir=$( get_tmp_dir "halcyon-install-${label}" ) || return 1
 
-	restore_install_dir "${tag}" "${install_dir}/${label}" || return 1
-	install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || return 1
+	restore_install_dir "${tag}" "${install_dir}" || return 1
+	install_app "${tag}" "${source_dir}" "${install_dir}" || return 1
 	symlink_cabal_config
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
@@ -471,8 +471,8 @@ do_full_install_app () {
 
 	local label build_dir install_dir saved_sandbox
 	label=$( get_tag_label "${tag}" )
-	build_dir=$( get_tmp_dir 'halcyon-build' ) || return 1
-	install_dir=$( get_tmp_dir 'halcyon-install' ) || return 1
+	build_dir=$( get_tmp_dir "halcyon-build-${label}" ) || return 1
+	install_dir=$( get_tmp_dir "halcyon-install-${label}" ) || return 1
 	saved_sandbox=''
 
 	# NOTE: Returns 2 if build is needed.
@@ -496,7 +496,7 @@ do_full_install_app () {
 
 	if ! (( HALCYON_DEPENDENCIES_ONLY )); then
 		# NOTE: Returns 2 if build is needed.
-		build_app "${tag}" "${source_dir}" "${build_dir}/${label}" || return
+		build_app "${tag}" "${source_dir}" "${build_dir}" || return
 	fi
 
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
@@ -508,11 +508,11 @@ do_full_install_app () {
 			(( HALCYON_APP_RECONFIGURE )) ||
 			(( HALCYON_APP_REINSTALL )) ||
 			(( HALCYON_SANDBOX_REBUILD )) ||
-			! restore_install_dir "${tag}" "${install_dir}/${label}"
+			! restore_install_dir "${tag}" "${install_dir}"
 		then
 			# NOTE: Returns 2 if build is needed.
-			prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}/${label}" "${install_dir}/${label}" || return
-			archive_install_dir "${install_dir}/${label}" || return 1
+			prepare_install_dir "${tag}" "${source_dir}" "${constraints}" "${build_dir}" "${install_dir}" || return
+			archive_install_dir "${install_dir}" || return 1
 		fi
 	fi
 
@@ -532,7 +532,7 @@ do_full_install_app () {
 	if [[ "${HALCYON_INTERNAL_COMMAND}" == 'install' ]] &&
 		! (( HALCYON_DEPENDENCIES_ONLY ))
 	then
-		install_app "${tag}" "${source_dir}" "${install_dir}/${label}" || return 1
+		install_app "${tag}" "${source_dir}" "${install_dir}" || return 1
 		symlink_cabal_config
 	fi
 
