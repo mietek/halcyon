@@ -458,6 +458,20 @@ halcyon_main () {
 		shift
 	done
 
+	# NOTE: In some circumstances, Cabal can break sandbox isolation.
+	# https://github.com/haskell/cabal/issues/2400
+	if find_tree ~/.ghc \( -name 'ghci_history' \) -prune -o -type f -print |
+		match_at_least_one >'/dev/null'
+	then
+		log_error 'Unexpected GHC user package database'
+		log
+		quote <<-EOF
+			To disable the GHC user package database:
+			$ mv ~/.ghc ~/.ghc.original
+EOF
+		return 1
+	fi
+
 	export HALCYON_INTERNAL_COMMAND="${cmd}"
 
 	if (( HALCYON_LOG_TIMESTAMP )); then
