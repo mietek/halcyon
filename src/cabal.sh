@@ -651,7 +651,7 @@ help_cabal_symlink () {
 	log
 	quote <<-EOF
 		To symlink the Halcyon Cabal config:
-		$ rm -f ~/.cabal/config
+		$ mv ~/.cabal/config ~/.cabal/config.original
 		$ mkdir -p ~/.cabal
 		$ ln -s "${HALCYON_BASE}/cabal/config" ~/.cabal/config
 
