@@ -85,8 +85,6 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 
 	unset _join _path
 
-	export PKG_CONFIG_SYSROOT_DIR="${HALCYON_BASE}/sandbox"
-
 	# NOTE: UTF-8 locale is needed to work around a Cabal issue.
 	# https://github.com/haskell/cabal/issues/1883
 	case "${HALCYON_INTERNAL_PLATFORM}" in
