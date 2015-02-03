@@ -507,13 +507,8 @@ EOF
 	# NOTE: Returns 2 if build is needed.
 
 	case "${HALCYON_INTERNAL_COMMAND}" in
-	'install')
+	'install'|'build')
 		halcyon_install ${args_a[@]:+"${args_a[@]}"}
-		return
-		;;
-	'build')
-		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install ${args_a[@]:+"${args_a[@]}"}
 		return
 		;;
 	'label'|'executable'|'constraints'|'tag')
