@@ -82,6 +82,7 @@ set_halcyon_vars () {
 		export HALCYON_INTERNAL_COMMAND="${HALCYON_INTERNAL_COMMAND:-}"
 		export HALCYON_INTERNAL_RECURSIVE="${HALCYON_INTERNAL_RECURSIVE:-0}"
 		export HALCYON_INTERNAL_REMOTE_SOURCE="${HALCYON_INTERNAL_REMOTE_SOURCE:-0}"
+		export HALCYON_INTERNAL_TOLERATE_GHC_USER_DB="${HALCYON_INTERNAL_TOLERATE_GHC_USER_DB:-0}"
 		export HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL="${HALCYON_INTERNAL_NO_ANNOUNCE_INSTALL:-0}"
 		export HALCYON_INTERNAL_NO_CLEANUP="${HALCYON_INTERNAL_NO_CLEANUP:-0}"
 		export HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE="${HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE:-0}"
@@ -460,7 +461,8 @@ halcyon_main () {
 
 	# NOTE: In some circumstances, Cabal can break sandbox isolation.
 	# https://github.com/haskell/cabal/issues/2400
-	if find_tree ~/.ghc \( -name 'ghci_history' \) -prune -o -type f -print |
+	if ! (( HALCYON_INTERNAL_TOLERATE_GHC_USER_DB )) &&
+		find_tree ~/.ghc \( -name 'ghci_history' \) -prune -o -type f -print |
 		match_at_least_one >'/dev/null'
 	then
 		log_error 'Unexpected GHC user package database'
