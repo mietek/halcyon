@@ -1,3 +1,26 @@
+map_ghc_version_to_source_url () {
+	local ghc_version
+	expect_args ghc_version -- "$@"
+
+	case "${ghc_version}" in
+	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-src.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-src.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-src.tar.xz';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-src.tar.xz';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-src.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-src.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-src.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-src.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-src.tar.bz2';;
+	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-src.tar.bz2';;
+	'6.10.4')	echo 'https://downloads.haskell.org/~ghc/6.10.4/ghc-6.10.4-src.tar.bz2';;
+	*)
+		log_error "Unexpected GHC version for source: ${ghc_version}"
+		return 1
+	esac
+}
+
+
 map_ghc_version_to_linux_x86_64_gmp10_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
