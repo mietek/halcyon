@@ -386,10 +386,15 @@ clean_cache () {
 			fi
 		done
 
+	local -a opts_a
+	opts_a=()
+	opts_a+=( \( -name 'apt' )
+	opts_a+=( \) -prune -o )
+
 	local changed_files
 	if changed_files=$(
-		compare_tree "${cache_dir}" "${HALCYON_CACHE}" |
-		filter_not_matching '^(= |. apt/)' |
+		compare_tree "${cache_dir}" "${HALCYON_CACHE}" "${opts_a[@]}" |
+		filter_not_matching '^= ' |
 		match_at_least_one
 	); then
 		log
