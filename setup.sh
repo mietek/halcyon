@@ -89,7 +89,7 @@ install_os_packages () {
 		echo '       $ brew install bash coreutils git pigz' >&2
 		;;
 	*)
-		echo '	 *** ERROR: Unexpected platform' >&2
+		echo "	 *** ERROR: Unexpected platform: ${platform}" >&2
 		return 1
 	esac
 }
