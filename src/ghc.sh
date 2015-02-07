@@ -380,7 +380,7 @@ symlink_ghc_libs () {
 
 build_ghc_dir () {
 	expect_vars HALCYON_BASE \
-		HALCYON_INTERNAL_PLATFORM HALCYON_INTERNAL_NO_CLEANUP
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -393,7 +393,7 @@ build_ghc_dir () {
 	local ghc_version ghc_original_url ghc_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_original_url=$( symlink_ghc_libs "${tag}" ) || return 1
-	ghc_dir=$( get_tmp_dir "halcyon-ghc-${ghc_version}" ) || return 1
+	ghc_dir=$( get_tmp_dir "ghc-${ghc_version}" ) || return 1
 
 	log 'Building GHC directory'
 
@@ -498,10 +498,6 @@ build_ghc_dir () {
 	if ! derive_ghc_tag "${tag}" >"${HALCYON_BASE}/ghc/.halcyon-tag"; then
 		log_error 'Failed to write GHC tag'
 		return 1
-	fi
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${ghc_dir}" || true
 	fi
 }
 

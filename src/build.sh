@@ -98,8 +98,7 @@ format_build_archive_name () {
 
 
 do_build_app () {
-	expect_vars HALCYON_BASE \
-		HALCYON_INTERNAL_NO_CLEANUP
+	expect_vars HALCYON_BASE
 
 	local tag must_copy must_configure source_dir build_dir
 	expect_args tag must_copy must_configure source_dir build_dir -- "$@"
@@ -128,7 +127,7 @@ do_build_app () {
 		opts_a+=( --verbose )
 
 		local stdout
-		stdout=$( get_tmp_file 'halcyon-cabal-configure-stdout' ) || return 1
+		stdout=$( get_tmp_file 'cabal-configure.stdout' ) || return 1
 
 		if ! sandboxed_cabal_do "${build_dir}" configure "${opts_a[@]}" >"${stdout}" 2>&1 | quote; then
 			quote <"${stdout}"
@@ -155,10 +154,6 @@ do_build_app () {
 		then
 			log_error 'Failed to write data directory file'
 			return 1
-		fi
-
-		if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-			rm -f "${stdout}" || true
 		fi
 	else
 		expect_existing "${build_dir}/dist/.halcyon-data-dir" || return 1
@@ -357,7 +352,7 @@ prepare_build_dir () {
 
 	local label prepare_dir
 	label=$( get_tag_label "${tag}" )
-	prepare_dir=$( get_tmp_dir "halcyon-prepare-${label}" ) || return 1
+	prepare_dir=$( get_tmp_dir "prepare-${label}" ) || return 1
 
 	copy_dir_over "${source_dir}" "${prepare_dir}" || return 1
 

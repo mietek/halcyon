@@ -490,6 +490,19 @@ EOF
 
 	export BASHMENOT_APT_DIR="${HALCYON_CACHE}/apt"
 
+	local tmp_dir
+	tmp_dir=''
+	if [[ -z "${BASHMENOT_INTERNAL_TMP:-}" ]]; then
+		tmp_dir=$( get_tmp_dir 'halcyon' ) || return 1
+
+		if ! mkdir -p "${tmp_dir}"; then
+			log_error 'Failed to create temporary directory'
+			return 1
+		fi
+
+		export BASHMENOT_INTERNAL_TMP="${tmp_dir}"
+	fi
+
 	export BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}"
 	export BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}"
 	export BASHMENOT_S3_ENDPOINT="${HALCYON_S3_ENDPOINT}"
@@ -505,16 +518,15 @@ EOF
 	fi
 
 	# NOTE: Returns 2 if build is needed.
-
+	local status
+	status=0
 	case "${HALCYON_INTERNAL_COMMAND}" in
 	'install'|'build')
-		halcyon_install ${args_a[@]:+"${args_a[@]}"}
-		return
+		halcyon_install ${args_a[@]:+"${args_a[@]}"} || status="$?"
 		;;
 	'label'|'executable'|'constraints'|'tag')
 		HALCYON_NO_CLEAN_CACHE=1 \
-			halcyon_install ${args_a[@]:+"${args_a[@]}"}
-		return
+			halcyon_install ${args_a[@]:+"${args_a[@]}"} || status="$?"
 		;;
 	'paths')
 		echo -e "export HALCYON_DIR='${HALCYON_DIR}'"
@@ -539,4 +551,10 @@ EOF
 		help_usage
 		return 1
 	esac
+
+	if ! (( HALCYON_INTERNAL_NO_CLEANUP )) && [[ -n "${tmp_dir}" ]]; then
+		rm -rf "${tmp_dir}" || true
+	fi
+
+	return "${status}"
 }

@@ -238,8 +238,7 @@ copy_cabal_magic () {
 
 
 build_cabal_dir () {
-	expect_vars HALCYON_BASE \
-		HALCYON_INTERNAL_NO_CLEANUP
+	expect_vars HALCYON_BASE
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -267,8 +266,8 @@ build_cabal_dir () {
 	local cabal_version cabal_original_url cabal_dir cabal_home_dir
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || return 1
-	cabal_dir=$( get_tmp_dir "halcyon-cabal-${cabal_version}" ) || return 1
-	cabal_home_dir=$( get_tmp_dir "halcyon-cabal-${cabal_version}.disregard-this-advice" ) || return 1
+	cabal_dir=$( get_tmp_dir "cabal-${cabal_version}" ) || return 1
+	cabal_home_dir=$( get_tmp_dir 'disregard-this-advice' ) || return 1
 
 	log 'Building Cabal directory'
 
@@ -362,10 +361,6 @@ EOF
 	if ! derive_base_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag"; then
 		log_error 'Failed to write Cabal tag'
 		return 1
-	fi
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${cabal_dir}" "${cabal_home_dir}" || true
 	fi
 }
 
@@ -767,7 +762,7 @@ sandboxed_cabal_do () {
 	local saved_config
 	saved_config=''
 	if [[ -f "${HALCYON_BASE}/sandbox/cabal.config" ]]; then
-		if ! saved_config=$( get_tmp_file 'halcyon-saved-config' ) ||
+		if ! saved_config=$( get_tmp_file 'saved-sandbox-cabal.config' ) ||
 			! mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}"
 		then
 			log_error 'Failed to save existing sandbox Cabal config'
@@ -803,11 +798,10 @@ sandboxed_cabal_do () {
 
 
 cabal_create_sandbox () {
-	expect_vars HALCYON_BASE \
-		HALCYON_INTERNAL_NO_CLEANUP
+	expect_vars HALCYON_BASE
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-dry-freeze-stderr' ) || return 1
+	stderr=$( get_tmp_file 'cabal-sandbox-init.stderr' ) || return 1
 
 	mkdir -p "${HALCYON_BASE}/sandbox" || return 1
 
@@ -815,21 +809,15 @@ cabal_create_sandbox () {
 		quote <"${stderr}"
 		return 1
 	fi
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -f "${stderr}" || true
-	fi
 }
 
 
 cabal_dry_freeze_constraints () {
-	expect_vars HALCYON_INTERNAL_NO_CLEANUP
-
 	local label source_dir
 	expect_args label source_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-dry-freeze-stderr' ) || return 1
+	stderr=$( get_tmp_file 'cabal-freeze.stderr' ) || return 1
 
 	# NOTE: Cabal automatically sets global installed constraints for
 	# installed packages, even during a freeze dry run.  Hence, if a
@@ -851,21 +839,15 @@ cabal_dry_freeze_constraints () {
 	fi
 
 	echo "${constraints}"
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -f "${stderr}" || true
-	fi
 }
 
 
 sandboxed_cabal_dry_freeze_constraints () {
-	expect_vars HALCYON_INTERNAL_NO_CLEANUP
-
 	local label source_dir
 	expect_args label source_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-cabal-dry-freeze-stderr' ) || return 1
+	stderr=$( get_tmp_file 'cabal-freeze.stderr' ) || return 1
 
 	local constraints
 	if ! constraints=$(
@@ -879,10 +861,6 @@ sandboxed_cabal_dry_freeze_constraints () {
 	fi
 
 	echo "${constraints}"
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -f "${stderr}" || true
-	fi
 }
 
 
@@ -895,7 +873,7 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 	local saved_sandbox
 	saved_sandbox=''
 	if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
-		if ! saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) ||
+		if ! saved_sandbox=$( get_tmp_dir 'saved-sandbox' ) ||
 			! mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}"
 		then
 			log_error 'Failed to save existing sandbox'
@@ -949,13 +927,11 @@ cabal_determine_constraints () {
 
 
 cabal_unpack_over () {
-	expect_vars HALCYON_INTERNAL_NO_CLEANUP
-
 	local thing unpack_dir
 	expect_args thing unpack_dir -- "$@"
 
 	local stderr
-	stderr=$( get_tmp_file 'halcyon-unpack-stderr' ) || return 1
+	stderr=$( get_tmp_file 'cabal-unpack.stderr' ) || return 1
 
 	rm -rf "${unpack_dir}" || return 1
 	mkdir -p "${unpack_dir}" || return 1
@@ -972,16 +948,11 @@ cabal_unpack_over () {
 	fi
 
 	echo "${label}"
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -f "${stderr}" || true
-	fi
 }
 
 
 populate_cabal_setup_exe_cache () {
-	expect_vars HOME \
-		HALCYON_INTERNAL_NO_CLEANUP
+	expect_vars HOME
 
 	# NOTE: Haste needs Cabal to generate HOME/.cabal/setup-exe-cache.
 	# https://github.com/valderman/haste-compiler/issues/257
@@ -992,7 +963,7 @@ populate_cabal_setup_exe_cache () {
 	log 'Populating Cabal setup executable cache'
 
 	local setup_dir
-	setup_dir="$( get_tmp_dir 'halcyon-setup-exe-cache' )" || return 1
+	setup_dir=$( get_tmp_dir 'cabal-setup-exe-cache-sandbox' ) || return 1
 
 	if ! mkdir -p "${setup_dir}" ||
 		! cabal_do "${setup_dir}" sandbox init --sandbox '.' 2>&1 | quote ||
@@ -1002,8 +973,4 @@ populate_cabal_setup_exe_cache () {
 		return 1
 	fi
 	expect_existing "${HOME}/.cabal/setup-exe-cache" || return 1
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${setup_dir}" || true
-	fi
 }

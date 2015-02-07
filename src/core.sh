@@ -291,22 +291,16 @@ install_ghc_and_cabal_dirs () {
 
 
 do_fast_install_app () {
-	expect_vars HALCYON_INTERNAL_NO_CLEANUP
-
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
 	local label install_dir
 	label=$( get_tag_label "${tag}" )
-	install_dir=$( get_tmp_dir "halcyon-install-${label}" ) || return 1
+	install_dir=$( get_tmp_dir "install-${label}" ) || return 1
 
 	restore_install_dir "${tag}" "${install_dir}" || return 1
 	install_app "${tag}" "${source_dir}" "${install_dir}" || return 1
 	symlink_cabal_config
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${install_dir}" || true
-	fi
 }
 
 
@@ -468,15 +462,15 @@ do_full_install_app () {
 	expect_vars HALCYON_BASE HALCYON_DEPENDENCIES_ONLY \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
 		HALCYON_SANDBOX_REBUILD \
-		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_NO_CLEANUP
+		HALCYON_INTERNAL_RECURSIVE
 
 	local tag source_dir constraints
 	expect_args tag source_dir constraints -- "$@"
 
 	local label build_dir install_dir saved_sandbox
 	label=$( get_tag_label "${tag}" )
-	build_dir=$( get_tmp_dir "halcyon-build-${label}" ) || return 1
-	install_dir=$( get_tmp_dir "halcyon-install-${label}" ) || return 1
+	build_dir=$( get_tmp_dir "build-${label}" ) || return 1
+	install_dir=$( get_tmp_dir "install-${label}" ) || return 1
 	saved_sandbox=''
 
 	# NOTE: Returns 2 if build is needed.
@@ -484,7 +478,7 @@ do_full_install_app () {
 
 	if (( HALCYON_INTERNAL_RECURSIVE )); then
 		if [[ -d "${HALCYON_BASE}/sandbox" ]]; then
-			if ! saved_sandbox=$( get_tmp_dir 'halcyon-saved-sandbox' ) ||
+			if ! saved_sandbox=$( get_tmp_dir 'saved-sandbox' ) ||
 				! mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}"
 			then
 				log_error 'Failed to save existing sandbox'
@@ -538,10 +532,6 @@ do_full_install_app () {
 	then
 		install_app "${tag}" "${source_dir}" "${install_dir}" || return 1
 		symlink_cabal_config
-	fi
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${build_dir}" "${install_dir}" || true
 	fi
 }
 
@@ -710,7 +700,7 @@ full_install_app () {
 
 
 install_local_app () {
-	expect_vars HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE HALCYON_INTERNAL_NO_CLEANUP
+	expect_vars HALCYON_INTERNAL_NO_COPY_LOCAL_SOURCE
 
 	local local_dir
 	expect_args local_dir -- "$@"
@@ -728,27 +718,21 @@ install_local_app () {
 	fi
 
 	local source_dir
-	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
+	source_dir=$( get_tmp_dir "source-${label}" ) || return 1
 
 	copy_dir_over "${local_dir}" "${source_dir}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	full_install_app "${label}" "${source_dir}" || return
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${source_dir}" || true
-	fi
 }
 
 
 install_cloned_app () {
-	expect_vars HALCYON_INTERNAL_NO_CLEANUP
-
 	local url
 	expect_args url -- "$@"
 
 	local clone_dir
-	clone_dir=$( get_tmp_dir 'halcyon-clone' ) || return 1
+	clone_dir=$( get_tmp_dir 'git-clone' ) || return 1
 
 	log_begin "Cloning ${url}..."
 
@@ -766,28 +750,22 @@ install_cloned_app () {
 	fi
 
 	local source_dir
-	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
+	source_dir=$( get_tmp_dir "source-${label}" ) || return 1
 
 	mv "${clone_dir}" "${source_dir}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}" || return
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${source_dir}" || true
-	fi
 }
 
 
 install_unpacked_app () {
-	expect_vars HALCYON_INTERNAL_NO_CLEANUP
-
 	local thing
 	expect_args thing -- "$@"
 
 	local unpack_dir
-	unpack_dir=$( get_tmp_dir 'halcyon-unpack' ) || return 1
+	unpack_dir=$( get_tmp_dir 'cabal-unpack' ) || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_NO_APP=1 \
@@ -809,23 +787,18 @@ install_unpacked_app () {
 	fi
 
 	local source_dir
-	source_dir=$( get_tmp_dir "halcyon-source-${label}" ) || return 1
+	source_dir=$( get_tmp_dir "source-${label}" ) || return 1
 
 	mv "${unpack_dir}/${label}" "${source_dir}" || return 1
 
 	# NOTE: Returns 2 if build is needed.
 	HALCYON_INTERNAL_REMOTE_SOURCE=1 \
 		full_install_app "${label}" "${source_dir}" || return
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${unpack_dir}" "${source_dir}" || true
-	fi
 }
 
 
 halcyon_install () {
-	expect_vars HALCYON_NO_APP \
-		HALCYON_INTERNAL_NO_CLEANUP
+	expect_vars HALCYON_NO_APP
 
 	if (( $# > 1 )); then
 		shift
@@ -834,7 +807,7 @@ halcyon_install () {
 	fi
 
 	local cache_dir
-	cache_dir=$( get_tmp_dir 'halcyon-cache' ) || return 1
+	cache_dir=$( get_tmp_dir 'cache' ) || return 1
 
 	if ! prepare_cache "${cache_dir}"; then
 		log_error 'Failed to prepare cache'
@@ -863,9 +836,5 @@ halcyon_install () {
 
 	if ! clean_cache "${cache_dir}"; then
 		log_warning 'Failed to clean cache'
-	fi
-
-	if ! (( HALCYON_INTERNAL_NO_CLEANUP )); then
-		rm -rf "${cache_dir}" || true
 	fi
 }
