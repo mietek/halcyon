@@ -338,8 +338,7 @@ prepare_build_dir () {
 	# they may also be in source dir.
 	opts_a+=( -o -name '.halcyon-tag' )
 	opts_a+=( -o -name 'dist' )
-	opts_a+=( \) )
-	opts_a+=( -prune -o )
+	opts_a+=( \) -prune -o )
 
 	local all_files
 	all_files=$( compare_tree "${build_dir}" "${source_dir}" "${opts_a[@]}" )

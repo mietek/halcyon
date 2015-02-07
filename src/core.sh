@@ -141,8 +141,7 @@ hash_source () {
 			opts_a+=( -o -name "${ignore}" )
 		done <"${source_dir}/.halcyon/extra-source-hash-ignore"
 	fi
-	opts_a+=( \) )
-	opts_a+=( -prune -o )
+	opts_a+=( \) -prune -o )
 
 	local source_hash
 	if ! source_hash=$( hash_tree "${source_dir}" "${opts_a[@]}" ); then
