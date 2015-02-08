@@ -259,9 +259,9 @@ symlink_ghc_libs () {
 	ghc_minor="${ghc_minor%%.*}"
 
 	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
-	# .10-flavoured binary distribution of GHC < 7.8. However, GHC does
+	# .10-flavoured binary distribution of GHC < 7.8.  However, GHC does
 	# not use the `mpn_bdivmod` function, which is the only difference
-	# between the ABI of .3 and .10. Hence, on some platforms, .10 is
+	# between the ABI of .3 and .10.  Hence, on some platforms, .10 is
 	# symlinked to .3, and the .3-flavoured binary distribution is used.
 	local gmp_name gmp_file tinfo_file url
 	case "${HALCYON_INTERNAL_PLATFORM}" in

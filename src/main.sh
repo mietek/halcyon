@@ -3,7 +3,6 @@ set_halcyon_vars () {
 		export HALCYON_INTERNAL_VARS=1
 
 		# NOTE: HALCYON_BASE is set in paths.sh.
-
 		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_BASE}}"
 		export HALCYON_ROOT="${HALCYON_ROOT:-/}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
@@ -474,6 +473,16 @@ EOF
 		return 1
 	fi
 
+	if [[ -n "${HALCYON_CABAL_REPO}" ]]; then
+		local repo_name
+		repo_name="${HALCYON_CABAL_REPO%%:*}"
+		if [[ -z "${repo_name}" ]]; then
+			log_error "Unexpected Cabal repo format: ${HALCYON_CABAL_REPO}"
+			log_error "Expected Cabal repo format: RepoName:${HALCYON_CABAL_REPO}"
+			return 1
+		fi
+	fi
+
 	export HALCYON_INTERNAL_COMMAND="${cmd}"
 
 	if (( HALCYON_LOG_TIMESTAMP )); then
@@ -483,12 +492,15 @@ EOF
 
 	# NOTE: HALCYON_CACHE must not be /tmp, as the cache cleaning
 	# functionality will get confused.
-
 	if [[ "${HALCYON_CACHE}" == '/tmp' ]]; then
 		export HALCYON_CACHE='/tmp/halcyon-cache'
 	fi
 
 	export BASHMENOT_APT_DIR="${HALCYON_CACHE}/apt"
+
+	export BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}"
+	export BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}"
+	export BASHMENOT_S3_ENDPOINT="${HALCYON_S3_ENDPOINT}"
 
 	local tmp_dir
 	tmp_dir=''
@@ -501,20 +513,6 @@ EOF
 		fi
 
 		export BASHMENOT_INTERNAL_TMP="${tmp_dir}"
-	fi
-
-	export BASHMENOT_AWS_ACCESS_KEY_ID="${HALCYON_AWS_ACCESS_KEY_ID}"
-	export BASHMENOT_AWS_SECRET_ACCESS_KEY="${HALCYON_AWS_SECRET_ACCESS_KEY}"
-	export BASHMENOT_S3_ENDPOINT="${HALCYON_S3_ENDPOINT}"
-
-	if [[ -n "${HALCYON_CABAL_REPO}" ]]; then
-		local repo_name
-		repo_name="${HALCYON_CABAL_REPO%%:*}"
-		if [[ -z "${repo_name}" ]]; then
-			log_error "Unexpected Cabal repo format: ${HALCYON_CABAL_REPO}"
-			log_error "Expected Cabal repo format: RepoName:${HALCYON_CABAL_REPO}"
-			return 1
-		fi
 	fi
 
 	# NOTE: Returns 2 if build is needed.

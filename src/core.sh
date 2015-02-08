@@ -126,9 +126,9 @@ hash_source () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
+	# NOTE: Ignoring the same files as in prepare_build_dir.
 	local -a opts_a
 	opts_a=()
-	# NOTE: Ignoring the same files as in prepare_build_dir.
 	opts_a+=( \( -name '.git' )
 	opts_a+=( -o -name '.gitmodules' )
 	opts_a+=( -o -name '.ghc' )
