@@ -8,7 +8,8 @@ install_os_packages () {
 
 	case "${platform}" in
 	'linux-arch'*)
-		sudo pacman --sync --noconfirm base-devel git pigz zlib || return 1
+		sudo bash -c "pacman --sync --refresh &&
+			pacman --sync --needed --noconfirm base-devel git pigz zlib" || return 1
 		;;
 	'linux-centos-6'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
