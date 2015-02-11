@@ -51,7 +51,7 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 			"${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu"
 		)
 		;;
-	'linux-centos-'*|'linux-fedora-'*)
+	'linux-amzn-'*|'linux-centos-'*|'linux-fedora-'*)
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/lib64" \
 			"${HALCYON_BASE}/usr/lib64" \
@@ -75,7 +75,7 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 			"${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu/pkgconfig"
 		)
 		;;
-	'linux-centos-'*|'linux-fedora-'*)
+	'linux-amzn-'*|'linux-centos-'*|'linux-fedora-'*)
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/usr/lib64/pkgconfig" \
 			"${HALCYON_BASE}/sandbox/usr/lib64/pkgconfig"

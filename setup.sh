@@ -7,6 +7,10 @@ install_os_packages () {
 	uid="$2"
 
 	case "${platform}" in
+	'linux-amzn-2014.09-'*)
+		sudo bash -c "yum groupinstall -y 'Development Tools' &&
+			yum install -y git pigz zlib-devel" || return 1
+		;;
 	'linux-arch'*)
 		sudo bash -c "pacman --sync --refresh &&
 			pacman --sync --needed --noconfirm base-devel git pigz zlib" || return 1

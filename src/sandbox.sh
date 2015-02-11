@@ -366,7 +366,7 @@ build_sandbox_dir () {
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" )
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu" )
 		;;
-	'linux-centos-'*|'linux-fedora-'*)
+	'linux-amzn-'*|'linux-centos-'*|'linux-fedora-'*)
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib64" )
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib64" )
 		;;

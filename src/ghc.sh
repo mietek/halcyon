@@ -319,7 +319,7 @@ symlink_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-centos-6-x86_64')
+	'linux-centos-6-x86_64'|'linux-amzn-2014.09-x86_64')
 		gmp_file='/usr/lib64/libgmp.so.3'
 		tinfo_file='/lib64/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 10 )); then
