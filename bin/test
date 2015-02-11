@@ -8,22 +8,35 @@ source "${HALCYON_DIR}/src.sh"
 
 
 test_ghc () {
-	local -a versions_a
-	versions_a=()
-	versions_a+=( '7.8.4' )
-	versions_a+=( '7.8.3' )
-	versions_a+=( '7.8.2' )
-	versions_a+=( '7.6.3' )
-	versions_a+=( '7.6.1' )
-	versions_a+=( '7.4.2' )
-	versions_a+=( '7.2.2' )
-	versions_a+=( '7.0.4' )
+	local -a ghc_versions_a
+	ghc_versions_a=()
+	ghc_versions_a+=( '7.10.1-rc2' )
+	ghc_versions_a+=( '7.8.4' )
+	ghc_versions_a+=( '7.8.3' )
+	ghc_versions_a+=( '7.8.2' )
+	ghc_versions_a+=( '7.6.3' )
+	ghc_versions_a+=( '7.6.1' )
+	ghc_versions_a+=( '7.4.2' )
+	ghc_versions_a+=( '7.2.2' )
+	ghc_versions_a+=( '7.0.4' )
 
 	log 'Testing GHC'
 
-	for version in "${versions_a[@]}"; do
+	for ghc_version in "${ghc_versions_a[@]}"; do
+		local ghc_major ghc_minor
+		ghc_major="${ghc_version%%.*}"
+		ghc_minor="${ghc_version#*.}"
+		ghc_minor="${ghc_minor%%.*}"
+
+		local -a opts_a
+		opts_a=()
+		opts_a+=( --ghc-version="${ghc_version}" )
+		if (( ghc_major == 7 && ghc_minor >= 10 )); then
+			opts_a+=( --cabal-version='1.22.0.0' )
+		fi
+
 		log
-		halcyon install --ghc-version="${version}" "$@" || return 1
+		halcyon install "${opts_a[@]}" "$@" || return 1
 	done
 }
 
