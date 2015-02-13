@@ -365,6 +365,27 @@ EOF
 }
 
 
+cabal_update () {
+	expect_vars HALCYON_BASE
+
+	local stderr
+	stderr=$( get_tmp_file 'cabal-update.stderr' ) || return 1
+
+	# NOTE: cabal-install 1.20.0.5 enforces the require-sandbox option
+	# even for the update command.
+	# https://github.com/haskell/cabal/issues/2309
+	local updated_size
+	if ! cabal_do '.' --no-require-sandbox update >"${stderr}" 2>&1 ||
+		! updated_size=$( get_size "${HALCYON_BASE}/cabal" )
+	then
+		log_indent_end 'error'
+		quote <"${stderr}"
+		return 1
+	fi
+	log_indent_end "done, ${updated_size}"
+}
+
+
 update_cabal_package_db () {
 	expect_vars HALCYON_BASE
 
@@ -394,17 +415,7 @@ update_cabal_package_db () {
 
 	log_indent_begin 'Updating Cabal package database...'
 
-	# NOTE: cabal-install 1.20.0.5 enforces the require-sandbox option
-	# even for the update command.
-	# https://github.com/haskell/cabal/issues/2309
-	local updated_size
-	if ! cabal_do '.' --no-require-sandbox update >'/dev/null' 2>&1 ||
-		! updated_size=$( get_size "${HALCYON_BASE}/cabal" )
-	then
-		log_indent_end 'error'
-		return 1
-	fi
-	log_indent_end "done, ${updated_size}"
+	cabal_update || return 1
 
 	if [[ -f "${source_dir}/.halcyon/cabal-post-update-hook" ]]; then
 		log 'Executing Cabal post-update hook'
