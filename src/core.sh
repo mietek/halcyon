@@ -176,10 +176,8 @@ hash_magic () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	# NOTE: The version number of Cabal and the contents of its package
-	# database could conceivably be treated as dependencies.
 	local magic_hash
-	if ! magic_hash=$( hash_tree "${source_dir}/.halcyon" -not -path './cabal*' ); then
+	if ! magic_hash=$( hash_tree "${source_dir}/.halcyon" ); then
 		log_error 'Failed to hash magic files'
 		return 1
 	fi
