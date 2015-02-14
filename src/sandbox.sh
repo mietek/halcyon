@@ -550,7 +550,7 @@ restore_sandbox_dir () {
 		then
 			rm -rf "${HALCYON_BASE}/sandbox" || true
 
-			log_error 'Failed to restore sandbox directory'
+			log_warning 'Failed to restore sandbox directory'
 			return 1
 		fi
 	else

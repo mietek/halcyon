@@ -379,7 +379,7 @@ restore_install_dir () {
 		then
 			rm -rf "${install_dir}" || true
 
-			log_error 'Failed to restore install directory'
+			log_warning 'Failed to restore install directory'
 			return 1
 		fi
 	else

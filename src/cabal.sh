@@ -569,7 +569,7 @@ restore_base_cabal_dir () {
 	fi
 	rm -rf "${HALCYON_BASE}/cabal" || true
 
-	log 'Restoring base Cabal directory'
+	log 'Restoring Cabal directory'
 
 	if ! extract_cached_archive_over "${base_name}" "${HALCYON_BASE}/cabal" ||
 		! validate_base_cabal_dir "${tag}" >'/dev/null'
@@ -582,7 +582,7 @@ restore_base_cabal_dir () {
 		then
 			rm -rf "${HALCYON_BASE}/cabal" || true
 
-			log_error 'Failed to restore base Cabal directory'
+			log_warning 'Failed to restore Cabal directory'
 			return 1
 		fi
 	else
@@ -622,7 +622,7 @@ restore_cached_updated_cabal_dir () {
 	then
 		rm -rf "${HALCYON_BASE}/cabal" || true
 
-		log_error 'Failed to restore Cabal directory'
+		log_warning 'Failed to restore Cabal directory'
 		return 1
 	else
 		touch_cached_file "${updated_name}"
@@ -662,7 +662,7 @@ restore_updated_cabal_dir () {
 	then
 		rm -rf "${HALCYON_BASE}/cabal" || true
 
-		log_error 'Failed to restore Cabal directory'
+		log_warning 'Failed to restore Cabal directory'
 		return 1
 	fi
 }
@@ -791,7 +791,7 @@ sandboxed_cabal_do () {
 		if ! saved_config=$( get_tmp_file 'saved-sandbox-cabal.config' ) ||
 			! mv "${HALCYON_BASE}/sandbox/cabal.config" "${saved_config}"
 		then
-			log_error 'Failed to save existing sandbox Cabal config'
+			log_error 'Failed to put away existing sandbox Cabal config'
 			return 1
 		fi
 	fi
@@ -814,7 +814,7 @@ sandboxed_cabal_do () {
 	fi
 	if [[ -n "${saved_config}" ]]; then
 		if ! mv "${saved_config}" "${HALCYON_BASE}/sandbox/cabal.config"; then
-			log_error 'Failed to restore saved sandbox Cabal config'
+			log_error 'Failed to put back existing sandbox Cabal config'
 			return 1
 		fi
 	fi
@@ -926,7 +926,7 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 		if ! saved_sandbox=$( get_tmp_dir 'saved-sandbox' ) ||
 			! mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}"
 		then
-			log_error 'Failed to save existing sandbox'
+			log_error 'Failed to put away existing sandbox'
 			return 1
 		fi
 	fi
@@ -952,7 +952,7 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 	fi
 	if [[ -n "${saved_sandbox}" ]]; then
 		if ! mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox"; then
-			log_error 'Failed to restore saved sandbox'
+			log_error 'Failed to put back existing sandbox'
 			return 1
 		fi
 	fi

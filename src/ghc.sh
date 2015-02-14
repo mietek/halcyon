@@ -768,7 +768,7 @@ restore_ghc_dir () {
 		then
 			rm -rf "${HALCYON_BASE}/ghc" || true
 
-			log_error 'Failed to restore GHC directory'
+			log_warning 'Failed to restore GHC directory'
 			return 1
 		fi
 	else

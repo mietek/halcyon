@@ -321,7 +321,7 @@ restore_build_dir () {
 		then
 			rm -rf "${build_dir}" || true
 
-			log_error 'Failed to restore build directory'
+			log_warning 'Failed to restore build directory'
 			return 1
 		fi
 	else

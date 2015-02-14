@@ -524,7 +524,7 @@ do_full_install_app () {
 			if ! saved_sandbox=$( get_tmp_dir 'saved-sandbox' ) ||
 				! mv "${HALCYON_BASE}/sandbox" "${saved_sandbox}"
 			then
-				log_error 'Failed to save existing sandbox'
+				log_error 'Failed to put away existing sandbox'
 				return 1
 			fi
 		fi
@@ -564,7 +564,7 @@ do_full_install_app () {
 		fi
 		if [[ -n "${saved_sandbox}" ]]; then
 			if ! mv "${saved_sandbox}" "${HALCYON_BASE}/sandbox"; then
-				log_error 'Failed to restore saved sandbox'
+				log_error 'Failed to put back existing sandbox'
 				return 1
 			fi
 		fi
