@@ -27,10 +27,10 @@ help_usage () {
 		  --log-timestamp
 
 		Build-time options
-		  --extra-source-hash-ignore=             STRINGS | FILE
-		  --constraints=                          STRINGS | FILE | DIR
+		  --extra-source-hash-ignore=             STRING | FILE
+		  --constraints=                          STRING | FILE | DIR
 		  --ignore-all-constraints
-		  --extra-configure-flags=                STRINGS | FILE
+		  --extra-configure-flags=                STRING | FILE
 		  --pre-build-hook=                       FILE
 		  --post-build-hook=                      FILE
 		  --app-rebuild
@@ -40,10 +40,10 @@ help_usage () {
 		  --dependencies-only
 
 		Install-time options
-		  --extra-apps=                           STRINGS | FILE
-		  --extra-apps-constraints=               STRINGS | FILE | DIR
-		  --extra-data-files=                     STRINGS | FILE
-		  --extra-os-packages=                    STRINGS | FILE
+		  --extra-apps=                           STRING | FILE
+		  --extra-apps-constraints=               STRING | FILE | DIR
+		  --extra-data-files=                     STRING | FILE
+		  --extra-os-packages=                    STRING | FILE
 		  --pre-install-hook=                     FILE
 		  --post-install-hook=                    FILE
 		  --app-reinstall
@@ -86,11 +86,11 @@ help_usage () {
 		  --cabal-update
 
 		Sandbox options
-		  --sandbox-extra-configure-flags=        STRINGS | FILE
-		  --sandbox-sources=                      STRINGS | FILE
-		  --sandbox-extra-apps=                   STRINGS | FILE
-		  --sandbox-extra-apps-constraints=       STRINGS | FILE | DIR
-		  --sandbox-extra-os-packages=            STRINGS | FILE
+		  --sandbox-extra-configure-flags=        STRING | FILE
+		  --sandbox-sources=                      STRING | FILE
+		  --sandbox-extra-apps=                   STRING | FILE
+		  --sandbox-extra-apps-constraints=       STRING | FILE | DIR
+		  --sandbox-extra-os-packages=            STRING | FILE
 		  --sandbox-pre-build-hook=               FILE
 		  --sandbox-post-build-hook=              FILE
 		  --sandbox-rebuild

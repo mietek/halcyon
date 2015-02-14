@@ -367,7 +367,7 @@ prepare_file_option () {
 }
 
 
-prepare_file_strings_option () {
+prepare_string_file_option () {
 	local magic_var magic_file
 	expect_args magic_var magic_file -- "$@"
 
@@ -379,10 +379,10 @@ prepare_file_strings_option () {
 		return 0
 	fi
 
-	local -a strings_a
-	strings_a=( ${magic_var} )
+	local -a string_a
+	string_a=( ${magic_var} )
 
-	copy_file <( IFS=$'\n' && echo "${strings_a[*]}" ) "${magic_file}" || return 1
+	copy_file <( IFS=$'\n' && echo "${string_a[*]}" ) "${magic_file}" || return 1
 }
 
 
@@ -424,16 +424,16 @@ prepare_source_dir () {
 	magic_dir="${source_dir}/.halcyon"
 
 	# Build-time magic files
-	prepare_file_strings_option "${HALCYON_EXTRA_SOURCE_HASH_IGNORE}" "${magic_dir}/extra-source-hash-ignore" || return 1
-	prepare_file_strings_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || return 1
+	prepare_string_file_option "${HALCYON_EXTRA_SOURCE_HASH_IGNORE}" "${magic_dir}/extra-source-hash-ignore" || return 1
+	prepare_string_file_option "${HALCYON_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/extra-configure-flags" || return 1
 	prepare_file_option "${HALCYON_PRE_BUILD_HOOK}" "${magic_dir}/pre-build-hook" || return 1
 	prepare_file_option "${HALCYON_POST_BUILD_HOOK}" "${magic_dir}/post-build-hook" || return 1
 
 	# Install-time magic files
-	prepare_file_strings_option "${HALCYON_EXTRA_APPS}" "${magic_dir}/extra-apps" || return 1
+	prepare_string_file_option "${HALCYON_EXTRA_APPS}" "${magic_dir}/extra-apps" || return 1
 	prepare_constraints_option "${HALCYON_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/extra-apps-constraints" || return 1
-	prepare_file_strings_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || return 1
-	prepare_file_strings_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || return 1
+	prepare_string_file_option "${HALCYON_EXTRA_DATA_FILES}" "${magic_dir}/extra-data-files" || return 1
+	prepare_string_file_option "${HALCYON_EXTRA_OS_PACKAGES}" "${magic_dir}/extra-os-packages" || return 1
 	prepare_file_option "${HALCYON_PRE_INSTALL_HOOK}" "${magic_dir}/pre-install-hook" || return 1
 	prepare_file_option "${HALCYON_POST_INSTALL_HOOK}" "${magic_dir}/post-install-hook" || return 1
 
@@ -448,11 +448,11 @@ prepare_source_dir () {
 	prepare_file_option "${HALCYON_CABAL_POST_UPDATE_HOOK}" "${magic_dir}/cabal-post-update-hook" || return 1
 
 	# Sandbox magic files
-	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || return 1
-	prepare_file_strings_option "${HALCYON_SANDBOX_SOURCES}" "${magic_dir}/sandbox-sources" || return 1
-	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_APPS}" "${magic_dir}/sandbox-extra-apps" || return 1
+	prepare_string_file_option "${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS}" "${magic_dir}/sandbox-extra-configure-flags" || return 1
+	prepare_string_file_option "${HALCYON_SANDBOX_SOURCES}" "${magic_dir}/sandbox-sources" || return 1
+	prepare_string_file_option "${HALCYON_SANDBOX_EXTRA_APPS}" "${magic_dir}/sandbox-extra-apps" || return 1
 	prepare_constraints_option "${HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS}" "${magic_dir}/sandbox-extra-apps-constraints" || return 1
-	prepare_file_strings_option "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES}" "${magic_dir}/sandbox-extra-os-packages" || return 1
+	prepare_string_file_option "${HALCYON_SANDBOX_EXTRA_OS_PACKAGES}" "${magic_dir}/sandbox-extra-os-packages" || return 1
 	prepare_file_option "${HALCYON_SANDBOX_PRE_BUILD_HOOK}" "${magic_dir}/sandbox-pre-build-hook" || return 1
 	prepare_file_option "${HALCYON_SANDBOX_POST_BUILD_HOOK}" "${magic_dir}/sandbox-post-build-hook" || return 1
 }
