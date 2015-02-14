@@ -266,14 +266,6 @@ format_ghc_id () {
 }
 
 
-format_ghc_description () {
-	local tag
-	expect_args tag -- "$@"
-
-	format_ghc_id "${tag}"
-}
-
-
 format_ghc_archive_name () {
 	local tag
 	expect_args tag -- "$@"

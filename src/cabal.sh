@@ -108,19 +108,6 @@ format_cabal_remote_repo_name () {
 }
 
 
-format_cabal_description () {
-	local tag
-	expect_args tag -- "$@"
-
-	local cabal_id repo_name cabal_date
-	cabal_id=$( format_cabal_id "${tag}" )
-	repo_name=$( format_cabal_remote_repo_name "${tag}" )
-	cabal_date=$( get_tag_cabal_date "${tag}" )
-
-	echo "${cabal_id} ${repo_name:+(${repo_name} ${cabal_date})}"
-}
-
-
 format_cabal_config () {
 	expect_vars HALCYON_BASE
 
