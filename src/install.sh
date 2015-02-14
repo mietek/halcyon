@@ -1,12 +1,14 @@
 create_install_tag () {
 	local prefix label source_hash \
-		ghc_version ghc_magic_hash
+		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash
 	expect_args prefix label source_hash \
-		ghc_version ghc_magic_hash -- "$@"
+		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash -- "$@"
 
 	create_tag "${prefix}" "${label}" "${source_hash}" '' '' \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' '' \
+		"${cabal_version}" "${cabal_magic_hash}" '' '' \
 		''
 }
 
@@ -16,7 +18,11 @@ detect_install_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_install_tag '.*' '.*' '.*' '.*' '.*' )
+	tag_pattern=$(
+		create_install_tag '.*' '.*' '.*' \
+			'.*' '.*' \
+			'.*' '.*'
+	)
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
@@ -32,15 +38,20 @@ derive_install_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local prefix label source_hash ghc_version ghc_magic_hash
+	local prefix label source_hash \
+		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
 	source_hash=$( get_tag_source_hash "${tag}" )
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 
 	create_install_tag "${prefix}" "${label}" "${source_hash}" \
-		"${ghc_version}" "${ghc_magic_hash}"
+		"${ghc_version}" "${ghc_magic_hash}" \
+		"${cabal_version}" "${cabal_magic_hash}"
 }
 
 

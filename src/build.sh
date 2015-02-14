@@ -1,14 +1,16 @@
 create_build_tag () {
 	local prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
 		sandbox_magic_hash
 	expect_args prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
 		sandbox_magic_hash -- "$@"
 
 	create_tag "${prefix}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' ''  \
+		"${cabal_version}" "${cabal_magic_hash}" '' ''  \
 		"${sandbox_magic_hash}"
 }
 
@@ -18,7 +20,12 @@ detect_build_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_build_tag '.*' '.*' '.*' '.*' '.*' '.*' '.*' '.*' )
+	tag_pattern=$(
+		create_build_tag '.*' '.*' '.*' '.*' '.*' \
+			'.*' '.*' \
+			'.*' '.*' \
+			'.*'
+	)
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
@@ -36,6 +43,7 @@ derive_build_tag () {
 
 	local prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
 		sandbox_magic_hash
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
@@ -44,10 +52,13 @@ derive_build_tag () {
 	magic_hash=$( get_tag_magic_hash "${tag}" )
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" )
 
 	create_build_tag "${prefix}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
+		"${cabal_version}" "${cabal_magic_hash}" \
 		"${sandbox_magic_hash}"
 }
 
@@ -58,6 +69,7 @@ derive_configured_build_tag_pattern () {
 
 	local prefix label constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
 		sandbox_magic_hash
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
@@ -65,10 +77,13 @@ derive_configured_build_tag_pattern () {
 	magic_hash=$( get_tag_magic_hash "${tag}" )
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" )
 
 	create_build_tag "${prefix}" "${label//./\.}" '.*' "${constraints_hash}" '.*' \
 		"${ghc_version//./\.}" "${ghc_magic_hash}" \
+		"${cabal_version//./\.}" "${cabal_magic_hash}" \
 		"${sandbox_magic_hash}"
 }
 
@@ -77,13 +92,21 @@ derive_potential_build_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
-	local label ghc_version ghc_magic_hash
+	local label \
+		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash
 	label=$( get_tag_label "${tag}" )
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 
+	# NOTE: Build directories created with cabal-install 1.20.0.3 are
+	# not usable with cabal-install 1.22.0.0.
+	# https://github.com/haskell/cabal/issues/2320
 	create_build_tag '.*' "${label//./\.}" '.*' '.*' '.*' \
 		"${ghc_version//./\.}" "${ghc_magic_hash}" \
+		"${cabal_version//./\.}" "${cabal_magic_hash}" \
 		'.*'
 }
 

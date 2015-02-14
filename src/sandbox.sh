@@ -1,14 +1,16 @@
 create_sandbox_tag () {
 	local label constraints_hash \
 		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
 		sandbox_magic_hash
 	expect_args label constraints_hash \
 		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
 		sandbox_magic_hash -- "$@"
 
 	create_tag '' "${label}" '' "${constraints_hash}" '' \
 		"${ghc_version}" "${ghc_magic_hash}" \
-		'' '' '' '' \
+		"${cabal_version}" "${cabal_magic_hash}" '' '' \
 		"${sandbox_magic_hash}"
 }
 
@@ -18,7 +20,12 @@ detect_sandbox_tag () {
 	expect_args tag_file -- "$@"
 
 	local tag_pattern
-	tag_pattern=$( create_sandbox_tag '.*' '.*' '.*' '.*' '.*' )
+	tag_pattern=$(
+		create_sandbox_tag '.*' '.*' \
+			'.*' '.*' \
+			'.*' '.*' \
+			'.*'
+	)
 
 	local tag
 	if ! tag=$( detect_tag "${tag_file}" "${tag_pattern}" ); then
@@ -34,15 +41,21 @@ derive_sandbox_tag () {
 	local tag
 	expect_args tag -- "$@"
 
-	local label constraints_hash ghc_version ghc_magic_hash sandbox_magic_hash
+	local label constraints_hash \
+		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
+		sandbox_magic_hash
 	label=$( get_tag_label "${tag}" )
 	constraints_hash=$( get_tag_constraints_hash "${tag}" )
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" )
 
 	create_sandbox_tag "${label}" "${constraints_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
+		"${cabal_version}" "${cabal_magic_hash}" \
 		"${sandbox_magic_hash}"
 }
 
@@ -51,13 +64,18 @@ derive_matching_sandbox_tag () {
 	local tag label constraints_hash
 	expect_args tag label constraints_hash -- "$@"
 
-	local ghc_version ghc_magic_hash sandbox_magic_hash
+	local ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash \
+		sandbox_magic_hash
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 	sandbox_magic_hash=$( get_tag_sandbox_magic_hash "${tag}" )
 
 	create_sandbox_tag "${label}" "${constraints_hash}" \
 		"${ghc_version}" "${ghc_magic_hash}" \
+		"${cabal_version}" "${cabal_magic_hash}" \
 		"${sandbox_magic_hash}"
 }
 
