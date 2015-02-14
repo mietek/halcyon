@@ -29,12 +29,12 @@ help_usage () {
 		Build-time options
 		  --extra-source-hash-ignore=             STRING | FILE
 		  --constraints=                          STRING | FILE | DIR
-		  --ignore-all-constraints
 		  --extra-configure-flags=                STRING | FILE
 		  --pre-build-hook=                       FILE
 		  --post-build-hook=                      FILE
 		  --app-rebuild
 		  --app-reconfigure
+		  --ignore-all-constraints
 		  --no-build
 		  --no-build-dependencies
 		  --dependencies-only

@@ -183,8 +183,6 @@ halcyon_main () {
 			export HALCYON_CONSTRAINTS="${constraints}";;
 		'--constraints='*)
 			export HALCYON_CONSTRAINTS="${1#*=}";;
-		'--ignore-all-constraints')
-			export HALCYON_IGNORE_ALL_CONSTRAINTS=1;;
 		'--extra-configure-flags')
 			shift
 			expect_args extra_configure_flags -- "$@"
@@ -207,6 +205,8 @@ halcyon_main () {
 			export HALCYON_APP_REBUILD=1;;
 		'--app-reconfigure')
 			export HALCYON_APP_RECONFIGURE=1;;
+		'--ignore-all-constraints')
+			export HALCYON_IGNORE_ALL_CONSTRAINTS=1;;
 		'--no-build')
 			export HALCYON_NO_BUILD=1;;
 		'--no-build-dependencies')
