@@ -20,12 +20,12 @@ map_cabal_version_to_original_url () {
 
 
 create_cabal_tag () {
-	local cabal_version cabal_magic_hash cabal_repo cabal_date
-	expect_args cabal_version cabal_magic_hash cabal_repo cabal_date -- "$@"
+	local cabal_version cabal_magic_hash cabal_remote_repo cabal_date
+	expect_args cabal_version cabal_magic_hash cabal_remote_repo cabal_date -- "$@"
 
 	create_tag '' '' '' '' '' \
 		'' '' \
-		"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}" \
+		"${cabal_version}" "${cabal_magic_hash}" "${cabal_remote_repo}" "${cabal_date}" \
 		''
 }
 
@@ -63,12 +63,12 @@ derive_updated_cabal_tag () {
 	local tag cabal_date
 	expect_args tag cabal_date -- "$@"
 
-	local cabal_version cabal_magic_hash cabal_repo
+	local cabal_version cabal_magic_hash cabal_remote_repo
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
-	cabal_repo=$( get_tag_cabal_repo "${tag}" )
+	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
 
-	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" "${cabal_date}"
+	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_remote_repo}" "${cabal_date}"
 }
 
 
@@ -76,12 +76,12 @@ derive_updated_cabal_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
-	local cabal_version cabal_magic_hash cabal_repo
+	local cabal_version cabal_magic_hash cabal_remote_repo
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
-	cabal_repo=$( get_tag_cabal_repo "${tag}" )
+	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
 
-	create_cabal_tag "${cabal_version//./\.}" "${cabal_magic_hash}" "${cabal_repo//.\.}" '.*'
+	create_cabal_tag "${cabal_version//./\.}" "${cabal_magic_hash}" "${cabal_remote_repo//.\.}" '.*'
 }
 
 
@@ -97,14 +97,14 @@ format_cabal_id () {
 }
 
 
-format_cabal_repo_name () {
+format_cabal_remote_repo_name () {
 	local tag
 	expect_args tag -- "$@"
 
-	local cabal_repo
-	cabal_repo=$( get_tag_cabal_repo "${tag}" )
+	local cabal_remote_repo
+	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
 
-	echo "${cabal_repo%%:*}"
+	echo "${cabal_remote_repo%%:*}"
 }
 
 
@@ -114,7 +114,7 @@ format_cabal_description () {
 
 	local cabal_id repo_name cabal_date
 	cabal_id=$( format_cabal_id "${tag}" )
-	repo_name=$( format_cabal_repo_name "${tag}" )
+	repo_name=$( format_cabal_remote_repo_name "${tag}" )
 	cabal_date=$( get_tag_cabal_date "${tag}" )
 
 	echo "${cabal_id} ${repo_name:+(${repo_name} ${cabal_date})}"
@@ -127,11 +127,11 @@ format_cabal_config () {
 	local tag
 	expect_args tag -- "$@"
 
-	local cabal_repo
-	cabal_repo=$( get_tag_cabal_repo "${tag}" )
+	local cabal_remote_repo
+	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
 
 	cat <<-EOF
-		remote-repo:        ${cabal_repo}
+		remote-repo:        ${cabal_remote_repo}
 		remote-repo-cache:  ${HALCYON_BASE}/cabal/remote-repo-cache
 		avoid-reinstalls:   True
 		reorder-goals:      True
@@ -147,7 +147,7 @@ format_cabal_archive_name () {
 
 	local cabal_id repo_name cabal_date
 	cabal_id=$( format_cabal_id "${tag}" )
-	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
+	repo_name=$( format_cabal_remote_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 	cabal_date=$( get_tag_cabal_date "${tag}" )
 
 	echo "halcyon-cabal-${cabal_id}${repo_name:+-${repo_name}-${cabal_date}}.tar.gz"
@@ -171,7 +171,7 @@ format_updated_cabal_archive_name_prefix () {
 
 	local cabal_id repo_name
 	cabal_id=$( format_cabal_id "${tag}" )
-	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
+	repo_name=$( format_cabal_remote_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 
 	echo "halcyon-cabal-${cabal_id}-${repo_name}-"
 }
@@ -183,7 +183,7 @@ format_updated_cabal_archive_name_pattern () {
 
 	local cabal_id repo_name
 	cabal_id=$( format_cabal_id "${tag}" )
-	repo_name=$( format_cabal_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
+	repo_name=$( format_cabal_remote_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 
 	echo "halcyon-cabal-${cabal_id//./\.}-${repo_name//./\.}-.*\.tar\.gz"
 }

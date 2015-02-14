@@ -231,7 +231,7 @@ do_install_ghc_and_cabal_dirs () {
 
 install_ghc_and_cabal_dirs () {
 	expect_vars HALCYON_GHC_VERSION \
-		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
+		HALCYON_CABAL_VERSION HALCYON_CABAL_REMOTE_REPO \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local source_dir
@@ -244,10 +244,10 @@ install_ghc_and_cabal_dirs () {
 	ghc_minor="${ghc_version#*.}"
 	ghc_minor="${ghc_minor%%.*}"
 
-	local cabal_version cabal_magic_hash cabal_repo cabal_major cabal_minor
+	local cabal_version cabal_magic_hash cabal_remote_repo cabal_major cabal_minor
 	cabal_version="${HALCYON_CABAL_VERSION}"
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
-	cabal_repo="${HALCYON_CABAL_REPO}"
+	cabal_remote_repo="${HALCYON_CABAL_REMOTE_REPO}"
 	cabal_major="${cabal_version%%.*}"
 	cabal_minor="${cabal_version#*.}"
 	cabal_minor="${cabal_minor%%.*}"
@@ -271,7 +271,7 @@ install_ghc_and_cabal_dirs () {
 
 		log_indent_label 'Cabal version:' "${cabal_version}"
 		[[ -n "${cabal_magic_hash}" ]] && log_indent_label 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
-		log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
+		log_indent_label 'Cabal remote-repo:' "${cabal_remote_repo}"
 		log
 	fi
 
@@ -279,7 +279,7 @@ install_ghc_and_cabal_dirs () {
 	tag=$(
 		create_tag '' '' '' '' '' \
 			"${ghc_version}" "${ghc_magic_hash}" \
-			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
+			"${cabal_version}" "${cabal_magic_hash}" "${cabal_remote_repo}" '' \
 			''
 	)
 
@@ -581,7 +581,7 @@ do_full_install_app () {
 
 full_install_app () {
 	expect_vars HALCYON_PREFIX HALCYON_DEPENDENCIES_ONLY \
-		HALCYON_CABAL_VERSION HALCYON_CABAL_REPO \
+		HALCYON_CABAL_VERSION HALCYON_CABAL_REMOTE_REPO \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local label source_dir
@@ -686,10 +686,10 @@ full_install_app () {
 	ghc_version=$( determine_ghc_version "${constraints}" ) || return 1
 	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || return 1
 
-	local cabal_version cabal_magic_hash cabal_repo
+	local cabal_version cabal_magic_hash cabal_remote_repo
 	cabal_version="${HALCYON_CABAL_VERSION}"
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
-	cabal_repo="${HALCYON_CABAL_REPO}"
+	cabal_remote_repo="${HALCYON_CABAL_REMOTE_REPO}"
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || return 1
@@ -713,7 +713,7 @@ full_install_app () {
 
 	log_indent_label 'Cabal version:' "${cabal_version}"
 	[[ -n "${cabal_magic_hash}" ]] && log_indent_label 'Cabal magic hash:' "${cabal_magic_hash:0:7}"
-	log_indent_label 'Cabal repository:' "${cabal_repo%%:*}"
+	log_indent_label 'Cabal remote-repo:' "${cabal_remote_repo}"
 
 	[[ -n "${sandbox_magic_hash}" ]] && log_indent_label 'Sandbox magic hash:' "${sandbox_magic_hash:0:7}"
 	describe_extra 'Sandbox extra configure flags:' "${source_dir}/.halcyon/sandbox-extra-configure-flags"
@@ -725,7 +725,7 @@ full_install_app () {
 	tag=$(
 		create_tag "${HALCYON_PREFIX}" "${label}" "${source_hash}" "${constraints_hash}" "${magic_hash}" \
 			"${ghc_version}" "${ghc_magic_hash}" \
-			"${cabal_version}" "${cabal_magic_hash}" "${cabal_repo}" '' \
+			"${cabal_version}" "${cabal_magic_hash}" "${cabal_remote_repo}" '' \
 			"${sandbox_magic_hash}"
 	)
 

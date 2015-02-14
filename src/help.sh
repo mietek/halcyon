@@ -77,7 +77,7 @@ help_usage () {
 
 		Cabal options
 		  --cabal-version=                        VERSION
-		  --cabal-repo=                           STRING | FILE
+		  --cabal-remote-repo=                    STRING
 		  --cabal-pre-build-hook=                 FILE
 		  --cabal-post-build-hook=                FILE
 		  --cabal-pre-update-hook=                FILE

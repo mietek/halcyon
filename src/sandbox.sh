@@ -257,10 +257,10 @@ install_sandbox_extra_apps () {
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
-	local cabal_version cabal_magic_hash cabal_repo
+	local cabal_version cabal_magic_hash cabal_remote_repo
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
-	cabal_repo=$( get_tag_cabal_repo "${tag}" )
+	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
 
 	local extra_constraints
 	extra_constraints="${source_dir}/.halcyon/sandbox-extra-apps-constraints"
@@ -271,7 +271,7 @@ install_sandbox_extra_apps () {
 	opts_a+=( --prefix="${HALCYON_BASE}/sandbox" )
 	opts_a+=( --ghc-version="${ghc_version}" )
 	opts_a+=( --cabal-version="${cabal_version}" )
-	opts_a+=( --cabal-repo="${cabal_repo}" )
+	opts_a+=( --cabal-remote-repo="${cabal_remote_repo}" )
 	[[ -e "${extra_constraints}" ]] && opts_a+=( --constraints="${extra_constraints}" )
 
 	log 'Installing sandbox extra apps'

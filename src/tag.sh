@@ -3,14 +3,14 @@ create_tag () {
 
 	local prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
-		cabal_version cabal_magic_hash cabal_repo cabal_date \
+		cabal_version cabal_magic_hash cabal_remote_repo cabal_date \
 		sandbox_magic_hash
 	expect_args prefix label source_hash constraints_hash magic_hash \
 		ghc_version ghc_magic_hash \
-		cabal_version cabal_magic_hash cabal_repo cabal_date \
+		cabal_version cabal_magic_hash cabal_remote_repo cabal_date \
 		sandbox_magic_hash -- "$@"
 
-	echo -e "1\t${HALCYON_INTERNAL_PLATFORM}\t${HALCYON_BASE}\t${prefix}\t${label}\t${source_hash}\t${constraints_hash}\t${magic_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_repo}\t${cabal_date}\t${sandbox_magic_hash}"
+	echo -e "1\t${HALCYON_INTERNAL_PLATFORM}\t${HALCYON_BASE}\t${prefix}\t${label}\t${source_hash}\t${constraints_hash}\t${magic_hash}\t${ghc_version}\t${ghc_magic_hash}\t${cabal_version}\t${cabal_magic_hash}\t${cabal_remote_repo}\t${cabal_date}\t${sandbox_magic_hash}"
 }
 
 
@@ -110,7 +110,7 @@ get_tag_cabal_magic_hash () {
 }
 
 
-get_tag_cabal_repo () {
+get_tag_cabal_remote_repo () {
 	local tag
 	expect_args tag -- "$@"
 

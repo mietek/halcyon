@@ -55,7 +55,7 @@ set_halcyon_vars () {
 		# NOTE: Cabal does not support HTTPS repository URLs.
 		# https://github.com/haskell/cabal/issues/936
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-1.20.0.3}"
-		export HALCYON_CABAL_REPO="${HALCYON_CABAL_REPO:-Hackage:http://hackage.haskell.org/packages/archive}"
+		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-hackage:http://hackage.haskell.org/packages/archive}"
 		export HALCYON_CABAL_PRE_BUILD_HOOK="${HALCYON_CABAL_PRE_BUILD_HOOK:-}"
 		export HALCYON_CABAL_POST_BUILD_HOOK="${HALCYON_CABAL_POST_BUILD_HOOK:-}"
 		export HALCYON_CABAL_PRE_UPDATE_HOOK="${HALCYON_CABAL_PRE_UPDATE_HOOK:-}"
@@ -340,12 +340,12 @@ halcyon_main () {
 			export HALCYON_CABAL_VERSION="${cabal_version}";;
 		'--cabal-version='*)
 			export HALCYON_CABAL_VERSION="${1#*=}";;
-		'--cabal-repo')
+		'--cabal-remote-repo')
 			shift
-			expect_args cabal_repo -- "$@"
-			export HALCYON_CABAL_REPO="${cabal_repo}";;
-		'--cabal-repo='*)
-			export HALCYON_CABAL_REPO="${1#*=}";;
+			expect_args cabal_remote_repo -- "$@"
+			export HALCYON_CABAL_REMOTE_REPO="${cabal_remote_repo}";;
+		'--cabal-remote-repo='*)
+			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
 		'--cabal-pre-build-hook')
 			shift
 			expect_args cabal_pre_build_hook -- "$@"
@@ -465,16 +465,6 @@ halcyon_main () {
 			$ mv ~/.ghc ~/.ghc.original
 EOF
 		return 1
-	fi
-
-	if [[ -n "${HALCYON_CABAL_REPO}" ]]; then
-		local repo_name
-		repo_name="${HALCYON_CABAL_REPO%%:*}"
-		if [[ -z "${repo_name}" ]]; then
-			log_error "Unexpected Cabal repo format: ${HALCYON_CABAL_REPO}"
-			log_error "Expected Cabal repo format: RepoName:${HALCYON_CABAL_REPO}"
-			return 1
-		fi
 	fi
 
 	export HALCYON_INTERNAL_COMMAND="${cmd}"
