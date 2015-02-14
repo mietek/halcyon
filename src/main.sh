@@ -526,22 +526,21 @@ EOF
 
 		if ! cat "${HALCYON_DIR}/src/paths.sh"; then
 			log_error 'Failed to export paths'
-			return 1
+			status=1
 		fi
 		;;
 	'help')
 		help_usage
-		return 0
 		;;
 	'')
 		log_error 'Expected command'
 		help_usage
-		return 1
+		status=1
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args_a[*]:-}"
 		help_usage
-		return 1
+		status=1
 	esac
 
 	if ! (( HALCYON_INTERNAL_NO_CLEANUP )) && [[ -n "${tmp_dir}" ]]; then
