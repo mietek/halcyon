@@ -77,11 +77,13 @@ derive_potential_build_tag_pattern () {
 	local tag
 	expect_args tag -- "$@"
 
-	local label
+	local label ghc_version ghc_magic_hash
 	label=$( get_tag_label "${tag}" )
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	ghc_magic_hash=$( get_tag_ghc_magic_hash "${tag}" )
 
-	create_build_tag '.*' "${label}" '.*' '.*' '.*' \
-		'.*' '.*' \
+	create_build_tag '.*' "${label//./\.}" '.*' '.*' '.*' \
+		"${ghc_version//./\.}" "${ghc_magic_hash}" \
 		'.*'
 }
 
