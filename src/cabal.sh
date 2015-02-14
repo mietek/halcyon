@@ -127,6 +127,8 @@ format_cabal_config () {
 	local tag
 	expect_args tag -- "$@"
 
+	# NOTE: Cabal does not support HTTPS repository URLs.
+	# https://github.com/haskell/cabal/issues/936
 	local cabal_remote_repo
 	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
 
