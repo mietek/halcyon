@@ -672,10 +672,14 @@ full_install_app () {
 			return 1
 		fi
 
-		log_warning 'Using newest versions of all packages'
-		if [[ "${HALCYON_INTERNAL_COMMAND}" != 'constraints' ]]; then
-			format_constraints <<<"${constraints}" | quote
-			log
+		local cabal_remote_repo
+		cabal_remote_repo=$( determine_cabal_remote_repo "${source_dir}" ) || return 1
+		if ! is_stackage "${cabal_remote_repo}"; then
+			log_warning 'Using newest versions of all packages'
+			if [[ "${HALCYON_INTERNAL_COMMAND}" != 'constraints' ]]; then
+				format_constraints <<<"${constraints}" | quote
+				log
+			fi
 		fi
 
 		# NOTE: Second of two places where source_dir is modified.
@@ -846,8 +850,12 @@ install_unpacked_app () {
 		return 1
 	fi
 
-	if [[ "${label}" != "${thing}" ]]; then
-		log_warning "Using newest version of ${thing}: ${label}"
+	local cabal_remote_repo
+	cabal_remote_repo=$( determine_cabal_remote_repo "${unpack_dir}/${label}" )
+	if ! is_stackage "${cabal_remote_repo}"; then
+		if [[ "${label}" != "${thing}" ]]; then
+			log_warning "Using newest version of ${thing}: ${label}"
+		fi
 	fi
 
 	local source_dir

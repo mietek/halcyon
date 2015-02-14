@@ -19,6 +19,17 @@ map_cabal_version_to_original_url () {
 }
 
 
+is_stackage () {
+	local cabal_remote_repo
+	expect_args cabal_remote_repo -- "$@"
+
+	case "${cabal_remote_repo}" in
+	'stackage-'*)	return 0;;
+	*)		return 1
+	esac
+}
+
+
 create_cabal_tag () {
 	local cabal_version cabal_magic_hash cabal_remote_repo cabal_date
 	expect_args cabal_version cabal_magic_hash cabal_remote_repo cabal_date -- "$@"
@@ -60,13 +71,17 @@ derive_base_cabal_tag () {
 
 
 derive_updated_cabal_tag () {
-	local tag cabal_date
-	expect_args tag cabal_date -- "$@"
+	local tag
+	expect_args tag -- "$@"
 
-	local cabal_version cabal_magic_hash cabal_remote_repo
+	local cabal_version cabal_magic_hash cabal_remote_repo cabal_date
 	cabal_version=$( get_tag_cabal_version "${tag}" )
 	cabal_magic_hash=$( get_tag_cabal_magic_hash "${tag}" )
 	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
+	cabal_date=''
+	if ! is_stackage "${cabal_remote_repo}"; then
+		cabal_date=$( get_date '+%Y-%m-%d' )
+	fi
 
 	create_cabal_tag "${cabal_version}" "${cabal_magic_hash}" "${cabal_remote_repo}" "${cabal_date}"
 }
@@ -139,7 +154,7 @@ format_cabal_archive_name () {
 	repo_name=$( format_cabal_remote_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 	cabal_date=$( get_tag_cabal_date "${tag}" )
 
-	echo "halcyon-cabal-${cabal_id}${repo_name:+-${repo_name}-${cabal_date}}.tar.gz"
+	echo "halcyon-cabal-${cabal_id}${repo_name:+-${repo_name}${cabal_date:+-${cabal_date}}}.tar.gz"
 }
 
 
@@ -162,7 +177,7 @@ format_updated_cabal_archive_name_prefix () {
 	cabal_id=$( format_cabal_id "${tag}" )
 	repo_name=$( format_cabal_remote_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 
-	echo "halcyon-cabal-${cabal_id}-${repo_name}-"
+	echo "halcyon-cabal-${cabal_id}-${repo_name}"
 }
 
 
@@ -174,7 +189,7 @@ format_updated_cabal_archive_name_pattern () {
 	cabal_id=$( format_cabal_id "${tag}" )
 	repo_name=$( format_cabal_remote_repo_name "${tag}" | tr '[:upper:]' '[:lower:]' )
 
-	echo "halcyon-cabal-${cabal_id//./\.}-${repo_name//./\.}-.*\.tar\.gz"
+	echo "halcyon-cabal-${cabal_id//./\.}-${repo_name//./\.}.*\.tar\.gz"
 }
 
 
@@ -396,9 +411,6 @@ update_cabal_package_db () {
 	local tag
 	expect_args tag -- "$@"
 
-	local cabal_date
-	cabal_date=$( get_date '+%Y-%m-%d' )
-
 	log 'Updating Cabal directory'
 
 	if ! format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/config"; then
@@ -432,7 +444,7 @@ update_cabal_package_db () {
 		log 'Cabal post-update hook executed'
 	fi
 
-	if ! derive_updated_cabal_tag "${tag}" "${cabal_date}" >"${HALCYON_BASE}/cabal/.halcyon-tag"; then
+	if ! derive_updated_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag"; then
 		log_error 'Failed to write Cabal tag'
 		return 1
 	fi
@@ -507,9 +519,12 @@ validate_updated_cabal_dir () {
 	updated_pattern=$( derive_updated_cabal_tag_pattern "${tag}" )
 	candidate_tag=$( detect_tag "${HALCYON_BASE}/cabal/.halcyon-tag" "${updated_pattern}" ) || return 1
 
-	local candidate_date
-	candidate_date=$( get_tag_cabal_date "${candidate_tag}" )
-	validate_updated_cabal_date "${candidate_date}" || return 1
+	local candidate_remote_repo candidate_date
+	candidate_remote_repo=$( get_tag_cabal_remote_repo "${candidate_tag}" )
+	if ! is_stackage "${candidate_remote_repo}"; then
+		candidate_date=$( get_tag_cabal_date "${candidate_tag}" )
+		validate_updated_cabal_date "${candidate_date}" || return 1
+	fi
 
 	if [[ ! -f "${HALCYON_BASE}/cabal/config" ]]; then
 		return 1
@@ -532,9 +547,12 @@ match_updated_cabal_archive_name () {
 		match_exactly_one
 	) || return 1
 
-	local candidate_date
-	candidate_date=$( format_updated_cabal_archive_name_date "${candidate_name}" )
-	validate_updated_cabal_date "${candidate_date}" || return 1
+	local cabal_remote_repo candidate_date
+	cabal_remote_repo=$( get_tag_cabal_remote_repo "${tag}" )
+	if ! is_stackage "${cabal_remote_repo}"; then
+		candidate_date=$( format_updated_cabal_archive_name_date "${candidate_name}" )
+		validate_updated_cabal_date "${candidate_date}" || return 1
+	fi
 
 	echo "${candidate_name}"
 }
