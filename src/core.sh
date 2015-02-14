@@ -105,6 +105,25 @@ determine_cabal_magic_hash () {
 }
 
 
+determine_cabal_remote_repo () {
+	expect_vars HALCYON_DEFAULT_CABAL_REMOTE_REPO
+
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local cabal_remote_repo
+	cabal_remote_repo="${HALCYON_CABAL_REMOTE_REPO}"
+	if [[ -z "${cabal_remote_repo}" && -f "${source_dir}/.halcyon/cabal-remote-repo" ]]; then
+		cabal_remote_repo=$( <"${source_dir}/.halcyon/cabal-remote-repo" ) || true
+	fi
+	if [[ -z "${cabal_remote_repo}" ]]; then
+		cabal_remote_repo="${HALCYON_DEFAULT_CABAL_REMOTE_REPO}"
+	fi
+
+	echo "${cabal_remote_repo}"
+}
+
+
 describe_extra () {
 	local extra_label extra_file
 	expect_args extra_label extra_file -- "$@"
@@ -230,8 +249,7 @@ do_install_ghc_and_cabal_dirs () {
 
 
 install_ghc_and_cabal_dirs () {
-	expect_vars HALCYON_GHC_VERSION \
-		HALCYON_CABAL_VERSION HALCYON_CABAL_REMOTE_REPO \
+	expect_vars HALCYON_GHC_VERSION HALCYON_CABAL_VERSION \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local source_dir
@@ -247,7 +265,7 @@ install_ghc_and_cabal_dirs () {
 	local cabal_version cabal_magic_hash cabal_remote_repo cabal_major cabal_minor
 	cabal_version="${HALCYON_CABAL_VERSION}"
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
-	cabal_remote_repo="${HALCYON_CABAL_REMOTE_REPO}"
+	cabal_remote_repo=$( determine_cabal_remote_repo "${source_dir}" ) || return 1
 	cabal_major="${cabal_version%%.*}"
 	cabal_minor="${cabal_version#*.}"
 	cabal_minor="${cabal_minor%%.*}"
@@ -442,6 +460,7 @@ prepare_source_dir () {
 	prepare_file_option "${HALCYON_GHC_POST_BUILD_HOOK}" "${magic_dir}/ghc-post-build-hook" || return 1
 
 	# Cabal magic files
+	prepare_string_file_option "${HALCYON_CABAL_REMOTE_REPO}" "${magic_dir}/cabal-remote-repo" || return 1
 	prepare_file_option "${HALCYON_CABAL_PRE_BUILD_HOOK}" "${magic_dir}/cabal-pre-build-hook" || return 1
 	prepare_file_option "${HALCYON_CABAL_POST_BUILD_HOOK}" "${magic_dir}/cabal-post-build-hook" || return 1
 	prepare_file_option "${HALCYON_CABAL_PRE_UPDATE_HOOK}" "${magic_dir}/cabal-pre-update-hook" || return 1
@@ -581,7 +600,7 @@ do_full_install_app () {
 
 full_install_app () {
 	expect_vars HALCYON_PREFIX HALCYON_DEPENDENCIES_ONLY \
-		HALCYON_CABAL_VERSION HALCYON_CABAL_REMOTE_REPO \
+		HALCYON_CABAL_VERSION \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local label source_dir
@@ -689,7 +708,7 @@ full_install_app () {
 	local cabal_version cabal_magic_hash cabal_remote_repo
 	cabal_version="${HALCYON_CABAL_VERSION}"
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
-	cabal_remote_repo="${HALCYON_CABAL_REMOTE_REPO}"
+	cabal_remote_repo=$( determine_cabal_remote_repo "${source_dir}" ) || return 1
 
 	local sandbox_magic_hash
 	sandbox_magic_hash=$( hash_sandbox_magic "${source_dir}" ) || return 1
