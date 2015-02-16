@@ -124,7 +124,12 @@ install_halcyon () {
 		return 1
 	fi
 
-	source <( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' ) || return 1
+	if (( BASH_VERSINFO[0] >= 4 )); then
+		source <( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' ) || return 1
+	else
+		curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' >'/tmp/bashmenot-platform.sh' || return 1
+		source '/tmp/bashmenot-platform.sh'
+	fi
 
 	local platform uid user group
 	platform=$( detect_platform )
@@ -195,7 +200,12 @@ install_halcyon () {
 	fi
 	echo " done, ${commit_hash:0:7}" >&2
 
-	source <( HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths ) || return 1
+	if (( BASH_VERSINFO[0] >= 4 )); then
+		source <( HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths ) || return 1
+	else
+		HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths >'/tmp/halcyon-paths.sh' || return 1
+		source '/tmp/halcyon-paths.sh'
+	fi
 
 	if ! (( ${HALCYON_NO_MODIFY_HOME:-0} )); then
 		echo '-----> Extending .bash_profile' >&2
@@ -203,7 +213,12 @@ install_halcyon () {
 		if [[ "${base}" != '/app' ]]; then
 			echo "export HALCYON_BASE=${base}" >>"${HOME}/.bash_profile" || return 1
 		fi
-		echo "source <( HALCYON_NO_SELF_UPDATE=1 \"${dir}/halcyon\" paths )" >>"${HOME}/.bash_profile" || return 1
+		if (( BASH_VERSINFO[0] >= 4 )); then
+			echo "source <( HALCYON_NO_SELF_UPDATE=1 \"${dir}/halcyon\" paths )" >>"${HOME}/.bash_profile" || return 1
+		else
+			echo "HALCYON_NO_SELF_UPDATE=1 \"${dir}/halcyon\" paths >/tmp/halcyon-paths.sh" >>"${HOME}/.bash_profile" || return 1
+			echo "source /tmp/halcyon-paths.sh" >>"${HOME}/.bash_profile" || return 1
+		fi
 	else
 		echo "   *** WARNING: Cannot extend ${HOME}/.bash_profile" >&2
 		echo >&2
@@ -212,7 +227,12 @@ install_halcyon () {
 		if [[ "${base}" != '/app' ]]; then
 			echo "       $ export HALCYON_BASE=\"${base}\"" >&2
 		fi
-		echo "       $ source <( \"${dir}/halcyon\" paths )" >&2
+		if (( BASH_VERSINFO[0] >= 4 )); then
+			echo "       $ source <( \"${dir}/halcyon\" paths )" >&2
+		else
+			echo "\"${dir}/halcyon\" paths >/tmp/halcyon-paths.sh" >&2
+			echo "source /tmp/halcyon-paths.sh" >&2
+		fi
 	fi
 }
 
