@@ -71,6 +71,7 @@ install_os_packages () {
 		# NOTE: When run as root, sudo asks for password
 		# on Ubuntu 10.
 		if ! (( uid )); then
+			apt-get update || return 1
 			apt-get install -y build-essential git-core pigz zlib1g-dev || return 1
 			apt-get install -y --reinstall ca-certificates || return 1
 		else
