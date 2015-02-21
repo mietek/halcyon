@@ -74,7 +74,7 @@ map_ghc_version_to_freebsd_x86_64_url () {
 	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-freebsd.tar.bz2';;
 	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-amd64-freebsd-8.tar.bz2';;
 	*)
-		log_error "Unexpected GHC version for FreeBSD: ${ghc_version}"
+		log_error "Unexpected GHC version for FreeBSD (x86_64): ${ghc_version}"
 		return 1
 	esac
 }
