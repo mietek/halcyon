@@ -366,11 +366,6 @@ symlink_ghc_x86_64_libs () {
 	ghc_minor="${ghc_version#*.}"
 	ghc_minor="${ghc_minor%%.*}"
 
-	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
-	# .10-flavoured binary distribution of GHC < 7.8.  However, GHC does
-	# not use the `mpn_bdivmod` function, which is the only difference
-	# between the ABI of .3 and .10.  Hence, on some platforms, .10 is
-	# symlinked to .3, and the .3-flavoured binary distribution is used.
 	local gmp_name gmp_file tinfo_file url
 	gmp_name=''
 	gmp_file=''
@@ -378,6 +373,53 @@ symlink_ghc_x86_64_libs () {
 	case "${HALCYON_INTERNAL_PLATFORM}" in
 	'freebsd-10'*)
 		url=$( map_ghc_version_to_freebsd_x86_64_url "${ghc_version}" ) || return 1
+		;;
+	'linux-amzn-2014.09'*|'linux-centos-6'*|'linux-rhel-6'*)
+		gmp_file='/usr/lib64/libgmp.so.3'
+		tinfo_file='/lib64/libtinfo.so.5'
+		if (( ghc_major < 7 || ghc_minor < 10 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
+		fi
+		;;
+	'linux-arch'*)
+		gmp_file='/usr/lib/libgmp.so.10'
+		tinfo_file='/usr/lib/libncurses.so.5'
+		if (( ghc_major < 7 || ghc_minor < 8 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
+		fi
+		;;
+	'linux-centos-7'*|'linux-fedora-19'*|'linux-fedora-20'*|'linux-fedora-21'*|'linux-rhel-7'*)
+		gmp_file='/usr/lib64/libgmp.so.10'
+		tinfo_file='/usr/lib64/libtinfo.so.5'
+		if (( ghc_major < 7 || ghc_minor < 8 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
+		fi
+		;;
+	'linux-debian-6'*|'linux-ubuntu-10'*)
+		gmp_file='/usr/lib/libgmp.so.3'
+		tinfo_file='/lib/libncurses.so.5'
+		if (( ghc_major < 7 || ghc_minor < 10 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		else
+			log_error "Unexpected GHC version: ${ghc_version}"
+			log
+			log_indent 'To continue, use GHC 7.8.4 or older'
+			log
+			return 1
+		fi
 		;;
 	'linux-debian-7'*|'linux-ubuntu-14'*)
 		gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
@@ -398,53 +440,6 @@ symlink_ghc_x86_64_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
 			gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-			gmp_name='libgmp.so.10'
-			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
-		fi
-		;;
-	'linux-debian-6'*|'linux-ubuntu-10'*)
-		gmp_file='/usr/lib/libgmp.so.3'
-		tinfo_file='/lib/libncurses.so.5'
-		if (( ghc_major < 7 || ghc_minor < 10 )); then
-			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
-		else
-			log_error "Unexpected GHC version: ${ghc_version}"
-			log
-			log_indent 'To continue, use GHC 7.8.4 or older'
-			log
-			return 1
-		fi
-		;;
-	'linux-centos-7'*|'linux-fedora-21'*|'linux-fedora-20'*|'linux-fedora-19'*|'linux-rhel-7'*)
-		gmp_file='/usr/lib64/libgmp.so.10'
-		tinfo_file='/usr/lib64/libtinfo.so.5'
-		if (( ghc_major < 7 || ghc_minor < 8 )); then
-			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
-		else
-			gmp_name='libgmp.so.10'
-			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
-		fi
-		;;
-	'linux-centos-6'*|'linux-amzn-2014.09'*|'linux-rhel-6'*)
-		gmp_file='/usr/lib64/libgmp.so.3'
-		tinfo_file='/lib64/libtinfo.so.5'
-		if (( ghc_major < 7 || ghc_minor < 10 )); then
-			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
-		else
-			gmp_name='libgmp.so.10'
-			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
-		fi
-		;;
-	'linux-arch'*)
-		gmp_file='/usr/lib/libgmp.so.10'
-		tinfo_file='/usr/lib/libncurses.so.5'
-		if (( ghc_major < 7 || ghc_minor < 8 )); then
-			gmp_name='libgmp.so.3'
-			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
-		else
 			gmp_name='libgmp.so.10'
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
@@ -484,6 +479,11 @@ build_ghc_dir () {
 
 	log 'Building GHC directory'
 
+	# NOTE: There is no libgmp.so.3 on some platforms, and there is no
+	# .10-flavoured binary distribution of GHC < 7.8.  However, GHC does
+	# not use the `mpn_bdivmod` function, which is the only difference
+	# between the ABI of .3 and .10.  Hence, on some platforms, .10 is
+	# symlinked to .3, and the .3-flavoured binary distribution is used.
 	local ghc_original_url
 	case "${HALCYON_INTERNAL_PLATFORM}" in
 	*'-x86_64')

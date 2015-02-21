@@ -43,20 +43,20 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 		"${HALCYON_BASE}/sandbox/usr/lib"
 	)
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
-		_path=$( _join "${_path}" \
-			"${HALCYON_BASE}/lib/x86_64-linux-gnu" \
-			"${HALCYON_BASE}/usr/lib/x86_64-linux-gnu" \
-			"${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" \
-			"${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu"
-		)
-		;;
 	'linux-amzn-'*|'linux-centos-'*|'linux-fedora-'*|'linux-rhel-'*)
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/lib64" \
 			"${HALCYON_BASE}/usr/lib64" \
 			"${HALCYON_BASE}/sandbox/lib64" \
 			"${HALCYON_BASE}/sandbox/usr/lib64"
+		)
+		;;
+	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
+		_path=$( _join "${_path}" \
+			"${HALCYON_BASE}/lib/x86_64-linux-gnu" \
+			"${HALCYON_BASE}/usr/lib/x86_64-linux-gnu" \
+			"${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" \
+			"${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu"
 		)
 	esac
 	export LIBRARY_PATH="${_path}:${LIBRARY_PATH:-}"
@@ -69,16 +69,16 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 		"${HALCYON_BASE}/sandbox/usr/share/pkgconfig"
 	)
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
-		_path=$( _join "${_path}" \
-			"${HALCYON_BASE}/usr/lib/x86_64-linux-gnu/pkgconfig" \
-			"${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu/pkgconfig"
-		)
-		;;
 	'linux-amzn-'*|'linux-centos-'*|'linux-fedora-'*|'linux-rhel-'*)
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/usr/lib64/pkgconfig" \
 			"${HALCYON_BASE}/sandbox/usr/lib64/pkgconfig"
+		)
+		;;
+	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
+		_path=$( _join "${_path}" \
+			"${HALCYON_BASE}/usr/lib/x86_64-linux-gnu/pkgconfig" \
+			"${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu/pkgconfig"
 		)
 	esac
 	export PKG_CONFIG_PATH="${_path}:${PKG_CONFIG_PATH:-}"
