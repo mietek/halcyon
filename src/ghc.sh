@@ -323,8 +323,39 @@ copy_ghc_magic () {
 
 
 symlink_ghc_libs () {
-	expect_vars HALCYON_BASE \
-		HALCYON_INTERNAL_PLATFORM
+	expect_vars HALCYON_BASE
+
+	local gmp_name gmp_file tinfo_file
+	expect_args gmp_name gmp_file tinfo_file -- "$@"
+
+	if [[ -n "${gmp_file}" ]]; then
+		expect_existing "${gmp_file}" || return 1
+
+		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
+			! ln -fs "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" ||
+			! ln -fs "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so"
+		then
+			log_error 'Failed to symlink GHC libraries (libgmp.so)'
+			return 1
+		fi
+	fi
+
+	if [[ -n "${tinfo_file}" ]]; then
+		expect_existing "${tinfo_file}" || return 1
+
+		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
+			! ln -fs "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" ||
+			! ln -fs "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so"
+		then
+			log_error 'Failed to symlink GHC libraries (libtinfo.so)'
+			return 1
+		fi
+	fi
+}
+
+
+symlink_ghc_x86_64_libs () {
+	expect_vars HALCYON_INTERNAL_PLATFORM
 
 	local tag
 	expect_args tag -- "$@"
@@ -341,11 +372,14 @@ symlink_ghc_libs () {
 	# between the ABI of .3 and .10.  Hence, on some platforms, .10 is
 	# symlinked to .3, and the .3-flavoured binary distribution is used.
 	local gmp_name gmp_file tinfo_file url
+	gmp_name=''
+	gmp_file=''
+	tinfo_file=''
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'freebsd-10'*'-x86_64')
+	'freebsd-10'*)
 		url=$( map_ghc_version_to_freebsd_x86_64_url "${ghc_version}" ) || return 1
 		;;
-	'linux-debian-7-x86_64'|'linux-ubuntu-14'*'-x86_64')
+	'linux-debian-7'*|'linux-ubuntu-14'*)
 		gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
 		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 8 )); then
@@ -356,20 +390,19 @@ symlink_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-ubuntu-12'*'-x86_64')
+	'linux-ubuntu-12'*)
+		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 8 )); then
 			gmp_file='/usr/lib/libgmp.so.3'
-			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 			gmp_name='libgmp.so.3'
 			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
 			gmp_file='/usr/lib/x86_64-linux-gnu/libgmp.so.10'
-			tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 			gmp_name='libgmp.so.10'
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-debian-6-x86_64'|'linux-ubuntu-10'*'-x86_64')
+	'linux-debian-6'*|'linux-ubuntu-10'*)
 		gmp_file='/usr/lib/libgmp.so.3'
 		tinfo_file='/lib/libncurses.so.5'
 		if (( ghc_major < 7 || ghc_minor < 10 )); then
@@ -383,7 +416,7 @@ symlink_ghc_libs () {
 			return 1
 		fi
 		;;
-	'linux-centos-7-x86_64'|'linux-fedora-21-x86_64'|'linux-fedora-20-x86_64'|'linux-fedora-19-x86_64'|'linux-rhel-7-x86_64')
+	'linux-centos-7'*|'linux-fedora-21'*|'linux-fedora-20'*|'linux-fedora-19'*|'linux-rhel-7'*)
 		gmp_file='/usr/lib64/libgmp.so.10'
 		tinfo_file='/usr/lib64/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 8 )); then
@@ -394,7 +427,7 @@ symlink_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-centos-6-x86_64'|'linux-amzn-2014.09-x86_64'|'linux-rhel-6-x86_64')
+	'linux-centos-6'*|'linux-amzn-2014.09'*|'linux-rhel-6'*)
 		gmp_file='/usr/lib64/libgmp.so.3'
 		tinfo_file='/lib64/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 10 )); then
@@ -405,7 +438,7 @@ symlink_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-arch-x86_64')
+	'linux-arch'*)
 		gmp_file='/usr/lib/libgmp.so.10'
 		tinfo_file='/usr/lib/libncurses.so.5'
 		if (( ghc_major < 7 || ghc_minor < 8 )); then
@@ -416,7 +449,7 @@ symlink_ghc_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'osx-'*'-x86_64')
+	'osx-'*)
 		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" ) || return 1
 		;;
 	*)
@@ -427,29 +460,7 @@ symlink_ghc_libs () {
 		return 1
 	esac
 
-	if [ -n "${gmp_file:-}" ]; then
-		expect_existing "${gmp_file}" || return 1
-
-		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
-			! ln -fs "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/${gmp_name}" ||
-			! ln -fs "${gmp_file}" "${HALCYON_BASE}/ghc/usr/lib/libgmp.so"
-		then
-			log_error 'Failed to symlink GHC libraries (libgmp.so)'
-			return 1
-		fi
-	fi
-
-	if [ -n "${tinfo_file:-}" ]; then
-		expect_existing "${tinfo_file}" || return 1
-
-		if ! mkdir -p "${HALCYON_BASE}/ghc/usr/lib" ||
-			! ln -fs "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so.5" ||
-			! ln -fs "${tinfo_file}" "${HALCYON_BASE}/ghc/usr/lib/libtinfo.so"
-		then
-			log_error 'Failed to symlink GHC libraries (libtinfo.so)'
-			return 1
-		fi
-	fi
+	symlink_ghc_libs "${gmp_name}" "${gmp_file}" "${tinfo_file}" || return 1
 
 	echo "${url}"
 }
@@ -467,12 +478,24 @@ build_ghc_dir () {
 		return 1
 	fi
 
-	local ghc_version ghc_original_url ghc_dir
+	local ghc_version ghc_dir
 	ghc_version=$( get_tag_ghc_version "${tag}" )
-	ghc_original_url=$( symlink_ghc_libs "${tag}" ) || return 1
 	ghc_dir=$( get_tmp_dir "ghc-${ghc_version}" ) || return 1
 
 	log 'Building GHC directory'
+
+	local ghc_original_url
+	case "${HALCYON_INTERNAL_PLATFORM}" in
+	*'-x86_64')
+		ghc_original_url=$( symlink_ghc_x86_64_libs "${tag}" ) || return 1
+		;;
+	*)
+		local description
+		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
+
+		log_error "Unexpected platform: ${description}"
+		return 1
+	esac
 
 	acquire_original_source "${ghc_original_url}" "${ghc_dir}" || return 1
 

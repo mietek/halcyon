@@ -360,7 +360,7 @@ build_sandbox_dir () {
 	opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
 
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-debian-'*|'linux-ubuntu-'*)
+	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
 		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/x86_64-linux-gnu" )
 		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" )

@@ -25,7 +25,7 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 		"${HALCYON_BASE}/sandbox/usr/include"
 	)
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-debian-'*|'linux-ubuntu-'*)
+	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/include/x86_64-linux-gnu" \
 			"${HALCYON_BASE}/usr/include/x86_64-linux-gnu" \
@@ -43,7 +43,7 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 		"${HALCYON_BASE}/sandbox/usr/lib"
 	)
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-debian-'*|'linux-ubuntu-'*)
+	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/lib/x86_64-linux-gnu" \
 			"${HALCYON_BASE}/usr/lib/x86_64-linux-gnu" \
@@ -69,7 +69,7 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 		"${HALCYON_BASE}/sandbox/usr/share/pkgconfig"
 	)
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-debian-'*|'linux-ubuntu-'*)
+	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/usr/lib/x86_64-linux-gnu/pkgconfig" \
 			"${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu/pkgconfig"
