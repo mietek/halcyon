@@ -364,6 +364,12 @@ build_sandbox_dir () {
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib64" )
 		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib64" )
 		;;
+	'linux-debian-'*'-i386'|'linux-ubuntu-'*'-i386')
+		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/i386-linux-gnu" )
+		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/i386-linux-gnu" )
+		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/i386-linux-gnu" )
+		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib/i386-linux-gnu" )
+		;;
 	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
 		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/x86_64-linux-gnu" )
 		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )

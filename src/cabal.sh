@@ -238,7 +238,8 @@ copy_cabal_magic () {
 
 
 build_cabal_dir () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_INTERNAL_PLATFORM
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
@@ -262,6 +263,20 @@ build_cabal_dir () {
 		log
 		return 1
 	fi
+
+	# NOTE: Bootstrapping cabal-install 1.20.* on RHEL 6 i386 fails
+	# with GHC 7.8.3 or 7.8.4, but succeeds with 7.8.2.
+	# https://ghc.haskell.org/trac/ghc/ticket/9964
+	case "${HALCYON_INTERNAL_PLATFORM}" in
+	'linux-rhel-6'*'-i386')
+		if (( ghc_major == 7 && (ghc_minor >= 3 && ghc_minor <= 4) )); then
+			log_error "Unexpected GHC version: ${ghc_version}"
+			log
+			log_indent 'To bootstrap Cabal, use GHC 7.8.2 or older'
+			log
+			return 1
+		fi
+	esac
 
 	local cabal_version cabal_original_url cabal_dir cabal_home_dir
 	cabal_version=$( get_tag_cabal_version "${tag}" )

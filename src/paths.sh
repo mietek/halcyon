@@ -25,6 +25,14 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 		"${HALCYON_BASE}/sandbox/usr/include"
 	)
 	case "${HALCYON_INTERNAL_PLATFORM}" in
+	'linux-debian-'*'-i386'|'linux-ubuntu-'*'-i386')
+		_path=$( _join "${_path}" \
+			"${HALCYON_BASE}/include/i386-linux-gnu" \
+			"${HALCYON_BASE}/usr/include/i386-linux-gnu" \
+			"${HALCYON_BASE}/sandbox/include/i386-linux-gnu" \
+			"${HALCYON_BASE}/sandbox/usr/include/i386-linux-gnu"
+		)
+		;;
 	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/include/x86_64-linux-gnu" \
@@ -51,6 +59,14 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 			"${HALCYON_BASE}/sandbox/usr/lib64"
 		)
 		;;
+	'linux-debian-'*'-i386'|'linux-ubuntu-'*'-i386')
+		_path=$( _join "${_path}" \
+			"${HALCYON_BASE}/lib/i386-linux-gnu" \
+			"${HALCYON_BASE}/usr/lib/i386-linux-gnu" \
+			"${HALCYON_BASE}/sandbox/lib/i386-linux-gnu" \
+			"${HALCYON_BASE}/sandbox/usr/lib/i386-linux-gnu"
+		)
+		;;
 	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/lib/x86_64-linux-gnu" \
@@ -73,6 +89,12 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 		_path=$( _join "${_path}" \
 			"${HALCYON_BASE}/usr/lib64/pkgconfig" \
 			"${HALCYON_BASE}/sandbox/usr/lib64/pkgconfig"
+		)
+		;;
+	'linux-debian-'*'-i386'|'linux-ubuntu-'*'-i386')
+		_path=$( _join "${_path}" \
+			"${HALCYON_BASE}/usr/lib/i386-linux-gnu/pkgconfig" \
+			"${HALCYON_BASE}/sandbox/usr/lib/i386-linux-gnu/pkgconfig"
 		)
 		;;
 	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
