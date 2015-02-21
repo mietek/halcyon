@@ -21,6 +21,27 @@ map_ghc_version_to_source_url () {
 }
 
 
+map_ghc_version_to_freebsd_x86_64_url () {
+	local ghc_version
+	expect_args ghc_version -- "$@"
+
+	case "${ghc_version}" in
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-portbld-freebsd.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-portbld-freebsd.tar.xz';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-portbld-freebsd.tar.xz';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-unknown-freebsd.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-unknown-freebsd.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-unknown-freebsd.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-unknown-freebsd.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-freebsd.tar.bz2';;
+	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-amd64-freebsd-8.tar.bz2';;
+	*)
+		log_error "Unexpected GHC version for FreeBSD (x86_64): ${ghc_version}"
+		return 1
+	esac
+}
+
+
 map_ghc_version_to_linux_x86_64_gmp10_url () {
 	local ghc_version
 	expect_args ghc_version -- "$@"
@@ -54,27 +75,6 @@ map_ghc_version_to_linux_x86_64_gmp3_url () {
 	'6.10.4')	echo 'https://downloads.haskell.org/~ghc/6.10.4/ghc-6.10.4-x86_64-unknown-linux-n.tar.bz2';;
 	*)
 		log_error "Unexpected GHC version for Linux (x86_64 libgmp.so.3): ${ghc_version}"
-		return 1
-	esac
-}
-
-
-map_ghc_version_to_freebsd_x86_64_url () {
-	local ghc_version
-	expect_args ghc_version -- "$@"
-
-	case "${ghc_version}" in
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-portbld-freebsd.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-portbld-freebsd.tar.xz';;
-	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-portbld-freebsd.tar.xz';;
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-unknown-freebsd.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-unknown-freebsd.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-unknown-freebsd.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-unknown-freebsd.tar.bz2';;
-	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-freebsd.tar.bz2';;
-	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-amd64-freebsd-8.tar.bz2';;
-	*)
-		log_error "Unexpected GHC version for FreeBSD (x86_64): ${ghc_version}"
 		return 1
 	esac
 }
