@@ -3,17 +3,17 @@ map_ghc_version_to_source_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-src.tar.xz';;
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-src.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-src.tar.xz';;
-	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-src.tar.xz';;
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-src.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-src.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-src.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-src.tar.bz2';;
-	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-src.tar.bz2';;
-	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-src.tar.bz2';;
 	'6.10.4')	echo 'https://downloads.haskell.org/~ghc/6.10.4/ghc-6.10.4-src.tar.bz2';;
+	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-src.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-src.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-src.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-src.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-src.tar.bz2';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-src.tar.bz2';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-src.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-src.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-src.tar.xz';;
+	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-src.tar.xz';;
 	*)
 		log_error "Unexpected GHC version for source: ${ghc_version}"
 		return 1
@@ -26,15 +26,15 @@ map_ghc_version_to_freebsd_i386_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-portbld-freebsd.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-portbld-freebsd.tar.xz';;
-	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-i386-portbld-freebsd.tar.xz';;
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-i386-unknown-freebsd.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-i386-unknown-freebsd.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-i386-unknown-freebsd.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-i386-unknown-freebsd.tar.bz2';;
-	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-i386-unknown-freebsd.tar.bz2';;
 	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-i386-freebsd-8.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-i386-unknown-freebsd.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-i386-unknown-freebsd.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-i386-unknown-freebsd.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-i386-unknown-freebsd.tar.bz2';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-i386-unknown-freebsd.tar.bz2';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-i386-portbld-freebsd.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-portbld-freebsd.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-portbld-freebsd.tar.xz';;
 	*)
 		log_error "Unexpected GHC version for FreeBSD (i386): ${ghc_version}"
 		return 1
@@ -47,15 +47,15 @@ map_ghc_version_to_freebsd_x86_64_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-portbld-freebsd.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-portbld-freebsd.tar.xz';;
-	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-portbld-freebsd.tar.xz';;
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-unknown-freebsd.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-unknown-freebsd.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-unknown-freebsd.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-unknown-freebsd.tar.bz2';;
-	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-freebsd.tar.bz2';;
 	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-amd64-freebsd-8.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-freebsd.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-unknown-freebsd.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-unknown-freebsd.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-unknown-freebsd.tar.bz2';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-unknown-freebsd.tar.bz2';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-portbld-freebsd.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-portbld-freebsd.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-portbld-freebsd.tar.xz';;
 	*)
 		log_error "Unexpected GHC version for FreeBSD (x86_64): ${ghc_version}"
 		return 1
@@ -68,10 +68,10 @@ map_ghc_version_to_linux_i386_gmp10_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-i386-unknown-linux-deb7.tar.xz';;
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-unknown-linux-deb7.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-unknown-linux-deb7.tar.xz';;
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-i386-unknown-linux-deb7.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-unknown-linux-deb7.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-unknown-linux-deb7.tar.xz';;
+	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-i386-unknown-linux-deb7.tar.xz';;
 	*)
 		log_error "Unexpected GHC version for Linux (i386 libgmp.so.10): ${ghc_version}"
 		return 1
@@ -84,16 +84,16 @@ map_ghc_version_to_linux_i386_gmp3_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-unknown-linux-centos65.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-unknown-linux-centos65.tar.xz';;
-	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-i386-unknown-linux-centos65.tar.xz';;
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-i386-unknown-linux.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-i386-unknown-linux.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-i386-unknown-linux.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-i386-unknown-linux.tar.bz2';;
-	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-i386-unknown-linux.tar.bz2';;
-	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-i386-unknown-linux-n.tar.bz2';;
 	'6.10.4')	echo 'https://downloads.haskell.org/~ghc/6.10.4/ghc-6.10.4-i386-unknown-linux-n.tar.bz2';;
+	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-i386-unknown-linux-n.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-i386-unknown-linux.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-i386-unknown-linux.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-i386-unknown-linux.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-i386-unknown-linux.tar.bz2';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-i386-unknown-linux.tar.bz2';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-i386-unknown-linux-centos65.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-unknown-linux-centos65.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-unknown-linux-centos65.tar.xz';;
 	*)
 		log_error "Unexpected GHC version for Linux (i386 libgmp.so.3): ${ghc_version}"
 		return 1
@@ -106,10 +106,10 @@ map_ghc_version_to_linux_x86_64_gmp10_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-x86_64-unknown-linux-deb7.tar.xz';;
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz';;
+	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-x86_64-unknown-linux-deb7.tar.xz';;
 	*)
 		log_error "Unexpected GHC version for Linux (x86_64 libgmp.so.10): ${ghc_version}"
 		return 1
@@ -122,16 +122,16 @@ map_ghc_version_to_linux_x86_64_gmp3_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-centos65.tar.xz';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-centos65.tar.xz';;
-	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-centos65.tar.xz';;
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-unknown-linux.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-unknown-linux.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-unknown-linux.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-unknown-linux.tar.bz2';;
-	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-linux.tar.bz2';;
-	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-x86_64-unknown-linux-n.tar.bz2';;
 	'6.10.4')	echo 'https://downloads.haskell.org/~ghc/6.10.4/ghc-6.10.4-x86_64-unknown-linux-n.tar.bz2';;
+	'6.12.3')	echo 'https://downloads.haskell.org/~ghc/6.12.3/ghc-6.12.3-x86_64-unknown-linux-n.tar.bz2';;
+	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-unknown-linux.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-unknown-linux.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-unknown-linux.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-unknown-linux.tar.bz2';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-unknown-linux.tar.bz2';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-centos65.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-centos65.tar.xz';;
+	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-centos65.tar.xz';;
 	*)
 		log_error "Unexpected GHC version for Linux (x86_64 libgmp.so.3): ${ghc_version}"
 		return 1
@@ -144,11 +144,11 @@ map_ghc_version_to_osx_i386_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-i386-apple-darwin.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-i386-apple-darwin.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-i386-apple-darwin.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-i386-apple-darwin.tar.bz2';;
 	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-i386-apple-darwin.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-i386-apple-darwin.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-i386-apple-darwin.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-i386-apple-darwin.tar.bz2';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-i386-apple-darwin.tar.bz2';;
 	*)
 		log_error "Unexpected GHC version for OS X (i386): ${ghc_version}"
 		return 1
@@ -161,15 +161,15 @@ map_ghc_version_to_osx_x86_64_url () {
 	expect_args ghc_version -- "$@"
 
 	case "${ghc_version}" in
-	'7.10.1-rc2')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.10.0.20150123-x86_64-apple-darwin.tar.bz2';;
-	'7.8.4')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.8.4-x86_64-apple-darwin.tar.bz2';;
-	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';;
-	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-apple-darwin-mavericks.tar.xz';;
-	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-apple-darwin.tar.bz2';;
-	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-apple-darwin.tar.bz2';;
-	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-apple-darwin.tar.bz2';;
-	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-apple-darwin.tar.bz2';;
 	'7.0.4')	echo 'https://downloads.haskell.org/~ghc/7.0.4/ghc-7.0.4-x86_64-apple-darwin.tar.bz2';;
+	'7.2.2')	echo 'https://downloads.haskell.org/~ghc/7.2.2/ghc-7.2.2-x86_64-apple-darwin.tar.bz2';;
+	'7.4.2')	echo 'https://downloads.haskell.org/~ghc/7.4.2/ghc-7.4.2-x86_64-apple-darwin.tar.bz2';;
+	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-x86_64-apple-darwin.tar.bz2';;
+	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-x86_64-apple-darwin.tar.bz2';;
+	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-apple-darwin-mavericks.tar.xz';;
+	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';;
+	'7.8.4')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.8.4-x86_64-apple-darwin.tar.bz2';;
+	'7.10.1-rc2')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.10.0.20150123-x86_64-apple-darwin.tar.bz2';;
 	*)
 		log_error "Unexpected GHC version for OS X (x86_64): ${ghc_version}"
 		return 1
@@ -182,17 +182,17 @@ map_base_package_version_to_ghc_version () {
 	expect_args base_version -- "$@"
 
 	case "${base_version}" in
-	'4.8.0.0')	echo '7.10.1-rc2';;
-	'4.7.0.2')	echo '7.8.4';;
-	'4.7.0.1')	echo '7.8.3';;
-	'4.7.0.0')	echo '7.8.2';;
-	'4.6.0.1')	echo '7.6.3';;
-	'4.6.0.0')	echo '7.6.1';;
-	'4.5.1.0')	echo '7.4.2';;
-	'4.4.1.0')	echo '7.2.2';;
-	'4.3.1.0')	echo '7.0.4';;
-	'4.2.0.2')	echo '6.12.3';;
 	'4.1.0.0')	echo '6.10.4';;
+	'4.2.0.2')	echo '6.12.3';;
+	'4.3.1.0')	echo '7.0.4';;
+	'4.4.1.0')	echo '7.2.2';;
+	'4.5.1.0')	echo '7.4.2';;
+	'4.6.0.0')	echo '7.6.1';;
+	'4.6.0.1')	echo '7.6.3';;
+	'4.7.0.0')	echo '7.8.2';;
+	'4.7.0.1')	echo '7.8.3';;
+	'4.7.0.2')	echo '7.8.4';;
+	'4.8.0.0')	echo '7.10.1-rc2';;
 	*)
 		log_error "Unexpected base package version: ${base_version}"
 		return 1
