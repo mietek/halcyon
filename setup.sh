@@ -196,7 +196,7 @@ install_halcyon () {
 		git checkout -q "${branch}" >'/dev/null' 2>&1 &&
 		git log -n 1 --pretty='format:%h'
 	); then
-		echo 'error' >&2
+		echo ' error' >&2
 		return 1
 	fi
 	echo " done, ${commit_hash:0:7}" >&2
