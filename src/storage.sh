@@ -1,4 +1,4 @@
-public_storage () {
+has_public_storage () {
 	expect_vars HALCYON_BASE HALCYON_NO_PUBLIC_STORAGE
 
 	# NOTE: All archives in public storage assume HALCYON_BASE is /app.
@@ -9,7 +9,7 @@ public_storage () {
 }
 
 
-private_storage () {
+has_private_storage () {
 	expect_vars HALCYON_NO_PRIVATE_STORAGE
 
 	! (( HALCYON_NO_PRIVATE_STORAGE )) || return 1
@@ -32,11 +32,11 @@ format_public_storage_url () {
 
 
 describe_storage () {
-	if private_storage && public_storage; then
+	if has_private_storage && has_public_storage; then
 		log_indent_label 'External storage:' 'private and public'
-	elif private_storage; then
+	elif has_private_storage; then
 		log_indent_label 'External storage:' 'private'
-	elif public_storage; then
+	elif has_public_storage; then
 		log_indent_label 'External storage:' 'public'
 	else
 		log_indent_label 'External storage:' 'none'
@@ -123,7 +123,7 @@ upload_cached_file () {
 	local prefix file_name
 	expect_args prefix file_name -- "$@"
 
-	if (( HALCYON_NO_UPLOAD )) || ! private_storage; then
+	if (( HALCYON_NO_UPLOAD )) || ! has_private_storage; then
 		return 0
 	fi
 
@@ -152,7 +152,7 @@ cache_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE}/${file_name}"
 
-	if private_storage; then
+	if has_private_storage; then
 		local status
 		status=0
 		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" || status="$?"
@@ -162,7 +162,7 @@ cache_stored_file () {
 		check_s3_status "${status}" || return 1
 	fi
 
-	if ! public_storage; then
+	if ! has_public_storage; then
 		return 1
 	fi
 
@@ -221,7 +221,7 @@ delete_private_stored_file () {
 
 	if (( HALCYON_NO_UPLOAD )) ||
 		(( HALCYON_NO_CLEAN_PRIVATE_STORAGE )) ||
-		! private_storage
+		! has_private_storage
 	then
 		return 0
 	fi
@@ -242,7 +242,7 @@ list_private_stored_files () {
 	local prefix
 	expect_args prefix -- "$@"
 
-	if ! private_storage; then
+	if ! has_private_storage; then
 		return 0
 	fi
 
@@ -261,7 +261,7 @@ list_public_stored_files () {
 	local prefix
 	expect_args prefix -- "$@"
 
-	if ! public_storage; then
+	if ! has_public_storage; then
 		return 0
 	fi
 
@@ -303,7 +303,7 @@ delete_matching_private_stored_files () {
 
 	if (( HALCYON_NO_UPLOAD )) ||
 		(( HALCYON_NO_CLEAN_PRIVATE_STORAGE )) ||
-		! private_storage
+		! has_private_storage
 	then
 		return 0
 	fi
