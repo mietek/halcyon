@@ -378,9 +378,7 @@ build_sandbox_dir () {
 	esac
 
 	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
-		local -a raw_opts_a
-		raw_opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || true
-		opts_a=( $( IFS=$'\n' && echo "${raw_opts_a[*]:-}" | filter_not_matching '^--prefix=' ) )
+		opts_a=( $( <"${source_dir}/.halcyon/sandbox-extra-configure-flags" ) ) || true
 	fi
 
 	log 'Building sandbox'

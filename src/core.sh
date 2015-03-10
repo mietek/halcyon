@@ -458,6 +458,49 @@ prepare_source_dir () {
 }
 
 
+validate_extra_configure_flags () {
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local cabal_version cabal_major cabal_minor
+	cabal_version="${HALCYON_CABAL_VERSION}"
+	cabal_major="${cabal_version%%.*}"
+	cabal_minor="${cabal_version#*.}"
+	cabal_minor="${cabal_minor%%.*}"
+
+	if [[ -f "${source_dir}/.halcyon/extra-configure-flags" ]]; then
+		local flag
+		while read -r flag; do
+			case "${flag}" in
+			'--prefix='*)
+				log_error "Unexpected extra configure flag: ${flag}"
+				return 1
+			esac
+		done <"${source_dir}/.halcyon/extra-configure-flags" || true
+	fi
+
+	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
+		local flag
+		while read -r flag; do
+			case "${flag}" in
+			'--prefix='*)
+				log_error "Unexpected sandbox extra configure flag: ${flag}"
+				return 1
+				;;
+			'--enable-benchmarks'|'--disable-benchmarks'|'--enable-tests'|'--disable-tests')
+				if (( cabal_major == 1 && cabal_minor < 22 )); then
+					log_error "Unexpected sandbox extra configure flag: ${flag}"
+					log
+					log_indent 'To use this flag, use Cabal 1.22.0.0 or newer'
+					log
+					return 1
+				fi
+			esac
+		done <"${source_dir}/.halcyon/sandbox-extra-configure-flags" || true
+	fi
+}
+
+
 do_full_install_app () {
 	expect_vars HALCYON_BASE HALCYON_DEPENDENCIES_ONLY \
 		HALCYON_APP_REBUILD HALCYON_APP_RECONFIGURE HALCYON_APP_REINSTALL \
@@ -572,6 +615,8 @@ full_install_app () {
 		log_error 'Failed to prepare source directory'
 		return 1
 	fi
+
+	validate_extra_configure_flags "${source_dir}" || return 1
 
 	local source_hash
 	if [[ -f "${source_dir}/cabal.config" ]]; then
