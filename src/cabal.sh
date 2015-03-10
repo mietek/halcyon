@@ -841,6 +841,7 @@ cabal_create_sandbox () {
 cabal_dry_freeze_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
+	shift 2
 
 	local stderr
 	stderr=$( get_tmp_file 'cabal-freeze.stderr' ) || return 1
@@ -855,7 +856,7 @@ cabal_dry_freeze_constraints () {
 	# https://github.com/haskell/cabal/issues/2265
 	local constraints
 	if ! constraints=$(
-		cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run 2>"${stderr}" |
+		cabal_do "${source_dir}" --no-require-sandbox freeze --dry-run "$@" 2>"${stderr}" |
 		read_constraints_from_cabal_dry_freeze |
 		filter_correct_constraints "${label}" |
 		sort_natural
@@ -871,13 +872,14 @@ cabal_dry_freeze_constraints () {
 sandboxed_cabal_dry_freeze_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
+	shift 2
 
 	local stderr
 	stderr=$( get_tmp_file 'cabal-freeze.stderr' ) || return 1
 
 	local constraints
 	if ! constraints=$(
-		sandboxed_cabal_do "${source_dir}" freeze --dry-run 2>"${stderr}" |
+		sandboxed_cabal_do "${source_dir}" freeze --dry-run "$@" 2>"${stderr}" |
 		read_constraints_from_cabal_dry_freeze |
 		filter_correct_constraints "${label}" |
 		sort_natural
@@ -895,6 +897,7 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 
 	local label source_dir
 	expect_args label source_dir -- "$@"
+	shift 2
 
 	local saved_sandbox
 	saved_sandbox=''
@@ -920,7 +923,7 @@ temporarily_sandboxed_cabal_dry_freeze_constraints () {
 	fi
 
 	local constraints
-	constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || return 1
+	constraints=$( sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" "$@" ) || return 1
 
 	if ! rm -rf "${HALCYON_BASE}/sandbox"; then
 		log_error 'Failed to remove temporary sandbox'
@@ -941,11 +944,38 @@ cabal_determine_constraints () {
 	local label source_dir
 	expect_args label source_dir -- "$@"
 
+	local cabal_version cabal_major cabal_minor
+	cabal_version="${HALCYON_CABAL_VERSION}"
+	cabal_major="${cabal_version%%.*}"
+	cabal_minor="${cabal_version#*.}"
+	cabal_minor="${cabal_minor%%.*}"
+
+	local -a opts_a
+	opts_a=()
+	opts_a+=( "${label}" )
+	opts_a+=( "${source_dir}" )
+	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
+		while read -r flag; do
+			case "${flag}" in
+			'--enable-benchmarks'|'--disable-benchmarks'|'--enable-tests'|'--disable-tests')
+				if (( cabal_major >= 1 && cabal_minor >= 22 )); then
+					opts_a+=( "${flag}" )
+				else
+					log_error "Unexpected sandbox extra configure flag: ${flag}"
+					log
+					log_indent 'To use this flag, use Cabal 1.22.0.0 or newer'
+					log
+					return 1
+				fi
+			esac
+		done <"${source_dir}/.halcyon/sandbox-extra-configure-flags" || true
+	fi
+
 	local constraints
 	if [[ -f "${source_dir}/.halcyon/sandbox-sources" ]]; then
-		constraints=$( temporarily_sandboxed_cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || return 1
+		constraints=$( temporarily_sandboxed_cabal_dry_freeze_constraints "${opts_a[@]}" ) || return 1
 	else
-		constraints=$( cabal_dry_freeze_constraints "${label}" "${source_dir}" ) || return 1
+		constraints=$( cabal_dry_freeze_constraints "${opts_a[@]}" ) || return 1
 	fi
 
 	echo "${constraints}"
