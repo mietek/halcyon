@@ -147,18 +147,21 @@ halcyon_main () {
 	# General options
 		'--base')
 			shift
+			local base_dir
 			expect_args base_dir -- "$@"
 			export HALCYON_BASE="${base_dir}";;
 		'--base='*)
 			export HALCYON_BASE="${1#*=}";;
 		'--prefix')
 			shift
+			local prefix
 			expect_args prefix -- "$@"
 			export HALCYON_PREFIX="${prefix}";;
 		'--prefix='*)
 			export HALCYON_PREFIX="${1#*=}";;
 		'--root')
 			shift
+			local root
 			expect_args root -- "$@"
 			export HALCYON_ROOT="${root}";;
 		'--root='*)
@@ -173,30 +176,35 @@ halcyon_main () {
 	# Build-time options
 		'--extra-source-hash-ignore')
 			shift
+			local extra_source_hash_ignore
 			expect_args extra_source_hash_ignore -- "$@"
 			export HALCYON_EXTRA_SOURCE_HASH_IGNORE="${extra_source_hash_ignore}";;
 		'--extra-source-hash-ignore='*)
 			export HALCYON_EXTRA_SOURCE_HASH_IGNORE="${1#*=}";;
 		'--constraints')
 			shift
+			local constraints
 			expect_args constraints -- "$@"
 			export HALCYON_CONSTRAINTS="${constraints}";;
 		'--constraints='*)
 			export HALCYON_CONSTRAINTS="${1#*=}";;
 		'--extra-configure-flags')
 			shift
+			local extra_configure_flags
 			expect_args extra_configure_flags -- "$@"
 			export HALCYON_EXTRA_CONFIGURE_FLAGS="${extra_configure_flags}";;
 		'--extra-configure-flags='*)
 			export HALCYON_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
 		'--pre-build-hook')
 			shift
+			local pre_build_hook
 			expect_args pre_build_hook -- "$@"
 			export HALCYON_PRE_BUILD_HOOK="${pre_build_hook}";;
 		'--pre-build-hook='*)
 			export HALCYON_PRE_BUILD_HOOK="${1#*=}";;
 		'--post-build-hook')
 			shift
+			local post_build_hook
 			expect_args post_build_hook -- "$@"
 			export HALCYON_POST_BUILD_HOOK="${post_build_hook}";;
 		'--post-build-hook='*)
@@ -217,36 +225,42 @@ halcyon_main () {
 	# Install-time options
 		'--extra-apps')
 			shift
+			local extra_apps
 			expect_args extra_apps -- "$@"
 			export HALCYON_EXTRA_APPS="${extra_apps}";;
 		'--extra-apps='*)
 			export HALCYON_EXTRA_APPS="${1#*=}";;
 		'--extra-apps-constraints')
 			shift
+			local extra_apps_constraints
 			expect_args extra_apps_constraints -- "$@"
 			export HALCYON_EXTRA_APPS_CONSTRAINTS="${extra_apps_constraints}";;
 		'--extra-apps-constraints='*)
 			export HALCYON_EXTRA_APPS_CONSTRAINTS="${1#*=}";;
 		'--extra-data-files')
 			shift
+			local extra_data_files
 			expect_args extra_data_files -- "$@"
 			export HALCYON_EXTRA_DATA_FILES="${extra_data_files}";;
 		'--extra-data-files='*)
 			export HALCYON_EXTRA_DATA_FILES="${1#*=}";;
 		'--extra-os-packages')
 			shift
+			local extra_os_packages
 			expect_args extra_os_packages -- "$@"
 			export HALCYON_EXTRA_OS_PACKAGES="${extra_os_packages}";;
 		'--extra-os-packages='*)
 			export HALCYON_EXTRA_OS_PACKAGES="${1#*=}";;
 		'--pre-install-hook')
 			shift
+			local pre_install_hook
 			expect_args pre_install_hook -- "$@"
 			export HALCYON_PRE_INSTALL_HOOK="${pre_install_hook}";;
 		'--pre-install-hook='*)
 			export HALCYON_PRE_INSTALL_HOOK="${1#*=}";;
 		'--post-install-hook')
 			shift
+			local post_install_hook
 			expect_args post_install_hook -- "$@"
 			export HALCYON_POST_INSTALL_HOOK="${post_install_hook}";;
 		'--post-install-hook='*)
@@ -259,6 +273,7 @@ halcyon_main () {
 	# Cache options
 		'--cache')
 			shift
+			local cache_dir
 			expect_args cache_dir -- "$@"
 			export HALCYON_CACHE="${cache_dir}";;
 		'--cache='*)
@@ -273,6 +288,7 @@ halcyon_main () {
 	# Public storage options
 		'--public-storage-url')
 			shift
+			local public_storage_url
 			expect_args public_storage_url -- "$@"
 			export HALCYON_PUBLIC_STORAGE_URL="${public_storage_url}";;
 		'--public-storage-url='*)
@@ -283,30 +299,35 @@ halcyon_main () {
 	# Private storage options
 		'--aws-access-key-id')
 			shift
+			local aws_access_key_id
 			expect_args aws_access_key_id -- "$@"
 			export HALCYON_AWS_ACCESS_KEY_ID="${aws_access_key_id}";;
 		'--aws-access-key-id='*)
 			export HALCYON_AWS_ACCESS_KEY_ID="${1#*=}";;
 		'--aws-secret-access-key')
 			shift
+			local aws_secret_access_key
 			expect_args aws_secret_access_key -- "$@"
 			export HALCYON_AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}";;
 		'--aws-secret-access-key='*)
 			export HALCYON_AWS_SECRET_ACCESS_KEY="${1#*=}";;
 		'--s3-bucket')
 			shift
+			local s3_bucket
 			expect_args s3_bucket -- "$@"
 			export HALCYON_S3_BUCKET="${s3_bucket}";;
 		'--s3-bucket='*)
 			export HALCYON_S3_BUCKET="${1#*=}";;
 		'--s3-endpoint')
 			shift
+			local s3_endpoint
 			expect_args s3_endpoint -- "$@"
 			export HALCYON_S3_ENDPOINT="${s3_endpoint}";;
 		'--s3-endpoint='*)
 			export HALCYON_S3_ENDPOINT="${1#*=}";;
 		'--s3-acl')
 			shift
+			local s3_acl
 			expect_args s3_acl -- "$@"
 			export HALCYON_S3_ACL="${s3_acl}";;
 		'--s3-acl='*)
@@ -321,18 +342,21 @@ halcyon_main () {
 	# GHC options
 		'--ghc-version')
 			shift
+			local ghc_version
 			expect_args ghc_version -- "$@"
 			export HALCYON_GHC_VERSION="${ghc_version}";;
 		'--ghc-version='*)
 			export HALCYON_GHC_VERSION="${1#*=}";;
 		'--ghc-pre-build-hook')
 			shift
+			local ghc_pre_build_hook
 			expect_args ghc_pre_build_hook -- "$@"
 			export HALCYON_GHC_PRE_BUILD_HOOK="${ghc_pre_build_hook}";;
 		'--ghc-pre-build-hook='*)
 			export HALCYON_GHC_PRE_BUILD_HOOK="${1#*=}";;
 		'--ghc-post-build-hook')
 			shift
+			local ghc_post_build_hook
 			expect_args ghc_post_build_hook -- "$@"
 			export HALCYON_GHC_POST_BUILD_HOOK="${ghc_post_build_hook}";;
 		'--ghc-post-build-hook='*)
@@ -343,36 +367,42 @@ halcyon_main () {
 	# Cabal options
 		'--cabal-version')
 			shift
+			local cabal_version
 			expect_args cabal_version -- "$@"
 			export HALCYON_CABAL_VERSION="${cabal_version}";;
 		'--cabal-version='*)
 			export HALCYON_CABAL_VERSION="${1#*=}";;
 		'--cabal-remote-repo')
 			shift
+			local cabal_remote_repo
 			expect_args cabal_remote_repo -- "$@"
 			export HALCYON_CABAL_REMOTE_REPO="${cabal_remote_repo}";;
 		'--cabal-remote-repo='*)
 			export HALCYON_CABAL_REMOTE_REPO="${1#*=}";;
 		'--cabal-pre-build-hook')
 			shift
+			local cabal_pre_build_hook
 			expect_args cabal_pre_build_hook -- "$@"
 			export HALCYON_CABAL_PRE_BUILD_HOOK="${cabal_pre_build_hook}";;
 		'--cabal-pre-build-hook='*)
 			export HALCYON_CABAL_PRE_BUILD_HOOK="${1#*=}";;
 		'--cabal-post-build-hook')
 			shift
+			local cabal_post_build_hook
 			expect_args cabal_post_build_hook -- "$@"
 			export HALCYON_CABAL_POST_BUILD_HOOK="${cabal_post_build_hook}";;
 		'--cabal-post-build-hook='*)
 			export HALCYON_CABAL_POST_BUILD_HOOK="${1#*=}";;
 		'--cabal-pre-update-hook')
 			shift
+			local cabal_pre_update_hook
 			expect_args cabal_pre_update_hook -- "$@"
 			export HALCYON_CABAL_PRE_UPDATE_HOOK="${cabal_pre_update_hook}";;
 		'--cabal-pre-update-hook='*)
 			export HALCYON_CABAL_PRE_UPDATE_HOOK="${1#*=}";;
 		'--cabal-post-update-hook')
 			shift
+			local cabal_post_update_hook
 			expect_args cabal_post_update_hook -- "$@"
 			export HALCYON_CABAL_POST_UPDATE_HOOK="${cabal_post_update_hook}";;
 		'--cabal-post-update-hook='*)
@@ -385,42 +415,49 @@ halcyon_main () {
 	# Sandbox options
 		'--sandbox-extra-configure-flags')
 			shift
+			local sandbox_extra_configure_flags
 			expect_args sandbox_extra_configure_flags -- "$@"
 			export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${sandbox_extra_configure_flags}";;
 		'--sandbox-extra-configure-flags='*)
 			export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${1#*=}";;
 		'--sandbox-sources')
 			shift
+			local sandbox_sources
 			expect_args sandbox_sources -- "$@"
 			export HALCYON_SANDBOX_SOURCES="${sandbox_sources}";;
 		'--sandbox-sources='*)
 			export HALCYON_SANDBOX_SOURCES="${1#*=}";;
 		'--sandbox-extra-apps')
 			shift
+			local sandbox_extra_apps
 			expect_args sandbox_extra_apps -- "$@"
 			export HALCYON_SANDBOX_EXTRA_APPS="${sandbox_extra_apps}";;
 		'--sandbox-extra-apps='*)
 			export HALCYON_SANDBOX_EXTRA_APPS="${1#*=}";;
 		'--sandbox-extra-apps-constraints')
 			shift
+			local sandbox_extra_apps_constraints
 			expect_args sandbox_extra_apps_constraints -- "$@"
 			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS="${sandbox_extra_apps_constraints}";;
 		'--sandbox-extra-apps-constraints='*)
 			export HALCYON_SANDBOX_EXTRA_APPS_CONSTRAINTS="${1#*=}";;
 		'--sandbox-extra-os-packages')
 			shift
+			local sandbox_extra_os_packages
 			expect_args sandbox_extra_os_packages -- "$@"
 			export HALCYON_SANDBOX_EXTRA_OS_PACKAGES="${sandbox_extra_os_packages}";;
 		'--sandbox-extra-os-packages='*)
 			export HALCYON_SANDBOX_EXTRA_OS_PACKAGES="${1#*=}";;
 		'--sandbox-pre-build-hook')
 			shift
+			local sandbox_pre_build_hook
 			expect_args sandbox_pre_build_hook -- "$@"
 			export HALCYON_SANDBOX_PRE_BUILD_HOOK="${sandbox_pre_build_hook}";;
 		'--sandbox-pre-build-hook='*)
 			export HALCYON_SANDBOX_PRE_BUILD_HOOK="${1#*=}";;
 		'--sandbox-post-build-hook')
 			shift
+			local sandbox_post_build_hook
 			expect_args sandbox_post_build_hook -- "$@"
 			export HALCYON_SANDBOX_POST_BUILD_HOOK="${sandbox_post_build_hook}";;
 		'--sandbox-post-build-hook='*)
