@@ -90,6 +90,25 @@ determine_ghc_magic_hash () {
 }
 
 
+determine_cabal_version () {
+	expect_vars HALCYON_DEFAULT_CABAL_VERSION
+
+	local source_dir
+	expect_args source_dir -- "$@"
+
+	local cabal_version
+	cabal_version="${HALCYON_CABAL_VERSION}"
+	if [[ -z "${cabal_version}" && -f "${source_dir}/.halcyon/cabal-version" ]]; then
+		cabal_version=$( <"${source_dir}/.halcyon/cabal-version" ) || true
+	fi
+	if [[ -z "${cabal_version}" ]]; then
+		cabal_version="${HALCYON_DEFAULT_CABAL_VERSION}"
+	fi
+
+	echo "${cabal_version}"
+}
+
+
 determine_cabal_magic_hash () {
 	local source_dir
 	expect_args source_dir -- "$@"
@@ -247,7 +266,7 @@ do_install_ghc_and_cabal_dirs () {
 
 
 install_ghc_and_cabal_dirs () {
-	expect_vars HALCYON_GHC_VERSION HALCYON_CABAL_VERSION \
+	expect_vars HALCYON_GHC_VERSION \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local source_dir
@@ -261,7 +280,7 @@ install_ghc_and_cabal_dirs () {
 	ghc_minor="${ghc_minor%%.*}"
 
 	local cabal_version cabal_magic_hash cabal_remote_repo cabal_major cabal_minor
-	cabal_version="${HALCYON_CABAL_VERSION}"
+	cabal_version=$( determine_cabal_version "${source_dir}" ) || return 1
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
 	cabal_remote_repo=$( determine_cabal_remote_repo "${source_dir}" ) || return 1
 	cabal_major="${cabal_version%%.*}"
@@ -480,7 +499,7 @@ validate_extra_configure_flags () {
 	expect_args source_dir -- "$@"
 
 	local cabal_version cabal_major cabal_minor
-	cabal_version="${HALCYON_CABAL_VERSION}"
+	cabal_version=$( determine_cabal_version "${source_dir}" ) || return 1
 	cabal_major="${cabal_version%%.*}"
 	cabal_minor="${cabal_version#*.}"
 	cabal_minor="${cabal_minor%%.*}"
@@ -598,7 +617,6 @@ do_full_install_app () {
 
 full_install_app () {
 	expect_vars HALCYON_PREFIX HALCYON_DEPENDENCIES_ONLY \
-		HALCYON_CABAL_VERSION \
 		HALCYON_INTERNAL_RECURSIVE
 
 	local label source_dir
@@ -708,7 +726,7 @@ full_install_app () {
 	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || return 1
 
 	local cabal_version cabal_magic_hash cabal_remote_repo
-	cabal_version="${HALCYON_CABAL_VERSION}"
+	cabal_version=$( determine_cabal_version "${source_dir}" ) || return 1
 	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
 	cabal_remote_repo=$( determine_cabal_remote_repo "${source_dir}" ) || return 1
 
