@@ -56,15 +56,15 @@ help_usage () {
 		  --no-clean-cache
 
 		Public storage options
-		  --public-storage=                       S3 URL
+		  --public-storage=                       S3_URL
 		  --no-public-storage
 
 		Private storage options
 		  --aws-access-key-id=                    STRING
 		  --aws-secret-access-key=                STRING
-		  --s3-bucket=                            S3 NAME
-		  --s3-endpoint=                          S3 ADDRESS
-		  --s3-acl=                               S3 ACL
+		  --s3-bucket=                            S3_NAME
+		  --s3-endpoint=                          S3_ADDRESS
+		  --s3-acl=                               S3_ACL
 		  --no-private-storage
 		  --no-upload
 		  --no-clean-private-storage
