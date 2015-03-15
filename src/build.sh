@@ -264,9 +264,9 @@ validate_potential_build_dir () {
 	local tag build_dir
 	expect_args tag build_dir -- "$@"
 
-	local recognized_pattern
-	recognized_pattern=$( derive_potential_build_tag_pattern "${tag}" )
-	detect_tag "${build_dir}/.halcyon-tag" "${recognized_pattern}" || return 1
+	local potential_pattern
+	potential_pattern=$( derive_potential_build_tag_pattern "${tag}" )
+	detect_tag "${build_dir}/.halcyon-tag" "${potential_pattern}" || return 1
 }
 
 
