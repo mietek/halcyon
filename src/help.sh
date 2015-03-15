@@ -1,9 +1,9 @@
 help_usage () {
-	quote <<-EOF
-		Usage
+	cat >&2 <<-EOF
+		Usage:
 		  halcyon                                 COMMAND
 
-		Commands
+		Commands:
 		  install                                 APP? OPTION*
 		  build                                   APP? OPTION*
 		  label                                   APP? OPTION*
@@ -11,13 +11,13 @@ help_usage () {
 		  constraints                             APP? OPTION*
 		  paths
 
-		App
+		App:
 		  label
 		  directory path
 		  git URL
 		  nothing
 
-		General options
+		General options:
 		  --base=                                 DIR
 		  --prefix=                               DIR
 		  --root=                                 DIR
@@ -25,7 +25,7 @@ help_usage () {
 		  --no-modify-home
 		  --log-timestamp
 
-		Build-time options
+		Build-time options:
 		  --extra-source-hash-ignore=             STRING | FILE
 		  --constraints=                          STRING | FILE | DIR
 		  --extra-configure-flags=                STRING | FILE
@@ -38,7 +38,7 @@ help_usage () {
 		  --no-build-dependencies
 		  --dependencies-only
 
-		Install-time options
+		Install-time options:
 		  --extra-apps=                           STRING | FILE
 		  --extra-apps-constraints=               STRING | FILE | DIR
 		  --extra-data-files=                     STRING | FILE
@@ -48,17 +48,17 @@ help_usage () {
 		  --app-reinstall
 		  --keep-dependencies
 
-		Cache options
+		Cache options:
 		  --cache=                                DIR
 		  --purge-cache
 		  --no-archive
 		  --no-clean-cache
 
-		Public storage options
+		Public storage options:
 		  --public-storage=                       S3_URL
 		  --no-public-storage
 
-		Private storage options
+		Private storage options:
 		  --aws-access-key-id=                    STRING
 		  --aws-secret-access-key=                STRING
 		  --s3-bucket=                            S3_NAME
@@ -68,13 +68,13 @@ help_usage () {
 		  --no-upload
 		  --no-clean-private-storage
 
-		GHC options
+		GHC options:
 		  --ghc-version=                          VERSION
 		  --ghc-pre-build-hook=                   FILE
 		  --ghc-post-build-hook=                  FILE
 		  --ghc-rebuild
 
-		Cabal options
+		Cabal options:
 		  --cabal-version=                        VERSION
 		  --cabal-remote-repo=                    STRING | FILE
 		  --cabal-pre-build-hook=                 FILE
@@ -84,7 +84,7 @@ help_usage () {
 		  --cabal-rebuild
 		  --cabal-update
 
-		Sandbox options
+		Sandbox options:
 		  --sandbox-extra-configure-flags=        STRING | FILE
 		  --sandbox-sources=                      STRING | FILE
 		  --sandbox-extra-apps=                   STRING | FILE
