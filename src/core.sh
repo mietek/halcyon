@@ -290,9 +290,7 @@ install_ghc_and_cabal_dirs () {
 	# NOTE: GHC 7.10.* requires Cabal 1.22.0.0 or newer.
 	if (( ((ghc_major == 7 && ghc_minor >= 10) || ghc_major > 7) && cabal_major == 1 && cabal_minor < 22 )); then
 		log_error 'Unexpected Cabal version'
-		log
-		log_indent 'To use GHC 7.10.1 or newer, use Cabal 1.22.0.0 or newer'
-		log
+		log_error 'To use GHC 7.10.1 or newer, use Cabal 1.22.0.0 or newer'
 		return 1
 	fi
 
@@ -525,9 +523,7 @@ validate_extra_configure_flags () {
 			'--enable-benchmarks'|'--disable-benchmarks'|'--enable-tests'|'--disable-tests')
 				if (( cabal_major == 1 && cabal_minor < 22 )); then
 					log_error "Unexpected sandbox extra configure flag: ${flag}"
-					log
-					log_indent 'To use this flag, use Cabal 1.22.0.0 or newer'
-					log
+					log_error "To use ${flag}, use Cabal 1.22.0.0 or newer"
 					return 1
 				fi
 			esac

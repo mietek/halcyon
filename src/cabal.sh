@@ -262,9 +262,7 @@ build_cabal_dir () {
 	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
 	if (( ghc_major < 7 || ghc_minor < 8 )); then
 		log_error "Unexpected GHC version: ${ghc_version}"
-		log
-		log_indent 'To bootstrap Cabal, use GHC 7.8.2 or newer'
-		log
+		log_error 'To bootstrap Cabal, use GHC 7.8.2 or newer'
 		return 1
 	fi
 
@@ -275,9 +273,7 @@ build_cabal_dir () {
 	'linux-rhel-6'*'-i386')
 		if (( ghc_major == 7 && (ghc_minor >= 3 && ghc_minor <= 4) )); then
 			log_error "Unexpected GHC version: ${ghc_version}"
-			log
-			log_indent 'To bootstrap Cabal, use GHC 7.8.2 or older'
-			log
+			log_error 'To bootstrap Cabal, use GHC 7.8.2 or older'
 			return 1
 		fi
 	esac

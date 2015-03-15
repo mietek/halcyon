@@ -374,9 +374,7 @@ symlink_ghc_i386_libs () {
 			url=$( map_ghc_version_to_linux_i386_gmp3_url "${ghc_version}" ) || return 1
 		else
 			log_error "Unexpected GHC version: ${ghc_version}"
-			log
-			log_indent 'To continue, use GHC 7.8.4 or older'
-			log
+			log_error 'To continue, use GHC 7.8.4 or older'
 			return 1
 		fi
 		;;
@@ -399,9 +397,7 @@ symlink_ghc_i386_libs () {
 			url=$( map_ghc_version_to_linux_i386_gmp3_url "${ghc_version}" ) || return 1
 		else
 			log_error "Unexpected GHC version: ${ghc_version}"
-			log
-			log_indent 'To continue, use GHC 7.8.4 or older'
-			log
+			log_error 'To continue, use GHC 7.8.4 or older'
 			return 1
 		fi
 		;;
@@ -506,9 +502,7 @@ symlink_ghc_x86_64_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
 			log_error "Unexpected GHC version: ${ghc_version}"
-			log
-			log_indent 'To continue, use GHC 7.8.4 or older'
-			log
+			log_error 'To continue, use GHC 7.8.4 or older'
 			return 1
 		fi
 		;;
