@@ -138,6 +138,7 @@ install_halcyon () {
 	user=$( id -nu ) || return 1
 	group=$( id -ng ) || return 1
 
+	echo >&2
 	echo "-----> Creating base directory: ${base}" >&2
 
 
@@ -235,6 +236,9 @@ install_halcyon () {
 			echo "source /tmp/halcyon-paths.sh" >&2
 		fi
 	fi
+
+	echo >&2
+	echo '-----> Halcyon installed'
 }
 
 
