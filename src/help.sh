@@ -1,5 +1,4 @@
 help_usage () {
-	log
 	quote <<-EOF
 		Usage
 		  halcyon                                 COMMAND

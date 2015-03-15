@@ -484,6 +484,7 @@ halcyon_main () {
 			;;
 		'-'*)
 			log_error "Unexpected option: $1"
+			log
 			help_usage
 			return 1
 			;;
@@ -569,11 +570,13 @@ EOF
 		;;
 	'')
 		log_error 'Expected command'
+		log
 		help_usage
 		status=1
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args_a[*]:-}"
+		log
 		help_usage
 		status=1
 	esac
