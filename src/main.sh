@@ -5,6 +5,7 @@ set_halcyon_vars () {
 		export HALCYON_DEFAULT_ROOT='/'
 		export HALCYON_DEFAULT_CACHE='/var/tmp/halcyon-cache'
 		export HALCYON_DEFAULT_PUBLIC_STORAGE_URL='https://halcyon.global.ssl.fastly.net'
+		export HALCYON_DEFAULT_PUBLIC_STORAGE_S3_BUCKET='s3.halcyon.sh'
 		export HALCYON_DEFAULT_S3_ENDPOINT='s3.amazonaws.com'
 		export HALCYON_DEFAULT_S3_ACL='private'
 		export HALCYON_DEFAULT_GHC_VERSION='7.8.4'

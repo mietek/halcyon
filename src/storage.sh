@@ -21,6 +21,17 @@ has_private_storage () {
 }
 
 
+has_not_public_private_storage () {
+	has_private_storage || return 1
+
+	if has_public_storage &&
+		[[ "${HALCYON_S3_BUCKET}" == "${HALCYON_DEFAULT_PUBLIC_STORAGE_S3_BUCKET}" ]]
+	then
+		return 1
+	fi
+}
+
+
 format_public_storage_url () {
 	expect_vars HALCYON_PUBLIC_STORAGE_URL
 
@@ -152,7 +163,7 @@ cache_stored_file () {
 	object="${prefix:+${prefix}/}${file_name}"
 	file="${HALCYON_CACHE}/${file_name}"
 
-	if has_private_storage; then
+	if has_not_public_private_storage; then
 		local status
 		status=0
 		s3_download "${HALCYON_S3_BUCKET}" "${object}" "${file}" || status="$?"
