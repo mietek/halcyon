@@ -36,7 +36,7 @@ install_bashmenot () {
 		echo ' error' >&2
 		return 1
 	fi
-	echo " done, ${commit_hash:0:7}" >&2
+	echo " done, ${commit_hash}" >&2
 
 	BASHMENOT_NO_SELF_UPDATE=1 \
 		source "${HALCYON_DIR}/lib/bashmenot/src.sh" || return 1
@@ -90,7 +90,7 @@ halcyon_self_update () {
 		log_end 'error'
 		return 0
 	fi
-	log_end "done, ${commit_hash:0:7}"
+	log_end "done, ${commit_hash}"
 
 	touch "${HALCYON_DIR}" || return 1
 

@@ -195,7 +195,7 @@ install_halcyon () {
 		echo ' error' >&2
 		return 1
 	fi
-	echo " done, ${commit_hash:0:7}" >&2
+	echo " done, ${commit_hash}" >&2
 
 	eval "$( HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths )" || return 1
 

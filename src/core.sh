@@ -829,7 +829,7 @@ install_cloned_app () {
 		log_end 'error'
 		return 1
 	fi
-	log_end "done, ${commit_hash:0:7}"
+	log_end "done, ${commit_hash}"
 
 	local label
 	if ! label=$( detect_label "${clone_dir}" ); then
