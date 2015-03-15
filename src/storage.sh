@@ -81,8 +81,6 @@ extract_cached_archive_over () {
 	fi
 
 	if ! extract_archive_over "${HALCYON_CACHE}/${src_file_name}" "${dst_dir}"; then
-		rm -rf "${dst_dir}" || true
-
 		log_error 'Failed to extract cached archive'
 		return 1
 	fi
@@ -212,9 +210,12 @@ acquire_original_source () {
 	original_name=$( basename "${original_url}" ) || return 1
 
 	if ! extract_cached_archive_over "${original_name}" "${dst_dir}"; then
+		rm -rf "${dst_dir}" || true
 		cache_original_stored_file "${original_url}" || return 1
 
 		if ! extract_cached_archive_over "${original_name}" "${dst_dir}"; then
+			rm -rf "${dst_dir}" || true
+
 			log_error 'Failed to acquire original source'
 			return 1
 		fi
