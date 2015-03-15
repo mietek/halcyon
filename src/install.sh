@@ -55,6 +55,24 @@ derive_install_tag () {
 }
 
 
+derive_install_tag_pattern () {
+	local tag
+	expect_args tag -- "$@"
+
+	local prefix label source_hash \
+		ghc_version ghc_magic_hash \
+		cabal_version cabal_magic_hash
+	prefix=$( get_tag_prefix "${tag}" )
+	label=$( get_tag_label "${tag}" )
+	source_hash=$( get_tag_source_hash "${tag}" )
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+
+	create_install_tag "${prefix}" "${label//./\.}" "${source_hash}" \
+		"${ghc_version//./\.}" ".*" \
+		".*" ".*"
+}
+
+
 format_install_id () {
 	local tag
 	expect_args tag -- "$@"
@@ -349,9 +367,9 @@ validate_install_dir () {
 	local tag install_dir
 	expect_args tag install_dir -- "$@"
 
-	local install_tag
-	install_tag=$( derive_install_tag "${tag}" )
-	detect_tag "${install_dir}/.halcyon-tag" "${install_tag//./\.}" || return 1
+	local install_pattern
+	install_pattern=$( derive_install_tag_pattern "${tag}" )
+	detect_tag "${install_dir}/.halcyon-tag" "${install_pattern}" || return 1
 }
 
 
