@@ -122,6 +122,11 @@ install_halcyon () {
 		echo "   *** ERROR: Unexpected existing ${dir}" >&2
 		return 1
 	fi
+	if ! which 'curl' >'/dev/null' 2>&1; then
+		echo '   *** ERROR: Expected curl' >&2
+		echo '   *** ERROR: Ensure the curl OS package is installed' >&2
+		return 1
+	fi
 
 	eval "$( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' )" || return 1
 
