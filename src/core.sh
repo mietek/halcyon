@@ -611,7 +611,7 @@ do_full_install_app () {
 
 full_install_app () {
 	expect_vars HALCYON_PREFIX HALCYON_DEPENDENCIES_ONLY \
-		HALCYON_INTERNAL_RECURSIVE
+		HALCYON_INTERNAL_RECURSIVE HALCYON_INTERNAL_TOLERATE_GHC_USER_DB
 
 	local label source_dir
 	expect_args label source_dir -- "$@"
@@ -753,6 +753,16 @@ full_install_app () {
 	describe_extra 'Sandbox sources:' "${source_dir}/.halcyon/sandbox-sources"
 	describe_extra 'Sandbox extra apps:' "${source_dir}/.halcyon/sandbox-extra-apps"
 	describe_extra 'Sandbox extra OS packages:' "${source_dir}/.halcyon/sandbox-extra-os-packages"
+
+	# NOTE: In some circumstances, Cabal can break sandbox isolation.
+	# https://github.com/haskell/cabal/issues/2400
+	if ! (( HALCYON_INTERNAL_TOLERATE_GHC_USER_DB )) &&
+		find_tree ~/.ghc \( -name 'ghci_history' \) -prune -o -type f -print |
+		match_at_least_one >'/dev/null'
+	then
+		log_warning 'Unexpected GHC user package database'
+		log_warning 'https://github.com/haskell/cabal/issues/2400'
+	fi
 
 	local tag
 	tag=$(
