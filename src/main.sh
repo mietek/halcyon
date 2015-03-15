@@ -16,7 +16,6 @@ set_halcyon_vars () {
 		export HALCYON_PREFIX="${HALCYON_PREFIX:-${HALCYON_BASE}}"
 		export HALCYON_ROOT="${HALCYON_ROOT:-${HALCYON_DEFAULT_ROOT}}"
 		export HALCYON_NO_APP="${HALCYON_NO_APP:-0}"
-		export HALCYON_NO_MODIFY_HOME="${HALCYON_NO_MODIFY_HOME:-0}"
 		export HALCYON_LOG_TIMESTAMP="${HALCYON_LOG_TIMESTAMP:-0}"
 
 		export HALCYON_EXTRA_SOURCE_HASH_IGNORE="${HALCYON_EXTRA_SOURCE_HASH_IGNORE:-}"
@@ -169,8 +168,6 @@ halcyon_main () {
 			export HALCYON_ROOT="${1#*=}";;
 		'--no-app')
 			export HALCYON_NO_APP=1;;
-		'--no-modify-home')
-			export HALCYON_NO_MODIFY_HOME=1;;
 		'--log-timestamp')
 			export HALCYON_LOG_TIMESTAMP=1;;
 
