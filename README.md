@@ -27,7 +27,7 @@ $ git clone https://github.com/mietek/halcyon
 Alternatively, you can run the [Halcyon setup script](https://github.com/mietek/halcyon/blob/master/setup.sh), which also installs the necessary OS packages and sets up the environment:
 
 ```
-$ source <( curl -sL https://github.com/mietek/halcyon/raw/master/setup.sh )
+$ eval "$( curl -sL https://github.com/mietek/halcyon/raw/master/setup.sh )"
 ```
 
 

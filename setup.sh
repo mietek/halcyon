@@ -25,7 +25,7 @@ install_os_packages () {
 		;;
 	'linux-debian-6'*)
 		# NOTE: There is no sudo on Debian 6.
-		if ! (( uid )); then
+		if [ "${uid}" -eq 0 ]; then
 			apt-get update || return 1
 			apt-get install -y build-essential git pigz zlib1g-dev || return 1
 		else
@@ -39,7 +39,7 @@ install_os_packages () {
 	'linux-debian-7'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Debian 7.
-		if ! (( uid )); then
+		if [ "${uid}" -eq 0 ]; then
 			apt-get update || return 1
 			apt-get install -y build-essential git pigz zlib1g-dev || return 1
 		else
@@ -70,7 +70,7 @@ install_os_packages () {
 	'linux-ubuntu-10'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Ubuntu 10.
-		if ! (( uid )); then
+		if [ "${uid}" -eq 0 ]; then
 			apt-get update || return 1
 			apt-get install -y build-essential git-core pigz zlib1g-dev || return 1
 			apt-get install -y --reinstall ca-certificates || return 1
@@ -83,7 +83,7 @@ install_os_packages () {
 	'linux-ubuntu-12'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Ubuntu 12.
-		if ! (( uid )); then
+		if [ "${uid}" -eq 0 ]; then
 			apt-get update || return 1
 			apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev || return 1
 		else
@@ -116,21 +116,16 @@ install_halcyon () {
 
 	echo '-----> Welcome to Halcyon' >&2
 
-	if [[ -e "${base}" ]]; then
+	if [ -e "${base}" ]; then
 		echo "   *** ERROR: Unexpected existing ${base}" >&2
 		return 1
 	fi
-	if [[ -e "${dir}" ]]; then
+	if [ -e "${dir}" ]; then
 		echo "   *** ERROR: Unexpected existing ${dir}" >&2
 		return 1
 	fi
 
-	if (( BASH_VERSINFO[0] >= 4 )); then
-		source <( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' ) || return 1
-	else
-		curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' >'/tmp/bashmenot-platform.sh' || return 1
-		source '/tmp/bashmenot-platform.sh'
-	fi
+	eval "$( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' )" || return 1
 
 	local platform uid user group
 	platform=$( detect_platform )
@@ -145,21 +140,21 @@ install_halcyon () {
 	case "${platform}" in
 	'linux-debian-6'*)
 		# NOTE: There is no sudo on Debian 6.
-		if ! (( uid )); then
+		if [ "${uid}" -eq 0 ]; then
 			mkdir -p "${base}" || return 1
 			chown "${user}:${group}" "${base}" || return 1
 		else
 			echo '   *** WARNING: Cannot create base directory' >&2
 			echo
 			echo "       Ensure ${base} is owned by ${user}:${group}:" >&2
-			echo "       $ mkdir -p \"${base}\"" >&2
-			echo "       $ chown ${user}:${group} \"${base}\"" >&2
+			echo '       $ mkdir -p "'"${base}"'"' >&2
+			echo '       $ chown ${user}:${group} "'"${base}"'"' >&2
 		fi
 		;;
 	'linux-debian-7'*|'linux-ubuntu-10'*|'linux-ubuntu-12'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Debian 7, Ubuntu 10, and Ubuntu 12.
-		if ! (( uid )); then
+		if [ "${uid}" -eq 0 ]; then
 			mkdir -p "${base}" || return 1
 			chown "${user}:${group}" "${base}" || return 1
 		else
@@ -183,7 +178,7 @@ install_halcyon () {
 	url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
 	base_url="${url%#*}"
 	branch="${url#*#}"
-	if [[ "${branch}" == "${base_url}" ]]; then
+	if [ "${branch}" = "${base_url}" ]; then
 		branch='master'
 	fi
 
@@ -202,39 +197,14 @@ install_halcyon () {
 	fi
 	echo " done, ${commit_hash:0:7}" >&2
 
-	if (( BASH_VERSINFO[0] >= 4 )); then
-		source <( HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths ) || return 1
+	eval "$( HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths )" || return 1
+
+	echo '-----> Extending .bash_profile' >&2
+
+	if [ "${base}" = '/app' ]; then
+		echo 'eval "$( HALCYON_NO_SELF_UPDATE=1 "'"${dir}/halcyon"'" paths )"' >>"${HOME}/.bash_profile" || return 1
 	else
-		HALCYON_NO_SELF_UPDATE=1 "${dir}/halcyon" paths >'/tmp/halcyon-paths.sh' || return 1
-		source '/tmp/halcyon-paths.sh'
-	fi
-
-	if ! (( ${HALCYON_NO_MODIFY_HOME:-0} )); then
-		echo '-----> Extending .bash_profile' >&2
-
-		if [[ "${base}" != '/app' ]]; then
-			echo "export HALCYON_BASE=${base}" >>"${HOME}/.bash_profile" || return 1
-		fi
-		if (( BASH_VERSINFO[0] >= 4 )); then
-			echo "source <( HALCYON_NO_SELF_UPDATE=1 \"${dir}/halcyon\" paths )" >>"${HOME}/.bash_profile" || return 1
-		else
-			echo "HALCYON_NO_SELF_UPDATE=1 \"${dir}/halcyon\" paths >/tmp/halcyon-paths.sh" >>"${HOME}/.bash_profile" || return 1
-			echo "source /tmp/halcyon-paths.sh" >>"${HOME}/.bash_profile" || return 1
-		fi
-	else
-		echo "   *** WARNING: Cannot extend ${HOME}/.bash_profile" >&2
-		echo >&2
-		echo '       To activate Halcyon manually:'
-
-		if [[ "${base}" != '/app' ]]; then
-			echo "       $ export HALCYON_BASE=\"${base}\"" >&2
-		fi
-		if (( BASH_VERSINFO[0] >= 4 )); then
-			echo "       $ source <( \"${dir}/halcyon\" paths )" >&2
-		else
-			echo "\"${dir}/halcyon\" paths >/tmp/halcyon-paths.sh" >&2
-			echo "source /tmp/halcyon-paths.sh" >&2
-		fi
+		echo 'eval "$( HALCYON_NO_SELF_UPDATE=1 "'"${dir}/halcyon"'" --base="'"${base}"'" paths )"' >>"${HOME}/.bash_profile" || return 1
 	fi
 
 	echo >&2
