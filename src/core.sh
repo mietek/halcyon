@@ -892,6 +892,12 @@ install_unpacked_app () {
 halcyon_install () {
 	expect_vars HALCYON_NO_APP
 
+	if (( BASH_VERSINFO[0] < 4 )); then
+		log_error "Unexpected GNU bash version: ${BASH_VERSION}"
+		log_error 'To use Halcyon, use GNU bash 4 or newer'
+		return 1
+	fi
+
 	if (( $# > 1 )); then
 		shift
 		log_error "Unexpected args: $*"
