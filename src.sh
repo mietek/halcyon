@@ -24,7 +24,7 @@ install_bashmenot () {
 		branch='master'
 	fi
 
-	echo -n '-----> Installing bashmenot...' >&2
+	printf -- '-----> Installing bashmenot...' >&2
 
 	local commit_hash
 	if ! commit_hash=$(
