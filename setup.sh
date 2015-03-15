@@ -30,8 +30,7 @@ install_os_packages () {
 			apt-get install -y build-essential git pigz zlib1g-dev || return 1
 		else
 			echo '   *** WARNING: Cannot install OS packages' >&2
-			echo >&2
-			echo '       Ensure the following OS packages are installed:' >&2
+			echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
 			echo '       $ apt-get update' >&2
 			echo '       $ apt-get install -y build-essential git pigz zlib1g-dev' >&2
 		fi
@@ -97,8 +96,7 @@ install_os_packages () {
 		;;
 	'osx-'*)
 		echo '   *** WARNING: Cannot install OS packages' >&2
-		echo >&2
-		echo '       Ensure the following OS packages are installed:' >&2
+		echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
 		echo '       $ brew update' >&2
 		echo '       $ brew install bash coreutils git pigz' >&2
 		;;
@@ -145,8 +143,7 @@ install_halcyon () {
 			chown "${user}:${group}" "${base}" || return 1
 		else
 			echo '   *** WARNING: Cannot create base directory' >&2
-			echo
-			echo "       Ensure ${base} is owned by ${user}:${group}:" >&2
+			echo "   *** WARNING: Ensure ${base} is owned by ${user}:${group}:" >&2
 			echo '       $ mkdir -p "'"${base}"'"' >&2
 			echo '       $ chown ${user}:${group} "'"${base}"'"' >&2
 		fi
