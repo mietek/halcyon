@@ -372,27 +372,27 @@ build_sandbox_dir () {
 	local -a opts_a
 	opts_a=()
 	opts_a+=( --dependencies-only )
-	opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include" )
-	opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
-	opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib" )
-	opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
+	[[ -e "${HALCYON_BASE}/sandbox/include" ]] && opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include" )
+	[[ -e "${HALCYON_BASE}/sandbox/usr/include" ]] && opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include" )
+	[[ -e "${HALCYON_BASE}/sandbox/lib" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib" )
+	[[ -e "${HALCYON_BASE}/sandbox/usr/lib" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib" )
 
 	case "${HALCYON_INTERNAL_PLATFORM}" in
 	'linux-amzn-'*|'linux-centos-'*|'linux-fedora-'*|'linux-rhel-'*)
-		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib64" )
-		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib64" )
+		[[ -e "${HALCYON_BASE}/sandbox/lib64" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib64" )
+		[[ -e "${HALCYON_BASE}/sandbox/usr/lib64" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib64" )
 		;;
 	'linux-debian-'*'-i386'|'linux-ubuntu-'*'-i386')
-		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/i386-linux-gnu" )
-		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/i386-linux-gnu" )
-		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/i386-linux-gnu" )
-		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib/i386-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/include/i386-linux-gnu" ]] && opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/i386-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/usr/include/i386-linux-gnu" ]] && opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/i386-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/lib/i386-linux-gnu" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/i386-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/usr/lib/i386-linux-gnu" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib/i386-linux-gnu" )
 		;;
 	'linux-debian-'*'-x86_64'|'linux-ubuntu-'*'-x86_64')
-		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/x86_64-linux-gnu" )
-		opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )
-		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" )
-		opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/include/x86_64-linux-gnu" ]] && opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/include/x86_64-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" ]] && opts_a+=( --extra-include-dirs="${HALCYON_BASE}/sandbox/usr/include/x86_64-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/lib/x86_64-linux-gnu" )
+		[[ -e "${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu" ]] && opts_a+=( --extra-lib-dirs="${HALCYON_BASE}/sandbox/usr/lib/x86_64-linux-gnu" )
 	esac
 
 	if [[ -f "${source_dir}/.halcyon/sandbox-extra-configure-flags" ]]; then
