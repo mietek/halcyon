@@ -675,57 +675,6 @@ restore_updated_cabal_dir () {
 }
 
 
-help_cabal_symlink () {
-	log
-	quote <<-EOF
-		To symlink the Halcyon Cabal config:
-		$ mv ~/.cabal/config ~/.cabal/config.original
-		$ mkdir -p ~/.cabal
-		$ ln -s "${HALCYON_BASE}/cabal/config" ~/.cabal/config
-
-		To use the Halcyon Cabal config manually:
-		$ cabal --config-file="${HALCYON_BASE}/cabal/config" ...
-EOF
-}
-
-
-symlink_cabal_config () {
-	expect_vars HOME HALCYON_BASE HALCYON_NO_MODIFY_HOME \
-		HALCYON_INTERNAL_RECURSIVE
-
-	if [[ ! -f "${HALCYON_BASE}/cabal/.halcyon-tag" ]] || (( HALCYON_INTERNAL_RECURSIVE )); then
-		return 0
-	fi
-
-	if (( HALCYON_NO_MODIFY_HOME )); then
-		log_warning 'Cannot symlink Cabal config'
-		help_cabal_symlink
-		return 0
-	fi
-
-	if [[ -f "${HOME}/.cabal/config" ]]; then
-		# TODO: Remove the .halcyon-cabal.config line in the future.
-		local actual_config
-		if ! actual_config=$( readlink "${HOME}/.cabal/config" ) ||
-			[[ "${actual_config}" != "${HALCYON_BASE}/cabal/.halcyon-cabal.config" &&
-				"${actual_config}" != "${HALCYON_BASE}/cabal/config"
-			]]
-		then
-			log_warning 'Cannot symlink Cabal config'
-			help_cabal_symlink
-			return 0
-		fi
-	fi
-
-	if ! rm -f "${HOME}/.cabal/config" ||
-		! mkdir -p "${HOME}/.cabal" ||
-		! ln -fs "${HALCYON_BASE}/cabal/config" "${HOME}/.cabal/config"
-	then
-		log_warning 'Failed to symlink Cabal config'
-	fi
-}
-
-
 install_cabal_dir () {
 	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
 		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE
@@ -737,14 +686,12 @@ install_cabal_dir () {
 		if ! (( HALCYON_CABAL_UPDATE )) &&
 			restore_updated_cabal_dir "${tag}"
 		then
-			symlink_cabal_config
 			return 0
 		fi
 
 		if restore_base_cabal_dir "${tag}"; then
 			update_cabal_package_db "${tag}" || return 1
 			archive_cabal_dir || return 1
-			symlink_cabal_config
 			return 0
 		fi
 
@@ -759,7 +706,6 @@ install_cabal_dir () {
 	archive_cabal_dir || return 1
 	update_cabal_package_db "${tag}" || return 1
 	archive_cabal_dir || return 1
-	symlink_cabal_config
 }
 
 

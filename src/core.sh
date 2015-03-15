@@ -335,7 +335,6 @@ do_fast_install_app () {
 
 	restore_install_dir "${tag}" "${install_dir}" || return 1
 	install_app "${tag}" "${source_dir}" "${install_dir}" || return 1
-	symlink_cabal_config
 }
 
 
@@ -610,7 +609,6 @@ do_full_install_app () {
 		! (( HALCYON_DEPENDENCIES_ONLY ))
 	then
 		install_app "${tag}" "${source_dir}" "${install_dir}" || return 1
-		symlink_cabal_config
 	fi
 }
 

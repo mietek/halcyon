@@ -3,6 +3,8 @@ if [ "${HALCYON_INTERNAL_PATHS:-0}" -eq 0 ]; then
 
 	export HALCYON_BASE="${HALCYON_BASE:-/app}"
 
+	export CABAL_CONFIG="${HALCYON_BASE}/cabal/config"
+
 	_join () {
 		IFS=':' && echo "$*"
 	}
