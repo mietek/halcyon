@@ -12,8 +12,8 @@ install_os_packages () {
 			yum install -y git pigz zlib-devel" || return 1
 		;;
 	'linux-arch'*)
-		sudo bash -c "pacman --sync --refresh &&
-			pacman --sync --needed --noconfirm base-devel git pigz zlib" || return 1
+		sudo bash -c 'pacman --sync --refresh &&
+			pacman --sync --needed --noconfirm base-devel git pigz zlib' || return 1
 		;;
 	'linux-centos-6'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
@@ -42,8 +42,8 @@ install_os_packages () {
 			apt-get update || return 1
 			apt-get install -y build-essential git pigz zlib1g-dev || return 1
 		else
-			sudo bash -c "apt-get update &&
-				apt-get install -y build-essential git pigz zlib1g-dev" || return 1
+			sudo bash -c 'apt-get update &&
+				apt-get install -y build-essential git pigz zlib1g-dev' || return 1
 		fi
 		;;
 	'linux-exherbo'*)
@@ -84,9 +84,9 @@ install_os_packages () {
 			apt-get install -y build-essential git-core pigz zlib1g-dev || return 1
 			apt-get install -y --reinstall ca-certificates || return 1
 		else
-			sudo bash -c "apt-get update &&
+			sudo bash -c 'apt-get update &&
 				apt-get install -y build-essential git-core pigz zlib1g-dev &&
-				apt-get install -y --reinstall ca-certificates" || return 1
+				apt-get install -y --reinstall ca-certificates' || return 1
 		fi
 		;;
 	'linux-ubuntu-12'*)
@@ -96,13 +96,13 @@ install_os_packages () {
 			apt-get update || return 1
 			apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev || return 1
 		else
-			sudo bash -c "apt-get update &&
-				apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev" || return 1
+			sudo bash -c 'apt-get update &&
+				apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev' || return 1
 		fi
 		;;
 	'linux-ubuntu-14'*)
-		sudo bash -c "apt-get update &&
-			apt-get install -y build-essential git pigz zlib1g-dev" || return 1
+		sudo bash -c 'apt-get update &&
+			apt-get install -y build-essential git pigz zlib1g-dev' || return 1
 		;;
 	'osx-'*)
 		echo '   *** WARNING: Cannot install OS packages' >&2
