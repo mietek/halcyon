@@ -46,6 +46,16 @@ install_os_packages () {
 				apt-get install -y build-essential git pigz zlib1g-dev" || return 1
 		fi
 		;;
+	'linux-exherbo'*)
+		# NOTE: There is no sudo on Exherbo Linux.
+		if [ "${uid}" -eq 0 ]; then
+			cave resolve -x app-arch/pigz sys-libs/zlib || return 1
+		else
+			echo '   *** WARNING: Cannot install OS packages' >&2
+			echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
+			echo '       $ cave resolve -x app-arch/pigz sys-libs/zlib' >&2
+		fi
+		;;
 	'linux-fedora-19'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git pigz zlib-devel" || return 1
@@ -141,8 +151,8 @@ install_halcyon () {
 
 
 	case "${platform}" in
-	'linux-debian-6'*)
-		# NOTE: There is no sudo on Debian 6.
+	'linux-debian-6'*|'linux-exherbo'*)
+		# NOTE: There is no sudo on Debian 6 and Exherbo Linux.
 		if [ "${uid}" -eq 0 ]; then
 			mkdir -p "${base}" || return 1
 			chown "${user}:${group}" "${base}" || return 1
