@@ -132,7 +132,11 @@ install_halcyon () {
 		echo "   *** ERROR: Unexpected existing ${dir}" >&2
 		return 1
 	fi
-	if ! which 'curl' >'/dev/null' 2>&1; then
+
+	local status
+	status=0
+	curl >'/dev/null' 2>&1 || status="$?"
+	if [ "${status}" -eq 127 ]; then
 		echo '   *** ERROR: Expected curl' >&2
 		echo '   *** ERROR: Ensure the curl OS package is installed' >&2
 		return 1
