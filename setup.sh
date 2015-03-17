@@ -66,7 +66,7 @@ install_os_packages () {
 		;;
 	'linux-fedora-21'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
-			yum install -y git patch openssl pigz tar zlib-devel" || return 1
+			yum install -y git patch openssl pigz tar which zlib-devel" || return 1
 		;;
 	'linux-rhel-6'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
