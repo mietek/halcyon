@@ -179,7 +179,10 @@ cache_stored_file () {
 	public_url=$( format_public_storage_url "${object}" )
 
 	curl_download "${public_url}" "${file}" || return 1
-	upload_cached_file "${prefix}" "${file_name}" || return 1
+
+	if has_not_public_private_storage; then
+		upload_cached_file "${prefix}" "${file_name}" || return 1
+	fi
 }
 
 
