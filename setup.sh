@@ -135,7 +135,7 @@ install_halcyon () {
 
 	local status
 	status=0
-	curl >'/dev/null' 2>&1 || status="$?"
+	curl 2>'/dev/null' || status="$?"
 	if [ "${status}" -eq 127 ]; then
 		echo '   *** ERROR: Expected curl' >&2
 		echo '   *** ERROR: Ensure the curl OS package is installed' >&2
