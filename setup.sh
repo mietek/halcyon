@@ -76,6 +76,10 @@ install_os_packages () {
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git patch openssl pigz tar which zlib-devel" || return 1
 		;;
+	'linux-opensuse-13'*)
+		sudo bash -c 'zypper -n install -t pattern devel_basis &&
+			zypper -n install git' || return 1
+		;;
 	'linux-rhel-6'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git zlib-devel" || return 1

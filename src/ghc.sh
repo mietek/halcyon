@@ -538,6 +538,17 @@ symlink_ghc_x86_64_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
+	'linux-opensuse-13'*)
+		gmp_file='/usr/lib64/libgmp.so.10'
+		tinfo_file='/lib64/libtinfo.so.5'
+		if (( ghc_major < 7 || ghc_minor < 8 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
+		else
+			gmp_name='libgmp.so.10'
+			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
+		fi
+		;;
 	'linux-ubuntu-12'*)
 		tinfo_file='/lib/x86_64-linux-gnu/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 8 )); then
