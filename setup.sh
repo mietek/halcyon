@@ -76,6 +76,18 @@ install_os_packages () {
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git patch openssl pigz tar which zlib-devel" || return 1
 		;;
+	'linux-gentoo'*)
+		# NOTE: There is no sudo on Gentoo Linux.
+		if [ "${uid}" -eq 0 ]; then
+			emerge --sync || return 1
+			emerge --noreplace app-arch/pigz dev-vcs/git || return 1
+		else
+			echo '   *** WARNING: Cannot install OS packages' >&2
+			echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
+			echo '       $ emerge --sync' >&2
+			echo '       $ emerge app-arch/pigz dev-vcs/git' >&2
+		fi
+		;;
 	'linux-opensuse-13'*)
 		sudo bash -c 'zypper -n install -t pattern devel_basis &&
 			zypper -n install git' || return 1
@@ -149,9 +161,15 @@ install_halcyon () {
 	status=0
 	curl 2>'/dev/null' || status="$?"
 	if [ "${status}" -eq 127 ]; then
-		echo '   *** ERROR: Expected curl' >&2
-		echo '   *** ERROR: Ensure the curl OS package is installed' >&2
-		return 1
+		# NOTE: There is no curl or sudo on Gentoo Linux.
+		if grep -q 'gentoo' '/etc/os-release' 2>'/dev/null' && [ "${uid}" -eq 0 ]; then
+			emerge --sync || return 1
+			emerge --noreplace net-misc/curl || return 1
+		else
+			echo '   *** ERROR: Expected curl' >&2
+			echo '   *** ERROR: Ensure the curl OS package is installed' >&2
+			return 1
+		fi
 	fi
 
 	eval "$( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' )" || return 1
@@ -167,8 +185,9 @@ install_halcyon () {
 
 
 	case "${platform}" in
-	'linux-arch'*|'linux-debian-6'*|'linux-exherbo'*)
-		# NOTE: There is no sudo on Arch Linux, Debian 6, and Exherbo Linux.
+	'linux-arch'*|'linux-debian-6'*|'linux-exherbo'*|'linux-gentoo'*)
+		# NOTE: There is no sudo on Arch Linux, Debian 6,
+		# Exherbo Linux, and Gentoo Linux.
 		if [ "${uid}" -eq 0 ]; then
 			mkdir -p "${base}" || return 1
 			chown "${user}:${group}" "${base}" || return 1

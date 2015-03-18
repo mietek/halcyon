@@ -527,7 +527,7 @@ symlink_ghc_x86_64_libs () {
 			url=$( map_ghc_version_to_linux_x86_64_gmp10_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-exherbo'*)
+	'linux-exherbo'*|'linux-gentoo'*)
 		gmp_file='/usr/lib64/libgmp.so.10'
 		tinfo_file='/lib64/libncurses.so.5'
 		if (( ghc_major < 7 || ghc_minor < 8 )); then
