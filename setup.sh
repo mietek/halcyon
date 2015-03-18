@@ -12,8 +12,16 @@ install_os_packages () {
 			yum install -y git pigz zlib-devel" || return 1
 		;;
 	'linux-arch'*)
-		sudo bash -c 'pacman --sync --refresh &&
-			pacman --sync --needed --noconfirm base-devel git pigz zlib' || return 1
+		# NOTE: There is no sudo on Arch Linux.
+		if [ "${uid}" -eq 0 ]; then
+			pacman --sync --refresh || return 1
+			pacman --sync --needed --noconfirm base-devel git pigz zlib || return 1
+		else
+			echo '   *** WARNING: Cannot install OS packages' >&2
+			echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
+			echo '       $ pacman --sync --refresh' >&2
+			echo '       $ pacman --sync --needed --noconfirm base-devel git pigz zlib' >&2
+		fi
 		;;
 	'linux-centos-6'*)
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
@@ -155,8 +163,8 @@ install_halcyon () {
 
 
 	case "${platform}" in
-	'linux-debian-6'*|'linux-exherbo'*)
-		# NOTE: There is no sudo on Debian 6 and Exherbo Linux.
+	'linux-arch'*|'linux-debian-6'*|'linux-exherbo'*)
+		# NOTE: There is no sudo on Arch Linux, Debian 6, and Exherbo Linux.
 		if [ "${uid}" -eq 0 ]; then
 			mkdir -p "${base}" || return 1
 			chown "${user}:${group}" "${base}" || return 1
