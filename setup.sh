@@ -100,6 +100,9 @@ install_os_packages () {
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git zlib-devel" || return 1
 		;;
+	'linux-slackware-14'*)
+		# NOTE: Nothing to install on Slackware.
+		;;
 	'linux-ubuntu-10'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Ubuntu 10.
