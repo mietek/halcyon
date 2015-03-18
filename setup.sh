@@ -183,7 +183,6 @@ install_halcyon () {
 	echo >&2
 	echo "-----> Creating base directory: ${base}" >&2
 
-
 	case "${platform}" in
 	'linux-arch'*|'linux-debian-6'*|'linux-exherbo'*|'linux-gentoo'*)
 		# NOTE: There is no sudo on Arch Linux, Debian 6,
