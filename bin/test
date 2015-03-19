@@ -10,14 +10,24 @@ source "${HALCYON_DIR}/src.sh"
 test_cabal () {
 	local -a cabal_versions_a
 	cabal_versions_a=()
-	cabal_versions_a+=( '1.20.0.3' )
-	cabal_versions_a+=( '1.22.0.0' )
+	case "${HALCYON_INTERNAL_PLATFORM}" in
+	'linux-rhel-6'*'-i386')
+		cabal_versions_a+=( '1.20.0.3' )
+		;;
+	*)
+		cabal_versions_a+=( '1.20.0.3' )
+		cabal_versions_a+=( '1.22.0.0' )
+	esac
 
 	log 'Testing Cabal'
 
 	for cabal_version in "${cabal_versions_a[@]}"; do
 		local -a opts_a
 		opts_a=()
+		case "${HALCYON_INTERNAL_PLATFORM}" in
+		'linux-rhel-6'*'-i386')
+			opts_a+=( --ghc-version='7.8.2' )
+		esac
 		opts_a+=( --cabal-version="${cabal_version}" )
 
 		log
