@@ -164,15 +164,9 @@ install_halcyon () {
 	status=0
 	curl 2>'/dev/null' || status="$?"
 	if [ "${status}" -eq 127 ]; then
-		# NOTE: There is no curl or sudo on Gentoo Linux.
-		if grep -q 'gentoo' '/etc/os-release' 2>'/dev/null' && [ "${uid}" -eq 0 ]; then
-			emerge --sync || return 1
-			emerge --noreplace net-misc/curl || return 1
-		else
-			echo '   *** ERROR: Expected curl' >&2
-			echo '   *** ERROR: Ensure the curl OS package is installed' >&2
-			return 1
-		fi
+		echo '   *** ERROR: Expected curl' >&2
+		echo '   *** ERROR: Ensure the curl OS package is installed' >&2
+		return 1
 	fi
 
 	eval "$( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' )" || return 1
