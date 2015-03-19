@@ -16,7 +16,7 @@ map_ghc_version_to_source_url () {
 	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-src.tar.xz';;
 	'7.10.1-rc3')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc3/ghc-7.10.0.20150316-src.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for source: ${ghc_version}"
+		log_error "Unsupported GHC version: ${ghc_version}"
 		return 1
 	esac
 }
@@ -37,7 +37,7 @@ map_ghc_version_to_freebsd_i386_url () {
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-portbld-freebsd.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-portbld-freebsd.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for FreeBSD (i386): ${ghc_version}"
+		log_error "Unsupported GHC version for FreeBSD (i386): ${ghc_version}"
 		return 1
 	esac
 }
@@ -58,7 +58,7 @@ map_ghc_version_to_freebsd_x86_64_url () {
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-portbld-freebsd.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-portbld-freebsd.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for FreeBSD (x86_64): ${ghc_version}"
+		log_error "Unsupported GHC version for FreeBSD (x86_64): ${ghc_version}"
 		return 1
 	esac
 }
@@ -75,7 +75,7 @@ map_ghc_version_to_linux_i386_gmp10_url () {
 	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-i386-unknown-linux-deb7.tar.xz';;
 	'7.10.1-rc3')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc3/ghc-7.10.0.20150316-i386-unknown-linux-deb7.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for Linux (i386 libgmp.so.10): ${ghc_version}"
+		log_error "Unsupported GHC version for Linux (i386): ${ghc_version} (libgmp.so.10)"
 		return 1
 	esac
 }
@@ -97,7 +97,7 @@ map_ghc_version_to_linux_i386_gmp3_url () {
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-unknown-linux-centos65.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-unknown-linux-centos65.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for Linux (i386 libgmp.so.3): ${ghc_version}"
+		log_error "Unsupported GHC version for Linux (i386): ${ghc_version} (libgmp.so.3)"
 		return 1
 	esac
 }
@@ -114,7 +114,7 @@ map_ghc_version_to_linux_x86_64_gmp10_url () {
 	'7.10.1-rc2')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc2/ghc-7.10.0.20150123-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.10.1-rc3')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc3/ghc-7.10.0.20150316-x86_64-unknown-linux-deb7.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for Linux (x86_64 libgmp.so.10): ${ghc_version}"
+		log_error "Unsupported GHC version for Linux (x86_64): ${ghc_version} (libgmp.so.10)"
 		return 1
 	esac
 }
@@ -136,7 +136,7 @@ map_ghc_version_to_linux_x86_64_gmp3_url () {
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-centos65.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-centos65.tar.xz';;
 	*)
-		log_error "Unexpected GHC version for Linux (x86_64 libgmp.so.3): ${ghc_version}"
+		log_error "Unsupported GHC version for Linux (x86_64): ${ghc_version} (libgmp.so.3)"
 		return 1
 	esac
 }
@@ -153,7 +153,7 @@ map_ghc_version_to_osx_i386_url () {
 	'7.6.1')	echo 'https://downloads.haskell.org/~ghc/7.6.1/ghc-7.6.1-i386-apple-darwin.tar.bz2';;
 	'7.6.3')	echo 'https://downloads.haskell.org/~ghc/7.6.3/ghc-7.6.3-i386-apple-darwin.tar.bz2';;
 	*)
-		log_error "Unexpected GHC version for OS X (i386): ${ghc_version}"
+		log_error "Unsupported GHC version for OS X (i386): ${ghc_version}"
 		return 1
 	esac
 }
@@ -174,7 +174,7 @@ map_ghc_version_to_osx_x86_64_url () {
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-apple-darwin.tar.xz';;
 	'7.10.1-rc2')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.10.0.20150123-x86_64-apple-darwin.tar.bz2';;
 	*)
-		log_error "Unexpected GHC version for OS X (x86_64): ${ghc_version}"
+		log_error "Unsupported GHC version for OS X (x86_64): ${ghc_version}"
 		return 1
 	esac
 }
@@ -204,7 +204,7 @@ map_base_package_version_to_ghc_version () {
 		esac
 		;;
 	*)
-		log_error "Unexpected base package version: ${base_version}"
+		log_error "Unsupported base package version: ${base_version}"
 		return 1
 	esac
 }
@@ -362,6 +362,9 @@ symlink_ghc_i386_libs () {
 	local tag
 	expect_args tag -- "$@"
 
+	local description
+	description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
+
 	local ghc_version ghc_major ghc_minor
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_major="${ghc_version%%.*}"
@@ -383,8 +386,8 @@ symlink_ghc_i386_libs () {
 			gmp_name='libgmp.so.3'
 			url=$( map_ghc_version_to_linux_i386_gmp3_url "${ghc_version}" ) || return 1
 		else
-			log_error "Unexpected GHC version: ${ghc_version}"
-			log_error 'To continue, use GHC 7.8.4 or older'
+			log_error "Unsupported GHC version for ${description}: ${ghc_version}"
+			log_error "To use ${description}, use GHC 7.8.4 or older"
 			return 1
 		fi
 		;;
@@ -406,8 +409,8 @@ symlink_ghc_i386_libs () {
 			gmp_name='libgmp.so.3'
 			url=$( map_ghc_version_to_linux_i386_gmp3_url "${ghc_version}" ) || return 1
 		else
-			log_error "Unexpected GHC version: ${ghc_version}"
-			log_error 'To continue, use GHC 7.8.4 or older'
+			log_error "Unsupported GHC version for ${description}: ${ghc_version}"
+			log_error "To use ${description}, use GHC 7.8.4 or older"
 			return 1
 		fi
 		;;
@@ -438,10 +441,7 @@ symlink_ghc_i386_libs () {
 		url=$( map_ghc_version_to_osx_i386_url "${ghc_version}" ) || return 1
 		;;
 	*)
-		local description
-		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
-
-		log_error "Unexpected platform: ${description}"
+		log_error "Unsupported platform: ${description}"
 		return 1
 	esac
 
@@ -456,6 +456,9 @@ symlink_ghc_x86_64_libs () {
 
 	local tag
 	expect_args tag -- "$@"
+
+	local description
+	description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
 
 	local ghc_version ghc_major ghc_minor
 	ghc_version=$( get_tag_ghc_version "${tag}" )
@@ -511,8 +514,8 @@ symlink_ghc_x86_64_libs () {
 			gmp_name='libgmp.so.3'
 			url=$( map_ghc_version_to_linux_x86_64_gmp3_url "${ghc_version}" ) || return 1
 		else
-			log_error "Unexpected GHC version: ${ghc_version}"
-			log_error 'To continue, use GHC 7.8.4 or older'
+			log_error "Unsupported GHC version for ${description}: ${ghc_version}"
+			log_error "To use ${description}, use GHC 7.8.4 or older"
 			return 1
 		fi
 		;;
@@ -577,10 +580,7 @@ symlink_ghc_x86_64_libs () {
 		url=$( map_ghc_version_to_osx_x86_64_url "${ghc_version}" ) || return 1
 		;;
 	*)
-		local description
-		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
-
-		log_error "Unexpected platform: ${description}"
+		log_error "Unsupported platform: ${description}"
 		return 1
 	esac
 
@@ -625,7 +625,7 @@ build_ghc_dir () {
 		local description
 		description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
 
-		log_error "Unexpected platform: ${description}"
+		log_error "Unsupported platform: ${description}"
 		return 1
 	esac
 

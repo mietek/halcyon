@@ -13,7 +13,7 @@ map_cabal_version_to_original_url () {
 	*)
 		# NOTE: Bootstrapping cabal-install 1.20.0.4 does not work.
 		# https://www.haskell.org/pipermail/cabal-devel/2014-December/009959.html
-		log_error "Unexpected Cabal version: ${cabal_version}"
+		log_error "Unsupported Cabal version: ${cabal_version}"
 		return 1
 	esac
 }
@@ -268,8 +268,8 @@ build_cabal_dir () {
 
 	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
 	if (( ghc_major < 7 || ghc_minor < 8 )); then
-		log_error "Unexpected GHC version: ${ghc_version}"
-		log_error 'To bootstrap Cabal, use GHC 7.8.2 or newer'
+		log_error "Unsupported GHC and Cabal version combination: ${ghc_version} and ${cabal_version}"
+		log_error "To use Cabal ${cabal_version}, use GHC 7.8.2 or newer"
 		return 1
 	fi
 
@@ -281,11 +281,14 @@ build_cabal_dir () {
 	case "${HALCYON_INTERNAL_PLATFORM}" in
 	'linux-rhel-6'*'-i386')
 		if (( cabal_major == 1 && ((cabal_minor == 20 && ghc_major == 7 && ghc_minor == 8 && ghc_point >= 3) || cabal_minor == 22) )); then
-			log_error "Unexpected GHC and Cabal version combination for RHEL 6 (32-bit): ${ghc_version} and ${cabal_version}"
+			local description
+			description=$( format_platform_description "${HALCYON_INTERNAL_PLATFORM}" )
+
+			log_error "Unsupported GHC and Cabal version combination for ${description}: ${ghc_version} and ${cabal_version}"
 			if (( cabal_minor == 20 )); then
-				log_error 'To bootstrap Cabal, use GHC 7.8.2 or older'
+				log_error "To use Cabal 1.20.0.0 or newer for ${description}, use GHC 7.8.2 or older"
 			else
-				log_error 'Cannot bootstrap Cabal'
+				log_error "To use ${description}, use Cabal 1.20.0.3 or older"
 			fi
 			log_error 'https://ghc.haskell.org/trac/ghc/ticket/9964'
 			return 1

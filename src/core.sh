@@ -286,7 +286,7 @@ install_ghc_and_cabal_dirs () {
 
 	# NOTE: GHC 7.10.* requires Cabal 1.22.0.0 or newer.
 	if (( ((ghc_major == 7 && ghc_minor >= 10) || ghc_major > 7) && cabal_major == 1 && cabal_minor < 22 )); then
-		log_error 'Unexpected Cabal version'
+		log_error 'Unsupported Cabal version'
 		log_error 'To use GHC 7.10.1 or newer, use Cabal 1.22.0.0 or newer'
 		return 1
 	fi
@@ -508,7 +508,7 @@ validate_extra_configure_flags () {
 		while read -r flag; do
 			case "${flag}" in
 			'--prefix='*)
-				log_error "Unexpected extra configure flag: ${flag}"
+				log_error "Unsupported extra configure flag: ${flag}"
 				return 1
 			esac
 		done <"${source_dir}/.halcyon/extra-configure-flags" || true
@@ -519,12 +519,12 @@ validate_extra_configure_flags () {
 		while read -r flag; do
 			case "${flag}" in
 			'--prefix='*)
-				log_error "Unexpected sandbox extra configure flag: ${flag}"
+				log_error "Unsupported sandbox extra configure flag: ${flag}"
 				return 1
 				;;
 			'--enable-benchmarks'|'--disable-benchmarks'|'--enable-tests'|'--disable-tests')
 				if (( cabal_major == 1 && cabal_minor < 22 )); then
-					log_error "Unexpected sandbox extra configure flag: ${flag}"
+					log_error "Unsupported sandbox extra configure flag for Cabal ${cabal_version}: ${flag}"
 					log_error "To use ${flag}, use Cabal 1.22.0.0 or newer"
 					return 1
 				fi
@@ -895,7 +895,7 @@ halcyon_install () {
 	expect_vars HALCYON_NO_APP
 
 	if (( BASH_VERSINFO[0] < 4 )); then
-		log_error "Unexpected GNU bash version: ${BASH_VERSION}"
+		log_error "Unsupported GNU bash version: ${BASH_VERSION}"
 		log_error 'To use Halcyon, use GNU bash 4 or newer'
 		return 1
 	fi

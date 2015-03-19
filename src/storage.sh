@@ -120,7 +120,8 @@ check_s3_status () {
 	# NOTE: Requests using the wrong S3 endpoint fail with 301.
 	# https://github.com/mietek/haskell-on-heroku/issues/37
 	if (( s3_status == 3 )); then
-		log_error "Unexpected HALCYON_S3_ENDPOINT for HALCYON_S3_BUCKET (${HALCYON_S3_BUCKET}): ${HALCYON_S3_ENDPOINT}"
+		log_error "Incorrect HALCYON_S3_ENDPOINT for ${HALCYON_S3_BUCKET}: ${HALCYON_S3_ENDPOINT}"
+		log_error "To use ${HALCYON_S3_BUCKET}, use the correct HALCYON_S3_ENDPOINT"
 		return 1
 	fi
 }
