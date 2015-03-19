@@ -85,7 +85,7 @@ install_os_packages () {
 			echo '   *** WARNING: Cannot install OS packages' >&2
 			echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
 			echo '       $ emerge --sync' >&2
-			echo '       $ emerge app-arch/pigz dev-vcs/git' >&2
+			echo '       $ emerge --noreplace app-arch/pigz dev-vcs/git' >&2
 		fi
 		;;
 	'linux-opensuse-13'*)
