@@ -253,11 +253,18 @@ build_cabal_dir () {
 		return 1
 	fi
 
-	local ghc_version ghc_major ghc_minor
+	local ghc_version ghc_major ghc_minor ghc_point
 	ghc_version=$( get_tag_ghc_version "${tag}" )
 	ghc_major="${ghc_version%%.*}"
 	ghc_minor="${ghc_version#*.}"
 	ghc_minor="${ghc_minor%%.*}"
+	ghc_point="${ghc_version##*.}"
+
+	local cabal_version cabal_major cabal_minor
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+	cabal_major="${cabal_version%%.*}"
+	cabal_minor="${cabal_version#*.}"
+	cabal_minor="${cabal_minor%%.*}"
 
 	# NOTE: Bootstrapping cabal-install 1.20.* with GHC 7.6.* fails.
 	if (( ghc_major < 7 || ghc_minor < 8 )); then
@@ -267,19 +274,25 @@ build_cabal_dir () {
 	fi
 
 	# NOTE: Bootstrapping cabal-install 1.20.* on RHEL 6 i386 fails
-	# with GHC 7.8.3 or 7.8.4, but succeeds with 7.8.2.
+	# with GHC 7.8.4 or 7.8.3, but succeeds with 7.8.2.
+	# However, bootstrapping cabal-install 1.22.0.0 fails with
+	# GHC 7.8.4, 7.8.3, and 7.8.2, so it cannot be bootstrapped at all.
 	# https://ghc.haskell.org/trac/ghc/ticket/9964
 	case "${HALCYON_INTERNAL_PLATFORM}" in
 	'linux-rhel-6'*'-i386')
-		if (( ghc_major == 7 && (ghc_minor >= 3 && ghc_minor <= 4) )); then
-			log_error "Unexpected GHC version: ${ghc_version}"
-			log_error 'To bootstrap Cabal, use GHC 7.8.2 or older'
+		if (( cabal_major == 1 && ((cabal_minor == 20 && ghc_major == 7 && ghc_minor == 8 && ghc_point >= 3) || cabal_minor == 22) )); then
+			log_error "Unexpected GHC and Cabal version combination for RHEL 6 (32-bit): ${ghc_version} and ${cabal_version}"
+			if (( cabal_minor == 20 )); then
+				log_error 'To bootstrap Cabal, use GHC 7.8.2 or older'
+			else
+				log_error 'Cannot bootstrap Cabal'
+			fi
+			log_error 'https://ghc.haskell.org/trac/ghc/ticket/9964'
 			return 1
 		fi
 	esac
 
-	local cabal_version cabal_original_url cabal_dir cabal_home_dir
-	cabal_version=$( get_tag_cabal_version "${tag}" )
+	local cabal_original_url cabal_dir cabal_home_dir
 	cabal_original_url=$( map_cabal_version_to_original_url "${cabal_version}" ) || return 1
 	cabal_dir=$( get_tmp_dir "cabal-${cabal_version}" ) || return 1
 	cabal_home_dir=$( get_tmp_dir 'disregard-this-advice' ) || return 1
