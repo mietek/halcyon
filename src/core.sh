@@ -272,17 +272,14 @@ install_ghc_and_cabal_dirs () {
 	local source_dir
 	expect_args source_dir -- "$@"
 
-	local ghc_version ghc_magic_hash ghc_major ghc_minor
+	local ghc_version ghc_major ghc_minor
 	ghc_version="${HALCYON_GHC_VERSION}"
-	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || return 1
 	ghc_major="${ghc_version%%.*}"
 	ghc_minor="${ghc_version#*.}"
 	ghc_minor="${ghc_minor%%.*}"
 
-	local cabal_version cabal_magic_hash cabal_remote_repo cabal_major cabal_minor
+	local cabal_version cabal_major cabal_minor
 	cabal_version=$( determine_cabal_version "${source_dir}" ) || return 1
-	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
-	cabal_remote_repo=$( determine_cabal_remote_repo "${source_dir}" ) || return 1
 	cabal_major="${cabal_version%%.*}"
 	cabal_minor="${cabal_version#*.}"
 	cabal_minor="${cabal_minor%%.*}"
@@ -293,6 +290,11 @@ install_ghc_and_cabal_dirs () {
 		log_error 'To use GHC 7.10.1 or newer, use Cabal 1.22.0.0 or newer'
 		return 1
 	fi
+
+	local ghc_magic_hash cabal_magic_hash cabal_remote_repo
+	ghc_magic_hash=$( determine_ghc_magic_hash "${source_dir}" ) || return 1
+	cabal_magic_hash=$( determine_cabal_magic_hash "${source_dir}" ) || return 1
+	cabal_remote_repo=$( determine_cabal_remote_repo "${source_dir}" ) || return 1
 
 	if ! (( HALCYON_INTERNAL_RECURSIVE )); then
 		log 'Installing GHC and Cabal'
