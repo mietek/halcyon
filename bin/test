@@ -7,6 +7,25 @@ export HALCYON_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )
 source "${HALCYON_DIR}/src.sh"
 
 
+test_cabal () {
+	local -a cabal_versions_a
+	cabal_versions_a=()
+	cabal_versions_a+=( '1.20.0.3' )
+	cabal_versions_a+=( '1.22.0.0' )
+
+	log 'Testing Cabal'
+
+	for cabal_version in "${cabal_versions_a[@]}"; do
+		local -a opts_a
+		opts_a=()
+		opts_a+=( --cabal-version="${cabal_version}" )
+
+		log
+		halcyon install "${opts_a[@]}" "$@" || return 1
+	done
+}
+
+
 test_ghc () {
 	expect_vars HALCYON_INTERNAL_PLATFORM
 	local -a ghc_versions_a
@@ -19,8 +38,8 @@ test_ghc () {
 		ghc_versions_a+=( '7.10.1-rc2' )
 		;;
 	*)
-		ghc_versions_a+=( '7.10.1-rc2' )
 		ghc_versions_a+=( '7.10.1-rc3' )
+		ghc_versions_a+=( '7.10.1-rc2' )
 	esac
 	ghc_versions_a+=( '7.8.4' )
 	ghc_versions_a+=( '7.8.3' )
@@ -48,6 +67,21 @@ test_ghc () {
 
 		log
 		halcyon install "${opts_a[@]}" "$@" || return 1
+	done
+}
+
+
+test_tutorial () {
+	local -a urls_a
+	urls_a=()
+	urls_a+=( "https://github.com/mietek/halcyon-tutorial" )
+	urls_a+=( "https://github.com/mietek/haskell-on-heroku-tutorial" )
+
+	log 'Testing tutorial'
+
+	for url in "${urls_a[@]}"; do
+		log
+		halcyon install "${url}" "$@" || return 1
 	done
 }
 
@@ -232,23 +266,19 @@ test_examples () {
 
 
 help_test_usage () {
-	log
-	quote <<-EOF
-		Usage
-		  halcyon                                 COMMAND
+	cat >&2 <<-EOF
+		Usage:
+		  test                                    COMMAND
 
-		Commands
+		Commands:
+		  cabal                                   OPTION*
 		  ghc                                     OPTION*
+		  tutorial                                OPTION*
 		  sandbox-apps                            OPTION*
 		  apps                                    OPTION*
-		  shootout                                OPTION*
-		  bench-shootout                          OPTION*
-		  examples                                OPTION*
+		  shootout                                --bench? --branch? OPTION*
+		  examples                                --branch?
 		  all                                     OPTION*
-
-		Options
-		  --bench
-		  --branch
 	EOF
 }
 
@@ -290,6 +320,7 @@ test_main () {
 			;;
 		'-'*)
 			log_error "Unexpected option: $1"
+			log
 			help_test_usage
 			return 1
 			;;
@@ -308,8 +339,14 @@ test_main () {
 	fi
 
 	case "${cmd}" in
+	'cabal')
+		test_cabal ${args_a[@]:+"${args_a[@]}"} || return 1
+		;;
 	'ghc')
 		test_ghc ${args_a[@]:+"${args_a[@]}"} || return 1
+		;;
+	'tutorial')
+		test_tutorial ${args_a[@]:+"${args_a[@]}"} || return 1
 		;;
 	'sandbox-apps')
 		test_sandbox_apps ${args_a[@]:+"${args_a[@]}"} || return 1
@@ -324,7 +361,9 @@ test_main () {
 		test_examples "${branch}" ${args_a[@]:+"${args_a[@]}"} || return 1
 		;;
 	'all')
+		test_cabal ${args_a[@]:+"${args_a[@]}"} || return 1
 		test_ghc ${args_a[@]:+"${args_a[@]}"} || return 1
+		test_tutorial ${args_a[@]:+"${args_a[@]}"} || return 1
 		test_sandbox_apps ${args_a[@]:+"${args_a[@]}"} || return 1
 		test_apps ${args_a[@]:+"${args_a[@]}"} || return 1
 		test_shootout "${bench}" "${branch}" ${args_a[@]:+"${args_a[@]}"} || return 1
@@ -336,11 +375,13 @@ test_main () {
 		;;
 	'')
 		log_error 'Expected command'
+		log
 		help_test_usage
 		return 1
 		;;
 	*)
 		log_error "Unexpected command: ${cmd} ${args_a[*]:-}"
+		log
 		help_test_usage
 		return 1
 	esac
