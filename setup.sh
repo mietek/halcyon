@@ -103,6 +103,21 @@ install_os_packages () {
 	'linux-slackware-14'*)
 		# NOTE: Nothing to install on Slackware.
 		;;
+	'linux-sles-11'*)
+		# NOTE: When run as root, sudo asks for password
+		# on SLES 11.
+		if [ "${uid}" -eq 0 ]; then
+			zypper -n install -t pattern Basis-Devel || return 1
+			zypper -n install git zlib-devel || return 1
+		else
+			sudo bash -c 'zypper -n install -t pattern Basis-Devel &&
+				zypper -n install git zlib-devel' || return 1
+		fi
+		;;
+	'linux-sles-12'*)
+		sudo bash -c 'zypper -n install -t pattern Basis-Devel &&
+			zypper -n install git pigz zlib-devel' || return 1
+		;;
 	'linux-ubuntu-10'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Ubuntu 10.
@@ -194,9 +209,9 @@ install_halcyon () {
 			echo '       $ chown ${user}:${group} "'"${base}"'"' >&2
 		fi
 		;;
-	'linux-debian-7'*|'linux-ubuntu-10'*|'linux-ubuntu-12'*)
+	'linux-debian-7'*|'linux-sles-11'*|'linux-ubuntu-10'*|'linux-ubuntu-12'*)
 		# NOTE: When run as root, sudo asks for password
-		# on Debian 7, Ubuntu 10, and Ubuntu 12.
+		# on Debian 7, SLES 11, Ubuntu 10, and Ubuntu 12.
 		if [ "${uid}" -eq 0 ]; then
 			mkdir -p "${base}" || return 1
 			chown "${user}:${group}" "${base}" || return 1

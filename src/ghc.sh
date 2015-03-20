@@ -402,7 +402,7 @@ symlink_ghc_i386_libs () {
 			url=$( map_ghc_version_to_gmp5_linux_i386_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-debian-6'*|'linux-ubuntu-10'*)
+	'linux-debian-6'*|'linux-ubuntu-10'*|'linux-sles-11'*)
 		gmp_file='/usr/lib/libgmp.so.3'
 		tinfo_file='/lib/libncurses.so.5'
 		if (( ghc_major < 7 || ghc_minor < 10 )); then
@@ -541,7 +541,7 @@ symlink_ghc_x86_64_libs () {
 			url=$( map_ghc_version_to_gmp5_linux_x86_64_url "${ghc_version}" ) || return 1
 		fi
 		;;
-	'linux-opensuse-13'*)
+	'linux-opensuse-13'*|'linux-sles-12'*)
 		gmp_file='/usr/lib64/libgmp.so.10'
 		tinfo_file='/lib64/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 8 )); then
@@ -562,6 +562,18 @@ symlink_ghc_x86_64_libs () {
 			gmp_file='/usr/lib64/libgmp.so.10'
 			gmp_name='libgmp.so.10'
 			url=$( map_ghc_version_to_gmp5_linux_x86_64_url "${ghc_version}" ) || return 1
+		fi
+		;;
+	'linux-sles-11'*)
+		gmp_file='/usr/lib64/libgmp.so.3'
+		tinfo_file='/lib64/libncurses.so.5'
+		if (( ghc_major < 7 || ghc_minor < 10 )); then
+			gmp_name='libgmp.so.3'
+			url=$( map_ghc_version_to_gmp4_linux_x86_64_url "${ghc_version}" ) || return 1
+		else
+			log_error "Unsupported GHC version for ${description}: ${ghc_version} (GMP 5)"
+			log_error "To use ${description}, use GHC 7.8.4 (GMP 4) or older"
+			return 1
 		fi
 		;;
 	'linux-ubuntu-12'*)
