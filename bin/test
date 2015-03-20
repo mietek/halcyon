@@ -281,14 +281,14 @@ help_test_usage () {
 		  test                                    COMMAND
 
 		Commands:
-		  cabal                                   OPTION*
-		  ghc                                     OPTION*
-		  tutorial                                OPTION*
-		  sandbox-apps                            OPTION*
-		  apps                                    OPTION*
-		  shootout                                --bench? --branch? OPTION*
+		  cabal
+		  ghc
+		  tutorial
+		  sandbox-apps
+		  apps
+		  shootout                                --bench? --branch?
 		  examples                                --branch?
-		  all                                     OPTION*
+		  all
 	EOF
 }
 
