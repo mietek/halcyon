@@ -14,12 +14,10 @@ install_os_packages () {
 	'linux-arch'*)
 		# NOTE: There is no sudo on Arch Linux.
 		if [ "${uid}" -eq 0 ]; then
-			pacman --sync --refresh || return 1
 			pacman --sync --needed --noconfirm base-devel git pigz zlib || return 1
 		else
 			echo '   *** WARNING: Cannot install OS packages' >&2
 			echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
-			echo '       $ pacman --sync --refresh' >&2
 			echo '       $ pacman --sync --needed --noconfirm base-devel git pigz zlib' >&2
 		fi
 		;;
@@ -79,12 +77,10 @@ install_os_packages () {
 	'linux-gentoo'*)
 		# NOTE: There is no sudo on Gentoo Linux.
 		if [ "${uid}" -eq 0 ]; then
-			emerge --sync || return 1
 			emerge --noreplace app-arch/pigz dev-vcs/git || return 1
 		else
 			echo '   *** WARNING: Cannot install OS packages' >&2
 			echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
-			echo '       $ emerge --sync' >&2
 			echo '       $ emerge --noreplace app-arch/pigz dev-vcs/git' >&2
 		fi
 		;;
