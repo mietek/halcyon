@@ -26,6 +26,7 @@ set_halcyon_vars () {
 		export HALCYON_POST_BUILD_HOOK="${HALCYON_POST_BUILD_HOOK:-}"
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
 		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
+		export HALCYON_APP_NO_STRIP="${HALCYON_APP_NO_STRIP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
 		export HALCYON_DEPENDENCIES_ONLY="${HALCYON_DEPENDENCIES_ONLY:-0}"
@@ -60,6 +61,7 @@ set_halcyon_vars () {
 		export HALCYON_GHC_PRE_BUILD_HOOK="${HALCYON_GHC_PRE_BUILD_HOOK:-}"
 		export HALCYON_GHC_POST_BUILD_HOOK="${HALCYON_GHC_POST_BUILD_HOOK:-}"
 		export HALCYON_GHC_REBUILD="${HALCYON_GHC_REBUILD:-0}"
+		export HALCYON_GHC_NO_STRIP="${HALCYON_GHC_NO_STRIP:-0}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
 		export HALCYON_CABAL_REMOTE_REPO="${HALCYON_CABAL_REMOTE_REPO:-}"
@@ -69,6 +71,7 @@ set_halcyon_vars () {
 		export HALCYON_CABAL_POST_UPDATE_HOOK="${HALCYON_CABAL_POST_UPDATE_HOOK:-}"
 		export HALCYON_CABAL_REBUILD="${HALCYON_CABAL_REBUILD:-0}"
 		export HALCYON_CABAL_UPDATE="${HALCYON_CABAL_UPDATE:-0}"
+		export HALCYON_CABAL_NO_STRIP="${HALCYON_CABAL_NO_STRIP:-0}"
 
 		export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_SANDBOX_SOURCES="${HALCYON_SANDBOX_SOURCES:-}"
@@ -78,6 +81,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK="${HALCYON_SANDBOX_PRE_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
+		export HALCYON_SANDBOX_NO_STRIP="${HALCYON_SANDBOX_NO_STRIP:-0}"
 
 		export HALCYON_INTERNAL_COMMAND="${HALCYON_INTERNAL_COMMAND:-}"
 		export HALCYON_INTERNAL_RECURSIVE="${HALCYON_INTERNAL_RECURSIVE:-0}"
@@ -211,6 +215,8 @@ halcyon_main () {
 			export HALCYON_APP_REBUILD=1;;
 		'--app-reconfigure')
 			export HALCYON_APP_RECONFIGURE=1;;
+		'--app-no-strip')
+			export HALCYON_APP_NO_STRIP=1;;
 		'--ignore-all-constraints')
 			export HALCYON_IGNORE_ALL_CONSTRAINTS=1;;
 		'--no-build')
@@ -361,6 +367,8 @@ halcyon_main () {
 			export HALCYON_GHC_POST_BUILD_HOOK="${1#*=}";;
 		'--ghc-rebuild')
 			export HALCYON_GHC_REBUILD=1;;
+		'--ghc-no-strip')
+			export HALCYON_GHC_NO_STRIP=1;;
 
 	# Cabal options
 		'--cabal-version')
@@ -409,6 +417,8 @@ halcyon_main () {
 			export HALCYON_CABAL_REBUILD=1;;
 		'--cabal-update')
 			export HALCYON_CABAL_UPDATE=1;;
+		'--cabal-no-strip')
+			export HALCYON_CABAL_NO_STRIP=1;;
 
 	# Sandbox options
 		'--sandbox-extra-configure-flags')
@@ -462,6 +472,8 @@ halcyon_main () {
 			export HALCYON_SANDBOX_POST_BUILD_HOOK="${1#*=}";;
 		'--sandbox-rebuild')
 			export HALCYON_SANDBOX_REBUILD=1;;
+		'--sandbox-no-strip')
+			export HALCYON_SANDBOX_NO_STRIP=1;;
 
 		'-h'|'--help')
 			help_usage

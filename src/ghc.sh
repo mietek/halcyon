@@ -604,6 +604,7 @@ symlink_ghc_x86_64_libs () {
 
 build_ghc_dir () {
 	expect_vars HALCYON_BASE \
+		HALCYON_GHC_NO_STRIP \
 		HALCYON_INTERNAL_PLATFORM
 
 	local tag source_dir
@@ -728,16 +729,18 @@ build_ghc_dir () {
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
-	log_indent_begin 'Stripping GHC directory...'
+	if ! (( HALCYON_GHC_NO_STRIP )); then
+		log_indent_begin 'Stripping GHC directory...'
 
-	local stripped_size
-	if ! strip_tree "${HALCYON_BASE}/ghc" ||
-		! stripped_size=$( get_size "${HALCYON_BASE}/ghc" )
-	then
-		log_indent_end 'error'
-		return 1
+		local stripped_size
+		if ! strip_tree "${HALCYON_BASE}/ghc" ||
+			! stripped_size=$( get_size "${HALCYON_BASE}/ghc" )
+		then
+			log_indent_end 'error'
+			return 1
+		fi
+		log_indent_end "done, ${stripped_size}"
 	fi
-	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_ghc_tag "${tag}" >"${HALCYON_BASE}/ghc/.halcyon-tag"; then
 		log_error 'Failed to write GHC tag'

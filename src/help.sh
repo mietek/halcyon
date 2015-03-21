@@ -33,6 +33,7 @@ help_usage () {
 		  --post-build-hook=                      FILE
 		  --app-rebuild
 		  --app-reconfigure
+		  --app-no-strip
 		  --ignore-all-constraints
 		  --no-build
 		  --no-build-dependencies
@@ -73,6 +74,7 @@ help_usage () {
 		  --ghc-pre-build-hook=                   FILE
 		  --ghc-post-build-hook=                  FILE
 		  --ghc-rebuild
+		  --ghc-no-strip
 
 		Cabal options:
 		  --cabal-version=                        VERSION
@@ -83,6 +85,7 @@ help_usage () {
 		  --cabal-post-update-hook=               FILE
 		  --cabal-rebuild
 		  --cabal-update
+		  --cabal-no-strip
 
 		Sandbox options:
 		  --sandbox-extra-configure-flags=        STRING | FILE
@@ -93,5 +96,6 @@ help_usage () {
 		  --sandbox-pre-build-hook=               FILE
 		  --sandbox-post-build-hook=              FILE
 		  --sandbox-rebuild
+		  --sandbox-no-strip
 EOF
 }

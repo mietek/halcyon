@@ -320,7 +320,8 @@ install_sandbox_extra_apps () {
 
 
 build_sandbox_dir () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_SANDBOX_NO_STRIP
 
 	local tag source_dir constraints must_create
 	expect_args tag source_dir constraints must_create -- "$@"
@@ -443,16 +444,18 @@ build_sandbox_dir () {
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
-	log_indent_begin 'Stripping sandbox directory...'
+	if ! (( HALCYON_SANDBOX_NO_STRIP )); then
+		log_indent_begin 'Stripping sandbox directory...'
 
-	local stripped_size
-	if ! strip_tree "${HALCYON_BASE}/sandbox" ||
-		! stripped_size=$( get_size "${HALCYON_BASE}/sandbox" )
-	then
-		log_indent_end 'error'
-		return 1
+		local stripped_size
+		if ! strip_tree "${HALCYON_BASE}/sandbox" ||
+			! stripped_size=$( get_size "${HALCYON_BASE}/sandbox" )
+		then
+			log_indent_end 'error'
+			return 1
+		fi
+		log_indent_end "done, ${stripped_size}"
 	fi
-	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_sandbox_tag "${tag}" >"${HALCYON_BASE}/sandbox/.halcyon-tag"; then
 		log_error 'Failed to write sandbox tag'

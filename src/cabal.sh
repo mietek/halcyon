@@ -243,6 +243,7 @@ copy_cabal_magic () {
 
 build_cabal_dir () {
 	expect_vars HALCYON_BASE \
+		HALCYON_CABAL_NO_STRIP \
 		HALCYON_INTERNAL_PLATFORM
 
 	local tag source_dir
@@ -378,16 +379,18 @@ EOF
 		log 'Cabal post-build hook executed'
 	fi
 
-	log_indent_begin 'Stripping Cabal directory...'
+	if ! (( HALCYON_CABAL_NO_STRIP )); then
+		log_indent_begin 'Stripping Cabal directory...'
 
-	local stripped_size
-	if ! strip_tree "${HALCYON_BASE}/cabal" ||
-		! stripped_size=$( get_size "${HALCYON_BASE}/cabal" )
-	then
-		log_indent_end 'error'
-		return 1
+		local stripped_size
+		if ! strip_tree "${HALCYON_BASE}/cabal" ||
+			! stripped_size=$( get_size "${HALCYON_BASE}/cabal" )
+		then
+			log_indent_end 'error'
+			return 1
+		fi
+		log_indent_end "done, ${stripped_size}"
 	fi
-	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_base_cabal_tag "${tag}" >"${HALCYON_BASE}/cabal/.halcyon-tag"; then
 		log_error 'Failed to write Cabal tag'

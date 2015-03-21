@@ -123,7 +123,8 @@ format_build_archive_name () {
 
 
 do_build_app () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_APP_NO_STRIP
 
 	local tag must_copy must_configure source_dir build_dir
 	expect_args tag must_copy must_configure source_dir build_dir -- "$@"
@@ -217,16 +218,18 @@ do_build_app () {
 		log 'Post-build hook executed'
 	fi
 
-	log_indent_begin 'Stripping app...'
+	if ! (( HALCYON_APP_NO_STRIP )); then
+		log_indent_begin 'Stripping app...'
 
-	local stripped_size
-	if ! strip_tree "${build_dir}" ||
-		! stripped_size=$( get_size "${build_dir}" )
-	then
-		log_indent_end 'error'
-		return 1
+		local stripped_size
+		if ! strip_tree "${build_dir}" ||
+			! stripped_size=$( get_size "${build_dir}" )
+		then
+			log_indent_end 'error'
+			return 1
+		fi
+		log_indent_end "done, ${stripped_size}"
 	fi
-	log_indent_end "done, ${stripped_size}"
 
 	if ! derive_build_tag "${tag}" >"${build_dir}/.halcyon-tag"; then
 		log_error 'Failed to write build tag'
