@@ -604,7 +604,7 @@ symlink_ghc_x86_64_libs () {
 
 build_ghc_dir () {
 	expect_vars HALCYON_BASE \
-		HALCYON_GHC_NO_STRIP \
+		HALCYON_GHC_NO_REMOVE_DOC HALCYON_GHC_NO_STRIP \
 		HALCYON_INTERNAL_PLATFORM
 
 	local tag source_dir
@@ -716,7 +716,9 @@ build_ghc_dir () {
 		log 'GHC post-build hook executed'
 	fi
 
-	if [[ -d "${HALCYON_BASE}/ghc/share/doc" ]]; then
+	if ! (( HALCYON_GHC_NO_REMOVE_DOC )) &&
+		[[ -d "${HALCYON_BASE}/ghc/share/doc" ]]
+	then
 		log_indent_begin 'Removing documentation from GHC directory...'
 
 		local trimmed_size

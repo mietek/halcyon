@@ -221,7 +221,8 @@ install_extra_os_packages () {
 
 
 prepare_install_dir () {
-	expect_vars HALCYON_BASE
+	expect_vars HALCYON_BASE \
+		HALCYON_APP_NO_REMOVE_DOC
 
 	local tag source_dir constraints build_dir install_dir
 	expect_args tag source_dir constraints build_dir install_dir -- "$@"
@@ -312,7 +313,9 @@ prepare_install_dir () {
 	fi
 	log "Install directory prepared, ${prepared_size}"
 
-	if [[ -d "${install_dir}${prefix}/share/doc" ]]; then
+	if ! (( HALCYON_APP_NO_REMOVE_DOC )) &&
+		[[ -d "${install_dir}${prefix}/share/doc" ]]
+	then
 		log_indent_begin 'Removing documentation from install directory...'
 
 		local trimmed_size

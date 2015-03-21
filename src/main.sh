@@ -26,6 +26,7 @@ set_halcyon_vars () {
 		export HALCYON_POST_BUILD_HOOK="${HALCYON_POST_BUILD_HOOK:-}"
 		export HALCYON_APP_REBUILD="${HALCYON_APP_REBUILD:-0}"
 		export HALCYON_APP_RECONFIGURE="${HALCYON_APP_RECONFIGURE:-0}"
+		export HALCYON_APP_NO_REMOVE_DOC="${HALCYON_APP_NO_REMOVE_DOC:-0}"
 		export HALCYON_APP_NO_STRIP="${HALCYON_APP_NO_STRIP:-0}"
 		export HALCYON_NO_BUILD="${HALCYON_NO_BUILD:-0}"
 		export HALCYON_NO_BUILD_DEPENDENCIES="${HALCYON_NO_BUILD_DEPENDENCIES:-0}"
@@ -61,6 +62,7 @@ set_halcyon_vars () {
 		export HALCYON_GHC_PRE_BUILD_HOOK="${HALCYON_GHC_PRE_BUILD_HOOK:-}"
 		export HALCYON_GHC_POST_BUILD_HOOK="${HALCYON_GHC_POST_BUILD_HOOK:-}"
 		export HALCYON_GHC_REBUILD="${HALCYON_GHC_REBUILD:-0}"
+		export HALCYON_GHC_NO_REMOVE_DOC="${HALCYON_GHC_NO_REMOVE_DOC:-0}"
 		export HALCYON_GHC_NO_STRIP="${HALCYON_GHC_NO_STRIP:-0}"
 
 		export HALCYON_CABAL_VERSION="${HALCYON_CABAL_VERSION:-}"
@@ -81,6 +83,7 @@ set_halcyon_vars () {
 		export HALCYON_SANDBOX_PRE_BUILD_HOOK="${HALCYON_SANDBOX_PRE_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_POST_BUILD_HOOK="${HALCYON_SANDBOX_POST_BUILD_HOOK:-}"
 		export HALCYON_SANDBOX_REBUILD="${HALCYON_SANDBOX_REBUILD:-0}"
+		export HALCYON_SANDBOX_NO_REMOVE_DOC="${HALCYON_SANDBOX_NO_REMOVE_DOC:-0}"
 		export HALCYON_SANDBOX_NO_STRIP="${HALCYON_SANDBOX_NO_STRIP:-0}"
 
 		export HALCYON_INTERNAL_COMMAND="${HALCYON_INTERNAL_COMMAND:-}"
@@ -215,6 +218,8 @@ halcyon_main () {
 			export HALCYON_APP_REBUILD=1;;
 		'--app-reconfigure')
 			export HALCYON_APP_RECONFIGURE=1;;
+		'--app-no-remove-doc')
+			export HALCYON_APP_NO_REMOVE_DOC=1;;
 		'--app-no-strip')
 			export HALCYON_APP_NO_STRIP=1;;
 		'--ignore-all-constraints')
@@ -367,6 +372,8 @@ halcyon_main () {
 			export HALCYON_GHC_POST_BUILD_HOOK="${1#*=}";;
 		'--ghc-rebuild')
 			export HALCYON_GHC_REBUILD=1;;
+		'--ghc-no-remove-doc')
+			export HALCYON_GHC_NO_REMOVE_DOC=1;;
 		'--ghc-no-strip')
 			export HALCYON_GHC_NO_STRIP=1;;
 
@@ -472,6 +479,8 @@ halcyon_main () {
 			export HALCYON_SANDBOX_POST_BUILD_HOOK="${1#*=}";;
 		'--sandbox-rebuild')
 			export HALCYON_SANDBOX_REBUILD=1;;
+		'--sandbox-no-remove-doc')
+			export HALCYON_SANDBOX_NO_REMOVE_DOC=1;;
 		'--sandbox-no-strip')
 			export HALCYON_SANDBOX_NO_STRIP=1;;
 

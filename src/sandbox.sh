@@ -321,7 +321,7 @@ install_sandbox_extra_apps () {
 
 build_sandbox_dir () {
 	expect_vars HALCYON_BASE \
-		HALCYON_SANDBOX_NO_STRIP
+		HALCYON_SANDBOX_NO_REMOVE_DOC HALCYON_SANDBOX_NO_STRIP
 
 	local tag source_dir constraints must_create
 	expect_args tag source_dir constraints must_create -- "$@"
@@ -431,7 +431,9 @@ build_sandbox_dir () {
 		log 'Sandbox post-build hook executed'
 	fi
 
-	if [[ -d "${HALCYON_BASE}/sandbox/logs" || -d "${HALCYON_BASE}/sandbox/share/doc" ]]; then
+	if ! (( HALCYON_SANDBOX_NO_REMOVE_DOC )) &&
+		[[ -d "${HALCYON_BASE}/sandbox/logs" || -d "${HALCYON_BASE}/sandbox/share/doc" ]]
+	then
 		log_indent_begin 'Removing documentation from sandbox directory...'
 
 		local trimmed_size

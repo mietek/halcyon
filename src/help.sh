@@ -33,6 +33,7 @@ help_usage () {
 		  --post-build-hook=                      FILE
 		  --app-rebuild
 		  --app-reconfigure
+		  --app-no-remove-doc
 		  --app-no-strip
 		  --ignore-all-constraints
 		  --no-build
@@ -74,6 +75,7 @@ help_usage () {
 		  --ghc-pre-build-hook=                   FILE
 		  --ghc-post-build-hook=                  FILE
 		  --ghc-rebuild
+		  --ghc-no-remove-doc
 		  --ghc-no-strip
 
 		Cabal options:
@@ -96,6 +98,7 @@ help_usage () {
 		  --sandbox-pre-build-hook=               FILE
 		  --sandbox-post-build-hook=              FILE
 		  --sandbox-rebuild
+		  --sandbox-no-remove-doc
 		  --sandbox-no-strip
 EOF
 }
