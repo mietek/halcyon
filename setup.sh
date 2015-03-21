@@ -142,7 +142,13 @@ install_os_packages () {
 		sudo bash -c 'apt-get update &&
 			apt-get install -y build-essential git pigz zlib1g-dev' || return 1
 		;;
-	'osx-'*)
+	'osx-10.7-'*|'osx-10.8-'*)
+		echo '   *** WARNING: Cannot install OS packages' >&2
+		echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
+		echo '       $ brew update' >&2
+		echo '       $ brew install bash coreutils git pigz xz' >&2
+		;;
+	'osx-10.9-'*|'osx-10.10-'*)
 		echo '   *** WARNING: Cannot install OS packages' >&2
 		echo '   *** WARNING: Ensure the following OS packages are installed:' >&2
 		echo '       $ brew update' >&2
