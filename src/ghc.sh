@@ -729,6 +729,18 @@ build_ghc_dir () {
 		log_indent_end "done, ${trimmed_size}"
 	fi
 
+	# NOTE: On OS X, stripping GHC binary distributions with
+	# object splitting supported can take a very long time.
+	# https://github.com/mietek/halcyon/issues/43
+	case "${HALCYON_INTERNAL_PLATFORM}" in
+	'osx-'*)
+		if ghc --info | grep -qE '"Object splitting( supported)?","YES"'; then
+			log_warning 'Split objects detected'
+			log_warning 'Expected time to strip GHC directory: 30-120 minutes'
+			log_warning 'To disable stripping GHC directory, set HALCYON_GHC_NO_STRIP to 1'
+		fi
+	esac
+
 	if ! (( HALCYON_GHC_NO_STRIP )); then
 		log_indent_begin 'Stripping GHC directory...'
 
