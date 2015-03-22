@@ -10,6 +10,7 @@ map_cabal_version_to_original_url () {
 	'1.20.0.5')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.5/cabal-install-1.20.0.5.tar.gz';;
 	'1.20.0.6')	echo 'https://haskell.org/cabal/release/cabal-install-1.20.0.6/cabal-install-1.20.0.6.tar.gz';;
 	'1.22.0.0')	echo 'https://haskell.org/cabal/release/cabal-install-1.22.0.0/cabal-install-1.22.0.0.tar.gz';;
+	'1.22.0.1')	echo 'https://github.com/haskell/cabal/archive/cabal-install-v1.22.0.1.tar.gz';;
 	'1.22.2.0')	echo 'https://haskell.org/cabal/release/cabal-install-1.22.2.0/cabal-install-1.22.2.0.tar.gz';;
 	*)
 		# NOTE: Bootstrapping cabal-install 1.20.0.4 does not work.
@@ -305,6 +306,11 @@ build_cabal_dir () {
 	log 'Building Cabal directory'
 
 	acquire_original_source "${cabal_original_url}" "${cabal_dir}" || return 1
+
+	# NOTE: cabal-install 1.22.0.1 is not packaged properly.
+	if [[ "${cabal_version}" == '1.22.0.1' ]]; then
+		mv "${cabal_dir}/cabal-cabal-install-v1.22.0.1/cabal-install" "${cabal_dir}/cabal-install-1.22.0.1" || return 1
+	fi
 
 	local cabal_sub_dir
 	if ! cabal_sub_dir=$(
