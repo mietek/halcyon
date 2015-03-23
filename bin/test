@@ -15,8 +15,13 @@ test_cabal () {
 		cabal_versions_a+=( '1.20.0.3' )
 		;;
 	*)
+		cabal_versions_a+=( '1.20.0.0' )
+		cabal_versions_a+=( '1.20.0.1' )
 		cabal_versions_a+=( '1.20.0.3' )
+		cabal_versions_a+=( '1.20.0.5' )
+		cabal_versions_a+=( '1.20.0.6' )
 		cabal_versions_a+=( '1.22.0.0' )
+		cabal_versions_a+=( '1.22.0.1' )
 		cabal_versions_a+=( '1.22.2.0' )
 	esac
 
@@ -30,6 +35,13 @@ test_cabal () {
 			opts_a+=( --ghc-version='7.8.2' )
 		esac
 		opts_a+=( --cabal-version="${cabal_version}" )
+		case "${cabal_version}" in
+		'1.20.0.3'|'1.22.2.0')
+			true
+			;;
+		*)
+			opts_a+=( --cabal-binary-only )
+		esac
 
 		log
 		halcyon install "${opts_a[@]}" "$@" || return 1
