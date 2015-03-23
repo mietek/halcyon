@@ -699,21 +699,25 @@ restore_updated_cabal_dir () {
 
 install_cabal_dir () {
 	expect_vars HALCYON_NO_BUILD HALCYON_NO_BUILD_DEPENDENCIES \
-		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE
+		HALCYON_CABAL_REBUILD HALCYON_CABAL_UPDATE HALCYON_CABAL_BINARY_ONLY
 
 	local tag source_dir
 	expect_args tag source_dir -- "$@"
 
 	if ! (( HALCYON_CABAL_REBUILD )); then
-		if ! (( HALCYON_CABAL_UPDATE )) &&
-			restore_updated_cabal_dir "${tag}"
-		then
-			return 0
+		if ! (( HALCYON_CABAL_BINARY_ONLY )); then
+			if ! (( HALCYON_CABAL_UPDATE )) &&
+				restore_updated_cabal_dir "${tag}"
+			then
+				return 0
+			fi
 		fi
 
 		if restore_base_cabal_dir "${tag}"; then
-			update_cabal_package_db "${tag}" || return 1
-			archive_cabal_dir || return 1
+			if ! (( HALCYON_CABAL_BINARY_ONLY )); then
+				update_cabal_package_db "${tag}" || return 1
+				archive_cabal_dir || return 1
+			fi
 			return 0
 		fi
 
@@ -726,8 +730,10 @@ install_cabal_dir () {
 
 	build_cabal_dir "${tag}" "${source_dir}" || return 1
 	archive_cabal_dir || return 1
-	update_cabal_package_db "${tag}" || return 1
-	archive_cabal_dir || return 1
+	if ! (( HALCYON_CABAL_BINARY_ONLY )); then
+		update_cabal_package_db "${tag}" || return 1
+		archive_cabal_dir || return 1
+	fi
 }
 
 

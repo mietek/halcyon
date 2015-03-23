@@ -88,6 +88,7 @@ help_usage () {
 		  --cabal-rebuild
 		  --cabal-update
 		  --cabal-no-strip
+		  --cabal-binary-only
 
 		Sandbox options:
 		  --sandbox-extra-configure-flags=        STRING | FILE
