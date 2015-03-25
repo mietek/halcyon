@@ -26,14 +26,13 @@ help_usage () {
 		  --log-timestamp
 
 		Build-time options:
-		  --extra-source-hash-ignore=             STRING | FILE
 		  --constraints=                          STRING | FILE | DIR
+		  --extra-source-hash-ignore=             STRING | FILE
 		  --extra-configure-flags=                STRING | FILE
 		  --pre-build-hook=                       FILE
 		  --post-build-hook=                      FILE
 		  --app-rebuild
 		  --app-reconfigure
-		  --app-no-remove-doc
 		  --app-no-strip
 		  --ignore-all-constraints
 		  --no-build
@@ -48,6 +47,7 @@ help_usage () {
 		  --pre-install-hook=                     FILE
 		  --post-install-hook=                    FILE
 		  --app-reinstall
+		  --app-no-remove-doc
 		  --keep-dependencies
 
 		Cache options:
@@ -57,7 +57,7 @@ help_usage () {
 		  --no-clean-cache
 
 		Public storage options:
-		  --public-storage=                       S3_URL
+		  --public-storage-url=                   S3_URL
 		  --no-public-storage
 
 		Private storage options:
