@@ -74,7 +74,7 @@ set_halcyon_vars () {
 		export HALCYON_CABAL_REBUILD="${HALCYON_CABAL_REBUILD:-0}"
 		export HALCYON_CABAL_UPDATE="${HALCYON_CABAL_UPDATE:-0}"
 		export HALCYON_CABAL_NO_STRIP="${HALCYON_CABAL_NO_STRIP:-0}"
-		export HALCYON_CABAL_BINARY_ONLY="${HALCYON_CABAL_BINARY_ONLY:-0}"
+		export HALCYON_CABAL_NO_UPDATE="${HALCYON_CABAL_NO_UPDATE:-0}"
 
 		export HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS="${HALCYON_SANDBOX_EXTRA_CONFIGURE_FLAGS:-}"
 		export HALCYON_SANDBOX_SOURCES="${HALCYON_SANDBOX_SOURCES:-}"
@@ -427,8 +427,8 @@ halcyon_main () {
 			export HALCYON_CABAL_UPDATE=1;;
 		'--cabal-no-strip')
 			export HALCYON_CABAL_NO_STRIP=1;;
-		'--cabal-binary-only')
-			export HALCYON_CABAL_BINARY_ONLY=1;;
+		'--cabal-no-update')
+			export HALCYON_CABAL_NO_UPDATE=1;;
 
 	# Sandbox options
 		'--sandbox-extra-configure-flags')

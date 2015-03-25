@@ -40,7 +40,7 @@ test_cabal () {
 			true
 			;;
 		*)
-			opts_a+=( --cabal-binary-only )
+			opts_a+=( --cabal-no-update )
 		esac
 
 		log
