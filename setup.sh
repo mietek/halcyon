@@ -85,7 +85,8 @@ install_os_packages () {
 		fi
 		;;
 	'linux-opensuse-13'*)
-		sudo bash -c 'zypper -n install -t pattern devel_basis &&
+		sudo bash -c 'zypper refresh &&
+			zypper -n install -t pattern devel_basis &&
 			zypper -n install git' || return 1
 		;;
 	'linux-rhel-6'*)
@@ -103,10 +104,12 @@ install_os_packages () {
 		# NOTE: When run as root, sudo asks for password
 		# on SLES 11.
 		if [ "${uid}" -eq 0 ]; then
+			zypper refresh || return 1
 			zypper -n install -t pattern Basis-Devel || return 1
 			zypper -n install git zlib-devel || return 1
 		else
-			sudo bash -c 'zypper -n install -t pattern Basis-Devel &&
+			sudo bash -c 'zypper refresh &&
+				zypper -n install -t pattern Basis-Devel &&
 				zypper -n install git zlib-devel' || return 1
 		fi
 		;;
