@@ -1,0 +1,223 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+
+has_curl () {
+	local status
+	status=0
+	curl 2>'/dev/null' || status="$?"
+	if (( status == 127 )); then
+		return 1
+	fi
+}
+
+
+has_sudo () {
+	local status
+	status=0
+	sudo 2>'/dev/null' || status="$?"
+	if (( status == 127 )) ; then
+		return 1
+	fi
+}
+
+
+execute () {
+	local cmd
+	cmd="$1"
+
+	local uid
+	uid=$( id -u || echo 0 )
+	if (( uid == 0 )) || ! has_sudo; then
+		bash -c "${cmd}" || return 1
+	else
+		sudo bash -c "${cmd}" || return 1
+	fi
+}
+
+
+install_os_packages () {
+	local platform
+	platform="$1"
+
+	case "${platform}" in
+	'linux-amzn'*)
+		execute 'yum groupinstall -y "Development Tools" &&
+			yum install -y git pigz zlib-devel' || return 1
+		;;
+
+	'linux-arch'*)
+		execute 'pacman -S --needed --noconfirm base-devel git pigz zlib' || return 1
+		;;
+
+	'linux-centos'*)
+		execute 'yum groupinstall -y "Development Tools" &&
+			yum install -y git zlib-devel' || return 1
+
+		case "${platform}" in
+		'linux-centos-6'*)
+			execute 'yum install -y yum-plugin-downloadonly' || return 1
+		esac
+		;;
+
+	'linux-debian'*)
+		execute 'apt-get update &&
+			apt-get install -y build-essential git pigz zlib1g-dev' || return 1
+		;;
+
+	'linux-exherbo'*)
+		execute 'cave resolve -x app-arch/pigz sys-libs/zlib' || return 1
+		;;
+
+	'linux-fedora'*)
+		execute 'yum groupinstall -y "Development Tools" &&
+			yum install -y git pigz zlib-devel' || return 1
+
+		case "${platform}" in
+		'linux-fedora-20'*)
+			execute 'yum install -y patch tar' || return 1
+			;;
+		'linux-fedora-21'*)
+			execute 'yum install -y openssl patch tar which' || return 1
+		esac
+		;;
+
+	'linux-gentoo'*)
+		execute 'emerge --noreplace app-arch/pigz dev-vcs/git' || return 1
+		;;
+
+	'linux-opensuse'*)
+		execute 'zypper refresh &&
+			zypper -n install -t pattern devel_basis &&
+			zypper -n install git' || return 1
+		;;
+
+	'linux-rhel'*)
+		execute 'yum groupinstall -y "Development Tools" &&
+			yum install -y git zlib-devel' || return 1
+		;;
+
+	'linux-sles'*)
+		execute 'zypper refresh &&
+			zypper -n install -t pattern Basis-Devel &&
+			zypper -n install git zlib-devel' || return 1
+
+		case "${platform}" in
+		'linux-sles-12'*)
+			execute 'zypper -n install pigz' || return 1
+		esac
+		;;
+
+	'linux-ubuntu'*)
+		execute 'apt-get update &&
+			apt-get install -y build-essential pigz zlib1g-dev' || return 1
+
+		case "${platform}" in
+		'linux-ubuntu-10'*)
+			execute 'apt-get install -y git-core &&
+				apt-get install -y --reinstall ca-certificates' || return 1
+			;;
+		'linux-ubuntu-12'*)
+			execute 'apt-get install -y git libgmp3c2' || return 1
+			;;
+		'linux-ubuntu-14'*)
+			execute 'apt-get install -y git' || return 1
+		esac
+		;;
+
+	'osx'*)
+		execute 'brew update &&
+			brew install bash coreutils git pigz' || return 1
+
+		case "${platform}" in
+		'osx-10.8'*)
+			execute 'brew install xz' || return 1
+		esac
+	esac
+}
+
+
+install_halcyon () {
+	echo '-----> Welcome to Halcyon' >&2
+
+	if ! has_curl; then
+		echo '   *** ERROR: Expected curl' >&2
+		return 1
+	fi
+	if ! eval "$( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' )"; then
+		echo '   *** ERROR: Failed to detect platform' >&2
+		return 1
+	fi
+
+	local platform
+	platform=$( detect_platform )
+
+	echo >&2
+	echo '-----> Installing OS packages' >&2
+
+	if ! install_os_packages "${platform}" 2>&1 | sed 's/^/       /' >&2; then
+		echo '   *** ERROR: Failed to install OS packages' >&2
+		return 1
+	fi
+
+	local halcyon_base
+	halcyon_base="${HALCYON_BASE:-/app}"
+	if [[ ! -d "${halcyon_base}" ]]; then
+		local uid gid
+		uid=$( id -u || echo 0 )
+		gid=$( id -g || echo 0 )
+
+		echo "-----> Creating base directory: ${halcyon_base}" >&2
+
+		if ! execute "mkdir -p \"${halcyon_base}\" 2>'/dev/null' &&
+			chown -R \"${uid}:${gid}\" \"${halcyon_base}\" 2>'/dev/null'"
+		then
+			echo '   *** ERROR: Failed to create base directory' >&2
+			return 1
+		fi
+	fi
+
+	local halcyon_dir
+	halcyon_dir="${HALCYON_DIR:-${halcyon_base}/halcyon}"
+	if [[ ! -d "${halcyon_dir}" ]]; then
+		local url base_url branch
+		url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
+		base_url="${url%#*}"
+		branch="${url#*#}"
+		if [[ "${branch}" == "${base_url}" ]]; then
+			branch='master'
+		fi
+
+		echo "-----> Creating Halcyon directory: ${halcyon_dir}" >&2
+
+		if ! mkdir -p "${halcyon_dir}" 2>'/dev/null'; then
+			echo '   *** ERROR: Failed to create Halcyon directory' >&2
+			return 1
+		fi
+
+		echo >&2
+		printf -- '-----> Cloning Halcyon repository...' >&2
+
+		local commit_hash
+		if ! commit_hash=$(
+			git clone -q "${base_url}" "${halcyon_dir}" >'/dev/null' 2>&1 &&
+			cd "${halcyon_dir}" &&
+			git checkout -q "${branch}" >'/dev/null' 2>&1 &&
+			git log -n 1 --pretty='format:%h'
+		); then
+			echo ' error' >&2
+			echo '   *** ERROR: Failed to clone Halcyon repository' >&2
+			return 1
+		fi
+		echo " done, ${commit_hash}" >&2
+	fi
+
+	echo >&2
+	echo '-----> Halcyon installed'
+}
+
+
+if ! install_halcyon; then
+	echo '   *** ERROR: Failed to install Halcyon' >&2
+fi
