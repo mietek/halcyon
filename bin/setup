@@ -168,6 +168,7 @@ install_halcyon () {
 		uid=$( id -u || echo 0 )
 		gid=$( id -g || echo 0 )
 
+		echo >&2
 		echo "-----> Creating base directory: ${halcyon_base}" >&2
 
 		if ! execute "mkdir -p \"${halcyon_base}\" 2>'/dev/null' &&
@@ -176,45 +177,47 @@ install_halcyon () {
 			echo '   *** ERROR: Failed to create base directory' >&2
 			return 1
 		fi
-	fi
 
-	local halcyon_dir
-	halcyon_dir="${HALCYON_DIR:-${halcyon_base}/halcyon}"
-	if [[ ! -d "${halcyon_dir}" ]]; then
-		local url base_url branch
-		url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
-		base_url="${url%#*}"
-		branch="${url#*#}"
-		if [[ "${branch}" == "${base_url}" ]]; then
-			branch='master'
+		local halcyon_dir
+		halcyon_dir="${HALCYON_DIR:-${halcyon_base}/halcyon}"
+		if [[ ! -d "${halcyon_dir}" ]]; then
+			local url base_url branch
+			url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
+			base_url="${url%#*}"
+			branch="${url#*#}"
+			if [[ "${branch}" == "${base_url}" ]]; then
+				branch='master'
+			fi
+
+			echo "-----> Creating Halcyon directory: ${halcyon_dir}" >&2
+
+			if ! mkdir -p "${halcyon_dir}" 2>'/dev/null'; then
+				echo '   *** ERROR: Failed to create Halcyon directory' >&2
+				return 1
+			fi
+
+			printf -- '-----> Cloning Halcyon repository...' >&2
+
+			local commit_hash
+			if ! commit_hash=$(
+				git clone -q "${base_url}" "${halcyon_dir}" >'/dev/null' 2>&1 &&
+				cd "${halcyon_dir}" &&
+				git checkout -q "${branch}" >'/dev/null' 2>&1 &&
+				git log -n 1 --pretty='format:%h'
+			); then
+				echo ' error' >&2
+				echo '   *** ERROR: Failed to clone Halcyon repository' >&2
+				return 1
+			fi
+			echo " done, ${commit_hash}" >&2
 		fi
-
-		echo "-----> Creating Halcyon directory: ${halcyon_dir}" >&2
-
-		if ! mkdir -p "${halcyon_dir}" 2>'/dev/null'; then
-			echo '   *** ERROR: Failed to create Halcyon directory' >&2
-			return 1
-		fi
-
-		echo >&2
-		printf -- '-----> Cloning Halcyon repository...' >&2
-
-		local commit_hash
-		if ! commit_hash=$(
-			git clone -q "${base_url}" "${halcyon_dir}" >'/dev/null' 2>&1 &&
-			cd "${halcyon_dir}" &&
-			git checkout -q "${branch}" >'/dev/null' 2>&1 &&
-			git log -n 1 --pretty='format:%h'
-		); then
-			echo ' error' >&2
-			echo '   *** ERROR: Failed to clone Halcyon repository' >&2
-			return 1
-		fi
-		echo " done, ${commit_hash}" >&2
 	fi
 
 	echo >&2
 	echo '-----> Halcyon installed'
+	echo >&2
+	echo '       To activate Halcyon:'
+	echo "       eval \"${ \"${halcyon_dir}/halcyon paths\" }\""
 }
 
 
