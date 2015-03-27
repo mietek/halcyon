@@ -58,6 +58,7 @@ test_ghc () {
 		true
 		;;
 	*)
+		ghc_versions_a+=( '7.10.1' )
 		ghc_versions_a+=( '7.10.1-rc3' )
 	esac
 	ghc_versions_a+=( '7.8.4' )
