@@ -79,7 +79,7 @@ install_os_packages () {
 			execute 'yum install -y patch tar' || return 1
 			;;
 		'linux-fedora-21'*)
-			execute 'yum install -y openssl patch tar which' || return 1
+			execute 'yum install -y patch tar openssl which' || return 1
 		esac
 		;;
 
