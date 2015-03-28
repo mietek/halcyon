@@ -143,6 +143,7 @@ install_halcyon () {
 
 	if ! has_curl; then
 		echo '   *** ERROR: Expected curl' >&2
+		echo '   *** ERROR: To use Halcyon, install curl' >&2
 		return 1
 	fi
 	if ! eval "$( curl -sL 'https://github.com/mietek/bashmenot/raw/master/src/platform.sh' )"; then
@@ -163,12 +164,15 @@ install_halcyon () {
 
 	local halcyon_base
 	halcyon_base="${HALCYON_BASE:-/app}"
-	if [[ ! -d "${halcyon_base}" ]]; then
+
+	echo >&2
+	if [[ -d "${halcyon_base}" ]]; then
+		echo "-----> Using existing base directory: ${halcyon_base}" >&2
+	else
 		local uid gid
 		uid=$( id -u || echo 0 )
 		gid=$( id -g || echo 0 )
 
-		echo >&2
 		echo "-----> Creating base directory: ${halcyon_base}" >&2
 
 		if ! execute "mkdir -p \"${halcyon_base}\" 2>'/dev/null' &&
@@ -177,17 +181,18 @@ install_halcyon () {
 			echo '   *** ERROR: Failed to create base directory' >&2
 			return 1
 		fi
-	else
-		echo "-----> Using existing base directory: ${halcyon_base}" >&2
 	fi
 
-	local halcyon_dir
+	local halcyon_dir halcyon_url
 	halcyon_dir="${HALCYON_DIR:-${halcyon_base}/halcyon}"
-	if [[ ! -d "${halcyon_dir}" ]]; then
-		local url base_url branch
-		url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
-		base_url="${url%#*}"
-		branch="${url#*#}"
+	halcyon_url="${HALCYON_URL:-https://github.com/mietek/halcyon}"
+
+	if [[ -d "${halcyon_dir}" ]]; then
+		echo "-----> Using existing Halcyon directory: ${halcyon_dir}" >&2
+	else
+		local base_url branch
+		base_url="${halcyon_url%#*}"
+		branch="${halcyon_url#*#}"
 		if [[ "${branch}" == "${base_url}" ]]; then
 			branch='master'
 		fi
@@ -213,15 +218,14 @@ install_halcyon () {
 			return 1
 		fi
 		echo " done, ${commit_hash}" >&2
-	else
-		echo "-----> Using existing Halcyon directory: ${halcyon_dir}" >&2
 	fi
 
 	echo >&2
-	echo '-----> Halcyon installed'
+	echo '-----> Halcyon installed' >&2
+
 	echo >&2
-	echo '       To activate Halcyon:'
-	echo "       eval \"${ \"${halcyon_dir}/halcyon paths\" }\""
+	echo '       To activate Halcyon:' >&2
+	echo '       eval "$( "${halcyon_dir}/halcyon paths" )"' >&2
 }
 
 
