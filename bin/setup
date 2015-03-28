@@ -225,7 +225,7 @@ install_halcyon () {
 
 	echo >&2
 	echo '       To activate Halcyon:' >&2
-	echo '       eval "$( "'"${halcyon_dir}"'/halcyon paths" )"' >&2
+	echo '       eval "$( "'"${halcyon_dir}"'/halcyon" paths )"' >&2
 }
 
 
