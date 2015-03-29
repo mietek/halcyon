@@ -173,6 +173,7 @@ map_ghc_version_to_osx_x86_64_url () {
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-apple-darwin.tar.xz';;
 	'7.10.1-rc3')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.10.0.20150316-x86_64-apple-darwin.tar.bz2';;
+	'7.10.1')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.10.1-x86_64-apple-darwin.tar.bz2';;
 	*)
 		log_error "Unsupported GHC version for OS X (x86_64): ${ghc_version}"
 		return 1
@@ -195,14 +196,7 @@ map_base_package_version_to_ghc_version () {
 	'4.7.0.0')	echo '7.8.2';;
 	'4.7.0.1')	echo '7.8.3';;
 	'4.7.0.2')	echo '7.8.4';;
-	'4.8.0.0')
-		case "${HALCYON_INTERNAL_PLATFORM}" in
-		'osx-'*)
-			echo '7.10.1-rc3';;
-		*)
-			echo '7.10.1'
-		esac
-		;;
+	'4.8.0.0')	echo '7.10.1';;
 	*)
 		log_error "Unsupported base package version: ${base_version}"
 		return 1
