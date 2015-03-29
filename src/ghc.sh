@@ -13,7 +13,6 @@ map_ghc_version_to_source_url () {
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-src.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-src.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-src.tar.xz';;
-	'7.10.1-rc3')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc3/ghc-7.10.0.20150316-src.tar.xz';;
 	'7.10.1')	echo 'https://downloads.haskell.org/~ghc/7.10.1/ghc-7.10.1-src.tar.xz';;
 	*)
 		log_error "Unsupported GHC version: ${ghc_version}"
@@ -72,7 +71,6 @@ map_ghc_version_to_gmp5_linux_i386_url () {
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-i386-unknown-linux-deb7.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-unknown-linux-deb7.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-unknown-linux-deb7.tar.xz';;
-	'7.10.1-rc3')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc3/ghc-7.10.0.20150316-i386-unknown-linux-deb7.tar.xz';;
 	'7.10.1')	echo 'https://downloads.haskell.org/~ghc/7.10.1/ghc-7.10.1-i386-unknown-linux-deb7.tar.xz';;
 	*)
 		log_error "Unsupported GHC version for Linux (i386): ${ghc_version} (GMP 5)"
@@ -111,7 +109,6 @@ map_ghc_version_to_gmp5_linux_x86_64_url () {
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz';;
-	'7.10.1-rc3')	echo 'https://downloads.haskell.org/~ghc/7.10.1-rc3/ghc-7.10.0.20150316-x86_64-unknown-linux-deb7.tar.xz';;
 	'7.10.1')	echo 'https://downloads.haskell.org/~ghc/7.10.1/ghc-7.10.1-x86_64-unknown-linux-deb7.tar.xz';;
 	*)
 		log_error "Unsupported GHC version for Linux (x86_64): ${ghc_version} (GMP 5)"
@@ -172,7 +169,6 @@ map_ghc_version_to_osx_x86_64_url () {
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-apple-darwin-mavericks.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-apple-darwin.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-apple-darwin.tar.xz';;
-	'7.10.1-rc3')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.10.0.20150316-x86_64-apple-darwin.tar.bz2';;
 	'7.10.1')	echo 'http://www.ozonehouse.com/mark/platform/ghc-7.10.1-x86_64-apple-darwin.tar.bz2';;
 	*)
 		log_error "Unsupported GHC version for OS X (x86_64): ${ghc_version}"
