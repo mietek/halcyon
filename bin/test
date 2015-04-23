@@ -15,26 +15,16 @@ test_cabal () {
 	cabal_versions_a+=( '1.20.0.3' )
 	cabal_versions_a+=( '1.20.0.5' )
 	cabal_versions_a+=( '1.20.0.6' )
-	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-rhel-6'*'-i386')
-		true
-		;;
-	*)
-		cabal_versions_a+=( '1.22.0.0' )
-		cabal_versions_a+=( '1.22.0.1' )
-		cabal_versions_a+=( '1.22.2.0' )
-		cabal_versions_a+=( '1.22.3.0' )
-	esac
+	cabal_versions_a+=( '1.22.0.0' )
+	cabal_versions_a+=( '1.22.0.1' )
+	cabal_versions_a+=( '1.22.2.0' )
+	cabal_versions_a+=( '1.22.3.0' )
 
 	log 'Testing Cabal'
 
 	for cabal_version in "${cabal_versions_a[@]}"; do
 		local -a opts_a
 		opts_a=()
-		case "${HALCYON_INTERNAL_PLATFORM}" in
-		'linux-rhel-6'*'-i386')
-			opts_a+=( --ghc-version='7.8.2' )
-		esac
 		opts_a+=( --cabal-version="${cabal_version}" )
 		case "${cabal_version}" in
 		'1.20.0.3'|'1.22.3.0')
@@ -63,7 +53,7 @@ test_ghc () {
 	ghc_versions_a+=( '7.8.3' )
 	ghc_versions_a+=( '7.8.4' )
 	case "${HALCYON_INTERNAL_PLATFORM}" in
-	'linux-centos-6'*'-i386'|'linux-debian-6'*|'linux-rhel-6'*'-i386'|'linux-ubuntu-10'*)
+	'linux-centos-6'*'-i386'|'linux-debian-6'*|'linux-ubuntu-10'*)
 		true
 		;;
 	*)

@@ -369,7 +369,7 @@ symlink_ghc_i386_libs () {
 	'freebsd-10'*)
 		url=$( map_ghc_version_to_freebsd_i386_url "${ghc_version}" ) || return 1
 		;;
-	'linux-centos-6'*|'linux-rhel-6'*)
+	'linux-centos-6'*)
 		gmp_file='/usr/lib/libgmp.so.3'
 		tinfo_file='/lib/libtinfo.so.5'
 		if (( ghc_major < 7 || ghc_minor < 10 )); then

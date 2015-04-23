@@ -89,7 +89,7 @@ install_os_packages () {
 			zypper -n install -t pattern devel_basis &&
 			zypper -n install git' || return 1
 		;;
-	'linux-rhel-6'*)
+	'linux-rhel-6'*'-x86_64')
 		sudo bash -c "yum groupinstall -y 'Development Tools' &&
 			yum install -y git zlib-devel" || return 1
 		;;
