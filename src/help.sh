@@ -1,5 +1,5 @@
 help_usage () {
-	cat >&2 <<-EOF
+	cat <<-EOF
 		Usage:
 		  halcyon                                 COMMAND
 
