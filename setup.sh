@@ -41,7 +41,7 @@ install_os_packages () {
 			echo '       $ apt-get install -y build-essential git pigz zlib1g-dev' >&2
 		fi
 		;;
-	'linux-debian-7'*)
+	'linux-debian-7'*|'linux-debian-8'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Debian 7.
 		if [ "${uid}" -eq 0 ]; then
@@ -141,7 +141,7 @@ install_os_packages () {
 				apt-get install -y build-essential git libgmp3c2 pigz zlib1g-dev' || return 1
 		fi
 		;;
-	'linux-ubuntu-14'*)
+	'linux-ubuntu-14'*|'linux-ubuntu-15'*)
 		sudo bash -c 'apt-get update &&
 			apt-get install -y build-essential git pigz zlib1g-dev' || return 1
 		;;
@@ -214,7 +214,7 @@ install_halcyon () {
 			echo '       $ chown ${user}:${group} "'"${base}"'"' >&2
 		fi
 		;;
-	'linux-debian-7'*|'linux-sles-11'*|'linux-ubuntu-10'*|'linux-ubuntu-12'*)
+	'linux-debian-7'*|'linux-debian-8'*|'linux-sles-11'*|'linux-ubuntu-10'*|'linux-ubuntu-12'*)
 		# NOTE: When run as root, sudo asks for password
 		# on Debian 7, SLES 11, Ubuntu 10, and Ubuntu 12.
 		if [ "${uid}" -eq 0 ]; then
