@@ -15,10 +15,12 @@ test_cabal () {
 	cabal_versions_a+=( '1.20.0.3' )
 	cabal_versions_a+=( '1.20.0.5' )
 	cabal_versions_a+=( '1.20.0.6' )
+	cabal_versions_a+=( '1.20.1.0' )
 	cabal_versions_a+=( '1.22.0.0' )
 	cabal_versions_a+=( '1.22.0.1' )
 	cabal_versions_a+=( '1.22.2.0' )
 	cabal_versions_a+=( '1.22.3.0' )
+	cabal_versions_a+=( '1.22.4.0' )
 
 	log 'Testing Cabal'
 
@@ -27,7 +29,7 @@ test_cabal () {
 		opts_a=()
 		opts_a+=( --cabal-version="${cabal_version}" )
 		case "${cabal_version}" in
-		'1.20.0.3'|'1.22.3.0')
+		'1.20.0.3'|'1.22.4.0')
 			true
 			;;
 		*)
@@ -72,7 +74,7 @@ test_ghc () {
 		opts_a=()
 		opts_a+=( --ghc-version="${ghc_version}" )
 		if (( ghc_major == 7 && ghc_minor >= 10 )); then
-			opts_a+=( --cabal-version='1.22.3.0' )
+			opts_a+=( --cabal-version='1.22.4.0' )
 		fi
 
 		log
