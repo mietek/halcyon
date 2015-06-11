@@ -236,7 +236,7 @@ prepare_install_dir () {
 		return 1
 	fi
 
-	local prefix label install_id label_dir
+	local prefix label label_dir
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
@@ -417,7 +417,7 @@ install_app () {
 	local tag source_dir install_dir
 	expect_args tag source_dir install_dir -- "$@"
 
-	local prefix label install_id label_dir
+	local prefix label label_dir
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
