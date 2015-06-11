@@ -214,7 +214,7 @@ hash_cabal_magic () {
 	expect_args source_dir -- "$@"
 
 	local cabal_magic_hash
-	if ! cabal_magic_hash=$( hash_tree "${source_dir}/.halcyon" -name 'cabal-remote-repo' -prune -or -path './cabal*' ); then
+	if ! cabal_magic_hash=$( hash_tree "${source_dir}/.halcyon" \( -name 'cabal-remote-repo' -or -name 'cabal-version' -prune \) -or -path './cabal*' ); then
 		log_error 'Failed to hash Cabal magic files'
 		return 1
 	fi
