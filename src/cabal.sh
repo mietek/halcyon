@@ -305,6 +305,8 @@ build_cabal_dir () {
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-build-hook" ]]; then
 		log 'Executing Cabal pre-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/cabal-pre-build-hook" \
 				"${tag}" "${source_dir}" "${cabal_build_dir}" 2>&1 | quote
 		then
@@ -354,6 +356,8 @@ EOF
 	if [[ -f "${source_dir}/.halcyon/cabal-post-build-hook" ]]; then
 		log 'Executing Cabal post-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/cabal-post-build-hook" \
 				"${tag}" "${source_dir}" "${cabal_build_dir}" 2>&1 | quote
 		then
@@ -410,6 +414,10 @@ update_cabal_package_db () {
 	local tag
 	expect_args tag -- "$@"
 
+	local ghc_version cabal_version
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+
 	log 'Updating Cabal directory'
 
 	if ! format_cabal_config "${tag}" >"${HALCYON_BASE}/cabal/config"; then
@@ -420,6 +428,8 @@ update_cabal_package_db () {
 	if [[ -f "${source_dir}/.halcyon/cabal-pre-update-hook" ]]; then
 		log 'Executing Cabal pre-update hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/cabal-pre-update-hook" 2>&1 | quote
 		then
 			log_error 'Failed to execute Cabal pre-update hook'
@@ -435,6 +445,8 @@ update_cabal_package_db () {
 	if [[ -f "${source_dir}/.halcyon/cabal-post-update-hook" ]]; then
 		log 'Executing Cabal post-update hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/cabal-post-update-hook" 2>&1 | quote
 		then
 			log_error 'Failed to execute Cabal post-update hook'

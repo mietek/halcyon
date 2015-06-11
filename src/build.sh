@@ -136,8 +136,10 @@ do_build_app () {
 		expect_existing "${build_dir}/.halcyon-tag" || return 1
 	fi
 
-	local prefix
+	local prefix ghc_version cabal_version
 	prefix=$( get_tag_prefix "${tag}" )
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
 
 	if (( must_copy )) || (( must_configure )); then
 		log 'Configuring app'
@@ -186,6 +188,8 @@ do_build_app () {
 	if [[ -f "${source_dir}/.halcyon/pre-build-hook" ]]; then
 		log 'Executing pre-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/pre-build-hook" \
 				"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		then
@@ -209,6 +213,8 @@ do_build_app () {
 	if [[ -f "${source_dir}/.halcyon/post-build-hook" ]]; then
 		log 'Executing post-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/post-build-hook" \
 				"${tag}" "${source_dir}" "${build_dir}" 2>&1 | quote
 		then

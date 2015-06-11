@@ -326,6 +326,10 @@ build_sandbox_dir () {
 	local tag source_dir constraints must_create
 	expect_args tag source_dir constraints must_create -- "$@"
 
+	local ghc_version cabal_version
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
+
 	if (( must_create )); then
 		if ! rm -rf "${HALCYON_BASE}/sandbox"; then
 			log_error 'Failed to remove sandbox directory'
@@ -361,6 +365,8 @@ build_sandbox_dir () {
 	if [[ -f "${source_dir}/.halcyon/sandbox-pre-build-hook" ]]; then
 		log 'Executing sandbox pre-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/sandbox-pre-build-hook" \
 				"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		then
@@ -422,6 +428,8 @@ build_sandbox_dir () {
 	if [[ -f "${source_dir}/.halcyon/sandbox-post-build-hook" ]]; then
 		log 'Executing sandbox post-build hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/sandbox-post-build-hook" \
 				"${tag}" "${source_dir}" "${constraints}" 2>&1 | quote
 		then

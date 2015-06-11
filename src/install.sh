@@ -236,9 +236,11 @@ prepare_install_dir () {
 		return 1
 	fi
 
-	local prefix label label_dir
+	local prefix label ghc_version cabal_version label_dir
 	prefix=$( get_tag_prefix "${tag}" )
 	label=$( get_tag_label "${tag}" )
+	ghc_version=$( get_tag_ghc_version "${tag}" )
+	cabal_version=$( get_tag_cabal_version "${tag}" )
 	label_dir="${install_dir}${prefix}/.halcyon/${label}"
 
 	local -a copy_opts_a register_opts_a
@@ -285,6 +287,8 @@ prepare_install_dir () {
 	if [[ -f "${source_dir}/.halcyon/pre-install-hook" ]]; then
 		log 'Executing pre-install hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/pre-install-hook" \
 				"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		then
@@ -450,6 +454,8 @@ install_app () {
 	if [[ -f "${source_dir}/.halcyon/post-install-hook" ]]; then
 		log 'Executing post-install hook'
 		if ! HALCYON_INTERNAL_RECURSIVE=1 \
+			HALCYON_GHC_VERSION="${ghc_version}" \
+			HALCYON_CABAL_VERSION="${cabal_version}" \
 			"${source_dir}/.halcyon/post-install-hook" \
 				"${tag}" "${source_dir}" "${install_dir}" "${data_dir}" 2>&1 | quote
 		then
