@@ -35,6 +35,7 @@ map_ghc_version_to_freebsd_i386_url () {
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-i386-portbld-freebsd.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-i386-portbld-freebsd.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-i386-portbld-freebsd.tar.xz';;
+	'7.10.1')	echo 'https://downloads.haskell.org/~ghc/7.10.1/ghc-7.10.1-i386-portbld-freebsd.tar.xz';;
 	*)
 		log_error "Unsupported GHC version for FreeBSD (i386): ${ghc_version}"
 		return 1
@@ -56,6 +57,7 @@ map_ghc_version_to_freebsd_x86_64_url () {
 	'7.8.2')	echo 'https://downloads.haskell.org/~ghc/7.8.2/ghc-7.8.2-x86_64-portbld-freebsd.tar.xz';;
 	'7.8.3')	echo 'https://downloads.haskell.org/~ghc/7.8.3/ghc-7.8.3-x86_64-portbld-freebsd.tar.xz';;
 	'7.8.4')	echo 'https://downloads.haskell.org/~ghc/7.8.4/ghc-7.8.4-x86_64-portbld-freebsd.tar.xz';;
+	'7.10.1')	echo 'https://downloads.haskell.org/~ghc/7.10.1/ghc-7.10.1-x86_64-portbld-freebsd.tar.xz';;
 	*)
 		log_error "Unsupported GHC version for FreeBSD (x86_64): ${ghc_version}"
 		return 1
