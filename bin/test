@@ -60,6 +60,7 @@ test_ghc () {
 		;;
 	*)
 		ghc_versions_a+=( '7.10.1' )
+		ghc_versions_a+=( '7.10.2-rc1' )
 	esac
 
 	log 'Testing GHC'
