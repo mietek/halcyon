@@ -1,3 +1,10 @@
+-------------------------------------------------------------------------------
+
+This project is no longer maintained.
+
+-------------------------------------------------------------------------------
+
+
 [Halcyon](https://halcyon.sh/)
 ==============================
 
@@ -50,4 +57,4 @@ Halcyon is written in [GNU _bash_](https://gnu.org/software/bash/), using the [_
 About
 -----
 
-Made by [Miëtek Bak](https://mietek.io/).  Published under the [MIT X11 license](https://halcyon.sh/license/).
+Made by [Miëtek Bak](https://mietek.io/).  Published under the BSD license.
